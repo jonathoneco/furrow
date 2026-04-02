@@ -1,0 +1,28 @@
+# /checkpoint [--step-end]
+
+Save session progress for continuity across sessions or compaction.
+
+## Behavior
+
+1. Read `.work/{name}/state.json` (use `commands/lib/detect-context.sh` to find active task).
+2. If no active task: error "No active task to checkpoint."
+
+### Default (no flags)
+
+3. Regenerate `summary.md` via `commands/lib/generate-summary.sh "{name}"`.
+4. Git commit `.work/{name}/` with message: `chore: checkpoint {name} at {step}`.
+5. Display: current step, status, and artifact paths.
+
+### With --step-end
+
+3. Set `step_status` to `"completed"` in `state.json`.
+4. Run `commands/lib/step-transition.sh "{name}"` to evaluate gate.
+5. Present gate results to user.
+6. If gate passes and user approves: advance to next step.
+7. Regenerate `summary.md` via `commands/lib/generate-summary.sh "{name}"`.
+8. Git commit `.work/{name}/` with message: `chore: checkpoint {name} at {step}`.
+9. After transition: run `commands/lib/auto-advance.sh "{name}"`.
+
+## Output
+
+Confirmation with: current step, step_status, deliverable progress, artifact paths.
