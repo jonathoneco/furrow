@@ -91,14 +91,11 @@ Focused+dormant model via `.work/.focused` file. 4 new functions in `hooks/lib/c
 all hooks scoped, `--switch` flag on `/work`, `--all` flag on `/status`. 7 commits, 12 files.
 Merged to main.
 
-### Track 2c: T7 — Roadmap Process
+### Track 2c: T7 — Roadmap Process — DONE
 
-**Work description**: Build a `/work-roadmap` command that reads `todos.yaml` and produces prioritized ROADMAP.md. Triage (urgency/impact/effort/dependencies), group into candidate work units, sequence by dependency graph, output ordered plan startable via `/work`.
-
-**Branch**: `work/roadmap-process`
-**Key files**: New command files + templates. Reads `todos.yaml` (not the old `TODOS.md`).
-**Depends on**: T6 (done — `todos.yaml` and schema now exist).
-**Conflict risk**: None — new files only, no overlap with T5 or T8.
+Added `/work-roadmap` command with triage script (`scripts/triage-todos.sh` — Kahn's algorithm),
+template system (`templates/roadmap.md.tmpl`), todos.yaml schema extension (7 triage fields),
+and `definition.schema.json` sync fix. Merged to main (`1f721ce`).
 
 ---
 
