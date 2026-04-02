@@ -74,13 +74,9 @@ Edge-case integration test gaps captured in TODO 10.
 
 Fixed 7 research-flow bugs (`6874c1a`), archived. Merged to main.
 
-### Track 1c: T4 — Specialist Template Rewrite
+### Track 1c: T4 — Specialist Template Rewrite — DONE
 
-**Work description**: Rewrite `api-designer.md`, `database-architect.md`, and `test-engineer.md` to match the reasoning-focused format of `harness-engineer.md`. Each specialist gets: Domain Expertise, How This Specialist Reasons (5-8 patterns), Quality Criteria, Anti-Patterns, Context Requirements.
-
-**Branch**: `work/specialist-rewrite`
-**Key files**: `specialists/api-designer.md`, `specialists/database-architect.md`, `specialists/test-engineer.md`
-**Conflict risk**: None — fully isolated directory, no shared dependencies.
+Rewrote 3 specialist templates with reasoning-focused format (`2082f57`). Merged to main.
 
 ### Track 1d: T6 — Formalize TODOS Workflow — DONE
 
