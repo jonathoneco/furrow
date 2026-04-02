@@ -6,7 +6,7 @@
 #   name            — work unit name (kebab-case)
 #   boundary        — format: "{from}->{to}" (e.g., "ideate->research")
 #   outcome         — "pass" | "fail" | "conditional"
-#   decided_by      — "human" | "evaluator" | "auto-advance"
+#   decided_by      — "manual" | "evaluated" | "prechecked"
 #   evidence        — one-line summary of proof or path to gate file
 #   conditions_json — JSON array of strings, required when outcome is "conditional"
 #
@@ -87,9 +87,9 @@ esac
 # --- validate decided_by ---
 
 case "${decided_by}" in
-  human|evaluator|auto-advance) ;;
+  manual|evaluated|prechecked) ;;
   *)
-    echo "Invalid decided_by: '${decided_by}'. Must be 'human', 'evaluator', or 'auto-advance'." >&2
+    echo "Invalid decided_by: '${decided_by}'. Must be 'manual', 'evaluated', or 'prechecked'." >&2
     exit 3
     ;;
 esac

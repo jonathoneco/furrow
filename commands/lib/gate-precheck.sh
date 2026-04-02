@@ -1,14 +1,18 @@
 #!/bin/sh
-# auto-advance.sh — Auto-advance detection for trivially resolved steps
+# gate-precheck.sh — Structural pre-filter for gate evaluation
 #
-# Usage: auto-advance.sh <step> <definition_path> <state_path>
+# Checks structural preconditions to determine if a step is eligible for
+# pre-step evaluation. This is a hint, not a decision — the isolated
+# subagent evaluator makes the actual triviality judgment.
+#
+# Usage: gate-precheck.sh <step> <definition_path> <state_path>
 #   step            — current step name
 #   definition_path — path to definition.yaml
 #   state_path      — path to state.json
 #
 # Exit codes:
-#   0 — should auto-advance (evidence on stdout)
-#   1 — should NOT auto-advance
+#   0 — structural preconditions met (evidence on stdout)
+#   1 — structural preconditions NOT met
 
 set -eu
 
@@ -51,30 +55,31 @@ esac
 
 case "${step}" in
   research)
-    # Never auto-advance research in research mode
+    # Research mode always needs research — never skip
     if [ "${mode}" = "research" ]; then
       exit 1
     fi
-    # Must be exactly 1 deliverable
+    # Single deliverable: no multi-deliverable coordination needed
     if [ "${deliv_count}" -ne 1 ]; then
       exit 1
     fi
-    # Acceptance criteria must reference specific files (path-like strings)
-    has_paths="$(yq -r '.deliverables[0].acceptance_criteria[]' "${def_path}" 2>/dev/null | grep -cE '[/.]\w+' || true)"
+    # ACs must reference file paths (require / to distinguish from method names)
+    has_paths="$(yq -r '.deliverables[0].acceptance_criteria[]' "${def_path}" 2>/dev/null | grep -cE '/\w+' || true)"
     if [ "${has_paths}" -eq 0 ]; then
       exit 1
     fi
-    # Context pointers must not reference directories (only files)
+    # Context pointers must not reference directories (only specific files)
     has_dirs="$(yq -r '.context_pointers[].path' "${def_path}" 2>/dev/null | grep -cE '/$' || true)"
     if [ "${has_dirs}" -gt 0 ]; then
       exit 1
     fi
-    first_file="$(yq -r '.deliverables[0].acceptance_criteria[0]' "${def_path}" 2>/dev/null | grep -oE '[^ ]*[/.]\w+' | head -1)"
-    echo "Single deliverable targeting known location (${first_file}); no architectural unknowns"
+    first_file="$(yq -r '.deliverables[0].acceptance_criteria[0]' "${def_path}" 2>/dev/null | grep -oE '[^ ]*/\w+' | head -1)"
+    echo "Single deliverable targeting known location (${first_file}); structural preconditions met for pre-step evaluation"
     exit 0
     ;;
 
   plan)
+    # Single deliverable with no dependencies: no parallelism to plan
     if [ "${deliv_count}" -ne 1 ]; then
       exit 1
     fi
@@ -82,11 +87,13 @@ case "${step}" in
     if [ "${deps}" -gt 0 ]; then
       exit 1
     fi
-    echo "Single deliverable, no dependencies, no parallelism -- plan adds no information beyond definition"
+    echo "Single deliverable, no dependencies -- structural preconditions met for pre-step evaluation"
     exit 0
     ;;
 
   spec)
+    # Single deliverable with enough ACs to be structurally complete
+    # Testability is judged by the evaluator, not regex — see evals/gates/spec.yaml
     if [ "${deliv_count}" -ne 1 ]; then
       exit 1
     fi
@@ -94,30 +101,26 @@ case "${step}" in
     if [ "${ac_count}" -lt 2 ]; then
       exit 1
     fi
-    # Check if criteria are testable (contain action verbs, numbers, or paths)
-    testable="$(yq -r '.deliverables[0].acceptance_criteria[]' "${def_path}" 2>/dev/null | grep -ciE '(returns|enforces|validates|creates|contains|must|shall|[0-9]+|[/.]\w+)' || true)"
-    if [ "${testable}" -lt "${ac_count}" ]; then
-      exit 1
-    fi
-    echo "Single deliverable with ${ac_count} testable acceptance criteria; spec adds no refinement beyond definition"
+    echo "Single deliverable with ${ac_count} acceptance criteria -- structural preconditions met for pre-step evaluation"
     exit 0
     ;;
 
   decompose)
+    # Few deliverables, no dependencies, same specialist: single wave is obvious
     if [ "${deliv_count}" -gt 2 ]; then
       exit 1
     fi
-    # Check if all deliverables have no depends_on
+    # No inter-deliverable dependencies
     has_deps="$(yq -r '[.deliverables[] | select(.depends_on != null and (.depends_on | length) > 0)] | length' "${def_path}" 2>/dev/null)" || has_deps="0"
     if [ "${has_deps}" -gt 0 ]; then
       exit 1
     fi
-    # Check specialist diversity
+    # All deliverables use the same specialist type
     specialist_count="$(yq -r '[.deliverables[].specialist // "default"] | unique | length' "${def_path}" 2>/dev/null)" || specialist_count="1"
     if [ "${specialist_count}" -gt 1 ]; then
       exit 1
     fi
-    echo "Single wave, ${deliv_count} deliverable(s), no dependency ordering needed -- decomposition is trivial"
+    echo "Single wave, ${deliv_count} deliverable(s), no dependencies -- structural preconditions met for pre-step evaluation"
     exit 0
     ;;
 

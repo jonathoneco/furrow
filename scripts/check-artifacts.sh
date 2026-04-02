@@ -1,7 +1,7 @@
 #!/bin/sh
-# run-eval.sh — Deterministic eval runner for deliverable review
+# check-artifacts.sh — Phase A deterministic artifact checks for deliverable review
 #
-# Usage: run-eval.sh <name> <deliverable>
+# Usage: check-artifacts.sh <name> <deliverable>
 #   name        — work unit name (kebab-case)
 #   deliverable — deliverable name to evaluate
 #
@@ -152,305 +152,45 @@ if [ "$phase_a_check" -gt 0 ]; then
 fi
 
 # =====================================================================
-# Phase B — Dimension evaluation
+# Write Phase A results JSON
 # =====================================================================
-
-# B1: Get dimension file path
-dim_path="$("$SCRIPT_DIR/select-dimensions.sh" "$name")" || {
-  echo "Error: failed to select dimensions for '${name}'" >&2
-  exit 2
-}
-
-# B2: Read dimensions from YAML
-dim_names="$(yq -r '.dimensions[].name' "$dim_path")"
-
-# B3: Evaluate each dimension
-phase_b_dims="[]"
-phase_b_verdict="pass"
-
-# Gather git diff data once for reuse
-owned_diff_files=""
-all_diff_files=""
-if [ "$mode" = "code" ] && [ -n "$base_commit" ] && [ "$base_commit" != "null" ]; then
-  all_diff_files="$(git diff --name-only "${base_commit}..HEAD" 2>/dev/null)" || all_diff_files=""
-
-  if [ "$file_ownership" != "[]" ]; then
-    _globs_tmp="${_eval_tmpdir}/globs_owned"
-    echo "$file_ownership" | jq -r '.[]' 2>/dev/null > "$_globs_tmp" || true
-    while IFS= read -r glob_pattern; do
-      matches="$(git diff --name-only "${base_commit}..HEAD" -- "$glob_pattern" 2>/dev/null)" || matches=""
-      owned_diff_files="$(printf '%s\n%s' "$owned_diff_files" "$matches")"
-    done < "$_globs_tmp"
-    owned_diff_files="$(echo "$owned_diff_files" | sed '/^$/d' | sort -u)"
-  fi
-fi
-
-_dims_tmp="${_eval_tmpdir}/dims"
-printf '%s\n' "$dim_names" > "$_dims_tmp"
-while IFS= read -r dim; do
-  verdict="skipped"
-  evidence="requires evaluator"
-
-  case "$dim" in
-    correctness)
-      # Check git diff non-empty for owned files
-      if [ "$mode" = "code" ]; then
-        if [ -n "$owned_diff_files" ]; then
-          verdict="pass"
-          evidence="owned files have changes"
-        elif [ -n "$all_diff_files" ] && [ "$file_ownership" = "[]" ]; then
-          verdict="pass"
-          evidence="changes detected (no file_ownership defined)"
-        else
-          verdict="fail"
-          evidence="no changes detected for owned files"
-          phase_b_verdict="fail"
-        fi
-      else
-        if [ "$artifacts_present" = "true" ]; then
-          verdict="pass"
-          evidence="deliverable artifacts present"
-        else
-          verdict="fail"
-          evidence="no deliverable artifacts found"
-          phase_b_verdict="fail"
-        fi
-      fi
-      ;;
-
-    test-coverage)
-      # Check if test files exist in file_ownership patterns
-      has_tests="false"
-      if [ "$file_ownership" != "[]" ]; then
-        _tc_tmp="${_eval_tmpdir}/globs_tc"
-        echo "$file_ownership" | jq -r '.[]' 2>/dev/null > "$_tc_tmp" || true
-        while IFS= read -r glob_pattern; do
-          case "$glob_pattern" in
-            *test*|*Test*|*spec*|*Spec*)
-              has_tests="true"
-              break
-              ;;
-          esac
-        done < "$_tc_tmp"
-      fi
-      if [ "$has_tests" = "true" ]; then
-        verdict="pass"
-        evidence="test file patterns found in file_ownership"
-      else
-        verdict="fail"
-        evidence="no test file patterns in file_ownership"
-        phase_b_verdict="fail"
-      fi
-      ;;
-
-    unplanned-changes)
-      # Compare git diff files against file_ownership globs
-      if [ "$mode" = "code" ] && [ -n "$all_diff_files" ] && [ "$file_ownership" != "[]" ]; then
-        # Collect all files matching ownership globs
-        _uc_globs="${_eval_tmpdir}/uc_globs"
-        _uc_owned="${_eval_tmpdir}/uc_owned"
-        _uc_diff="${_eval_tmpdir}/uc_diff"
-        echo "$file_ownership" | jq -r '.[]' 2>/dev/null > "$_uc_globs" || true
-        while IFS= read -r glob_pattern; do
-          git diff --name-only "${base_commit}..HEAD" -- "$glob_pattern" 2>/dev/null >> "$_uc_owned" || true
-        done < "$_uc_globs"
-        sort -u -o "$_uc_owned" "$_uc_owned"
-
-        # Find files in diff but not in owned set (exclude .work/ files)
-        printf '%s\n' "$all_diff_files" | grep -v '^\.work/' | sort -u > "$_uc_diff" || true
-        if [ -s "$_uc_owned" ]; then
-          unplanned="$(grep -Fxv -f "$_uc_owned" "$_uc_diff" | paste -sd', ')" || unplanned=""
-        else
-          unplanned="$(paste -sd', ' "$_uc_diff")" || unplanned=""
-        fi
-
-        if [ -z "$unplanned" ]; then
-          verdict="pass"
-          evidence="all changed files within file_ownership"
-        else
-          verdict="fail"
-          evidence="unplanned files: ${unplanned}"
-          phase_b_verdict="fail"
-        fi
-      else
-        verdict="pass"
-        evidence="no file_ownership defined or no diff to compare"
-      fi
-      ;;
-
-    spec-compliance)
-      # Check owned files modified
-      if [ "$mode" = "code" ]; then
-        if [ -n "$owned_diff_files" ]; then
-          verdict="pass"
-          evidence="owned files modified per spec"
-        elif [ -n "$all_diff_files" ] && [ "$file_ownership" = "[]" ]; then
-          verdict="pass"
-          evidence="changes detected (no file_ownership defined)"
-        else
-          verdict="fail"
-          evidence="no owned files modified"
-          phase_b_verdict="fail"
-        fi
-      else
-        if [ "$artifacts_present" = "true" ]; then
-          verdict="pass"
-          evidence="deliverable artifacts present"
-        else
-          verdict="fail"
-          evidence="no deliverable artifacts found"
-          phase_b_verdict="fail"
-        fi
-      fi
-      ;;
-
-    # --- Research-mode dimensions (deterministic where possible) ---
-
-    coverage)
-      # Research: check deliverable files address acceptance criteria
-      if [ "$mode" = "research" ] && [ "$artifacts_present" = "true" ]; then
-        verdict="pass"
-        evidence="deliverable artifacts present; AC coverage requires evaluator"
-      elif [ "$artifacts_present" = "false" ]; then
-        verdict="fail"
-        evidence="no deliverable artifacts found"
-        phase_b_verdict="fail"
-      else
-        verdict="skipped"
-        evidence="requires evaluator"
-      fi
-      ;;
-
-    evidence-basis)
-      # Research: check for citation markers in deliverable files
-      if [ "$mode" = "research" ] && [ "$artifacts_present" = "true" ]; then
-        unverified_count="0"
-        for f in "${work_dir}/deliverables"/*; do
-          [ -f "$f" ] || continue
-          count="$(grep -c '\[unverified\]' "$f" 2>/dev/null)" || count="0"
-          unverified_count=$((unverified_count + count))
-        done
-        if [ "$unverified_count" -gt 0 ]; then
-          verdict="fail"
-          evidence="${unverified_count} [unverified] markers found in deliverables"
-          phase_b_verdict="fail"
-        else
-          verdict="pass"
-          evidence="no [unverified] markers found; full citation check requires evaluator"
-        fi
-      else
-        verdict="skipped"
-        evidence="requires evaluator"
-      fi
-      ;;
-
-    synthesis-quality|internal-consistency|actionability)
-      # These research dimensions require qualitative LLM evaluation
-      if [ "$mode" = "research" ] && [ "$artifacts_present" = "true" ]; then
-        verdict="pass"
-        evidence="artifacts present; qualitative assessment requires evaluator"
-      elif [ "$mode" = "research" ] && [ "$artifacts_present" = "false" ]; then
-        verdict="fail"
-        evidence="no deliverable artifacts found"
-        phase_b_verdict="fail"
-      else
-        verdict="skipped"
-        evidence="requires evaluator"
-      fi
-      ;;
-
-    outline-completeness|evidence-requirements|testability|structure-rationale)
-      # Research spec dimensions — require evaluator for quality assessment
-      if [ "$mode" = "research" ] && [ "$artifacts_present" = "true" ]; then
-        verdict="pass"
-        evidence="spec artifacts present; quality assessment requires evaluator"
-      elif [ "$mode" = "research" ] && [ "$artifacts_present" = "false" ]; then
-        verdict="fail"
-        evidence="no spec artifacts found"
-        phase_b_verdict="fail"
-      else
-        verdict="skipped"
-        evidence="requires evaluator"
-      fi
-      ;;
-
-    specificity|contradiction-check)
-      # Research step evaluation dimensions
-      verdict="skipped"
-      evidence="requires evaluator"
-      ;;
-
-    *)
-      # All other dimensions: skip for deterministic eval
-      verdict="skipped"
-      evidence="requires evaluator"
-      ;;
-  esac
-
-  # Append dimension result
-  phase_b_dims="$(echo "$phase_b_dims" | jq \
-    --arg name "$dim" \
-    --arg verdict "$verdict" \
-    --arg evidence "$evidence" \
-    '. + [{name: $name, verdict: $verdict, evidence: $evidence}]')"
-done < "$_dims_tmp"
-
-# =====================================================================
-# Compose review result
-# =====================================================================
-
-overall="pass"
-if [ "$phase_a_verdict" != "pass" ] || [ "$phase_b_verdict" != "pass" ]; then
-  overall="fail"
-fi
-
-now="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
 mkdir -p "$reviews_dir"
-tmp_file="${reviews_dir}/${deliverable}.json.tmp.$$"
+phase_a_file="${reviews_dir}/phase-a-results.json"
+tmp_file="${phase_a_file}.tmp.$$"
 
 jq -n \
   --arg deliverable "$deliverable" \
   --argjson artifacts_present "$artifacts_present" \
   --argjson acceptance_criteria "$phase_a_ac" \
   --arg phase_a_verdict "$phase_a_verdict" \
-  --argjson dimensions "$phase_b_dims" \
-  --arg phase_b_verdict "$phase_b_verdict" \
-  --arg overall "$overall" \
-  --arg timestamp "$now" \
+  --arg mode "$mode" \
+  --arg base_commit "$base_commit" \
+  --argjson file_ownership "$file_ownership" \
+  --arg timestamp "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
   '{
     deliverable: $deliverable,
-    phase_a: {
-      artifacts_present: $artifacts_present,
-      acceptance_criteria: $acceptance_criteria,
-      plan_completion: { planned_files_touched: $artifacts_present, unplanned_changes: [] },
-      verdict: $phase_a_verdict
-    },
-    phase_b: {
-      dimensions: $dimensions,
-      verdict: $phase_b_verdict
-    },
-    overall: $overall,
-    corrections: 0,
-    reviewer: "run-eval",
-    cross_model: false,
+    artifacts_present: $artifacts_present,
+    acceptance_criteria: $acceptance_criteria,
+    verdict: $phase_a_verdict,
+    mode: $mode,
+    base_commit: $base_commit,
+    file_ownership: $file_ownership,
     timestamp: $timestamp
   }' > "$tmp_file"
 
 # Atomic write
-mv "$tmp_file" "${reviews_dir}/${deliverable}.json"
+mv "$tmp_file" "$phase_a_file"
 
-echo "Review written: ${reviews_dir}/${deliverable}.json" >&2
+echo "Phase A results written: ${phase_a_file}" >&2
 
-# --- gate evaluation ---
+# Output path on stdout for consumption by run-gate.sh
+echo "$phase_a_file"
 
-gate_output="$("$SCRIPT_DIR/evaluate-gate.sh" "$name" "implement->review" "$overall")"
-echo "$gate_output"
-
-# --- exit code ---
-
-if [ "$overall" = "pass" ]; then
+# Exit code reflects Phase A verdict
+if [ "$phase_a_verdict" = "pass" ]; then
   exit 0
 else
   exit 1
 fi
+

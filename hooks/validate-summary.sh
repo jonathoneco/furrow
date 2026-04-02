@@ -38,10 +38,10 @@ if [ ! -f "${summary_file}" ]; then
   exit 0
 fi
 
-# --- skip if last gate was auto-advance ---
+# --- skip if last gate was prechecked (pre-step evaluation skipped the step) ---
 
 last_decided="$(jq -r '.gates | last | .decided_by // ""' "${state_file}" 2>/dev/null)" || last_decided=""
-if [ "${last_decided}" = "auto-advance" ]; then
+if [ "${last_decided}" = "prechecked" ]; then
   exit 0
 fi
 

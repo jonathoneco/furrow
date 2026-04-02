@@ -101,7 +101,7 @@
           },
           "decided_by": {
             "type": "string",
-            "enum": ["human", "evaluator", "auto-advance"]
+            "enum": ["manual", "evaluated", "prechecked"]
           },
           "evidence": {
             "type": "string",
