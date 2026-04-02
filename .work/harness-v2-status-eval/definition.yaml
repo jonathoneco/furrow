@@ -60,15 +60,12 @@ deliverables:
   - name: phase-two-capabilities
     acceptance_criteria:
       - generate-plan.sh produces valid plan.json from definition.yaml
-      - dispatch-wave.sh generates specialist prompt files per wave
-      - build-specialist-prompt.sh assembles context-seeded prompts
-      - correction-limit.sh blocks after N consecutive failures
+      - correction-limit.sh blocks after N consecutive failures per deliverable
+      - check-wave-conflicts.sh wired into step-transition at implement->review
     depends_on:
       - phase-one-wiring
     file_ownership:
       - scripts/generate-plan.sh
-      - scripts/dispatch-wave.sh
-      - scripts/build-specialist-prompt.sh
       - hooks/correction-limit.sh
 
   - name: phase-three-quality

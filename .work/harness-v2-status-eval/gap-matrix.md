@@ -6,7 +6,7 @@
 |---|-----------------|---------------------------|--------|
 | 1 | **Convention Layer, Not Engine** — harness defines WHAT, not reimplements platform | `_rationale.yaml` (deletion conditions), thin adapters, no agent loop/state machine/tool manager | **Implemented** — architecture correctly avoids platform reimplementation. ~23 core files, all declarative/convention. |
 | 2 | **Dual-Runtime Abstraction** — declarative layer above both Claude Code and Agent SDK | `adapters/claude-code/`, `adapters/agent-sdk/`, `adapters/shared/` | **Partial** — Claude Code adapter is production-ready (progressive-loading.yaml, skills, hooks). Agent SDK adapter has config.py + state_mutation.py functional, but coordinator/specialist/reviewer templates are stubs. |
-| 3 | **Eval-First: Evals Define Behavior** — eval is source of truth, not prose | `evals/dimensions/` (8 dimension YAMLs), `skills/shared/eval-protocol.md`, review skill Phase A/B | **Partial** — Evaluation dimensions exist with binary pass/fail criteria. No eval runner, no LLM-judge runner, no calibration system. Evals are human-interpreted rubrics, not automated. |
+| 3 | **Eval-First: Evals Define Behavior** — eval is source of truth, not prose | `evals/dimensions/` (7 dimension YAMLs), `skills/shared/eval-protocol.md`, review skill Phase A/B | **Partial** — Evaluation dimensions exist with binary pass/fail criteria. No eval runner, no LLM-judge runner, no calibration system. Evals are human-interpreted rubrics, not automated. |
 | 4 | **Context Tiers Map to Management Mechanisms** — ambient > work > session | CLAUDE.md (ambient <=100 lines), `skills/work-context.md` (work <=150 lines), `skills/{step}.md` (step <=50 lines), `scripts/measure-context.sh` | **Implemented** — three tiers with explicit budgets, progressive loading via `adapters/claude-code/progressive-loading.yaml`, post-compaction hook for recovery. |
 | 5 | **Generator-Evaluator Separation** — self-review fails, structural separation works | `specialists/` templates, review skill (Phase A/B), cross-model config in `harness.yaml` | **Partial** — Architecture supports separation (review is a distinct step with separate agents). But no mechanism to enforce fresh-context or different-model for evaluator. Cross-model config exists in harness.yaml but nothing reads/uses it at runtime. |
 | 6 | **Outcome-Based Decomposition** — define WHAT + WHEN, not HOW | `schemas/definition.schema.json` (deliverables with acceptance_criteria), `skills/decompose.md` (wave planning) | **Implemented** — definition schema enforces deliverable-level acceptance criteria. Decompose skill produces wave-based execution plans. |
@@ -59,7 +59,7 @@
 | Phase 2 Spec | What Exists | What's Missing |
 |--------------|-------------|----------------|
 | Hook/Callback Set | 12 hooks implemented | Hooks don't call existing validators (e.g., `validate_plan_json` exists but `step-transition.sh` never calls it) |
-| Eval Infrastructure | 8 dimension YAMLs | No eval runner, no LLM-judge, dimensions are inert rubrics |
+| Eval Infrastructure | 7 dimension YAMLs | No eval runner, no LLM-judge, dimensions are inert rubrics |
 | Multi-Agent Templates | 3 specialist templates, coordinator skeleton | No team composition derivation, no wave executor, no context seeding automation. Coordinator has 15+ TODOs. |
 | Dual-Runtime Adapters | CC adapter complete, Agent SDK has config.py | Agent SDK templates are stubs. Schemas exist in adapters/shared/ but aren't linked to main validation pipeline. |
 

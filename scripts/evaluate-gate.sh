@@ -29,8 +29,16 @@ fi
 from_step=$(echo "$boundary" | sed 's/->.*//')
 to_step=$(echo "$boundary" | sed 's/.*->//')
 
-# Uppercase the evaluator verdict
+# Validate and uppercase the evaluator verdict
 verdict_upper="$(echo "$evaluator_verdict" | tr '[:lower:]' '[:upper:]')"
+case "$verdict_upper" in
+  PASS|FAIL|CONDITIONAL) ;;
+  *)
+    echo "Invalid evaluator verdict: '${evaluator_verdict}'. Must be pass, fail, or conditional." >&2
+    echo "WAIT_FOR_HUMAN"
+    exit 0
+    ;;
+esac
 
 case "$gate_policy" in
   supervised)

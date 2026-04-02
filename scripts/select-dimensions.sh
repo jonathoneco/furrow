@@ -1,4 +1,18 @@
 #!/bin/sh
+# select-dimensions.sh — Return the correct eval dimension file path by mode and step
+#
+# Usage: select-dimensions.sh <name>
+#   Outputs absolute path to evals/dimensions/{file}.yaml on stdout.
+#
+# Routing logic (from references/research-mode.md):
+#   research mode + implement step → research-implement.yaml
+#   research mode + spec step     → research-spec.yaml
+#   all other combinations        → {step}.yaml
+#
+# Exit codes:
+#   0 — success (path on stdout)
+#   2 — state.json not found
+#   3 — dimension file not found
 set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"

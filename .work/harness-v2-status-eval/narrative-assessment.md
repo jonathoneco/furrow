@@ -34,7 +34,7 @@ The v2 harness has successfully built the **structural foundation** — the conv
 
 **Research said**: Eval is the source of truth. Eval + description + prompt (optimized against eval). No separate prose spec.
 
-**Implementation delivers**: Eight evaluation dimension YAML files exist with binary pass/fail criteria per step. The review skill defines a Phase A (artifact validation) + Phase B (quality review) pipeline. The `skills/shared/eval-protocol.md` provides evaluator guidelines.
+**Implementation delivers**: Seven evaluation dimension YAML files exist with binary pass/fail criteria per step. The review skill defines a Phase A (artifact validation) + Phase B (quality review) pipeline. The `skills/shared/eval-protocol.md` provides evaluator guidelines.
 
 **Gap**: This is the widest deviation from research intent. The research envisioned:
 - An **eval runner** that executes evaluations automatically

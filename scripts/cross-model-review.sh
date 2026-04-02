@@ -57,7 +57,7 @@ if [ ! -f "$definition_file" ]; then
   exit 2
 fi
 
-criteria="$(yq -r ".deliverables[] | select(.name == \"${deliverable}\") | .acceptance_criteria[]" "$definition_file" | sed 's/^/- /')"
+criteria="$(yq -r --arg name "${deliverable}" '.deliverables[] | select(.name == $name) | .acceptance_criteria[]' "$definition_file" | sed 's/^/- /')"
 if [ -z "$criteria" ]; then
   echo "Error: no acceptance criteria found for deliverable '${deliverable}'" >&2
   exit 2
@@ -162,7 +162,7 @@ jq -n \
   --arg ts "$timestamp" \
   '{
     deliverable: $deliverable,
-    phase_a: { artifacts_present: true, acceptance_criteria: [], verdict: "pass" },
+    phase_a: { artifacts_present: true, acceptance_criteria: [], plan_completion: { planned_files_touched: true, unplanned_changes: false }, verdict: "pass" },
     phase_b: { dimensions: $dims, verdict: $overall },
     overall: $overall,
     corrections: 0,
