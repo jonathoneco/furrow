@@ -1,0 +1,83 @@
+objective: >
+  Formalize TODO tracking as an integral part of the work harness workflow —
+  a standalone command for creating and extracting TODOs, archive integration
+  for ensuring nothing is forgotten, structured YAML storage for downstream
+  consumption by roadmap and triage tools, and explicit TODO-to-work-unit
+  linkage for lifecycle tracking.
+
+deliverables:
+  - name: todos-yaml-schema
+    acceptance_criteria:
+      - "YAML schema for todos.yaml defined in adapters/shared/schemas/"
+      - "Schema supports: id (slug), title, context, work_needed, risks, references (list of paths), source_work_unit (optional), created_at, updated_at"
+      - "Validation script exists and passes on current TODOS content migrated to YAML"
+    file_ownership:
+      - "adapters/shared/schemas/todos.schema.yaml"
+      - "scripts/validate-todos.sh"
+
+  - name: extract-candidates-script
+    acceptance_criteria:
+      - "scripts/extract-todo-candidates.sh reads summary.md, learnings.jsonl, reviews/*.json"
+      - "Outputs JSON array of candidate objects with source, title, context, raw_content fields"
+      - "Tolerant of missing sources — returns empty array for absent files"
+      - "Tolerant of malformed sources — skips bad lines, does not abort"
+    depends_on:
+      - todos-yaml-schema
+    file_ownership:
+      - "scripts/extract-todo-candidates.sh"
+
+  - name: work-todos-command
+    acceptance_criteria:
+      - "commands/work-todos.md defines standalone command with two modes: extract and new"
+      - "Extract mode: runs extraction script, agent reasons about dedup against existing todos.yaml, presents candidates with proposed action (add/merge/skip)"
+      - "New mode (--new): interactive refinement — agent works with user to clarify abstract idea into well-formed TODO entry"
+      - "Both modes write to todos.yaml at project root"
+    depends_on:
+      - extract-candidates-script
+    file_ownership:
+      - "commands/work-todos.md"
+
+  - name: archive-integration
+    acceptance_criteria:
+      - "commands/archive.md updated to invoke TODO extraction after promote-learnings ceremony"
+      - "Pruning ceremony: if archived work unit has source_todo in definition.yaml, propose marking that TODO resolved"
+      - "User confirms resolution with yes/no/partial"
+      - "Resolved TODOs removed from todos.yaml; partial adds a note"
+    depends_on:
+      - work-todos-command
+    file_ownership:
+      - "commands/archive.md"
+
+  - name: migrate-existing-todos
+    acceptance_criteria:
+      - "Current TODOS.md content migrated to todos.yaml format"
+      - "Each entry has a stable slug id"
+      - "Validates against the new schema"
+      - "TODOS.md replaced or removed"
+    depends_on:
+      - todos-yaml-schema
+    file_ownership:
+      - "todos.yaml"
+
+context_pointers:
+  - path: "TODOS.md"
+    note: "Current manual TODOS — migration source"
+  - path: "commands/archive.md"
+    note: "Archive ceremony — integration point for extraction and pruning"
+  - path: "commands/lib/promote-learnings.sh"
+    note: "Pattern for extract-present-confirm ceremony"
+  - path: ".work/review-impl-scripts/learnings.jsonl"
+    note: "Example learnings.jsonl with 5 entries — extraction test fixture"
+  - path: ".work/harness-v2-status-eval/reviews/"
+    note: "Example review JSON files — extraction test fixture"
+  - path: "adapters/shared/schemas/definition.schema.yaml"
+    note: "Schema pattern to follow for todos.schema.yaml"
+
+constraints:
+  - "todos.yaml is the single source of truth — no parallel TODOS.md"
+  - "Extraction script is a dumb collector (JSON out); agent handles reasoning"
+  - "source_todo field in definition.yaml links work units back to TODO entries"
+  - "Three extraction sources only: summary.md, learnings.jsonl, reviews/*.json"
+  - "Forward-compatible with future task tracker IDs"
+
+gate_policy: supervised
