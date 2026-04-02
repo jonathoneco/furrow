@@ -1,0 +1,6 @@
+# Gate evaluation for the implement step.
+# Implement has post_step only — no pre_step gate.
+# Post-step references evals/dimensions/implement.yaml for quality evaluation.
+
+post_step:
+  dimensions_from: "evals/dimensions/implement.yaml"

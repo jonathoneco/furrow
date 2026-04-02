@@ -1,0 +1,29 @@
+# Gate evaluation for the ideation step.
+# Ideation has post_step only — no pre_step gate.
+# Dimensions are inline because no evals/dimensions/ideation.yaml exists.
+
+post_step:
+  dimensions:
+    - name: "completeness"
+      definition: "Whether definition.yaml has all required fields with valid values"
+      pass_criteria: "All required fields present: objective, deliverables (min 1, each with name and acceptance_criteria), context_pointers (min 1), gate_policy. Deliverable names unique. depends_on references resolve. Enum values valid."
+      fail_criteria: "Any required field missing, invalid enum, duplicate deliverable names, or dangling depends_on reference"
+      evidence_format: "Cite which fields are present/missing and any invalid values"
+
+    - name: "alignment"
+      definition: "Whether the definition maps to the original user intent"
+      pass_criteria: "Objective clearly maps to original user intent. Each deliverable contributes to the objective. No deliverable is unrelated to the stated goal."
+      fail_criteria: "Objective diverges from user intent, or a deliverable has no connection to the stated goal"
+      evidence_format: "Cite objective text and user intent phrase"
+
+    - name: "feasibility"
+      definition: "Whether deliverables have testable acceptance criteria and bounded scope"
+      pass_criteria: "Each deliverable has testable acceptance criteria (contains a verb like 'returns', 'enforces', 'validates', or a numeric threshold, or a file path). Scope is actionable — no unbounded deliverables."
+      fail_criteria: "Acceptance criteria are vague ('improve UX', 'make faster') or deliverable scope is unbounded"
+      evidence_format: "Cite criteria text and assessment"
+
+    - name: "cross-model"
+      definition: "Whether cross-model or fresh-context review evidence exists"
+      pass_criteria: "Evidence of cross-model or fresh-context review exists. Review findings were incorporated or explicitly rejected with rationale."
+      fail_criteria: "No cross-model review evidence. Findings ignored without rationale."
+      evidence_format: "Cite review source and disposition of findings"

@@ -1,0 +1,14 @@
+# Gate evaluation for the research step.
+# Pre-step checks whether the research target is genuine.
+# Post-step references evals/dimensions/research.yaml for quality evaluation.
+
+pre_step:
+  dimensions:
+    - name: "path-relevance"
+      definition: "Whether AC file references are genuine work targets, not inserted to satisfy pre-step checks"
+      pass_criteria: "Every file path in acceptance_criteria exists in the codebase or is a plausible creation target consistent with the deliverable's purpose"
+      fail_criteria: "Any AC file path does not exist and is not a plausible creation target, or paths appear copied from an unrelated deliverable"
+      evidence_format: "List each AC file path with existence check result and relevance assessment"
+
+post_step:
+  dimensions_from: "evals/dimensions/research.yaml"

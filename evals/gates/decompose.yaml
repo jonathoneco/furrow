@@ -1,0 +1,14 @@
+# Gate evaluation for the decompose step.
+# Pre-step checks whether decomposition beyond a single wave is warranted.
+# Post-step references evals/dimensions/decompose.yaml for quality evaluation.
+
+pre_step:
+  dimensions:
+    - name: "wave-triviality"
+      definition: "Whether single-wave no-ordering decomposition is genuinely correct with no hidden dependencies"
+      pass_criteria: "All deliverables are truly independent (no shared files, no output-input chains, no ordering constraints) and a single wave with no depends_on is the correct decomposition"
+      fail_criteria: "Deliverables share file ownership, one deliverable's output is another's input, or ordering constraints exist that a single wave would violate"
+      evidence_format: "List each deliverable pair and their dependency relationship (shared files, data flow, or ordering constraint)"
+
+post_step:
+  dimensions_from: "evals/dimensions/decompose.yaml"

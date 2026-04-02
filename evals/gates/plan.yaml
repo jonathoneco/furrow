@@ -1,0 +1,14 @@
+# Gate evaluation for the plan step.
+# Pre-step checks whether the work genuinely needs a multi-wave plan.
+# Post-step references evals/dimensions/plan.yaml for quality evaluation.
+
+pre_step:
+  dimensions:
+    - name: "complexity-assessment"
+      definition: "Whether the work is genuinely simple enough that no architecture decisions beyond the definition are needed"
+      pass_criteria: "Work involves 3+ deliverables with cross-deliverable dependencies, OR requires architecture decisions not captured in definition.yaml, OR touches 3+ distinct subsystems"
+      fail_criteria: "Work is a single deliverable with no dependencies and no architecture decisions beyond what definition.yaml already specifies"
+      evidence_format: "List deliverable count, dependency graph, and architecture decisions required beyond the definition"
+
+post_step:
+  dimensions_from: "evals/dimensions/plan.yaml"
