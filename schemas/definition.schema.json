@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Work Definition",
   "description": "Schema for definition.yaml — the work contract for a V2 harness work unit.",
   "type": "object",

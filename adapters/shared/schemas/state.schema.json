@@ -12,8 +12,12 @@
     "steps_sequence",
     "deliverables",
     "gates",
+    "force_stop_at",
+    "branch",
     "mode",
     "base_commit",
+    "epic_id",
+    "issue_id",
     "created_at",
     "updated_at",
     "archived_at"
@@ -21,7 +25,7 @@
   "properties": {
     "name": {
       "type": "string",
-      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
       "description": "Kebab-case, matches directory name"
     },
     "title": {
@@ -136,7 +140,7 @@
       "properties": {
         "boundary": {
           "type": "string",
-          "pattern": "^[a-z]+(->[a-z]+)?$",
+          "pattern": "^[a-z]+->[a-z]+$",
           "description": "Format: {from_step}->{to_step}"
         },
         "outcome": {
@@ -162,7 +166,15 @@
           "format": "date-time"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "if": {
+        "properties": {
+          "outcome": { "const": "conditional" }
+        }
+      },
+      "then": {
+        "required": ["conditions"]
+      }
     }
   }
 }

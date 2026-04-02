@@ -36,13 +36,10 @@ if [ -f "$VALIDATE_LIB" ]; then
   # shellcheck source=lib/validate.sh
   . "$VALIDATE_LIB"
 
-  if ! validate_state_json "$state_file" 2>/tmp/harness_validation_$$; then
-    _val_errors="$(cat /tmp/harness_validation_$$ 2>/dev/null)" || _val_errors="unknown errors"
-    rm -f "/tmp/harness_validation_$$"
+  if ! _val_errors="$(validate_state_json "$state_file" 2>&1)"; then
     log_error "STATE CORRUPTION detected after compaction. Validation errors: $_val_errors"
     exit 1
   fi
-  rm -f "/tmp/harness_validation_$$"
 fi
 
 # Extract step context

@@ -20,6 +20,7 @@ Read before any file write or step transition. Each flag has a signal, risk, and
 |--------|------|--------|
 | Plan has no dependency ordering rationale | Ungrounded sequencing | Justify each wave boundary |
 | File ownership globs overlap between agents | Merge conflicts | Resolve overlaps before proceeding |
+| CC plan mode produced artifacts spanning spec+decompose+implement | Pipeline bypass — steps exist to produce distinct gated artifacts | Feed plan mode output into current step only; advance through remaining steps on rails |
 
 ## Spec
 | Signal | Risk | Action |

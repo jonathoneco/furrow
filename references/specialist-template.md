@@ -38,15 +38,20 @@ domain: "{domain description}"
 
 ## How Specialists Are Used
 
-1. `definition.yaml` assigns a specialist type per deliverable.
+1. `definition.yaml` assigns a specialist type per deliverable (required field).
 2. `decompose` step maps specialists to waves in `plan.json`.
-3. `implement` step spawns specialist agents with:
-   - The specialist template (Read instruction)
+3. `implement` step loads the specialist via one of two paths:
+   - **Solo work**: invoke the specialist as a skill (Skill tool) to load
+     domain framing into the current agent's context.
+   - **Multi-agent**: include the specialist template content in the Agent
+     tool's `prompt` parameter when dispatching a subagent. The specialist
+     framing becomes the subagent's identity from creation.
+4. In both paths, the agent also receives:
    - The deliverable's acceptance criteria from `definition.yaml`
    - The component spec from `specs/{deliverable}.md`
    - File ownership constraints from `plan.json`
-4. Specialist works within its file ownership boundaries.
-5. `review` step evaluates the specialist's output.
+5. Specialist works within its file ownership boundaries.
+6. `review` step evaluates the specialist's output.
 
 ## Naming Convention
 

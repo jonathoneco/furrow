@@ -56,12 +56,15 @@ if [ -z "$ownership_globs" ]; then
 fi
 
 _matched=0
+_IFS_SAVE="$IFS"
+IFS="$(printf '\n')"
 # shellcheck disable=SC2254
 for _glob in $ownership_globs; do
   case "$target_path" in
     $_glob) _matched=1; break ;;
   esac
 done
+IFS="$_IFS_SAVE"
 
 if [ "$_matched" -eq 0 ]; then
   log_warning "File write outside file_ownership: $target_path (assigned globs: $(echo "$ownership_globs" | tr '\n' ', ' | sed 's/,$//'))"

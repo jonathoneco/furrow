@@ -1,2 +1,6 @@
 # adapters/claude-code/ — Claude Code runtime adapter
-# See _rationale.yaml for component rationale.
+component: claude-code
+provides:
+  - commands (work)
+  - skills (gate-prompt, work-loader)
+  - progressive-loading config

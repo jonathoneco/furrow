@@ -10,6 +10,10 @@ components:
     exists_because: "Claude Code needs session-start detection of active work units"
     delete_when: "Claude Code provides native active-task detection and notification"
 
+  - path: .claude/settings.json
+    exists_because: "CC-3 requires hook registrations in settings.json with matcher-based filtering"
+    delete_when: "Claude Code provides built-in hook registration without settings.json"
+
   - path: .claude/harness.yaml
     exists_because: "Projects need a config file to customize harness behavior"
     delete_when: "Claude Code provides native project-level workflow configuration"
@@ -230,10 +234,6 @@ components:
   - path: evals/dimensions/implement.yaml
     exists_because: "Implementation artifacts need structured quality evaluation; no platform-native implement eval"
     delete_when: "Claude Code provides built-in implementation artifact quality evaluation"
-
-  - path: evals/_review-guidelines-staging.md
-    exists_because: "Staging file for evaluator guidelines content to be merged into skills/review.md"
-    delete_when: "Content has been merged into skills/review.md and this staging file is no longer needed"
 
   # --- Adapters ---
   - path: adapters/

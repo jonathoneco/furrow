@@ -97,7 +97,7 @@ while IFS= read -r line; do
 
   # --- check deduplication ---
   if [ -f "${project_file}" ]; then
-    exact_match="$(grep -cF "\"content\":\"${content}\"" "${project_file}" 2>/dev/null || true)"
+    exact_match="$(jq -r --arg c "${content}" 'select(.content == $c) | .content' "${project_file}" 2>/dev/null | wc -l)" || exact_match="0"
     if [ "${exact_match}" -gt 0 ]; then
       echo "[${line_num}/${line_count}] SKIP (duplicate): ${content}"
       continue

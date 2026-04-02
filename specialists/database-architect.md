@@ -1,3 +1,9 @@
+---
+name: database-architect
+description: Schema design, indexing, migrations, transaction handling
+type: specialist
+---
+
 # Database Architect Specialist
 
 ## Domain Expertise

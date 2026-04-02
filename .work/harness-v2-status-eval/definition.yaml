@@ -1,0 +1,115 @@
+objective: >
+  Evaluate the v2 harness implementation against research findings, then
+  fix the architectural gaps identified: step-artifact validation, mode/trust
+  gradient wiring, plan generation, specialist context seeding, eval runner,
+  and cross-model enforcement.
+
+deliverables:
+  - name: gap-matrix
+    acceptance_criteria:
+      - Maps all 8 research insights to implementation evidence
+      - Maps all 15 gap review behaviors to enforcement mechanism status
+      - Maps PLAN.md phases 1-6 to implementation coverage
+      - Each row includes planned item, artifact(s), and status
+    file_ownership:
+      - .work/harness-v2-status-eval/gap-matrix.md
+
+  - name: narrative-assessment
+    acceptance_criteria:
+      - One section per research insight (8 sections)
+      - Describes how implementation embodies or deviates from each insight
+      - Includes implementation-originated innovations section
+      - Assesses drift toward warned failure modes
+    depends_on:
+      - gap-matrix
+    file_ownership:
+      - .work/harness-v2-status-eval/narrative-assessment.md
+
+  - name: recommendations
+    acceptance_criteria:
+      - Prioritized list of what to build or fix next
+      - Identifies what to explicitly defer or drop
+      - Notes what is working well and should be preserved
+    depends_on:
+      - narrative-assessment
+    file_ownership:
+      - .work/harness-v2-status-eval/recommendations.md
+
+  - name: phase-one-wiring
+    acceptance_criteria:
+      - validate-step-artifacts.sh checks artifact existence per boundary
+      - step-transition.sh calls artifact validation before advancement
+      - init-work-unit.sh accepts --mode and --gate-policy flags
+      - select-dimensions.sh returns correct dimension path by mode and step
+      - evaluate-gate.sh routes gate decisions by trust level
+      - Schema symlinks connect adapter schemas to main schemas/
+      - Plan and spec templates exist in templates/
+    depends_on:
+      - recommendations
+    file_ownership:
+      - scripts/validate-step-artifacts.sh
+      - scripts/select-dimensions.sh
+      - scripts/evaluate-gate.sh
+      - schemas/plan.schema.json
+      - schemas/review-result.schema.json
+      - templates/plan.json
+      - templates/spec.md
+      - commands/lib/init-work-unit.sh
+      - commands/lib/step-transition.sh
+
+  - name: phase-two-capabilities
+    acceptance_criteria:
+      - generate-plan.sh produces valid plan.json from definition.yaml
+      - dispatch-wave.sh generates specialist prompt files per wave
+      - build-specialist-prompt.sh assembles context-seeded prompts
+      - correction-limit.sh blocks after N consecutive failures
+    depends_on:
+      - phase-one-wiring
+    file_ownership:
+      - scripts/generate-plan.sh
+      - scripts/dispatch-wave.sh
+      - scripts/build-specialist-prompt.sh
+      - hooks/correction-limit.sh
+
+  - name: phase-three-quality
+    acceptance_criteria:
+      - run-eval.sh performs deterministic checks and writes review results
+      - cross-model-review.sh produces cross-model review prompts
+      - Both use select-dimensions.sh for mode-aware dimension loading
+    depends_on:
+      - phase-two-capabilities
+    file_ownership:
+      - scripts/run-eval.sh
+      - scripts/cross-model-review.sh
+
+context_pointers:
+  - path: docs/research/findings-synthesis.md
+    note: Primary ground truth — 8 key insights
+  - path: docs/research/findings-gap-review.md
+    note: 15 behaviors and 12 gaps needing enforcement
+  - path: docs/architecture/PLAN.md
+    note: 6-phase plan with 19 specs
+  - path: skills/
+    note: Step-specific skill files
+  - path: hooks/
+    note: Enforcement hooks
+  - path: scripts/
+    note: Utility scripts
+  - path: schemas/
+    note: JSON schemas for state and definition
+  - path: evals/
+    note: Evaluation dimensions
+  - path: adapters/
+    note: Runtime adapters (claude-code, agent-sdk)
+  - path: commands/
+    note: User-facing command specs and lib scripts
+  - path: specialists/
+    note: Domain expert templates
+
+constraints:
+  - Evaluation deliverables in .work/harness-v2-status-eval/
+  - Implementation changes to harness scripts, schemas, templates, hooks
+  - CC plan mode is a within-step tool, not a step replacement
+
+gate_policy: delegated
+mode: code

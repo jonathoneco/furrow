@@ -71,6 +71,20 @@ After compaction or session break, read ONLY:
 
 NEVER re-read: raw research notes, previous handoff prompts, gate evidence, transcripts.
 
+## Platform Plan Mode
+
+CC plan mode (EnterPlanMode) is a tool for planning **within** the current step —
+not a replacement for steps or for the harness pipeline.
+
+Correct usage: plan mode coordinates the current step's execution (get clarity
+from the user, explore the codebase, design the approach for this step's work).
+
+Incorrect usage: plan mode produces artifacts that span or replace multiple
+harness steps (e.g., a single plan that covers spec + decompose + implement).
+
+Each harness step exists to produce a specific artifact with a specific gate.
+Plan mode helps you do the current step well. It does not skip steps.
+
 ## Step Skill Loading
 
 Each step has a skill at `skills/{step}.md`. Only the current step's skill is active.
@@ -114,3 +128,5 @@ Detailed protocols live in `references/` (NOT injected — read on demand):
 - `references/specialist-template.md` — specialist format
 - `references/definition-shape.md` — complexity mapping
 - `references/deduplication-strategy.md` — context dedup rules
+- `references/research-mode.md` — research mode conventions
+- `references/work-unit-layout.md` — directory layout conventions

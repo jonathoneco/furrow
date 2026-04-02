@@ -17,6 +17,7 @@
 set -eu
 
 # --- locate active work unit ---
+# Note: Inline work unit discovery (avoids common.sh dependency for hook isolation)
 
 work_dir=""
 for state_file in .work/*/state.json; do

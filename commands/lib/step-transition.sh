@@ -82,10 +82,27 @@ else
   }
 fi
 
+# --- 1b. Validate step artifacts (only on pass/conditional) ---
+
+if [ "${outcome}" != "fail" ]; then
+  "${scripts_dir}/validate-step-artifacts.sh" "${name}" "${boundary}" || {
+    echo "Artifact validation failed for ${boundary}. Gate recorded but advancement blocked." >&2
+    exit 4
+  }
+fi
+
 # --- handle fail: do not advance ---
 
 if [ "${outcome}" = "fail" ]; then
   "${scripts_dir}/update-state.sh" "${name}" '.step_status = "in_progress"'
+  # Increment correction count for all active deliverables during implement/review
+  case "${current_step}" in
+    implement|review)
+      "${scripts_dir}/update-state.sh" "${name}" \
+        '.deliverables |= with_entries(.value.corrections = ((.value.corrections // 0) + 1))' \
+        2>/dev/null || true
+      ;;
+  esac
   echo "Gate failed: ${boundary}. Step remains at ${current_step}."
   exit 0
 fi

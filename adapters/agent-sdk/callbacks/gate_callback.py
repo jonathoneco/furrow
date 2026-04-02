@@ -6,7 +6,10 @@ Implements gate decisions based on gate_policy:
 - supervised: raises — requires human interaction (use Claude Code adapter)
 """
 
+import logging
 from datetime import datetime, timezone
+
+logger = logging.getLogger("harness.gate")
 
 
 class SupervisedGateError(Exception):
@@ -80,7 +83,7 @@ def _autonomous_gate(
 
     if evaluator_verdict == "fail":
         # TODO: customize — implement notification for FAIL outcomes
-        print(f"GATE FAIL: {boundary} — {evidence}")
+        logger.warning(f"GATE FAIL: {boundary} — {evidence}")
 
     return record
 
@@ -97,15 +100,15 @@ def _delegated_gate(
     """
     # TODO: customize — implement supervisory agent confirmation
     # For now, accept evaluator verdict with supervisory logging
-    print(f"Delegated gate {boundary}: evaluator says {evaluator_verdict}")
-    print(f"  Evidence: {evidence}")
-    print("  Supervisory agent confirms verdict")
+    logger.info(f"Delegated gate {boundary}: evaluator says {evaluator_verdict}")
+    logger.info(f"  Evidence: {evidence}")
+    logger.info("  Supervisory agent confirms verdict")
 
     record = {
         "boundary": boundary,
         "outcome": evaluator_verdict,
         "decided_by": "evaluator",
-        "evidence": evidence,
+        "evidence": f"[delegated] {evidence}",
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
     if evaluator_verdict == "conditional" and conditions:

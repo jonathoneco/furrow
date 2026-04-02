@@ -133,7 +133,7 @@ class ReviewerAgent:
 
         TODO: customize — load from evals/dimensions/{artifact-type}.yaml
         """
-        dim_path = Path("evals/dimensions/implement.yaml")
+        dim_path = self.config.root / "evals" / "dimensions" / "implement.yaml"
         if dim_path.exists():
             # TODO: customize — parse YAML dimensions
             return [{"name": "correctness"}, {"name": "completeness"}]

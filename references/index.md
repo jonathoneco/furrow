@@ -14,6 +14,8 @@ a step skill or agent needs detailed protocol information.
 | Specialist agent template | `references/specialist-template.md` | decompose, implement |
 | Context deduplication rules | `references/deduplication-strategy.md` | Harness maintenance |
 | Work unit directory layout | `references/work-unit-layout.md` | All steps |
+| Research mode conventions | `references/research-mode.md` | research, decompose, implement, review |
+| Work unit meta annotations | `references/work-unit-meta.yaml` | harness-doctor, archive |
 
 ## Usage Pattern
 

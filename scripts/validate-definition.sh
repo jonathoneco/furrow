@@ -4,7 +4,7 @@
 # Usage: validate-definition.sh <path-to-definition.yaml>
 # Exit 0 on valid, 1 on errors. Reports all errors before exiting.
 
-set -e
+set -eu
 
 if [ $# -ne 1 ]; then
   echo "Usage: $0 <definition.yaml>" >&2
@@ -40,16 +40,16 @@ try:
 except ImportError:
     print('SKIP: jsonschema not installed', file=sys.stderr)
     sys.exit(0)
-with open('$SCHEMA_FILE') as f:
+with open(sys.argv[1]) as f:
     schema = json.load(f)
-with open('$json_tmp') as f:
+with open(sys.argv[2]) as f:
     instance = json.load(f)
 validator = Draft7Validator(schema)
 errs = sorted(validator.iter_errors(instance), key=lambda e: list(e.path))
 for e in errs:
     path = '.'.join(str(p) for p in e.absolute_path) or '(root)'
     print(f'Schema error at {path}: {e.message}')
-" 2>&1)
+" "$SCHEMA_FILE" "$json_tmp" 2>&1)
     if [ -n "$schema_errors" ]; then
       errors="${errors}${schema_errors}\n"
     fi
@@ -72,7 +72,7 @@ if command -v yq >/dev/null 2>&1; then
     done
 
     # Check dangling depends_on references
-    deps=$(yq -r '.deliverables[].depends_on[]? // empty' "$DEFINITION_FILE" 2>/dev/null)
+    deps=$(yq -r '.deliverables[].depends_on[]?' "$DEFINITION_FILE" 2>/dev/null) || deps=""
     for dep in $deps; do
       if ! echo "$names" | grep -qx "$dep"; then
         # Find which deliverable references this
@@ -88,11 +88,11 @@ try:
     import yaml
 except ImportError:
     # Fall back to yq for YAML parsing
-    result = subprocess.run(['yq', '-o=json', '.', '$DEFINITION_FILE'],
+    result = subprocess.run(['yq', '-o=json', '.', sys.argv[1]],
                           capture_output=True, text=True)
     data = json.loads(result.stdout)
 else:
-    with open('$DEFINITION_FILE') as f:
+    with open(sys.argv[1]) as f:
         data = yaml.safe_load(f)
 
 deliverables = data.get('deliverables', [])
@@ -128,7 +128,7 @@ def dfs(node):
 for node in graph:
     if color[node] == WHITE:
         dfs(node)
-" 2>&1)
+" "$DEFINITION_FILE" 2>&1)
     if [ -n "$cycle_errors" ]; then
       errors="${errors}${cycle_errors}\n"
     fi

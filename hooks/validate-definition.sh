@@ -1,4 +1,8 @@
 #!/bin/sh
+# Note: This hook provides lightweight yq-based validation for the Write|Edit
+# lifecycle. For full schema validation with JSON Schema and cycle detection,
+# see scripts/validate-definition.sh.
+#
 # validate-definition.sh — Validate definition.yaml against spec 00 SS1.1
 #
 # Usage: validate-definition.sh <path-to-definition.yaml>
@@ -11,16 +15,30 @@
 
 set -eu
 
-if [ "$#" -lt 1 ]; then
-  echo "Usage: validate-definition.sh <path-to-definition.yaml>" >&2
-  exit 1
+# --- hook input: read tool call JSON from stdin ---
+
+input="$(cat)"
+tool_name="$(echo "${input}" | jq -r '.tool_name // ""' 2>/dev/null)" || tool_name=""
+file_path="$(echo "${input}" | jq -r '.tool_input.file_path // .tool_input.filePath // ""' 2>/dev/null)" || file_path=""
+
+# Only validate when writing a definition.yaml file
+case "${file_path}" in
+  */definition.yaml) ;;
+  *) exit 0 ;;
+esac
+
+# For Write tool, the file may not exist yet — use the path from input
+# For Edit tool, the file should already exist
+def_file="${file_path}"
+
+# If it's a Write, definition.yaml is being created — skip validation
+# (the content hasn't been written yet when PreToolUse fires)
+if [ "${tool_name}" = "Write" ] && [ ! -f "${def_file}" ]; then
+  exit 0
 fi
 
-def_file="$1"
-
 if [ ! -f "${def_file}" ]; then
-  echo "Definition file not found: ${def_file}" >&2
-  exit 2
+  exit 0
 fi
 
 if ! command -v yq > /dev/null 2>&1; then
@@ -93,7 +111,7 @@ if [ "${deliv_count}" -gt 0 ]; then
 
   # --- depends_on validation ---
   all_names="$(yq -r '.deliverables[].name' "${def_file}" 2>/dev/null)"
-  all_deps="$(yq -r '.deliverables[].depends_on[]? // empty' "${def_file}" 2>/dev/null)" || all_deps=""
+  all_deps="$(yq -r '.deliverables[].depends_on[]?' "${def_file}" 2>/dev/null)" || all_deps=""
   if [ -n "${all_deps}" ]; then
     for dep in ${all_deps}; do
       if ! echo "${all_names}" | grep -qx "${dep}"; then

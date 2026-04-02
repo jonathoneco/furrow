@@ -13,6 +13,9 @@ Synthesize research into architecture decisions and execution strategy.
 - Architecture decisions must reference research findings, not assumptions.
 - Ensure `skills/work-context.md` is loaded.
 - Read `summary.md` for research context.
+- CC plan mode (EnterPlanMode) may be used to explore the codebase and get
+  clarity from the user for this step's decisions. It must not produce artifacts
+  that span or replace the spec, decompose, or implement steps.
 
 ## Shared References
 Read these when relevant to your current action:

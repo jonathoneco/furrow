@@ -62,6 +62,8 @@ script_dir="$(cd "$(dirname "$0")" && pwd)"
 harness_root="$(cd "${script_dir}/../.." && pwd)"
 scripts_dir="${harness_root}/scripts"
 
+# Note: Rewind gates produce non-sequential boundaries (e.g., implement->plan)
+# which is intentional. The outcome "fail" distinguishes these from forward gates.
 boundary="${current_step}->${target_step}"
 
 "${scripts_dir}/record-gate.sh" "${name}" "${boundary}" "fail" "human" \

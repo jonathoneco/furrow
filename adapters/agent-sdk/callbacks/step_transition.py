@@ -7,16 +7,17 @@ Handles step advancement:
 - Loads next step's configuration
 """
 
+import logging
 import subprocess
 import sys
 from pathlib import Path
 
 from callbacks.state_mutation import StateMutator
+from config import STEP_SEQUENCE
 
+logger = logging.getLogger("harness.step")
 
-STEP_SEQUENCE = [
-    "ideate", "research", "plan", "spec", "decompose", "implement", "review"
-]
+_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
 def advance_step(
@@ -44,9 +45,10 @@ def advance_step(
     from_idx = STEP_SEQUENCE.index(from_step)
     to_idx = STEP_SEQUENCE.index(to_step)
     if to_idx != from_idx + 1:
+        expected = STEP_SEQUENCE[from_idx + 1] if from_idx + 1 < len(STEP_SEQUENCE) else "(end)"
         raise RuntimeError(
             f"Invalid transition: {from_step} -> {to_step} "
-            f"(expected {from_step} -> {STEP_SEQUENCE[from_idx + 1]})"
+            f"(expected {from_step} -> {expected})"
         )
 
     # Validate gate record exists via shared hook
@@ -62,7 +64,7 @@ def advance_step(
     # Regenerate summary.md
     regenerate_summary(work_path)
 
-    print(f"Advanced: {from_step} -> {to_step}")
+    logger.info(f"Advanced: {from_step} -> {to_step}")
 
 
 def validate_step_boundary(from_step: str, to_step: str) -> None:
@@ -71,7 +73,7 @@ def validate_step_boundary(from_step: str, to_step: str) -> None:
     Calls hooks/lib/validate.sh via subprocess (AC-6.2a).
     """
     result = subprocess.run(
-        ["hooks/lib/validate.sh", "validate_step_boundary", from_step, to_step],
+        [str(_ROOT / "hooks" / "lib" / "validate.sh"), "validate_step_boundary", from_step, to_step],
         capture_output=True, text=True,
     )
     if result.returncode != 0:
@@ -94,7 +96,7 @@ def regenerate_summary(work_path: Path) -> None:
     """
     summary_path = work_path / "summary.md"
     # TODO: customize — read state.json and definition.yaml to regenerate
-    print(f"  Summary regeneration: {summary_path}")
+    logger.info(f"Summary regeneration: {summary_path}")
 
 
 def load_next_step_config(to_step: str) -> dict:

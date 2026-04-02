@@ -7,7 +7,7 @@ Provides safe state.json mutation with:
 - Automatic updated_at timestamp on every write
 """
 
-import fcntl
+import fcntl  # Unix-only (Linux/macOS); Windows requires msvcrt or portalocker
 import json
 import subprocess
 from datetime import datetime, timezone
@@ -24,6 +24,7 @@ class StateMutator:
 
     def __init__(self, state_path: str | Path):
         self.state_path = Path(state_path)
+        self.root = Path(__file__).resolve().parent.parent.parent
 
     def update(self, changes: dict) -> dict:
         """Apply changes to state.json with file locking.
@@ -129,7 +130,7 @@ class StateMutator:
             StateMutationError: If validation fails.
         """
         result = subprocess.run(
-            ["hooks/lib/validate.sh", "validate_state_json", str(self.state_path)],
+            [str(self.root / "hooks" / "lib" / "validate.sh"), "validate_state_json", str(self.state_path)],
             capture_output=True, text=True,
         )
         if result.returncode != 0:
