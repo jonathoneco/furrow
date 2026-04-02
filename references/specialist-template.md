@@ -2,38 +2,38 @@
 
 ## Overview
 
-Specialists are domain-expert agents assigned to deliverables. Each specialist
-type has a template that defines its context, skills, and constraints.
+Specialists are reasoning-focused domain experts assigned to deliverables. Each
+specialist template defines how the agent thinks about its domain — reasoning
+patterns, quality criteria, and anti-patterns — rather than listing skills or
+file ownership (which are now managed in `plan.json` assignments).
 
 ## Template Format
 
-Specialist definitions live in `specialists/{type}.md`:
+Specialist definitions live in `specialists/{name}.md`:
 
 ```markdown
 ---
-type: "{specialist-type}"
-domain: "{domain description}"
+name: "{specialist-name}"
+description: "{one-line domain description}"
+type: specialist
 ---
 
-# {Specialist Type}
+# {Specialist Name} Specialist
 
 ## Domain Expertise
-{What this specialist knows and can do}
+{How this specialist thinks about their domain — 1-2 paragraphs}
 
-## Skills
-{Skills to inject via Read instructions}
-- `skills/work-context.md` (always)
-- `skills/{current-step}.md` (always)
-- Additional domain-specific skills
+## How This Specialist Reasons
+{5-8 reasoning patterns as bold-name bullets with 2-4 sentences each}
 
-## File Ownership
-{Default file ownership patterns, overridable per deliverable}
-
-## Quality Standards
-{Domain-specific quality expectations}
+## Quality Criteria
+{Domain-specific quality expectations — prose paragraph}
 
 ## Anti-Patterns
-{Common mistakes this specialist should avoid}
+{Table: Pattern | Why It's Wrong | Do This Instead}
+
+## Context Requirements
+{Required + Helpful bullet lists}
 ```
 
 ## How Specialists Are Used

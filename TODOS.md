@@ -264,3 +264,19 @@ These were explicitly deferred in the recommendations. Listed for completeness:
 - `scripts/generate-plan.sh` — topological sort for dependency ordering
 - `scripts/check-wave-conflicts.sh` — file overlap detection for worktree safety
 - TODO 7 (Roadmap Process) — the broader roadmap lifecycle this skill plugs into
+
+---
+
+## 10. validate-definition.sh: Accept Slug Instead of Full Path
+
+**Context**: All other harness scripts (`update-state.sh`, `record-gate.sh`, `validate-step-artifacts.sh`) accept a work unit slug (kebab-case name) and resolve `.work/{name}/...` internally. `validate-definition.sh` is the outlier — it requires the full file path (`.work/{name}/definition.yaml`). This is inconsistent and causes usage errors.
+
+**Work needed**:
+- Change `validate-definition.sh` to accept a slug as its first argument
+- Resolve `.work/{slug}/definition.yaml` internally, matching the convention in other scripts
+- Keep backward compatibility: if the argument contains a `/`, treat it as a path; otherwise treat as slug
+
+**References**:
+- `scripts/validate-definition.sh` — the script to fix
+- `scripts/update-state.sh` — exemplar for slug-based argument handling
+- `scripts/record-gate.sh` — same pattern
