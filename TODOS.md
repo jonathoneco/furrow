@@ -264,3 +264,49 @@ These were explicitly deferred in the recommendations. Listed for completeness:
 - `scripts/generate-plan.sh` — topological sort for dependency ordering
 - `scripts/check-wave-conflicts.sh` — file overlap detection for worktree safety
 - TODO 7 (Roadmap Process) — the broader roadmap lifecycle this skill plugs into
+
+---
+
+## 10. Harness Edge-Case Integration Tests
+
+**Context**: T2 (E2E pipeline test) was cancelled as redundant — the other worktree tasks (T3, T4, T6) exercise the happy-path pipeline organically. However, several script code paths are only reachable under specific conditions that may not occur during normal usage. These gaps should be covered by targeted integration tests.
+
+**Coverage gaps**:
+
+1. **Multi-deliverable dependency wave ordering** (`scripts/generate-plan.sh`):
+   - T4's 3 deliverables are independent → all land in wave 1
+   - Untested: deliverables with `depends_on` chains producing multi-wave plans
+   - Untested: cycle detection (Kahn's algorithm) with actual cycles
+   - Untested: wave contiguity validation (gap detection)
+
+2. **Correction limit enforcement** (`hooks/correction-limit.sh`):
+   - Only fires when `state.json.deliverables[name].corrections >= limit`
+   - Natural pipeline runs may never trigger a gate failure during implement
+   - Untested: file-to-deliverable glob matching with real ownership patterns
+   - Untested: PreToolUse hook blocking Write/Edit for exceeded deliverables while allowing others
+
+3. **`run-eval.sh` Phase B mixed verdicts**:
+   - Happy-path runs produce all-pass or obvious fail
+   - Untested: mixed dimension verdicts (some pass, some fail) → overall fail
+   - Untested: `unplanned-changes` detection with real file ownership globs
+   - Untested: `test-coverage` dimension with test file patterns
+
+4. **Gate failure → correction increment** (`commands/lib/step-transition.sh`):
+   - On gate outcome "fail" during implement/review, corrections should increment for in_progress deliverables
+   - Untested: selective increment (only in_progress deliverables, not completed ones)
+
+5. **Conditional pass carry-forward** (`commands/lib/load-step.sh`):
+   - When a gate passes with `outcome: "conditional"`, conditions should appear in the next step's context
+   - Untested: conditions array parsing and display
+
+**What to build**:
+- Shell-based integration tests (not unit tests) that set up `.work/` fixtures, run scripts, and assert outputs
+- Each test creates a temporary work unit, writes definition.yaml/state.json/plan.json as needed, runs the script under test, and checks exit codes + file mutations
+- Tests should be runnable via a single `scripts/run-integration-tests.sh` entry point
+
+**References**:
+- `scripts/generate-plan.sh` — wave ordering and cycle detection
+- `hooks/correction-limit.sh` — correction enforcement
+- `scripts/run-eval.sh` — Phase A/B evaluation
+- `commands/lib/step-transition.sh` — gate failure + correction increment
+- `commands/lib/load-step.sh` — conditional pass display
