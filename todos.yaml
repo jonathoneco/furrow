@@ -34,6 +34,14 @@
   source_type: "manual"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
+  urgency: "low"
+  impact: "low"
+  effort: "medium"
+  phase: 3
+  files_touched:
+    - "skills/triage-todos.md"
+    - "scripts/triage-todos.sh"
+    - "scripts/check-wave-conflicts.sh"
 
 - id: edge-case-integration-tests
   title: "Edge-Case Integration Tests"
@@ -76,6 +84,17 @@
   source_type: "manual"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
+  urgency: "medium"
+  impact: "medium"
+  effort: "medium"
+  phase: 3
+  files_touched:
+    - "scripts/run-integration-tests.sh"
+    - "scripts/generate-plan.sh"
+    - "hooks/correction-limit.sh"
+    - "scripts/check-artifacts.sh"
+    - "commands/lib/step-transition.sh"
+    - "commands/lib/load-step.sh"
 
 - id: summary-agent-written-sections-not-populated-at-step-boundaries
   title: "Summary.md Agent-Written Sections Not Populated at Step Boundaries"
@@ -98,6 +117,15 @@
   source_type: "manual"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
+  urgency: "high"
+  impact: "medium"
+  effort: "small"
+  phase: 3
+  files_touched:
+    - "scripts/regenerate-summary.sh"
+    - "hooks/validate-summary.sh"
+    - "skills/shared/"
+    - "commands/lib/step-transition.sh"
 
 - id: auto-populate-source-todo-in-work-init
   title: "Auto-populate source_todo in /work init flow"
@@ -121,3 +149,10 @@
   source_type: "open-question"
   created_at: "2026-04-02T19:30:00Z"
   updated_at: "2026-04-02T19:30:00Z"
+  urgency: "low"
+  impact: "low"
+  effort: "small"
+  phase: 3
+  files_touched:
+    - "commands/lib/init-work-unit.sh"
+    - "adapters/shared/schemas/definition.schema.yaml"
