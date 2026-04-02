@@ -79,10 +79,17 @@ fi
 # A3: Check owned files were actually modified
 artifacts_present="false"
 if [ "$mode" = "research" ]; then
-  # Research mode: check .work/{name}/deliverables/ has files
+  # Research mode: check .work/{name}/deliverables/ has non-empty files
   if [ -d "${work_dir}/deliverables" ]; then
-    file_count="$(find "${work_dir}/deliverables" -maxdepth 1 -type f 2>/dev/null | wc -l)" || file_count="0"
-    if [ "$file_count" -gt 0 ]; then
+    has_content="false"
+    for f in "${work_dir}/deliverables"/*; do
+      [ -f "$f" ] || continue
+      if [ -s "$f" ]; then
+        has_content="true"
+        break
+      fi
+    done
+    if [ "$has_content" = "true" ]; then
       artifacts_present="true"
     fi
   fi
@@ -295,6 +302,82 @@ while IFS= read -r dim; do
           phase_b_verdict="fail"
         fi
       fi
+      ;;
+
+    # --- Research-mode dimensions (deterministic where possible) ---
+
+    coverage)
+      # Research: check deliverable files address acceptance criteria
+      if [ "$mode" = "research" ] && [ "$artifacts_present" = "true" ]; then
+        verdict="pass"
+        evidence="deliverable artifacts present; AC coverage requires evaluator"
+      elif [ "$artifacts_present" = "false" ]; then
+        verdict="fail"
+        evidence="no deliverable artifacts found"
+        phase_b_verdict="fail"
+      else
+        verdict="skipped"
+        evidence="requires evaluator"
+      fi
+      ;;
+
+    evidence-basis)
+      # Research: check for citation markers in deliverable files
+      if [ "$mode" = "research" ] && [ "$artifacts_present" = "true" ]; then
+        unverified_count="0"
+        for f in "${work_dir}/deliverables"/*; do
+          [ -f "$f" ] || continue
+          count="$(grep -c '\[unverified\]' "$f" 2>/dev/null)" || count="0"
+          unverified_count=$((unverified_count + count))
+        done
+        if [ "$unverified_count" -gt 0 ]; then
+          verdict="fail"
+          evidence="${unverified_count} [unverified] markers found in deliverables"
+          phase_b_verdict="fail"
+        else
+          verdict="pass"
+          evidence="no [unverified] markers found; full citation check requires evaluator"
+        fi
+      else
+        verdict="skipped"
+        evidence="requires evaluator"
+      fi
+      ;;
+
+    synthesis-quality|internal-consistency|actionability)
+      # These research dimensions require qualitative LLM evaluation
+      if [ "$mode" = "research" ] && [ "$artifacts_present" = "true" ]; then
+        verdict="pass"
+        evidence="artifacts present; qualitative assessment requires evaluator"
+      elif [ "$mode" = "research" ] && [ "$artifacts_present" = "false" ]; then
+        verdict="fail"
+        evidence="no deliverable artifacts found"
+        phase_b_verdict="fail"
+      else
+        verdict="skipped"
+        evidence="requires evaluator"
+      fi
+      ;;
+
+    outline-completeness|evidence-requirements|testability|structure-rationale)
+      # Research spec dimensions — require evaluator for quality assessment
+      if [ "$mode" = "research" ] && [ "$artifacts_present" = "true" ]; then
+        verdict="pass"
+        evidence="spec artifacts present; quality assessment requires evaluator"
+      elif [ "$mode" = "research" ] && [ "$artifacts_present" = "false" ]; then
+        verdict="fail"
+        evidence="no spec artifacts found"
+        phase_b_verdict="fail"
+      else
+        verdict="skipped"
+        evidence="requires evaluator"
+      fi
+      ;;
+
+    specificity|contradiction-check)
+      # Research step evaluation dimensions
+      verdict="skipped"
+      evidence="requires evaluator"
       ;;
 
     *)

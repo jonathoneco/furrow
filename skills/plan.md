@@ -27,6 +27,14 @@ When `plan.json` has multiple deliverables, create `team-plan.md` with specialis
 assignments per deliverable. Read `references/specialist-template.md` for format.
 Assign `file_ownership` globs to prevent cross-specialist conflicts in waves.
 
+## Research Mode
+When `state.json.mode` is `"research"`:
+- Define knowledge artifact structure: sections, sub-topics, evidence requirements.
+- `file_ownership` targets `.work/{name}/deliverables/` paths, not git tree globs.
+- No parallel waves needed — research deliverables are authored sequentially or by section.
+- Specialist assignment uses research roles (domain-researcher, synthesis-writer).
+- Read `references/research-mode.md` for artifact formats.
+
 ## Step Mechanics
 Transition out: gate record `plan->spec` with outcome `pass` required.
 Auto-advance when: single deliverable with no dependencies and no parallelism.

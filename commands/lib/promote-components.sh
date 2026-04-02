@@ -25,6 +25,17 @@ fi
 name="$1"
 candidates_file="${2:-}"
 
+# --- research mode guard ---
+
+_state_file=".work/${name}/state.json"
+if [ -f "${_state_file}" ]; then
+  _mode="$(jq -r '.mode // "code"' "${_state_file}" 2>/dev/null)" || _mode="code"
+  if [ "${_mode}" = "research" ]; then
+    echo "Research mode: component promotion deferred to archive time."
+    exit 0
+  fi
+fi
+
 # --- read candidates ---
 
 if [ -n "${candidates_file}" ] && [ -f "${candidates_file}" ]; then
