@@ -239,3 +239,26 @@
   source_type: "manual"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
+
+- id: auto-populate-source-todo-in-work-init
+  title: "Auto-populate source_todo in /work init flow"
+  context: |
+    The definition.schema.yaml now has an optional source_todo field that links a work unit
+    back to the TODO entry that spawned it. Currently this field must be manually added to
+    definition.yaml. When /work is invoked with a TODO slug as context (e.g., starting work
+    from a todos.yaml entry), the init flow should auto-populate source_todo so the archive
+    pruning ceremony can find and resolve it.
+  work_needed: |
+    - Modify commands/lib/init-work-unit.sh to accept an optional --source-todo flag
+    - When /work description matches a todos.yaml entry ID, auto-set source_todo
+    - Alternatively, add a --from-todo <id> flag to the /work command
+    - Ensure the value is written to definition.yaml during ideation
+  references:
+    - "commands/lib/init-work-unit.sh"
+    - "adapters/shared/schemas/definition.schema.yaml"
+    - "commands/archive.md"
+    - "commands/work-todos.md"
+  source_work_unit: "todos-workflow"
+  source_type: "open-question"
+  created_at: "2026-04-02T19:30:00Z"
+  updated_at: "2026-04-02T19:30:00Z"

@@ -4,7 +4,7 @@
 Formalize TODO tracking as an integral part of the work harness workflow — a standalone command for creating and extracting TODOs, archive integration for ensuring nothing is forgotten, structured YAML storage for downstream consumption by roadmap and triage tools, and explicit TODO-to-work-unit linkage for lifecycle tracking.
 
 ## Current State
-Step: review | Status: not_started
+Step: review | Status: completed
 Deliverables: 5/5
 Mode: code
 
