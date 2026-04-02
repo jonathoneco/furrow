@@ -285,6 +285,8 @@ Installed from: $HARNESS_ROOT
 | /harness:archive | Archive completed work |
 | /harness:reground | Recover context after break |
 | /harness:redirect | Record dead end and pivot |
+| /harness:triage | Generate ROADMAP.md from todos.yaml |
+| /harness:work-todos | Extract and manage TODOs |
 | /harness:doctor | Check harness health |
 | /harness:update | Check configuration drift |
 | /harness:meta | Enter self-modification mode |
@@ -316,7 +318,7 @@ else
 fi
 
 # Symlink key directories if they don't exist at project root
-for _dir in skills hooks scripts schemas evals specialists references adapters _rationale.yaml; do
+for _dir in skills hooks scripts schemas evals specialists references adapters templates tests _rationale.yaml; do
   _src="$HARNESS_ROOT/$_dir"
   _dst="$_proj_root/$_dir"
   if [ -e "$_src" ]; then
