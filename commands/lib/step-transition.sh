@@ -107,12 +107,15 @@ if [ "${outcome}" = "fail" ]; then
   exit 0
 fi
 
-# --- 1c. Wave conflict check at implement->review boundary ---
+# --- 1c. Wave conflict check at implement->review boundary (code mode only) ---
 
 if [ "${current_step}" = "implement" ] && [ "${next_step}" = "review" ]; then
-  "${scripts_dir}/check-wave-conflicts.sh" "${name}" 2>&1 || {
-    echo "Warning: wave conflicts detected (non-blocking)" >&2
-  }
+  _mode="$(jq -r '.mode // "code"' "${state_file}" 2>/dev/null)" || _mode="code"
+  if [ "${_mode}" = "code" ]; then
+    "${scripts_dir}/check-wave-conflicts.sh" "${name}" 2>&1 || {
+      echo "Warning: wave conflicts detected (non-blocking)" >&2
+    }
+  fi
 fi
 
 # --- 2. Regenerate summary ---

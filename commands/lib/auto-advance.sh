@@ -44,6 +44,10 @@ fi
 
 deliv_count="$(yq -r '.deliverables | length' "${def_path}" 2>/dev/null)" || deliv_count="0"
 mode="$(jq -r '.mode // "code"' "${state_path}" 2>/dev/null)" || mode="code"
+case "${mode}" in
+  code|research) ;;
+  *) echo "Warning: invalid mode '${mode}', defaulting to 'code'" >&2; mode="code" ;;
+esac
 
 case "${step}" in
   research)

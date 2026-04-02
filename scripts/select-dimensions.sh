@@ -43,7 +43,11 @@ if [ "$mode" = "research" ] && [ "$step" = "implement" ]; then
   file="research-implement.yaml"
 elif [ "$mode" = "research" ] && [ "$step" = "spec" ]; then
   file="research-spec.yaml"
+elif [ "$mode" = "research" ] && [ "$step" = "research" ]; then
+  # Explicit routing: research mode + research step uses research.yaml
+  file="research.yaml"
 else
+  # Standard routing: step name maps directly to dimension file
   file="${step}.yaml"
 fi
 
