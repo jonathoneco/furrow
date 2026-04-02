@@ -1,0 +1,264 @@
+- id: end-to-end-test-with-a-real-task
+  title: "End-to-End Test with a Real Task"
+  context: |
+    The harness was built and tested in isolation. The bugs found this session (6 total) were all discovered through actual use, not static review. A real task would exercise the full pipeline including the new artifact validation gates.
+  work_needed: |
+    - Start a new work unit with `/work <real task description>`
+    - Go through all 7 steps: ideate, research, plan, spec, decompose, implement, review
+    - At each step boundary, verify `validate-step-artifacts.sh` correctly gates advancement
+    - During plan step, test `generate-plan.sh` with a multi-deliverable definition
+    - During implement step, verify `correction-limit.sh` doesn't produce false positives
+    - During review step, test `run-eval.sh` on actual deliverables
+  risks: |
+    - `validate-step-artifacts.sh` may be too strict for simple single-deliverable work (e.g., requiring plan.json when it's not needed)
+    - `init-work-unit.sh` flag parsing with edge cases (empty strings, special characters in titles)
+    - `step-transition.sh` artifact validation blocking when it shouldn't (e.g., research deliverables that existed before the spec step)
+  references:
+    - "commands/lib/step-transition.sh"
+    - "commands/lib/init-work-unit.sh"
+    - "skills/work-context.md"
+  source_work_unit: "harness-v2-status-eval"
+  source_type: "manual"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+
+- id: research-mode-end-to-end-test
+  title: "Research Mode End-to-End Test"
+  context: |
+    The mode flag plumbing was fixed (init-work-unit.sh now accepts `--mode research`) but the full research workflow was never tested end-to-end. Research mode has different artifact expectations, dimension files, and output locations.
+  work_needed: |
+    - `/work "research topic" --mode research`
+    - Verify `state.json.mode` is `"research"`
+    - At research step: produce research.md, verify artifact validation accepts it
+    - At implement step: verify output goes to `.work/{name}/deliverables/` not git
+    - At review step: verify `select-dimensions.sh` returns `research-implement.yaml`
+    - Verify `run-eval.sh` checks deliverables/ instead of git diff
+  risks: |
+    - `validate-step-artifacts.sh` implement->review check: does it correctly read mode and check deliverables/ vs git diff?
+    - `run-eval.sh` Phase A: does it handle research mode file existence checks?
+    - Dimension selection: does `select-dimensions.sh` handle the research+spec case?
+  references:
+    - "references/research-mode.md"
+    - "evals/dimensions/research-implement.yaml"
+    - "evals/dimensions/research-spec.yaml"
+    - "scripts/select-dimensions.sh"
+  source_work_unit: "harness-v2-status-eval"
+  source_type: "manual"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+
+- id: specialist-template-rewrite
+  title: "Specialist Template Rewrite"
+  context: |
+    The `harness-engineer` specialist was rewritten with reasoning-focused framing (8 thinking patterns: enforcement spectrum, platform boundary awareness, contract thinking, etc.). The other three specialists still use the old format (responsibilities list, not reasoning patterns).
+  work_needed: |
+    - Rewrite `specialists/api-designer.md` — how does an API designer reason about resource design, contract evolution, error handling?
+    - Rewrite `specialists/database-architect.md` — how does a DB architect reason about schema normalization, index strategy, migration safety?
+    - Rewrite `specialists/test-engineer.md` — how does a test engineer reason about coverage, edge case discovery, flakiness prevention?
+    - Each should follow the `harness-engineer.md` pattern: Domain Expertise, How This Specialist Reasons (5-8 patterns), Quality Criteria, Anti-Patterns, Context Requirements
+  references:
+    - "specialists/harness-engineer.md"
+    - "references/specialist-template.md"
+    - "docs/research/findings-user-voices-2026-03.md"
+  source_work_unit: "harness-v2-status-eval"
+  source_type: "manual"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+
+- id: auto-advance-enforcement
+  title: "Auto-Advance Enforcement"
+  context: |
+    Currently, auto-advance eligibility is checked by the gate evaluator reading skill instructions (prose). The `commands/lib/auto-advance.sh` script checks some criteria (deliverable count, dependencies, gate_policy) but doesn't enforce all the conditions described in each step skill.
+  work_needed: |
+    Open question (from plan step Q&A): should auto-advance criteria be harness-enforced (shell checks that block/allow auto-advance) or remain evaluator-judged (prose in skills)?
+
+    Examples of unenforced criteria:
+    - spec step: auto-advance when single deliverable with >=2 testable ACs. But nothing checks AC testability (verbs, thresholds, file paths).
+    - research step: auto-advance when single deliverable + code mode + has path-like ACs. But "path-like" is a fuzzy check.
+
+    Decision needed: Is it worth adding deterministic testability checks to auto-advance, or is the current approach (evaluator judges) sufficient?
+  references:
+    - "commands/lib/auto-advance.sh"
+    - "scripts/auto-advance.sh"
+    - "skills/spec.md"
+    - ".work/harness-v2-status-eval/recommendations.md"
+  source_work_unit: "harness-v2-status-eval"
+  source_type: "manual"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+
+- id: formalize-todos-as-a-harness-workflow
+  title: "Formalize TODOS.md as a Harness Workflow"
+  context: |
+    This TODOS.md was created ad-hoc at the end of a work unit to capture follow-up work. The pattern proved useful — structured items with context, references, and test plans allow future sessions to pick up work accurately. This should be a first-class harness workflow, not a one-off.
+  work_needed: |
+    - A `/work-todos` or checkpoint-integrated command that generates TODOS.md at session end
+    - Template for TODO items: title, context (why this matters), work needed (concrete steps), what could fail (risks), references (artifacts with paths)
+    - Auto-populate from: open questions in summary.md, learnings.jsonl pitfalls that suggest follow-up, deferred items from recommendations, findings from review step that weren't addressed
+    - TODOS.md should live at project root (not in `.work/`) since it spans work units
+    - Each TODO should be convertible to a `/work` description — enough context to start a new work unit without re-reading the original session
+
+    Integration points:
+    - `commands/checkpoint.md` — offer to update TODOS.md at checkpoint time
+    - `commands/archive.md` — generate/update TODOS.md when archiving a work unit
+    - `skills/review.md` — review findings that aren't fixed should become TODOs
+    - `learnings.jsonl` — pitfalls with `promoted: false` may indicate unresolved follow-up
+  references:
+    - "commands/lib/promote-learnings.sh"
+  source_work_unit: "harness-v2-status-eval"
+  source_type: "manual"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+
+- id: roadmap-process-from-todos
+  title: "Roadmap Process from TODOS"
+  context: |
+    TODOS.md captures what needs doing. A roadmap process would periodically triage these into prioritized work units with dependencies, grouping, and sequencing. This bridges the gap between "list of things to do" and "what to work on next."
+  work_needed: |
+    - A `/work-roadmap` command (or skill) that reads TODOS.md and produces a prioritized plan
+    - The roadmap process should:
+      1. Triage: For each TODO, assess: urgency (blocking other work?), impact (how many other items does this unblock?), effort (session count estimate), dependencies (what must be done first?)
+      2. Group: Cluster related TODOs into candidate work units (e.g., "specialist rewrites" groups items 4a-4c; "research mode validation" groups items 3 + parts of 2)
+      3. Sequence: Order work units by dependency graph and impact — items that unblock the most other items go first
+      4. Output: A ROADMAP.md with ordered work units, each with enough context to start via `/work`
+    - The roadmap should be regenerated when TODOS.md changes significantly (new items added, items completed)
+    - Completed TODOs move to an "Archive" section (not deleted — they're audit trail)
+
+    Process for a roadmap session:
+    1. Read TODOS.md
+    2. For each item: is it still relevant? (check if conditions changed)
+    3. Triage: urgency / impact / effort / dependencies
+    4. Group into candidate work units (1-3 TODOs per unit)
+    5. Sequence by dependency + impact
+    6. Write ROADMAP.md
+    7. Start top-priority work unit via /work
+
+    Design considerations:
+    - TODOS.md is append-friendly (new items added at end); ROADMAP.md is rewrite-friendly (regenerated from current state)
+    - TODOs are granular (one concern per item); roadmap entries are scoped work units (may combine multiple TODOs)
+    - The roadmap process itself should be a research-mode work unit the first time, then become a lightweight command
+  references:
+    - "docs/architecture/PLAN.md"
+    - ".work/harness-v2-status-eval/recommendations.md"
+    - "scripts/generate-plan.sh"
+  source_work_unit: "harness-v2-status-eval"
+  source_type: "manual"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+
+- id: parallel-workflow-support
+  title: "Parallel Workflow Support"
+  context: |
+    The harness currently supports only one active work unit at a time. `detect-context.sh` warns when multiple active tasks exist and asks the user to pick one. Hooks like `state-guard.sh`, `ownership-warn.sh`, and `timestamp-update.sh` assume a single active `.work/` directory. Real-world usage often requires concurrent streams — e.g., a bug fix while a feature is in the plan step, or two independent deliverables that could progress simultaneously.
+
+    What's blocking today:
+    - `detect-context.sh` treats multiple active tasks as an error condition (asks "which to continue?" instead of allowing both)
+    - Hooks scan all `.work/*/state.json` files but don't scope operations to a specific work unit — a write to one unit could trigger validation on another
+    - `work-context.md` skill loads context for a single active task; no mechanism to switch or scope
+    - `post-compact.sh` re-injects context for one task; a second active task loses context
+    - Step skills assume one step sequence in flight; no namespacing of step state
+  work_needed: |
+    - Work unit scoping: commands and hooks must accept/infer which work unit they're operating on (e.g., `--unit <name>` flag or CWD-based detection)
+    - Context multiplexing: `work-context.md` should support loading context for a specific unit, not just "the active one"
+    - Hook scoping: each hook must operate on the triggering work unit only, not scan all active units
+    - Session affinity: a mechanism to "focus" a session on one work unit while others remain active but dormant
+    - `detect-context.sh` should list all active units and allow continuing any one without treating multiplicity as an error
+
+    Design considerations:
+    - Start with "focused + dormant" model: one unit is focused (receives context injection, hook enforcement), others are dormant (state preserved but not actively loaded). This avoids the complexity of true concurrent execution.
+    - The `/work` command could accept a `--switch <name>` flag to change focus without archiving the current unit.
+    - Consider whether step hooks should be fully isolated per unit or share the hook pipeline with unit-scoped filtering.
+  risks: |
+    - Deferred items table (TODOS, item "Concurrent work streams") — originally Phase 4
+  references:
+    - "commands/lib/detect-context.sh"
+    - "hooks/state-guard.sh"
+    - "hooks/ownership-warn.sh"
+    - "skills/work-context.md"
+    - "hooks/post-compact.sh"
+  source_work_unit: "harness-v2-status-eval"
+  source_type: "manual"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+
+- id: triage-todos-harness-skill
+  title: "Triage-TODOs Harness Skill"
+  context: |
+    The process of turning TODOS.md into a dependency-aware, parallelizable roadmap was done manually this session. It required: reading all TODOs, analyzing file-level conflicts between them, building a dependency DAG, grouping into phases that respect both logical dependencies and worktree-safe file isolation, and producing a ROADMAP.md with branch/merge strategy. This should be a repeatable harness skill, not a one-off exercise.
+  work_needed: |
+    - A `/harness:triage` (or `triage-todos`) skill that reads TODOS.md and produces/updates ROADMAP.md
+    - The skill should perform:
+      1. Dependency extraction: Parse each TODO for explicit dependencies ("depends on TODO N", "after X is done") and implicit ones (file overlap analysis via grep of "files touched" sections)
+      2. File conflict analysis: For each TODO, identify files it would modify. Cross-reference to find TODOs that touch the same files — these cannot safely parallelize in worktrees
+      3. DAG construction: Build a directed acyclic graph from dependencies + file conflicts. Identify the critical path and maximum parallelism width
+      4. Phase grouping: Cluster TODOs into phases where all items in a phase can run in parallel worktrees. Each phase has a merge point back to main before the next phase starts
+      5. Branch strategy: Generate branch names, merge order, and conflict-risk annotations per phase
+      6. ROADMAP.md generation: Write the roadmap with DAG visualization, phase breakdown, and per-track work descriptions
+
+    Design considerations:
+    - The skill should be idempotent — re-running after adding/completing TODOs regenerates the roadmap from current state
+    - Completed TODOs (marked with `[x]` or moved to archive section) should be shown as done in the DAG but excluded from active phases
+    - The file conflict analysis could reuse `scripts/check-wave-conflicts.sh` patterns (already does file overlap detection for implementation waves)
+    - The DAG could reuse `scripts/generate-plan.sh` topological sort logic
+    - Output format should match what `/work` expects so each phase track can be started directly
+
+    Integration points:
+    - `TODOS.md` — input (structured TODO items with references)
+    - `ROADMAP.md` — output (phased, parallelizable plan)
+    - `scripts/generate-plan.sh` — reusable topological sort
+    - `scripts/check-wave-conflicts.sh` — reusable file conflict detection
+    - `/work` command — each roadmap track should be startable as a work unit
+    - `roadmap-process-from-todos` — the broader roadmap lifecycle this skill plugs into
+  references:
+    - "ROADMAP.md"
+    - "scripts/generate-plan.sh"
+    - "scripts/check-wave-conflicts.sh"
+  source_work_unit: "harness-v2-status-eval"
+  source_type: "manual"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+
+- id: summary-agent-written-sections-not-populated-at-step-boundaries
+  title: "Summary.md Agent-Written Sections Not Populated at Step Boundaries"
+  context: |
+    The `validate-summary.sh` hook repeatedly fires at session stop because the agent-written sections of `summary.md` (Key Findings, Open Questions, Recommendations) are never populated during step transitions. `regenerate-summary.sh` creates the skeleton and preserves existing content if it has 2+ lines, but inserts 1-line placeholders otherwise. No step skill instructs the agent to write these sections, and no gate or transition checks for their completeness. The result is that every session ends with a manual fix.
+  work_needed: |
+    - Add explicit instruction to step skills (or a shared skill fragment) requiring the agent to populate Key Findings, Open Questions, and Recommendations before step completion
+    - Alternatively, make `validate-summary.sh` a pre-gate requirement (blocking) in `step-transition.sh` rather than a post-stop warning
+    - Consider whether `regenerate-summary.sh` should refuse to overwrite populated sections even if they're short (1 line of real content vs placeholder)
+  risks: |
+    - Adding instructions to every step skill creates maintenance burden — a shared fragment or reference is safer
+    - Making it a hard blocker could stall transitions when sections are genuinely not applicable (e.g., ideate step has no "Key Findings" yet)
+    - Need to distinguish "placeholder" from "intentionally brief"
+  references:
+    - "scripts/regenerate-summary.sh"
+    - "hooks/validate-summary.sh"
+    - "skills/*.md"
+    - "commands/lib/step-transition.sh"
+  source_work_unit: "todos-workflow"
+  source_type: "manual"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+
+- id: auto-populate-source-todo-in-work-init
+  title: "Auto-populate source_todo in /work init flow"
+  context: |
+    The definition.schema.yaml now has an optional source_todo field that links a work unit
+    back to the TODO entry that spawned it. Currently this field must be manually added to
+    definition.yaml. When /work is invoked with a TODO slug as context (e.g., starting work
+    from a todos.yaml entry), the init flow should auto-populate source_todo so the archive
+    pruning ceremony can find and resolve it.
+  work_needed: |
+    - Modify commands/lib/init-work-unit.sh to accept an optional --source-todo flag
+    - When /work description matches a todos.yaml entry ID, auto-set source_todo
+    - Alternatively, add a --from-todo <id> flag to the /work command
+    - Ensure the value is written to definition.yaml during ideation
+  references:
+    - "commands/lib/init-work-unit.sh"
+    - "adapters/shared/schemas/definition.schema.yaml"
+    - "commands/archive.md"
+    - "commands/work-todos.md"
+  source_work_unit: "todos-workflow"
+  source_type: "open-question"
+  created_at: "2026-04-02T19:30:00Z"
+  updated_at: "2026-04-02T19:30:00Z"

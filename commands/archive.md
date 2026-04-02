@@ -28,9 +28,28 @@ If not found: error with message indicating what is blocking archive.
    - Present candidate artifacts for promotion to project docs/rules.
    - Ask user which to promote.
 
-6. Set `state.json.archived_at` to current ISO 8601 timestamp.
-7. Regenerate final `summary.md` via `commands/lib/generate-summary.sh "{name}"`.
-8. Git commit with message: `chore: archive {name}`.
+6. **TODO extraction**: Run the extract mode of `/work-todos --extract {name}`.
+   - Runs `scripts/extract-todo-candidates.sh "{name}"` to harvest candidates
+     from summary.md open questions, learnings.jsonl unpromoted pitfalls,
+     and reviews/*.json failed dimensions.
+   - Agent deduplicates candidates against existing `todos.yaml` entries.
+   - Presents candidates with proposed actions (add/merge/skip).
+   - User confirms. Writes to `todos.yaml` and validates.
+   - If no candidates found, skip silently.
+
+7. **TODO pruning**: Check if `definition.yaml` has a `source_todo` field.
+   - If set, read `todos.yaml` and find the entry matching that ID.
+   - Present: "This work unit was started from TODO '{id}': {title}. Mark as resolved?"
+   - **yes**: Remove the entry from `todos.yaml`.
+   - **no**: Keep as-is.
+   - **partial**: Add a note to the entry's context indicating partial completion,
+     bump `updated_at`.
+   - If `source_todo` is not set or `todos.yaml` has no matching entry, skip.
+   - Validate `todos.yaml` after any changes.
+
+8. Set `state.json.archived_at` to current ISO 8601 timestamp.
+9. Regenerate final `summary.md` via `commands/lib/generate-summary.sh "{name}"`.
+10. Git commit with message: `chore: archive {name}`.
 
 ## Output
 

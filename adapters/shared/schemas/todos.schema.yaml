@@ -1,0 +1,63 @@
+# JSON Schema expressed in YAML for readability.
+#
+# todos.yaml validation schema
+# Validates structured TODO entries for project-level follow-up tracking.
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: "TODO Entries"
+description: "Schema for todos.yaml — structured TODO tracking"
+type: array
+items:
+  type: object
+  required:
+    - id
+    - title
+    - context
+    - work_needed
+    - created_at
+    - updated_at
+  additionalProperties: false
+  properties:
+    id:
+      type: string
+      pattern: "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+      description: "Slug-style kebab-case identifier, unique across all entries"
+    title:
+      type: string
+      minLength: 1
+      description: "One-line summary of the TODO"
+    context:
+      type: string
+      minLength: 1
+      description: "Why this matters (multi-line prose)"
+    work_needed:
+      type: string
+      minLength: 1
+      description: "Concrete steps to resolve this (multi-line prose)"
+    risks:
+      type: string
+      description: "What could fail or go wrong (optional, multi-line prose)"
+    references:
+      type: array
+      items:
+        type: string
+        minLength: 1
+      description: "File paths providing relevant context"
+    source_work_unit:
+      type: string
+      description: "Name of the work unit that surfaced this TODO"
+    source_type:
+      type: string
+      enum:
+        - open-question
+        - unpromoted-learning
+        - review-finding
+        - manual
+      description: "How this TODO was extracted"
+    created_at:
+      type: string
+      format: date-time
+      description: "ISO 8601 timestamp with timezone"
+    updated_at:
+      type: string
+      format: date-time
+      description: "ISO 8601 timestamp with timezone"
