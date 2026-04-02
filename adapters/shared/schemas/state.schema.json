@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Work Unit State",
+  "description": "Schema for state.json — lifecycle and progress tracking per spec 00 §1.2",
+  "type": "object",
+  "required": [
+    "name",
+    "title",
+    "description",
+    "step",
+    "step_status",
+    "steps_sequence",
+    "deliverables",
+    "gates",
+    "mode",
+    "base_commit",
+    "created_at",
+    "updated_at",
+    "archived_at"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Kebab-case, matches directory name"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable title"
+    },
+    "description": {
+      "type": "string",
+      "description": "One-sentence summary"
+    },
+    "step": {
+      "type": "string",
+      "enum": ["ideate", "research", "plan", "spec", "decompose", "implement", "review"],
+      "description": "Current step"
+    },
+    "step_status": {
+      "type": "string",
+      "enum": ["not_started", "in_progress", "completed", "blocked"],
+      "description": "Status of the current step"
+    },
+    "steps_sequence": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["ideate", "research", "plan", "spec", "decompose", "implement", "review"]
+      },
+      "minItems": 7,
+      "maxItems": 7,
+      "description": "Ordered array of step names"
+    },
+    "deliverables": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status", "assigned_to", "wave", "corrections"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["not_started", "in_progress", "completed", "blocked"]
+          },
+          "assigned_to": {
+            "type": ["string", "null"],
+            "description": "Specialist type or null"
+          },
+          "wave": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Wave assignment from plan.json, 0 if unassigned"
+          },
+          "corrections": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of correction cycles"
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Map keyed by deliverable name"
+    },
+    "gates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/gate_record"
+      },
+      "description": "Append-only gate audit trail"
+    },
+    "force_stop_at": {
+      "type": ["string", "null"],
+      "description": "Step name or null — user override to prevent auto-advance"
+    },
+    "branch": {
+      "type": ["string", "null"],
+      "description": "Git branch name or null"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["code", "research"]
+    },
+    "base_commit": {
+      "type": "string",
+      "description": "Git SHA at work unit creation"
+    },
+    "epic_id": {
+      "type": ["string", "null"],
+      "description": "Beans epic ID"
+    },
+    "issue_id": {
+      "type": ["string", "null"],
+      "description": "Beans issue ID"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 — set on every mutation"
+    },
+    "archived_at": {
+      "type": ["string", "null"],
+      "description": "ISO 8601 or null"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "gate_record": {
+      "type": "object",
+      "required": ["boundary", "outcome", "decided_by", "evidence", "timestamp"],
+      "properties": {
+        "boundary": {
+          "type": "string",
+          "pattern": "^[a-z]+(->[a-z]+)?$",
+          "description": "Format: {from_step}->{to_step}"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": ["pass", "fail", "conditional"]
+        },
+        "decided_by": {
+          "type": "string",
+          "enum": ["human", "evaluator", "auto-advance"]
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1,
+          "description": "One-line summary or path to gate file"
+        },
+        "conditions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Present only when outcome is conditional"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

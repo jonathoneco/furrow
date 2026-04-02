@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Extended Gate Record",
+  "description": "Schema for gates/{boundary}.json — extended gate evidence per spec 00 §1.4",
+  "type": "object",
+  "required": [
+    "boundary",
+    "dimensions",
+    "overall",
+    "reviewer",
+    "cross_model",
+    "timestamp"
+  ],
+  "properties": {
+    "boundary": {
+      "type": "string",
+      "pattern": "^[a-z]+-to-[a-z]+$",
+      "description": "Format: {from}-to-{to} (e.g., plan-to-spec)"
+    },
+    "dimensions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "verdict", "evidence"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Dimension name (e.g., coverage, feasibility)"
+          },
+          "verdict": {
+            "type": "string",
+            "enum": ["pass", "fail"]
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1,
+            "description": "One-line citation"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "overall": {
+      "type": "string",
+      "enum": ["pass", "fail", "conditional"]
+    },
+    "reviewer": {
+      "type": "string",
+      "description": "Agent or model identifier"
+    },
+    "cross_model": {
+      "type": "boolean",
+      "description": "Was this a cross-model review?"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional reviewer narrative"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

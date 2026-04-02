@@ -1,0 +1,29 @@
+# Progressive loading map — step-to-skill mapping for Claude Code adapter
+# Primary skill is always injected (Step layer, <=50 lines).
+# Reference skills are loaded on demand — the primary skill contains Read instructions.
+step_skills:
+  ideate:
+    primary: skills/ideate.md
+    reference: []
+  research:
+    primary: skills/research.md
+    reference: []
+  plan:
+    primary: skills/plan.md
+    reference: []
+  spec:
+    primary: skills/spec.md
+    reference:
+      - skills/code-quality.md
+  decompose:
+    primary: skills/decompose.md
+    reference:
+      - docs/skill-injection-order.md
+  implement:
+    primary: skills/implement.md
+    reference:
+      - skills/code-quality.md
+  review:
+    primary: skills/review.md
+    reference:
+      - skills/code-quality.md

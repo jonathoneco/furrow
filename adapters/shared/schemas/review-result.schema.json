@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Review Result",
+  "description": "Schema for reviews/{deliverable}.json per spec 00 §1.5",
+  "type": "object",
+  "required": [
+    "deliverable",
+    "phase_a",
+    "phase_b",
+    "overall",
+    "corrections",
+    "reviewer",
+    "cross_model",
+    "timestamp"
+  ],
+  "properties": {
+    "deliverable": {
+      "type": "string",
+      "description": "Matches definition.yaml deliverables[].name"
+    },
+    "phase_a": {
+      "type": "object",
+      "required": ["artifacts_present", "acceptance_criteria", "plan_completion", "verdict"],
+      "properties": {
+        "artifacts_present": {
+          "type": "boolean",
+          "description": "All expected outputs exist"
+        },
+        "acceptance_criteria": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["criterion", "met", "evidence"],
+            "properties": {
+              "criterion": { "type": "string" },
+              "met": { "type": "boolean" },
+              "evidence": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "plan_completion": {
+          "type": "object",
+          "required": ["planned_files_touched", "unplanned_changes"],
+          "properties": {
+            "planned_files_touched": { "type": "boolean" },
+            "unplanned_changes": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "additionalProperties": false
+        },
+        "verdict": {
+          "type": "string",
+          "enum": ["pass", "fail"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "phase_b": {
+      "type": "object",
+      "required": ["dimensions", "verdict"],
+      "properties": {
+        "dimensions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "verdict", "evidence"],
+            "properties": {
+              "name": { "type": "string" },
+              "verdict": {
+                "type": "string",
+                "enum": ["pass", "fail"]
+              },
+              "evidence": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "verdict": {
+          "type": "string",
+          "enum": ["pass", "fail"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "overall": {
+      "type": "string",
+      "enum": ["pass", "fail"],
+      "description": "Pass requires both phases pass"
+    },
+    "corrections": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Correction cycle this review belongs to"
+    },
+    "reviewer": {
+      "type": "string",
+      "description": "Agent identifier"
+    },
+    "cross_model": {
+      "type": "boolean",
+      "description": "Was this a cross-model review?"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}
