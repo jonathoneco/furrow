@@ -104,7 +104,18 @@ Re-display changed proposals before writing.
 
 Run `scripts/validate-todos.sh`. If fails, report error, do not commit, ask user to review.
 
-### 9. Report
+### 9. Commit
+
+Stage and commit:
+
+```sh
+git add todos.yaml
+git commit -m "chore: extract TODOs from {name} into todos.yaml"
+```
+
+Where `{name}` is the source work unit name.
+
+### 10. Report
 
 ```
 Updated todos.yaml:
@@ -153,7 +164,18 @@ Options:
 
 Run `scripts/validate-todos.sh`.
 
-### 6. Report
+### 6. Commit
+
+Stage and commit:
+
+```sh
+git add todos.yaml
+git commit -m "chore: add TODO {id} to todos.yaml"
+```
+
+Where `{id}` is the generated TODO slug.
+
+### 7. Report
 
 ```
 Added TODO "{id}" to todos.yaml.

@@ -1,0 +1,53 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": [
+        "glob-regex-bugfix",
+        "triage-command-spec",
+        "work-todos-auto-commit"
+      ],
+      "assignments": {
+        "glob-regex-bugfix": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "scripts/triage-todos.sh"
+          ],
+          "skills": []
+        },
+        "triage-command-spec": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "commands/triage.md"
+          ],
+          "skills": []
+        },
+        "work-todos-auto-commit": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "commands/work-todos.md"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 2,
+      "deliverables": [
+        "harness-registration"
+      ],
+      "assignments": {
+        "harness-registration": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            ".claude/commands/harness:triage.md",
+            ".claude/CLAUDE.md"
+          ],
+          "skills": []
+        }
+      }
+    }
+  ],
+  "created_at": "2026-04-02T23:21:21Z",
+  "created_by": "generate-plan"
+}

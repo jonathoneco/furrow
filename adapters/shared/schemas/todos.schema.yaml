@@ -58,7 +58,7 @@ items:
       items:
         type: string
         pattern: "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
-      description: "IDs of TODOs this depends on (populated by /work-roadmap triage)"
+      description: "IDs of TODOs this depends on (populated by /harness:triage)"
     files_touched:
       type: array
       items:
@@ -72,25 +72,25 @@ items:
         - high
         - medium
         - low
-      description: "How time-sensitive (populated by /work-roadmap triage)"
+      description: "How time-sensitive (populated by /harness:triage)"
     impact:
       type: string
       enum:
         - high
         - medium
         - low
-      description: "How many other items this unblocks (populated by /work-roadmap triage)"
+      description: "How many other items this unblocks (populated by /harness:triage)"
     effort:
       type: string
       enum:
         - small
         - medium
         - large
-      description: "Estimated implementation effort (populated by /work-roadmap triage)"
+      description: "Estimated implementation effort (populated by /harness:triage)"
     phase:
       type: integer
       minimum: 0
-      description: "Phase number assigned by /work-roadmap (0-indexed)"
+      description: "Phase number assigned by /harness:triage (0-indexed)"
     status:
       type: string
       enum:

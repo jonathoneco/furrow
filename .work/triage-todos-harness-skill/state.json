@@ -1,0 +1,105 @@
+{
+  "name": "triage-todos-harness-skill",
+  "title": "Replace /work-roadmap with /harness:triage command",
+  "description": "Automate the manual roadmap triage process as a /harness:triage skill that reads todos.yaml, runs dependency analysis, and produces a phased ROADMAP.md with worktree parallelism strategy",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "triage-command-spec": {
+      "status": "complete",
+      "wave": 1,
+      "corrections": 0
+    },
+    "work-todos-auto-commit": {
+      "status": "complete",
+      "wave": 1,
+      "corrections": 0
+    },
+    "glob-regex-bugfix": {
+      "status": "complete",
+      "wave": 1,
+      "corrections": 0
+    },
+    "harness-registration": {
+      "status": "complete",
+      "wave": 2,
+      "corrections": 0
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "evaluated",
+      "evidence": "definition.yaml validated; 4 deliverables defined with acceptance criteria; user approved objective, deliverables, constraints, and gate policy; cross-model review completed with findings incorporated",
+      "timestamp": "2026-04-02T23:17:34Z"
+    },
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "evaluated",
+      "evidence": "definition.yaml validated; 4 deliverables defined with acceptance criteria; user approved objective, deliverables, constraints, and gate policy; cross-model review completed with findings incorporated",
+      "timestamp": "2026-04-02T23:19:01Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "evaluated",
+      "evidence": "research.md covers all 4 deliverables: triage command spec (adapt existing 10-step pipeline), harness registration (8 files to repair, symlink mechanism documented), work-todos auto-commit (3 commit message variants), glob-regex bugfix (trailing slash conversion)",
+      "timestamp": "2026-04-02T23:21:04Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "evaluated",
+      "evidence": "plan.json generated: 2 waves, wave 1 has 3 independent deliverables (glob-regex-bugfix, triage-command-spec, work-todos-auto-commit), wave 2 has harness-registration. Single specialist (harness-engineer), no file conflicts, sequential execution.",
+      "timestamp": "2026-04-02T23:21:37Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "User approved all 4 spec files: triage-command-spec (rename+adapt work-roadmap), harness-registration (symlink+4 file repairs), work-todos-auto-commit (commit step in both modes), glob-regex-bugfix (trailing slash normalization)",
+      "timestamp": "2026-04-02T23:27:43Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "User approved decompose: 2 waves, 4 deliverables, single implementer, sequential execution on existing work/triage-todos branch. plan.json and team-plan.md written.",
+      "timestamp": "2026-04-02T23:30:09Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 4 deliverables implemented: glob-regex-bugfix (triage-todos.sh), triage-command-spec (commands/triage.md), work-todos-auto-commit (commands/work-todos.md), harness-registration (symlink + 4 reference repairs + deletion). Bonus: validate-step-artifacts.sh ideate->research boundary.",
+      "timestamp": "2026-04-02T23:33:36Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 4 deliverables implemented across 5 commits: validate-step-artifacts fix, glob-regex bugfix, triage command + registration, reference repairs, work-todos auto-commit",
+      "timestamp": "2026-04-02T23:35:53Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/triage-todos",
+  "mode": "code",
+  "base_commit": "0ec4048c0ea681cb7a5fe10428976e4244708476",
+  "epic_id": null,
+  "issue_id": null,
+  "created_at": "2026-04-02T22:51:31Z",
+  "updated_at": "2026-04-02T23:39:59Z",
+  "archived_at": "2026-04-02T23:36:00Z"
+}

@@ -1,0 +1,11 @@
+{
+  "deliverable": "glob-regex-bugfix",
+  "overall": "pass",
+  "findings": [
+    {
+      "severity": "warning",
+      "description": "Initial fix had double-substitution bug where .* was further mangled into .[^/]*. Fixed with null placeholder approach. Pre-existing bug in original code also resolved."
+    }
+  ],
+  "reviewed_at": "2026-04-02T23:35:00Z"
+}

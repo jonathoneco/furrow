@@ -1,0 +1,85 @@
+objective: >-
+  Replace /work-roadmap with /harness:triage — a command that reads todos.yaml,
+  runs dependency analysis via triage-todos.sh, applies AI reasoning to fill
+  missing triage metadata (urgency/impact/effort/depends_on), groups TODOs into
+  conflict-free phases, and generates a phased ROADMAP.md with worktree
+  parallelism strategy. Idempotent — re-running regenerates from current state.
+
+deliverables:
+  - name: triage-command-spec
+    specialist: harness-engineer
+    acceptance_criteria:
+      - "commands/triage.md defines the /harness:triage command with full 10-step pipeline"
+      - "Steps: validate, resolve template, run triage script, preserve completed phases (incremental), AI assessment of missing metadata, phase grouping, generate ROADMAP.md, confirm, write outputs + update todos.yaml, auto-commit"
+      - "Bare invocation preserves completed phases; --full regenerates everything"
+      - "AI assessment infers urgency/impact/effort/depends_on from context and work_needed prose"
+      - "Phase grouping respects dependency order and file conflict zones"
+      - "Worktree commands generated for parallel phases"
+      - "Auto-commits both ROADMAP.md and todos.yaml on success"
+    file_ownership:
+      - "commands/triage.md"
+    depends_on: []
+
+  - name: harness-registration
+    specialist: harness-engineer
+    acceptance_criteria:
+      - "Symlink .claude/commands/harness:triage.md points to ../../commands/triage.md"
+      - "Old symlink .claude/commands/work-roadmap.md removed"
+      - "commands/work-roadmap.md deleted"
+      - "CLAUDE.md command table updated: /work-roadmap replaced with /harness:triage"
+      - "All references to /work-roadmap repaired across the codebase"
+    file_ownership:
+      - ".claude/commands/harness:triage.md"
+      - ".claude/CLAUDE.md"
+    depends_on:
+      - triage-command-spec
+
+  - name: work-todos-auto-commit
+    specialist: harness-engineer
+    acceptance_criteria:
+      - "commands/work-todos.md gains auto-commit step after successful write"
+      - "Commits todos.yaml with conventional commit message"
+      - "Matches the commit pattern used in /harness:triage"
+    file_ownership:
+      - "commands/work-todos.md"
+    depends_on: []
+
+  - name: glob-regex-bugfix
+    specialist: harness-engineer
+    acceptance_criteria:
+      - "scripts/triage-todos.sh handles bare directory paths (e.g., skills/shared/) in files_touched"
+      - "Directory paths are treated as prefix globs (skills/shared/ → skills/shared/**)"
+      - "Existing glob patterns (**, *) continue to work unchanged"
+    file_ownership:
+      - "scripts/triage-todos.sh"
+    depends_on: []
+
+context_pointers:
+  - path: "commands/work-roadmap.md"
+    note: "Existing command to replace — use as starting spec, then delete"
+  - path: "scripts/triage-todos.sh"
+    note: "Dependency graph + file conflict engine — called by triage command"
+  - path: "templates/roadmap.md.tmpl"
+    note: "Output template for ROADMAP.md generation"
+  - path: "templates/roadmap-sections.yaml"
+    note: "Section ordering and metadata for template"
+  - path: "ROADMAP.md"
+    note: "Reference output — current roadmap format to match"
+  - path: "todos.yaml"
+    note: "Input source — TODOs with optional triage fields"
+  - path: "commands/work-todos.md"
+    note: "Related command getting auto-commit addition"
+  - path: "adapters/shared/schemas/todos.schema.yaml"
+    note: "Schema with 7 triage fields"
+
+constraints:
+  - "No compatibility shims — /work-roadmap is deleted, not aliased"
+  - "check-wave-conflicts.sh is NOT used — triage-todos.sh has its own conflict detection"
+  - "No provenance tracking on triage fields"
+  - "Incremental mode is default; --full regenerates all phases"
+  - "Auto-commit after successful write in both triage and work-todos"
+  - "Shell scripts use POSIX sh; quote all variables"
+  - "Inline AI assessment, not subagent — assess each TODO in a single pass"
+
+gate_policy: supervised
+source_todo: triage-todos-harness-skill
