@@ -4,8 +4,8 @@
 Build a self-contained shell-based integration test suite exercising 5 edge-case code paths in the work harness that normal pipeline usage cannot reach. Tests run via scripts/run-integration-tests.sh and each creates temporary fixtures, invokes the script under test, and asserts exit codes plus file mutations.
 
 ## Current State
-Step: decompose | Status: in_progress
-Deliverables: 0/0
+Step: review | Status: in_progress
+Deliverables: 6/6
 Mode: code
 
 ## Artifact Paths
@@ -21,6 +21,7 @@ Mode: code
 - **plan->spec**: pass — plan.json generated with 2 waves; wave 1 = test-runner, wave 2 = 5 parallel test files; architecture decisions settled
 - **spec->decompose**: pass — 6 spec files written in specs/ covering all deliverables with test cases, fixture requirements, and assertions
 - **decompose->implement**: pass — plan.json defines 2 waves; branch set to work/integration-tests; decomposition complete
+- **implement->review**: pass — 78/78 tests pass; all 6 deliverables complete; shellcheck clean
 
 ## Context Budget
 Measurement unavailable
