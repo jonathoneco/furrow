@@ -2,7 +2,7 @@
   "name": "edge-case-integration-tests",
   "title": "Edge-case integration tests",
   "description": "Build shell-based integration tests for 5 untested code paths that can't be exercised by normal pipeline usage",
-  "step": "implement",
+  "step": "review",
   "step_status": "in_progress",
   "steps_sequence": [
     "ideate",
@@ -102,6 +102,6 @@
   "epic_id": null,
   "issue_id": null,
   "created_at": "2026-04-02T22:52:08Z",
-  "updated_at": "2026-04-02T23:16:52Z",
+  "updated_at": "2026-04-02T23:21:17Z",
   "archived_at": null
 }

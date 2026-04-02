@@ -1,0 +1,33 @@
+{
+  "deliverable": "test-load-step",
+  "artifacts_present": true,
+  "acceptance_criteria": [
+    {
+      "criterion": "Conditional gate with conditions array outputs CONDITIONAL PASS with bulleted conditions",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Conditional gate with null conditions outputs no conditions",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Pass gate (not conditional) outputs no conditions",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Missing skill file exits 3",
+      "met": true,
+      "evidence": "artifacts present"
+    }
+  ],
+  "verdict": "pass",
+  "mode": "code",
+  "base_commit": "0ec4048c0ea681cb7a5fe10428976e4244708476",
+  "file_ownership": [
+    "tests/integration/test-load-step.sh"
+  ],
+  "timestamp": "2026-04-02T23:21:28Z"
+}
