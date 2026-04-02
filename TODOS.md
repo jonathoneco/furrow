@@ -195,3 +195,72 @@ These were explicitly deferred in the recommendations. Listed for completeness:
 - `docs/architecture/PLAN.md` — the original 6-phase roadmap (a manual version of this process)
 - `.work/harness-v2-status-eval/recommendations.md` — "Suggested Build Order" section shows the dependency-driven sequencing pattern
 - `scripts/generate-plan.sh` — the topological sort logic could be reused for roadmap dependency ordering
+
+---
+
+## 8. Parallel Workflow Support
+
+**Context**: The harness currently supports only one active work unit at a time. `detect-context.sh` warns when multiple active tasks exist and asks the user to pick one. Hooks like `state-guard.sh`, `ownership-warn.sh`, and `timestamp-update.sh` assume a single active `.work/` directory. Real-world usage often requires concurrent streams — e.g., a bug fix while a feature is in the plan step, or two independent deliverables that could progress simultaneously.
+
+**What's blocking today**:
+- `detect-context.sh` treats multiple active tasks as an error condition (asks "which to continue?" instead of allowing both)
+- Hooks scan all `.work/*/state.json` files but don't scope operations to a specific work unit — a write to one unit could trigger validation on another
+- `work-context.md` skill loads context for a single active task; no mechanism to switch or scope
+- `post-compact.sh` re-injects context for one task; a second active task loses context
+- Step skills assume one step sequence in flight; no namespacing of step state
+
+**What to build**:
+- Work unit scoping: commands and hooks must accept/infer which work unit they're operating on (e.g., `--unit <name>` flag or CWD-based detection)
+- Context multiplexing: `work-context.md` should support loading context for a specific unit, not just "the active one"
+- Hook scoping: each hook must operate on the triggering work unit only, not scan all active units
+- Session affinity: a mechanism to "focus" a session on one work unit while others remain active but dormant
+- `detect-context.sh` should list all active units and allow continuing any one without treating multiplicity as an error
+
+**Design considerations**:
+- Start with "focused + dormant" model: one unit is focused (receives context injection, hook enforcement), others are dormant (state preserved but not actively loaded). This avoids the complexity of true concurrent execution.
+- The `/work` command could accept a `--switch <name>` flag to change focus without archiving the current unit.
+- Consider whether step hooks should be fully isolated per unit or share the hook pipeline with unit-scoped filtering.
+
+**References**:
+- `commands/lib/detect-context.sh` — current single-task assumption
+- `hooks/state-guard.sh`, `hooks/ownership-warn.sh` — hooks that need scoping
+- `skills/work-context.md` — context loading that assumes one active unit
+- `hooks/post-compact.sh` — context re-injection after compaction
+- Deferred items table (this file, item "Concurrent work streams") — originally Phase 4
+
+---
+
+## 9. Triage-TODOs Harness Skill
+
+**Context**: The process of turning TODOS.md into a dependency-aware, parallelizable roadmap was done manually this session. It required: reading all TODOs, analyzing file-level conflicts between them, building a dependency DAG, grouping into phases that respect both logical dependencies and worktree-safe file isolation, and producing a ROADMAP.md with branch/merge strategy. This should be a repeatable harness skill, not a one-off exercise.
+
+**What to build**:
+- A `/harness:triage` (or `triage-todos`) skill that reads TODOS.md and produces/updates ROADMAP.md
+- The skill should perform:
+  1. **Dependency extraction**: Parse each TODO for explicit dependencies ("depends on TODO N", "after X is done") and implicit ones (file overlap analysis via grep of "files touched" sections)
+  2. **File conflict analysis**: For each TODO, identify files it would modify. Cross-reference to find TODOs that touch the same files — these cannot safely parallelize in worktrees
+  3. **DAG construction**: Build a directed acyclic graph from dependencies + file conflicts. Identify the critical path and maximum parallelism width
+  4. **Phase grouping**: Cluster TODOs into phases where all items in a phase can run in parallel worktrees. Each phase has a merge point back to main before the next phase starts
+  5. **Branch strategy**: Generate branch names, merge order, and conflict-risk annotations per phase
+  6. **ROADMAP.md generation**: Write the roadmap with DAG visualization, phase breakdown, and per-track work descriptions
+
+**Design considerations**:
+- The skill should be idempotent — re-running after adding/completing TODOs regenerates the roadmap from current state
+- Completed TODOs (marked with `[x]` or moved to archive section) should be shown as done in the DAG but excluded from active phases
+- The file conflict analysis could reuse `scripts/check-wave-conflicts.sh` patterns (already does file overlap detection for implementation waves)
+- The DAG could reuse `scripts/generate-plan.sh` topological sort logic
+- Output format should match what `/work` expects so each phase track can be started directly
+
+**Integration points**:
+- `TODOS.md` — input (structured TODO items with references)
+- `ROADMAP.md` — output (phased, parallelizable plan)
+- `scripts/generate-plan.sh` — reusable topological sort
+- `scripts/check-wave-conflicts.sh` — reusable file conflict detection
+- `/work` command — each roadmap track should be startable as a work unit
+
+**References**:
+- This session's manual triage process — the pattern to automate
+- `ROADMAP.md` — the output format to replicate
+- `scripts/generate-plan.sh` — topological sort for dependency ordering
+- `scripts/check-wave-conflicts.sh` — file overlap detection for worktree safety
+- TODO 7 (Roadmap Process) — the broader roadmap lifecycle this skill plugs into
