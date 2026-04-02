@@ -1,0 +1,96 @@
+objective: >-
+  Build a /work-roadmap command that reads todos.yaml, triages each TODO by
+  urgency/impact/effort/dependencies using Claude-informed reasoning, groups
+  into dependency-aware phases, and outputs a templated ROADMAP.md with
+  worktree parallelism strategy.
+
+deliverables:
+  - name: todos-schema-extension
+    specialist: api-designer
+    acceptance_criteria:
+      - "todos.yaml schema gains optional fields: depends_on, files_touched, urgency, impact, effort, phase, status"
+      - "All fields are optional — existing entries validate without changes"
+      - "status enum: active | done | blocked | deferred"
+      - "validate-todos.sh passes with extended schema"
+    file_ownership:
+      - "adapters/shared/schemas/todos.schema.yaml"
+    depends_on: []
+
+  - name: roadmap-template
+    specialist: harness-engineer
+    acceptance_criteria:
+      - "Template file at templates/roadmap.md.tmpl defines section structure"
+      - "Section schema (YAML) defines section order, required vs optional"
+      - "Layered resolution: harness.yaml config > .claude/roadmap.tmpl > harness default"
+      - "Template supports: header, dependency-dag, conflict-zones, phase-N (repeating), worktree-commands"
+    file_ownership:
+      - "templates/roadmap.md.tmpl"
+      - "templates/roadmap-sections.yaml"
+    depends_on: []
+
+  - name: triage-script
+    specialist: harness-engineer
+    acceptance_criteria:
+      - "scripts/triage-todos.sh reads todos.yaml and outputs dependency graph + file conflict data as JSON"
+      - "Reuses topological sort pattern from generate-plan.sh adapted for TODO-level deps"
+      - "Reuses file conflict detection pattern from check-wave-conflicts.sh"
+      - "Outputs structured JSON: { todos: [...with triage data], graph: {...}, conflicts: [...] }"
+    file_ownership:
+      - "scripts/triage-todos.sh"
+    depends_on:
+      - todos-schema-extension
+
+  - name: command-skill
+    specialist: harness-engineer
+    acceptance_criteria:
+      - "commands/work-roadmap.md defines the /work-roadmap command"
+      - "Full pipeline: triage + group + sequence + generate in one invocation"
+      - "Calls triage-script for dependency graph and file conflict data"
+      - "Claude reads script output + todo prose to make grouping/phasing decisions"
+      - "Outputs ROADMAP.md using the template system"
+      - "Bare invocation preserves completed phases, --full regenerates everything"
+      - "Inline reasoning: each phase includes triage rationale"
+      - "Worktree commands generated for parallel phases"
+    file_ownership:
+      - "commands/work-roadmap.md"
+    depends_on:
+      - roadmap-template
+      - triage-script
+
+  - name: harness-integration
+    specialist: harness-engineer
+    acceptance_criteria:
+      - "harness.yaml gains optional roadmap.template key for custom template path"
+      - "CLAUDE.md command table updated with /work-roadmap entry"
+      - "todos.yaml entry roadmap-process-from-todos updated to reference todos.yaml (not TODOS.md)"
+    file_ownership:
+      - ".claude/harness.yaml"
+      - ".claude/CLAUDE.md"
+      - "todos.yaml"
+    depends_on:
+      - command-skill
+
+context_pointers:
+  - path: "ROADMAP.md"
+    note: "Output format template — current manually-created roadmap"
+  - path: "todos.yaml"
+    note: "Input source — 7 active TODOs to triage"
+  - path: "adapters/shared/schemas/todos.schema.yaml"
+    note: "Schema to extend with triage fields"
+  - path: "scripts/generate-plan.sh"
+    note: "Topological sort pattern to adapt for TODO-level dependencies"
+  - path: "scripts/check-wave-conflicts.sh"
+    note: "File conflict detection pattern to reuse"
+  - path: "commands/work-todos.md"
+    note: "Related command pattern for TODO management"
+
+constraints:
+  - "Read todos.yaml, NOT the old TODOS.md (migrated by T6)"
+  - "Schema extension must be additive — existing entries validate unchanged"
+  - "Template must be portable across harness projects"
+  - "Shell scripts use POSIX sh where possible, bash only when needed"
+  - "status field is lightweight — will be replaced by task tracker long-term"
+  - "Roadmaps are sprint artifacts, not permanent documents"
+
+gate_policy: supervised
+source_todo: roadmap-process-from-todos

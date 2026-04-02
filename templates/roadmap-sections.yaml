@@ -1,0 +1,34 @@
+# roadmap-sections.yaml — Section registry for ROADMAP.md generation
+# Defines section order, requirements, and rendering hints for /work-roadmap
+
+sections:
+  - name: header
+    required: true
+    order: 1
+    description: "Title, updated date, overall phase status"
+
+  - name: dependency-dag
+    required: true
+    order: 2
+    description: "ASCII dependency graph showing TODO relationships and phases"
+
+  - name: legend
+    required: false
+    order: 3
+    description: "Notation key for DAG symbols"
+
+  - name: conflict-zones
+    required: false
+    order: 4
+    description: "Table of file overlap zones between TODOs in same phase"
+
+  - name: phase
+    required: true
+    order: 5
+    repeating: true
+    description: "Per-phase section with tracks, branches, files, conflict analysis, rationale"
+
+  - name: worktree-commands
+    required: true
+    order: 6
+    description: "Shell commands for launching parallel worktrees per phase"

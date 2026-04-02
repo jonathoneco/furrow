@@ -1,0 +1,77 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": [
+        "roadmap-template",
+        "todos-schema-extension"
+      ],
+      "assignments": {
+        "roadmap-template": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "templates/roadmap.md.tmpl",
+            "templates/roadmap-sections.yaml"
+          ],
+          "skills": []
+        },
+        "todos-schema-extension": {
+          "specialist": "api-designer",
+          "file_ownership": [
+            "adapters/shared/schemas/todos.schema.yaml"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 2,
+      "deliverables": [
+        "triage-script"
+      ],
+      "assignments": {
+        "triage-script": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "scripts/triage-todos.sh"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 3,
+      "deliverables": [
+        "command-skill"
+      ],
+      "assignments": {
+        "command-skill": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "commands/work-roadmap.md"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 4,
+      "deliverables": [
+        "harness-integration"
+      ],
+      "assignments": {
+        "harness-integration": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            ".claude/harness.yaml",
+            ".claude/CLAUDE.md",
+            "todos.yaml"
+          ],
+          "skills": []
+        }
+      }
+    }
+  ],
+  "created_at": "2026-04-02T21:17:01Z",
+  "created_by": "generate-plan"
+}
