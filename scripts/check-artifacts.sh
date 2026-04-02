@@ -27,7 +27,7 @@ trap 'rm -rf "$_eval_tmpdir"' EXIT
 # --- argument validation ---
 
 if [ $# -lt 2 ]; then
-  echo "Usage: run-eval.sh <name> <deliverable>" >&2
+  echo "Usage: check-artifacts.sh <name> <deliverable>" >&2
   exit 2
 fi
 

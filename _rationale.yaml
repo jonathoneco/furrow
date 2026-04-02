@@ -377,7 +377,7 @@ components:
     delete_when: "Agent SDK provides built-in workflow configuration and validation"
 
   # --- W-09: Ideation Ceremony ---
-  - path: evals/ideation-gate.md
+  - path: evals/gates/ideate.yaml
     exists_because: "Claude Code has no native ideation gate evaluation with dimension rubrics"
     delete_when: "Claude Code provides built-in ideation quality assessment"
 

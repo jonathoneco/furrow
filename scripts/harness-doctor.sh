@@ -251,7 +251,7 @@ fi
 # --- Check: Gate evaluation files ---
 section "Gate evaluation files"
 _gate_missing=0
-for _step in ideation research plan spec decompose implement review; do
+for _step in ideate research plan spec decompose implement review; do
   if [ ! -f "$ROOT/evals/gates/${_step}.yaml" ]; then
     check_fail "evals/gates/${_step}.yaml missing"
     _gate_missing=$((_gate_missing + 1))

@@ -2,7 +2,7 @@
   "name": "isolated-gate-evaluation",
   "title": "Rearchitect gate evaluation: every gate gets an isolated subagent evaluator (generator-evaluator separation), trust gradient controls human oversight of evaluator verdicts, shell pre-filters become trivial-step hints not decisions",
   "description": "Rearchitect gate evaluation: every gate gets an isolated subagent evaluator (generator-evaluator separation), trust gradient controls human oversight of evaluator verdicts, shell pre-filters become trivial-step hints not decisions",
-  "step": "implement",
+  "step": "review",
   "step_status": "not_started",
   "steps_sequence": [
     "ideate",
@@ -49,6 +49,13 @@
       "decided_by": "manual",
       "evidence": "Decompose complete: 8 deliverables verified across 6 waves. team-plan.md written with phase-boundary commit strategy. Waves 2 and 5 have parallel agents. All file_ownership non-overlapping within waves.",
       "timestamp": "2026-04-02T21:40:49Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Implementation complete: 34 files changed across 3 phases. Phase 1: 7 gate YAMLs + evaluator template. Phase 2: run-gate.sh, select-gate.sh, script renames, decided_by vocabulary migration. Phase 3: 8 skills + 2 protocols + 13 consumers updated. Final grep sweep confirms no stale references.",
+      "timestamp": "2026-04-02T22:25:29Z"
     }
   ],
   "force_stop_at": null,
@@ -58,6 +65,6 @@
   "epic_id": null,
   "issue_id": null,
   "created_at": "2026-04-02T20:53:39Z",
-  "updated_at": "2026-04-02T22:22:25Z",
+  "updated_at": "2026-04-02T22:25:38Z",
   "archived_at": null
 }

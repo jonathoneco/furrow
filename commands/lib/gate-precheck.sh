@@ -17,7 +17,7 @@
 set -eu
 
 if [ "$#" -lt 3 ]; then
-  echo "Usage: auto-advance.sh <step> <definition_path> <state_path>" >&2
+  echo "Usage: gate-precheck.sh <step> <definition_path> <state_path>" >&2
   exit 1
 fi
 
@@ -27,18 +27,18 @@ state_path="$3"
 
 # --- global exclusions ---
 
-# Ideate, implement, and review never auto-advance
+# Ideate, implement, and review have no pre-step evaluation — always run
 case "${step}" in
   ideate|implement|review) exit 1 ;;
 esac
 
-# Supervised mode disables all auto-advance
+# Supervised mode disables pre-step evaluation
 gate_policy="$(yq -r '.gate_policy // "supervised"' "${def_path}" 2>/dev/null)" || gate_policy="supervised"
 if [ "${gate_policy}" = "supervised" ]; then
   exit 1
 fi
 
-# force_stop_at overrides auto-advance
+# force_stop_at blocks pre-step evaluation at this step
 force_stop="$(jq -r '.force_stop_at // ""' "${state_path}" 2>/dev/null)" || force_stop=""
 if [ "${force_stop}" = "${step}" ]; then
   exit 1

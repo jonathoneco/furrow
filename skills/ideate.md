@@ -39,7 +39,7 @@ Read these when relevant to your current action:
 Transition out: gate record `ideate->research` with outcome `pass` required.
 No pre-step evaluation — ideation always runs. Post-step gate evaluates
 completeness, alignment, feasibility, and cross-model evidence.
-Reference: `evals/gates/ideation.yaml` post_step, per `skills/shared/gate-evaluator.md`.
+Reference: `evals/gates/ideate.yaml` post_step, per `skills/shared/gate-evaluator.md`.
 Next step expects: validated `definition.yaml` and initialized `state.json`.
 
 ## Learnings
