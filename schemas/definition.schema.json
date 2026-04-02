@@ -88,6 +88,11 @@
       "enum": ["code", "research"],
       "default": "code",
       "description": "Work mode — code (default) or research"
+    },
+    "source_todo": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+      "description": "ID of the TODO entry this work unit was created from"
     }
   }
 }

@@ -23,19 +23,19 @@
 - id: roadmap-process-from-todos
   title: "Roadmap Process from TODOS"
   context: |
-    TODOS.md captures what needs doing. A roadmap process would periodically triage these into prioritized work units with dependencies, grouping, and sequencing. This bridges the gap between "list of things to do" and "what to work on next."
+    todos.yaml captures what needs doing. A roadmap process would periodically triage these into prioritized work units with dependencies, grouping, and sequencing. This bridges the gap between "list of things to do" and "what to work on next."
   work_needed: |
-    - A `/work-roadmap` command (or skill) that reads TODOS.md and produces a prioritized plan
+    - A `/work-roadmap` command (or skill) that reads todos.yaml and produces a prioritized plan
     - The roadmap process should:
       1. Triage: For each TODO, assess: urgency (blocking other work?), impact (how many other items does this unblock?), effort (session count estimate), dependencies (what must be done first?)
       2. Group: Cluster related TODOs into candidate work units (e.g., "specialist rewrites" groups items 4a-4c; "research mode validation" groups items 3 + parts of 2)
       3. Sequence: Order work units by dependency graph and impact — items that unblock the most other items go first
       4. Output: A ROADMAP.md with ordered work units, each with enough context to start via `/work`
-    - The roadmap should be regenerated when TODOS.md changes significantly (new items added, items completed)
+    - The roadmap should be regenerated when todos.yaml changes significantly (new items added, items completed)
     - Completed TODOs move to an "Archive" section (not deleted — they're audit trail)
 
     Process for a roadmap session:
-    1. Read TODOS.md
+    1. Read todos.yaml
     2. For each item: is it still relevant? (check if conditions changed)
     3. Triage: urgency / impact / effort / dependencies
     4. Group into candidate work units (1-3 TODOs per unit)
@@ -44,7 +44,7 @@
     7. Start top-priority work unit via /work
 
     Design considerations:
-    - TODOS.md is append-friendly (new items added at end); ROADMAP.md is rewrite-friendly (regenerated from current state)
+    - todos.yaml is append-friendly (new items added at end); ROADMAP.md is rewrite-friendly (regenerated from current state)
     - TODOs are granular (one concern per item); roadmap entries are scoped work units (may combine multiple TODOs)
     - The roadmap process itself should be a research-mode work unit the first time, then become a lightweight command
   references:
@@ -94,9 +94,9 @@
 - id: triage-todos-harness-skill
   title: "Triage-TODOs Harness Skill"
   context: |
-    The process of turning TODOS.md into a dependency-aware, parallelizable roadmap was done manually this session. It required: reading all TODOs, analyzing file-level conflicts between them, building a dependency DAG, grouping into phases that respect both logical dependencies and worktree-safe file isolation, and producing a ROADMAP.md with branch/merge strategy. This should be a repeatable harness skill, not a one-off exercise.
+    The process of turning todos.yaml into a dependency-aware, parallelizable roadmap was done manually this session. It required: reading all TODOs, analyzing file-level conflicts between them, building a dependency DAG, grouping into phases that respect both logical dependencies and worktree-safe file isolation, and producing a ROADMAP.md with branch/merge strategy. This should be a repeatable harness skill, not a one-off exercise.
   work_needed: |
-    - A `/harness:triage` (or `triage-todos`) skill that reads TODOS.md and produces/updates ROADMAP.md
+    - A `/harness:triage` (or `triage-todos`) skill that reads todos.yaml and produces/updates ROADMAP.md
     - The skill should perform:
       1. Dependency extraction: Parse each TODO for explicit dependencies ("depends on TODO N", "after X is done") and implicit ones (file overlap analysis via grep of "files touched" sections)
       2. File conflict analysis: For each TODO, identify files it would modify. Cross-reference to find TODOs that touch the same files — these cannot safely parallelize in worktrees
@@ -113,7 +113,7 @@
     - Output format should match what `/work` expects so each phase track can be started directly
 
     Integration points:
-    - `TODOS.md` — input (structured TODO items with references)
+    - `todos.yaml` — input (structured TODO items with references)
     - `ROADMAP.md` — output (phased, parallelizable plan)
     - `scripts/generate-plan.sh` — reusable topological sort
     - `scripts/check-wave-conflicts.sh` — reusable file conflict detection

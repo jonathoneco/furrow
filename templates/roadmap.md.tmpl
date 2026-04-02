@@ -1,0 +1,46 @@
+<!-- section:header -->
+# Roadmap
+
+> Updated: {date}
+
+{status_summary}
+
+<!-- section:dependency-dag -->
+## Dependency DAG
+
+```
+{dag_content}
+```
+
+<!-- section:legend -->
+## Legend
+
+| Symbol | Meaning |
+|--------|---------|
+| `[x]`  | Done    |
+| `[ ]`  | TODO    |
+| `-->`  | Depends on (must complete first) |
+| `\|\|` | Parallel (no dependency)         |
+
+<!-- section:conflict-zones -->
+## Conflict Zones
+
+| Phase | Files | Overlapping TODOs |
+|-------|-------|-------------------|
+{conflict_rows}
+
+<!-- section:phase -->
+## Phase {phase_number}: {phase_title}
+
+**Status:** {phase_status}
+
+**Rationale:** {phase_rationale}
+
+### Tracks
+
+{phase_tracks}
+
+<!-- section:worktree-commands -->
+## Worktree Commands
+
+{worktree_blocks}
