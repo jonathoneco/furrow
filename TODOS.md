@@ -135,3 +135,63 @@ These were explicitly deferred in the recommendations. Listed for completeness:
 - `.work/harness-v2-status-eval/recommendations.md` — full defer rationale
 - `.work/harness-v2-status-eval/gap-matrix.md` — phase-by-phase coverage assessment
 - `docs/architecture/PLAN.md` — original 6-phase plan with 19 specs
+
+---
+
+## 6. Formalize TODOS.md as a Harness Workflow
+
+**Context**: This TODOS.md was created ad-hoc at the end of a work unit to capture follow-up work. The pattern proved useful — structured items with context, references, and test plans allow future sessions to pick up work accurately. This should be a first-class harness workflow, not a one-off.
+
+**What to build**:
+- A `/work-todos` or checkpoint-integrated command that generates TODOS.md at session end
+- Template for TODO items: title, context (why this matters), work needed (concrete steps), what could fail (risks), references (artifacts with paths)
+- Auto-populate from: open questions in summary.md, learnings.jsonl pitfalls that suggest follow-up, deferred items from recommendations, findings from review step that weren't addressed
+- TODOS.md should live at project root (not in `.work/`) since it spans work units
+- Each TODO should be convertible to a `/work` description — enough context to start a new work unit without re-reading the original session
+
+**Integration points**:
+- `commands/checkpoint.md` — offer to update TODOS.md at checkpoint time
+- `commands/archive.md` — generate/update TODOS.md when archiving a work unit
+- `skills/review.md` — review findings that aren't fixed should become TODOs
+- `learnings.jsonl` — pitfalls with `promoted: false` may indicate unresolved follow-up
+
+**References**:
+- This file itself — the pattern to formalize
+- `commands/lib/promote-learnings.sh` — similar "extract durable insights" pattern
+
+---
+
+## 7. Roadmap Process from TODOS
+
+**Context**: TODOS.md captures what needs doing. A roadmap process would periodically triage these into prioritized work units with dependencies, grouping, and sequencing. This bridges the gap between "list of things to do" and "what to work on next."
+
+**What to build**:
+- A `/work-roadmap` command (or skill) that reads TODOS.md and produces a prioritized plan
+- The roadmap process should:
+  1. **Triage**: For each TODO, assess: urgency (blocking other work?), impact (how many other items does this unblock?), effort (session count estimate), dependencies (what must be done first?)
+  2. **Group**: Cluster related TODOs into candidate work units (e.g., "specialist rewrites" groups items 4a-4c; "research mode validation" groups items 3 + parts of 2)
+  3. **Sequence**: Order work units by dependency graph and impact — items that unblock the most other items go first
+  4. **Output**: A ROADMAP.md with ordered work units, each with enough context to start via `/work`
+- The roadmap should be regenerated when TODOS.md changes significantly (new items added, items completed)
+- Completed TODOs move to an "## Archive" section (not deleted — they're audit trail)
+
+**Process for a roadmap session**:
+```
+1. Read TODOS.md
+2. For each item: is it still relevant? (check if conditions changed)
+3. Triage: urgency / impact / effort / dependencies
+4. Group into candidate work units (1-3 TODOs per unit)
+5. Sequence by dependency + impact
+6. Write ROADMAP.md
+7. Start top-priority work unit via /work
+```
+
+**Design considerations**:
+- TODOS.md is append-friendly (new items added at end); ROADMAP.md is rewrite-friendly (regenerated from current state)
+- TODOs are granular (one concern per item); roadmap entries are scoped work units (may combine multiple TODOs)
+- The roadmap process itself should be a research-mode work unit the first time, then become a lightweight command
+
+**References**:
+- `docs/architecture/PLAN.md` — the original 6-phase roadmap (a manual version of this process)
+- `.work/harness-v2-status-eval/recommendations.md` — "Suggested Build Order" section shows the dependency-driven sequencing pattern
+- `scripts/generate-plan.sh` — the topological sort logic could be reused for roadmap dependency ordering
