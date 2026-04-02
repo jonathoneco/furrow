@@ -1,0 +1,85 @@
+objective: "Strengthen auto-advance enforcement on both fronts: tighten deterministic shell checks as structural pre-filters, formalize evaluator criteria for semantic judgments via isolated subagent evaluation, and align skill documentation with actual enforcement behavior."
+
+deliverables:
+  - name: auto-advance-shell-hardening
+    acceptance_criteria:
+      - "Spec auto-advance removes testability regex; retains AC count >= 2 as sole structural check"
+      - "Research auto-advance tightens path regex to require / character (grep -cE '/\\w+')"
+      - "Each shell check has inline comment explaining what it checks and why"
+      - "Evidence messages updated to reflect tightened/simplified checks"
+    specialist: harness-engineer
+    file_ownership:
+      - "commands/lib/auto-advance.sh"
+
+  - name: gate-eval-structure
+    acceptance_criteria:
+      - "evals/gates/ directory exists with YAML files for all 7 steps: ideation, research, plan, spec, decompose, implement, review"
+      - "Each gate YAML has auto_advance section (where applicable) and gate section with dimensions"
+      - "evals/ideation-gate.md content migrated to evals/gates/ideation.yaml and .md file deleted"
+      - "Research gate YAML includes path-relevance dimension checking AC paths are genuine work targets"
+      - "Spec gate YAML includes testability dimension (moved from shell to evaluator)"
+      - "Implement and review gate YAMLs have gate section only (no auto_advance section)"
+      - "skills/shared/gate-evaluator.md defines evaluator subagent prompt template with isolation contract"
+      - "Gate evaluator template specifies: inputs (definition.yaml path, gate YAML path), prohibited context (summary.md, conversation artifacts, step outputs), and response format (PASS/FAIL per dimension with evidence)"
+    specialist: harness-engineer
+    depends_on:
+      - auto-advance-shell-hardening
+    file_ownership:
+      - "evals/gates/*.yaml"
+      - "evals/ideation-gate.md"
+      - "skills/shared/gate-evaluator.md"
+
+  - name: skill-docs-alignment
+    acceptance_criteria:
+      - "Step skills for research, plan, spec, decompose each have Shell-checked and Evaluator-judged subsections"
+      - "Shell-checked subsections match actual checks in commands/lib/auto-advance.sh"
+      - "Evaluator-judged subsections reference evals/gates/{step}.yaml and skills/shared/gate-evaluator.md"
+      - "Auto-advance documented as: shell pre-filter then isolated subagent evaluator; human is skipped, not the evaluator"
+    specialist: harness-engineer
+    depends_on:
+      - gate-eval-structure
+    file_ownership:
+      - "skills/research.md"
+      - "skills/plan.md"
+      - "skills/spec.md"
+      - "skills/decompose.md"
+
+  - name: consumer-updates
+    acceptance_criteria:
+      - "skills/shared/eval-protocol.md has new section documenting evals/gates/ convention and gate evaluator subagent pattern"
+      - "references/gate-protocol.md references evals/gates/ as criteria source and documents two-stage auto-advance flow (shell pre-filter + subagent evaluator)"
+      - "skills/ideate.md updated from evals/ideation-gate.md to evals/gates/ideation.yaml"
+      - "_rationale.yaml updated with evals/gates/ paths, gate-evaluator.md rationale, and generator-evaluator separation justification"
+      - "scripts/harness-doctor.sh validates evals/gates/*.yaml files exist"
+      - "docs/architecture/file-structure.md includes evals/gates/ in layout spec"
+    specialist: harness-engineer
+    depends_on:
+      - gate-eval-structure
+    file_ownership:
+      - "skills/shared/eval-protocol.md"
+      - "references/gate-protocol.md"
+      - "scripts/harness-doctor.sh"
+      - "docs/architecture/file-structure.md"
+
+context_pointers:
+  - path: "commands/lib/auto-advance.sh"
+    note: "Current auto-advance logic with per-step shell checks — T3 modified this"
+  - path: "scripts/auto-advance.sh"
+    note: "Orchestration layer that calls auto-advance checks and records gates"
+  - path: "evals/dimensions/"
+    note: "Existing dimension eval convention — gates are a parallel structure"
+  - path: "evals/ideation-gate.md"
+    note: "Only existing gate eval — migrating to evals/gates/ideation.yaml"
+  - path: "skills/shared/eval-protocol.md"
+    note: "Canonical eval loading protocol — needs gates section added"
+  - path: "references/gate-protocol.md"
+    note: "Gate decision protocol — needs evals/gates/ reference"
+
+constraints:
+  - "No new dependencies — yq and jq already available"
+  - "Shell checks must be cheap and reliable — no network calls, no repo-wide file searches"
+  - "Gate YAMLs follow binary PASS/FAIL dimension convention from evals/dimensions/"
+  - "evals/dimensions/ files stay unchanged — gates are parallel, not replacement"
+  - "Gate evaluator must run in isolated subagent context — no parent conversation leakage (generator-evaluator separation)"
+
+gate_policy: "delegated"

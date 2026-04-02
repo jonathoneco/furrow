@@ -1,0 +1,213 @@
+objective: "Rearchitect gate evaluation so every gate gets an isolated subagent evaluator (generator-evaluator separation), the trust gradient controls human oversight of evaluator verdicts (not whether evaluation happens), and shell scripts become structural prechecks not decision-makers."
+
+deliverables:
+  # --- Phase 1: Foundation (new files only, no behavior changes) ---
+
+  - name: gate-yaml-schema
+    acceptance_criteria:
+      - "evals/gates/ directory contains YAML files for all 7 steps: ideation, research, plan, spec, decompose, implement, review"
+      - "Each gate YAML has pre_step section (research, plan, spec, decompose only) and post_step section (all steps)"
+      - "post_step sections use dimensions_from to reference evals/dimensions/{step}.yaml instead of duplicating content"
+      - "pre_step sections contain inline dimensions with PASS/FAIL criteria and evidence_format fields"
+      - "Research pre_step includes path-relevance dimension"
+      - "Spec pre_step includes testability dimension"
+      - "Plan pre_step includes complexity-assessment dimension"
+      - "Decompose pre_step includes wave-triviality dimension"
+      - "Ideate, implement, and review gate YAMLs have post_step section only (no pre_step)"
+    specialist: harness-engineer
+    file_ownership:
+      - "evals/gates/*.yaml"
+
+  - name: ideation-gate-migration
+    acceptance_criteria:
+      - "evals/ideation-gate.md content migrated to evals/gates/ideation.yaml post_step section"
+      - "evals/ideation-gate.md deleted"
+      - "YAML structure follows same schema as other gate files"
+      - "Existing 4 dimensions (completeness, alignment, feasibility, cross-model) preserved"
+    specialist: harness-engineer
+    depends_on:
+      - gate-yaml-schema
+    file_ownership:
+      - "evals/gates/ideation.yaml"
+      - "evals/ideation-gate.md"
+
+  - name: evaluator-prompt-template
+    acceptance_criteria:
+      - "skills/shared/gate-evaluator.md defines the isolated subagent evaluator contract"
+      - "Template specifies inputs: definition.yaml path, gate YAML path, step output paths (for post_step)"
+      - "Template specifies prohibited context: summary.md, conversation artifacts, prior step outputs not relevant to current gate"
+      - "Template specifies response format: PASS/FAIL per dimension with evidence, overall verdict"
+      - "Template documents generator-evaluator separation rationale"
+      - "Template documents invocation pattern: shell prepares inputs and signals, in-context agent spawns subagent via Agent tool"
+    specialist: harness-engineer
+    depends_on:
+      - gate-yaml-schema
+    file_ownership:
+      - "skills/shared/gate-evaluator.md"
+
+  # --- Phase 2: Integration (rewiring — the risky phase) ---
+
+  - name: gate-orchestration-and-gradient
+    acceptance_criteria:
+      - "scripts/run-gate.sh orchestrates gate flow: Phase A (check-artifacts.sh) then signals for Phase B (subagent)"
+      - "run-gate.sh prepares evaluator inputs as a YAML prompt file (definition.yaml content, gate YAML content, Phase A results, step output paths) and returns signal + path for agent to spawn subagent"
+      - "run-gate.sh does NOT invoke the subagent itself — the in-context agent reads the signal and spawns via Agent tool"
+      - "scripts/select-gate.sh returns absolute path to evals/gates/{step}.yaml"
+      - "evaluate-gate.sh updated: decided_by vocabulary changed to manual|evaluated|prechecked"
+      - "Supervised mode: evaluator runs, verdict presented to human for approval (decided_by: manual)"
+      - "Delegated mode: evaluator verdict accepted for most gates (decided_by: evaluated), human reviews implement->review and review->archive (decided_by: manual)"
+      - "Autonomous mode: evaluator verdict accepted for all gates (decided_by: evaluated)"
+      - "Pre-step evaluation that determines step is trivially skippable records decided_by: prechecked"
+      - "Both schema files updated for new decided_by enum: schemas/state.schema.json and adapters/shared/schemas/state.schema.json"
+      - "scripts/record-gate.sh enum validation updated to manual|evaluated|prechecked"
+      - "scripts/update-state.sh decided_by validation updated to manual|evaluated|prechecked"
+    specialist: harness-engineer
+    depends_on:
+      - evaluator-prompt-template
+    file_ownership:
+      - "scripts/run-gate.sh"
+      - "scripts/select-gate.sh"
+      - "scripts/evaluate-gate.sh"
+      - "scripts/record-gate.sh"
+      - "scripts/update-state.sh"
+      - "schemas/state.schema.json"
+      - "adapters/shared/schemas/state.schema.json"
+
+  - name: script-rewire
+    acceptance_criteria:
+      - "scripts/run-eval.sh renamed to scripts/check-artifacts.sh"
+      - "check-artifacts.sh contains only Phase A deterministic checks (artifact presence, file ownership, git diff)"
+      - "check-artifacts.sh writes Phase A results to a JSON file for consumption by run-gate.sh"
+      - "Phase B dimension evaluation removed from check-artifacts.sh"
+      - "commands/lib/auto-advance.sh renamed to commands/lib/gate-precheck.sh"
+      - "Spec testability regex removed from gate-precheck.sh; AC count >= 2 retained as structural check"
+      - "Research path regex tightened to require / character in gate-precheck.sh"
+      - "Each check in gate-precheck.sh has inline comment explaining what it checks and why"
+      - "scripts/auto-advance.sh deleted (replaced by run-gate.sh from gate-orchestration-and-gradient)"
+      - "hooks/validate-summary.sh updated: auto-advance check changed to prechecked"
+      - "All callers of renamed/deleted scripts updated — verified by grep sweep before and after"
+      - "End-to-end gate flow smoke-tested on a sample work unit: Phase A runs, prompt file generated, subagent evaluator invocable"
+    specialist: harness-engineer
+    depends_on:
+      - gate-orchestration-and-gradient
+    file_ownership:
+      - "scripts/check-artifacts.sh"
+      - "commands/lib/gate-precheck.sh"
+      - "commands/lib/auto-advance.sh"
+      - "scripts/auto-advance.sh"
+      - "scripts/run-eval.sh"
+      - "hooks/validate-summary.sh"
+
+  # --- Phase 3: Alignment (docs and references — no runtime behavior changes) ---
+
+  - name: skill-docs-alignment
+    acceptance_criteria:
+      - "Step skills for research, plan, spec, decompose have Shell-checked (Phase A) and Evaluator-judged (Phase B) subsections"
+      - "Shell-checked subsections match actual checks in commands/lib/gate-precheck.sh"
+      - "Evaluator-judged subsections reference evals/gates/{step}.yaml and skills/shared/gate-evaluator.md"
+      - "Auto-advance language replaced with pre-step/post-step evaluation language throughout all step skills"
+      - "skills/work-context.md updated: decided_by vocabulary (manual|evaluated|prechecked), gate flow description"
+      - "Ideate, implement, review skills updated to reflect post_step-only evaluation"
+    specialist: harness-engineer
+    depends_on:
+      - script-rewire
+    file_ownership:
+      - "skills/research.md"
+      - "skills/plan.md"
+      - "skills/spec.md"
+      - "skills/decompose.md"
+      - "skills/ideate.md"
+      - "skills/implement.md"
+      - "skills/review.md"
+      - "skills/work-context.md"
+
+  - name: protocol-docs-update
+    acceptance_criteria:
+      - "skills/shared/eval-protocol.md documents evals/gates/ convention, pre_step/post_step structure, and dimensions_from reference pattern"
+      - "references/gate-protocol.md rewritten for new architecture: Phase A + Phase B, trust gradient semantics, decided_by vocabulary"
+      - "references/gate-protocol.md documents two evaluation moments: pre-step and post-step"
+      - "references/gate-protocol.md documents subagent invocation pattern: shell prepares, agent spawns"
+    specialist: harness-engineer
+    depends_on:
+      - script-rewire
+    file_ownership:
+      - "skills/shared/eval-protocol.md"
+      - "references/gate-protocol.md"
+
+  - name: consumer-updates
+    acceptance_criteria:
+      - "_rationale.yaml updated: evals/gates/ paths, gate-evaluator.md rationale, generator-evaluator separation justification, renamed script paths"
+      - "scripts/harness-doctor.sh validates evals/gates/*.yaml files exist, renamed scripts present, old script names absent"
+      - "docs/architecture/file-structure.md includes evals/gates/ in layout spec and reflects script renames"
+      - "adapters/agent-sdk/callbacks/gate_callback.py updated: decided_by hardcoded values changed to evaluated"
+      - "adapters/claude-code/commands/work.md updated: script path references"
+      - "adapters/claude-code/skills/gate-prompt.md updated: script and vocabulary references"
+      - "commands/work.md updated: script path references"
+      - "commands/checkpoint.md updated: script path reference"
+      - "commands/redirect.md updated: decided_by example"
+      - "commands/lib/step-transition.sh updated: decided_by interface docs"
+      - "commands/lib/rewind.sh updated: hardcoded decided_by value changed to manual"
+      - "ROADMAP.md updated: script name references and auto-advance terminology"
+      - "todos.yaml updated: script references and terminology"
+      - "All references to old script names and old decided_by vocabulary verified absent via grep sweep"
+      - "Note added for merge to main: existing archived gate records need decided_by migration"
+    specialist: harness-engineer
+    depends_on:
+      - skill-docs-alignment
+      - protocol-docs-update
+    file_ownership:
+      - "_rationale.yaml"
+      - "scripts/harness-doctor.sh"
+      - "docs/architecture/file-structure.md"
+      - "adapters/agent-sdk/callbacks/gate_callback.py"
+      - "adapters/claude-code/commands/work.md"
+      - "adapters/claude-code/skills/gate-prompt.md"
+      - "commands/work.md"
+      - "commands/checkpoint.md"
+      - "commands/redirect.md"
+      - "commands/lib/step-transition.sh"
+      - "commands/lib/rewind.sh"
+      - "ROADMAP.md"
+      - "todos.yaml"
+
+context_pointers:
+  - path: "commands/lib/auto-advance.sh"
+    note: "Current shell pre-filter — becoming gate-precheck.sh in Phase 2"
+  - path: "scripts/auto-advance.sh"
+    note: "Current orchestration — deleted in Phase 2, replaced by run-gate.sh"
+  - path: "scripts/run-eval.sh"
+    note: "Current full eval runner — becoming check-artifacts.sh (Phase A only) in Phase 2"
+  - path: "scripts/evaluate-gate.sh"
+    note: "Trust gradient router — updating decided_by vocabulary in Phase 2"
+  - path: "evals/dimensions/"
+    note: "Existing dimension evals — referenced by gate YAMLs via dimensions_from, not duplicated"
+  - path: "evals/ideation-gate.md"
+    note: "Only existing gate eval — migrating to evals/gates/ideation.yaml in Phase 1"
+  - path: "skills/shared/eval-protocol.md"
+    note: "Canonical eval loading protocol — needs gates section in Phase 3"
+  - path: "references/gate-protocol.md"
+    note: "Gate decision protocol — full rewrite in Phase 3"
+  - path: "schemas/state.schema.json"
+    note: "State schema with decided_by enum — needs vocabulary update in Phase 2"
+  - path: "adapters/shared/schemas/state.schema.json"
+    note: "Adapter copy of state schema — must stay in sync with primary"
+  - path: "hooks/validate-summary.sh"
+    note: "Business logic on decided_by — checks auto-advance to skip validation"
+  - path: "adapters/agent-sdk/callbacks/gate_callback.py"
+    note: "Python callback hardcoding decided_by: evaluator"
+
+constraints:
+  - "No new dependencies — yq and jq already available"
+  - "Shell checks must be cheap and reliable — no network calls, no repo-wide file searches"
+  - "Gate YAMLs follow binary PASS/FAIL dimension convention from evals/dimensions/"
+  - "evals/dimensions/ files stay unchanged — gates reference them, not replace"
+  - "Gate evaluator must run in isolated subagent context — no parent conversation leakage (generator-evaluator separation)"
+  - "Shell prepares evaluator inputs and signals; in-context agent spawns subagent — shell never invokes LLM directly"
+  - "Always pay the subagent cost — no fast-path shell-only skipping"
+  - "Phase 1 creates new files only — no existing behavior changes"
+  - "Phase 2 is the integration risk — renames, rewires, and vocabulary changes"
+  - "Phase 3 is documentation alignment — cannot break runtime behavior"
+  - "Existing archived gate records with old decided_by values: fix locally on this branch, note migration needed on merge to main"
+  - "Both schema copies (schemas/ and adapters/shared/schemas/) must stay in sync"
+
+gate_policy: "delegated"

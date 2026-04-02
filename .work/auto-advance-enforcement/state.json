@@ -1,0 +1,27 @@
+{
+  "name": "auto-advance-enforcement",
+  "title": "Decide whether auto-advance criteria should be harness-enforced (deterministic shell checks) or remain evaluator-judged (prose in step skills), then implement the chosen approach",
+  "description": "Decide whether auto-advance criteria should be harness-enforced (deterministic shell checks) or remain evaluator-judged (prose in step skills), then implement the chosen approach",
+  "step": "ideate",
+  "step_status": "redirected",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {},
+  "gates": [],
+  "force_stop_at": null,
+  "branch": null,
+  "mode": "code",
+  "base_commit": "22136f6b761069a2c93920dbb2bfeaab28f10451",
+  "epic_id": null,
+  "issue_id": null,
+  "created_at": "2026-04-02T19:45:56Z",
+  "updated_at": "2026-04-02T20:53:04Z",
+  "archived_at": "2026-04-02T21:15:00Z"
+}
