@@ -199,8 +199,8 @@ conflicts="$(echo "$graph_output" | jq '
       $files_a[] as $fa |
       $files_b[] as $fb |
       select(
-        ($fa | test($fb | gsub("\\*\\*"; ".*") | gsub("\\*"; "[^/]*"))) or
-        ($fb | test($fa | gsub("\\*\\*"; ".*") | gsub("\\*"; "[^/]*")))
+        ($fa | test($fb | gsub("/$"; "/**") | gsub("\\*\\*"; ".*") | gsub("\\*"; "[^/]*"))) or
+        ($fb | test($fa | gsub("/$"; "/**") | gsub("\\*\\*"; ".*") | gsub("\\*"; "[^/]*")))
       ) |
       ($fa, $fb)
     ] | unique as $overlaps |
