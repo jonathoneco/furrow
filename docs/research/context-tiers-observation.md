@@ -7,17 +7,21 @@ Source: Operator experience across multiple projects and agent workflows.
 Three distinct lifespans of useful context have emerged in practice:
 
 ### 1. Project-level (long-lived)
+
 Infrastructure, tooling, product non-negotiables, long-running priorities, architectural decisions. Managed throughout a project's lifetime. Changes slowly. Relevant to every session.
 
 ### 2. Work-level (medium-lived)
-Review docs, specs, feature/initiative scope, design decisions, research findings. Managed throughout a piece of work (days to weeks). Relevant to sessions working on that specific initiative.
+
+Review docs, specs, feature/initiative scope, design decisions, research findings. Managed throughout a piece of work. Relevant to sessions working on that specific initiative.
 
 ### 3. Record-level (short-lived, accumulating)
+
 Checkpoint gates, atomized work logs, dependency tracking, detail organization. Created during execution. Serves as a log of record. Relevant for continuity between sessions and for audit.
 
 ## Why This Matters
 
 Each tier has different:
+
 - **Lifespan**: months vs. weeks vs. hours
 - **Audience**: all sessions vs. task-specific sessions vs. the next session
 - **Update frequency**: rarely vs. at milestones vs. continuously
