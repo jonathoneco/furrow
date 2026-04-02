@@ -82,13 +82,10 @@ Fixed 7 research-flow bugs (`6874c1a`), archived. Merged to main.
 **Key files**: `specialists/api-designer.md`, `specialists/database-architect.md`, `specialists/test-engineer.md`
 **Conflict risk**: None — fully isolated directory, no shared dependencies.
 
-### Track 1d: T6 — Formalize TODOS Workflow
+### Track 1d: T6 — Formalize TODOS Workflow — DONE
 
-**Work description**: Build a `/work-todos` or checkpoint-integrated command that generates TODOS.md at session end. Template with: title, context, work needed, risks, references. Auto-populate from summary.md open questions, learnings.jsonl pitfalls, deferred recommendations, unaddressed review findings.
-
-**Branch**: `work/todos-workflow`
-**Key files**: New command files + `commands/checkpoint.md`, `commands/archive.md`, `skills/review.md`
-**Conflict risk**: Low — touches command definitions (markdown), not script logic. Only conflicts if T2 discovers bugs in checkpoint/archive flow and modifies same `.md` files.
+Migrated TODOS.md → todos.yaml with schema validation, extraction scripts,
+and archive integration (`7024260`). Merged to main.
 
 ---
 
