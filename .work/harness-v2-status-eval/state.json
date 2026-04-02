@@ -18,42 +18,42 @@
     {
       "boundary": "ideate->research",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "definition.yaml validated; user approved all sections",
       "timestamp": "2026-04-02T07:45:23Z"
     },
     {
       "boundary": "research->plan",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "Research deliverables complete: gap-matrix.md, narrative-assessment.md, recommendations.md — all updated with deep architectural analysis",
       "timestamp": "2026-04-02T08:17:28Z"
     },
     {
       "boundary": "plan->spec",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "plan.json produced with 6 waves, harness-engineer specialist created, all design decisions settled with user (10 questions resolved)",
       "timestamp": "2026-04-02T08:41:01Z"
     },
     {
       "boundary": "spec->decompose",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "specs/ produced for all 3 phases: 13 components, 33 acceptance criteria, all settled decisions incorporated",
       "timestamp": "2026-04-02T08:43:23Z"
     },
     {
       "boundary": "decompose->implement",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "plan.json updated with final file ownership from specs, validated, no wave conflicts",
       "timestamp": "2026-04-02T08:43:58Z"
     },
     {
       "boundary": "implement->review",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "All 3 phases implemented: 6 new scripts, 1 hook, 2 templates, 2 schema symlinks, specialist frontmatter, doc updates, 6 bugs fixed",
       "timestamp": "2026-04-02T09:06:44Z"
     }

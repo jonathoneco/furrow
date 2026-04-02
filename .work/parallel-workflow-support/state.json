@@ -49,42 +49,42 @@
     {
       "boundary": "ideate->research",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "definition.yaml validated. Cross-model review completed. 8 design decisions resolved.",
       "timestamp": "2026-04-02T20:13:55Z"
     },
     {
       "boundary": "research->plan",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "Research complete: 11 hooks inventoried, scoping strategies mapped, helpers identified.",
       "timestamp": "2026-04-02T20:22:04Z"
     },
     {
       "boundary": "plan->spec",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "Plan complete: 2-wave execution, 5 deliverables, plan.json validated.",
       "timestamp": "2026-04-02T20:39:25Z"
     },
     {
       "boundary": "spec->decompose",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "5 specs written: focus-infrastructure, hook-scoping, command-routing, archive-integration, status-command-update.",
       "timestamp": "2026-04-02T20:45:31Z"
     },
     {
       "boundary": "decompose->implement",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "Decompose complete: plan.json validated, team-plan.md written, work branch created, deliverables initialized.",
       "timestamp": "2026-04-02T20:53:35Z"
     },
     {
       "boundary": "implement->review",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "All 5 deliverables implemented: focus-infrastructure, hook-scoping, command-routing, archive-integration, status-command-update. 4 commits, 12 files.",
       "timestamp": "2026-04-02T20:59:06Z"
     }

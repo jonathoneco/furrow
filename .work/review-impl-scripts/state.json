@@ -31,49 +31,49 @@
     {
       "boundary": "ideate->research",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "definition.yaml validated, 3 deliverables covering 7 scripts with shellcheck + bug-pattern criteria",
       "timestamp": "2026-04-02T09:36:06Z"
     },
     {
       "boundary": "research->plan",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "Research pre-done in harness-v2-status-eval learnings.jsonl and TODOS.md item 1",
       "timestamp": "2026-04-02T09:36:29Z"
     },
     {
       "boundary": "plan->spec",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "Plan is: parallel shellcheck + manual review per script cluster, fix in place",
       "timestamp": "2026-04-02T09:36:29Z"
     },
     {
       "boundary": "spec->decompose",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "Spec covered by definition.yaml ACs",
       "timestamp": "2026-04-02T09:36:29Z"
     },
     {
       "boundary": "decompose->implement",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "3 deliverables already decomposed by complexity cluster",
       "timestamp": "2026-04-02T09:36:29Z"
     },
     {
       "boundary": "implement->review",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "All 7 scripts reviewed and fixed: 12 bugs fixed by agents + 2 remaining concerns fixed. All pass shellcheck -x -e SC1091,SC2016.",
       "timestamp": "2026-04-02T09:48:59Z"
     },
     {
       "boundary": "review->archive",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "All 3 deliverables pass Phase A (ACs met) and Phase B (correctness, no unplanned changes). 14 bugs fixed across 8 scripts, all pass shellcheck.",
       "timestamp": "2026-04-02T09:55:41Z"
     }

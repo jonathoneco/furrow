@@ -54,42 +54,42 @@
     {
       "boundary": "ideate->research",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "definition.yaml validated; 5 deliverables (schema, extractor, command, archive integration, migration); user approved objective, deliverables, context pointers, constraints, gate policy; cross-model review incorporated (6 recommendations, 4 adopted)",
       "timestamp": "2026-04-02T18:56:33Z"
     },
     {
       "boundary": "research->plan",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "Research complete: schema patterns, extraction sources, archive integration point, ceremony pattern, pruning linkage, shell+agent boundary all documented",
       "timestamp": "2026-04-02T18:58:50Z"
     },
     {
       "boundary": "plan->spec",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "4-wave plan with 5 deliverables: schema, extractor+migration (parallel), command, archive integration. Single specialist (harness-engineer). No file conflicts across waves.",
       "timestamp": "2026-04-02T19:10:28Z"
     },
     {
       "boundary": "spec->decompose",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "5 specs written (todos-yaml-schema, extract-candidates-script, work-todos-command, archive-integration, migrate-existing-todos). All grounded in actual artifact structures. Acceptance criteria mapped 1:1 from definition.yaml.",
       "timestamp": "2026-04-02T19:14:02Z"
     },
     {
       "boundary": "decompose->implement",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "plan.json validated with 4 waves, no file conflicts. team-plan.md written. 5 deliverables registered in state.json with wave assignments.",
       "timestamp": "2026-04-02T19:14:49Z"
     },
     {
       "boundary": "implement->review",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "All 5 deliverables implemented across 4 waves: todos.schema.yaml, validate-todos.sh, extract-todo-candidates.sh, todos.yaml (9 entries migrated), work-todos.md, archive.md updated, definition.schema.yaml updated with source_todo",
       "timestamp": "2026-04-02T19:22:22Z"
     }

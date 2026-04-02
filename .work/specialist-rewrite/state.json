@@ -55,42 +55,42 @@
     {
       "boundary": "ideate->research",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "definition.yaml validated with 5 deliverables (13 specialist files); cross-model review incorporated: merged dependency-skeptic+redesign-advocate into complexity-skeptic, harness patterns optional, priority ordering confirmed",
       "timestamp": "2026-04-02T19:14:36Z"
     },
     {
       "boundary": "research->plan",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "Research confirmed: specialist-template.md is outdated (added to scope as reference-doc-update deliverable); user voices research reinforces concise high-signal patterns; no format changes needed beyond exemplar",
       "timestamp": "2026-04-02T19:19:20Z"
     },
     {
       "boundary": "plan->spec",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "plan.json with 3 waves: wave 1 (existing-rewrites), wave 2 (language+architecture+process+reference-doc in parallel), wave 3 (catalog-validation). No file conflicts. All harness-engineer specialist assignments.",
       "timestamp": "2026-04-02T19:21:27Z"
     },
     {
       "boundary": "spec->decompose",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "5 spec files covering 6 deliverables, 13 specialist files with 89 total reasoning patterns. All pattern names, QC, anti-patterns, and context requirements specified.",
       "timestamp": "2026-04-02T19:26:10Z"
     },
     {
       "boundary": "decompose->implement",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "plan.json validated (3 waves, no file conflicts), team-plan.md written with agent-per-file strategy. Wave 1: 4 agents, Wave 2: 10 agents across 4 deliverables, Wave 3: 1 validation agent.",
       "timestamp": "2026-04-02T19:27:20Z"
     },
     {
       "boundary": "implement->review",
       "outcome": "pass",
-      "decided_by": "human",
+      "decided_by": "manual",
       "evidence": "All 3 waves complete: 14 files pass structural conformance, 95 unique patterns, 2 validation issues fixed (duplicate pattern name renamed, anti-pattern overlap reframed), database-architect.md deleted, reference doc updated",
       "timestamp": "2026-04-02T19:35:51Z"
     }
