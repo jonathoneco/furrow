@@ -1,0 +1,49 @@
+# Step: Spec
+
+## What This Step Does
+Define exactly what should be built in enough detail to implement.
+
+## What This Step Produces
+- `spec.md` (single deliverable) or `specs/` directory (multiple components)
+- Refined acceptance criteria per deliverable
+- Code mode: component specifications; Research mode: knowledge artifact structure
+
+## Step-Specific Rules
+- Every acceptance criterion from `definition.yaml` must be addressed.
+- Specs must be implementation-ready — no ambiguous requirements.
+- Ensure `skills/work-context.md` is loaded.
+- Read `summary.md` for plan context.
+
+## Shared References
+Read these when relevant to your current action:
+- `skills/shared/red-flags.md` — before finalizing specs
+- `skills/shared/learnings-protocol.md` — when capturing learnings
+- `skills/shared/context-isolation.md` — when dispatching spec sub-agents
+
+## Team Planning
+For multi-deliverable work, dispatch spec sub-agents per component. Read `skills/shared/context-isolation.md`.
+
+## Step Mechanics
+Transition out: gate record `spec->decompose` with outcome `pass` required.
+Auto-advance when: single deliverable with >=2 testable acceptance criteria
+(containing action verbs, numeric thresholds, or file path references).
+Next step expects: implementation-ready specs in `spec.md` or `specs/` with
+refined acceptance criteria per deliverable.
+
+## Learnings
+When you discover a reusable insight (pattern, pitfall, preference, convention,
+or dependency quirk), append it to `.work/{name}/learnings.jsonl` using the
+learning schema. Read `skills/shared/learnings-protocol.md` for format.
+
+## Research Mode
+When `state.json.mode` is `"research"`:
+- Produce a knowledge artifact outline (not component specifications).
+- Per-section outline includes: guiding question, required sub-topics,
+  required evidence types (primary/secondary/quantitative/qualitative),
+  minimum source count, and format (report/synthesis/recommendation/comparison).
+- Define cross-section consistency requirements.
+- Refine acceptance criteria into testable conditions with measurable
+  thresholds (counts, presence checks, citation requirements).
+- Avoid subjective language ("thorough", "comprehensive") without thresholds.
+- Review with `evals/dimensions/research-spec.yaml` dimensions.
+- Read `references/research-mode.md` for deliverable formats.
