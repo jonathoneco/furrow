@@ -70,7 +70,7 @@ Resolve the focused unit via `find_focused_work_unit()` logic:
 3. Run `commands/lib/load-step.sh "{name}"` to inject current skill.
 4. If step_status is "completed": run `commands/lib/step-transition.sh`.
 5. If step_status is "not_started": set to "in_progress", load skill.
-6. After any transition: run `commands/lib/auto-advance.sh`.
+6. After any transition: run `commands/lib/gate-precheck.sh` then `scripts/run-gate.sh`.
 7. Continue execution within the current step.
 
 ## Step Routing After Transition
