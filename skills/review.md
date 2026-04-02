@@ -19,6 +19,7 @@ Evaluate implementation against spec and audit plan completion.
 - `skills/shared/git-conventions.md` — when reviewing commit quality
 - `skills/shared/learnings-protocol.md` — when capturing learnings
 - `skills/shared/context-isolation.md` — when dispatching review sub-agents
+- `skills/shared/summary-protocol.md` — before completing step
 
 ## Team Planning
 For multi-deliverable work, assign review sub-agents per deliverable. Read `skills/shared/context-isolation.md`.

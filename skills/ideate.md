@@ -21,6 +21,9 @@ Run the 6-part ceremony in order:
 5. **Section-by-section approval** — build `definition.yaml` incrementally. Present
    each section individually: objective, each deliverable, context pointers,
    constraints, gate policy. Emit section markers before each.
+   If `state.json` has a non-null `source_todo`, include it in `definition.yaml`.
+   If `state.json` has a non-null `gate_policy_init`, use it as the default for
+   `gate_policy` in `definition.yaml` (user can override during approval).
 6. **Hard gate** — validate definition with `scripts/validate-definition.sh`.
    Gate record required in `state.json` before advancing.
 
@@ -34,6 +37,7 @@ Read these when relevant to your current action:
 - `skills/shared/red-flags.md` — before finalizing definition
 - `skills/shared/learnings-protocol.md` — when capturing learnings
 - `skills/shared/git-conventions.md` — before any commit
+- `skills/shared/summary-protocol.md` — Open Questions only at this step
 
 ## Step Mechanics
 Transition out: gate record `ideate->research` with outcome `pass` required.

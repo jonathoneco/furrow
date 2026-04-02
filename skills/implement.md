@@ -16,6 +16,7 @@ Code mode: code changes in git. Research mode: knowledge artifact in deliverable
 - `skills/shared/git-conventions.md` — before any commit
 - `skills/shared/learnings-protocol.md` — when capturing learnings
 - `skills/shared/context-isolation.md` — when coordinating agent teams
+- `skills/shared/summary-protocol.md` — before completing step
 
 ## Specialist Loading
 Two consumption paths for specialist templates in `specialists/`:

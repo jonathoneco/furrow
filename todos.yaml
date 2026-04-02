@@ -42,62 +42,25 @@
     - "skills/triage-todos.md"
     - "scripts/triage-todos.sh"
     - "scripts/check-wave-conflicts.sh"
-- id: summary-agent-written-sections-not-populated-at-step-boundaries
-  title: "Summary.md Agent-Written Sections Not Populated at Step Boundaries"
+
+- id: rethink-hint-file-pattern
+  title: "Rethink hint file pattern — consolidate into state.json"
   context: |
-    The `validate-summary.sh` hook repeatedly fires at session stop because the agent-written sections of `summary.md` (Key Findings, Open Questions, Recommendations) are never populated during step transitions. `regenerate-summary.sh` creates the skeleton and preserves existing content if it has 2+ lines, but inserts 1-line placeholders otherwise. No step skill instructs the agent to write these sections, and no gate or transition checks for their completeness. The result is that every session ends with a manual fix.
+    The harness uses dot-prefixed hint files (.gate_policy_hint, and nearly added .source_todo)
+    to pass init-time values from init-work-unit.sh to the ideate step. These sidecar files are
+    never read by any script — agents discover them by listing the directory. This is fragile,
+    undiscoverable, and scales poorly. The harness-ux-fixes work unit migrates both to state.json
+    fields, but the pattern should be formally deprecated and any future init-time hints should
+    go directly into state.json.
   work_needed: |
-    - Add explicit instruction to step skills (or a shared skill fragment) requiring the agent to populate Key Findings, Open Questions, and Recommendations before step completion
-    - Alternatively, make `validate-summary.sh` a pre-gate requirement (blocking) in `step-transition.sh` rather than a post-stop warning
-    - Consider whether `regenerate-summary.sh` should refuse to overwrite populated sections even if they're short (1 line of real content vs placeholder)
-  risks: |
-    - Adding instructions to every step skill creates maintenance burden — a shared fragment or reference is safer
-    - Making it a hard blocker could stall transitions when sections are genuinely not applicable (e.g., ideate step has no "Key Findings" yet)
-    - Need to distinguish "placeholder" from "intentionally brief"
-  references:
-    - "scripts/regenerate-summary.sh"
-    - "hooks/validate-summary.sh"
-    - "skills/*.md"
-    - "commands/lib/step-transition.sh"
-  source_work_unit: "todos-workflow"
-  source_type: "manual"
+    - Audit for any remaining hint files (grep for hint patterns in init-work-unit.sh and skills/)
+    - Document the "init hints go in state.json" convention in _rationale.yaml
+    - Add a harness-doctor check that warns if .work/*/.* hint files are found
+  source_work_unit: "harness-ux-fixes"
+  source_type: "open-question"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
-  urgency: "high"
-  impact: "medium"
-  effort: "small"
-  phase: 3
-  files_touched:
-    - "scripts/regenerate-summary.sh"
-    - "hooks/validate-summary.sh"
-    - "skills/shared/"
-    - "commands/lib/step-transition.sh"
-- id: auto-populate-source-todo-in-work-init
-  title: "Auto-populate source_todo in /work init flow"
-  context: |
-    The definition.schema.yaml now has an optional source_todo field that links a work unit
-    back to the TODO entry that spawned it. Currently this field must be manually added to
-    definition.yaml. When /work is invoked with a TODO slug as context (e.g., starting work
-    from a todos.yaml entry), the init flow should auto-populate source_todo so the archive
-    pruning ceremony can find and resolve it.
-  work_needed: |
-    - Modify commands/lib/init-work-unit.sh to accept an optional --source-todo flag
-    - When /work description matches a todos.yaml entry ID, auto-set source_todo
-    - Alternatively, add a --from-todo <id> flag to the /work command
-    - Ensure the value is written to definition.yaml during ideation
-  references:
-    - "commands/lib/init-work-unit.sh"
-    - "adapters/shared/schemas/definition.schema.yaml"
-    - "commands/archive.md"
-    - "commands/work-todos.md"
-  source_work_unit: "todos-workflow"
-  source_type: "open-question"
-  created_at: "2026-04-02T19:30:00Z"
-  updated_at: "2026-04-02T19:30:00Z"
   urgency: "low"
   impact: "low"
   effort: "small"
-  phase: 3
-  files_touched:
-    - "commands/lib/init-work-unit.sh"
-    - "adapters/shared/schemas/definition.schema.yaml"
+  phase: 4

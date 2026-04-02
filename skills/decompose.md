@@ -18,6 +18,7 @@ Break spec into executable work items with concurrency map (waves).
 - `skills/shared/git-conventions.md` — before any commit
 - `skills/shared/learnings-protocol.md` — when capturing learnings
 - `skills/shared/context-isolation.md` — when planning agent teams
+- `skills/shared/summary-protocol.md` — before completing step
 
 ## Team Planning
 Write `team-plan.md` before dispatching sub-agents (>1 deliverable).

@@ -1,0 +1,14 @@
+{
+  "waves": [
+    {
+      "wave": 0,
+      "deliverables": ["summary-protocol-fragment", "state-schema-init-hints"],
+      "rationale": "Independent foundation work — new shared fragment + schema/script changes. No file overlap."
+    },
+    {
+      "wave": 1,
+      "deliverables": ["summary-transition-block", "ideate-reads-init-hints"],
+      "rationale": "Depend on wave 0 — transition block uses fragment; ideate reads new state.json fields."
+    }
+  ]
+}

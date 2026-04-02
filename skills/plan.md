@@ -21,6 +21,7 @@ Synthesize research into architecture decisions and execution strategy.
 Read these when relevant to your current action:
 - `skills/shared/red-flags.md` — before finalizing plan
 - `skills/shared/learnings-protocol.md` — when capturing learnings
+- `skills/shared/summary-protocol.md` — before completing step
 
 ## Team Planning
 When `plan.json` has multiple deliverables, create `team-plan.md` with specialist

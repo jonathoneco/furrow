@@ -12,6 +12,9 @@
 
 set -eu
 
+# Optional step argument for step-aware validation (called from step-transition.sh)
+step_arg="${1:-}"
+
 # --- locate focused work unit ---
 
 HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -60,6 +63,11 @@ done
 # --- check agent-written sections have >= 2 non-empty lines ---
 
 for section in "Key Findings" "Open Questions" "Recommendations"; do
+  # Step-aware: ideate only requires Open Questions
+  if [ "${step_arg}" = "ideate" ] && [ "${section}" != "Open Questions" ]; then
+    continue
+  fi
+
   content="$(awk -v sec="${section}" '
     $0 ~ "^## " sec { found=1; next }
     /^## / { if(found) exit }

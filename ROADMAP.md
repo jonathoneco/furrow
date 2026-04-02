@@ -73,19 +73,13 @@ main ──┬── work/harness-ux-fixes ──────── merge ──
 80/80 assertions across 5 test suites: generate-plan, correction-limit, check-artifacts,
 step-transition, load-step. Merged to main.
 
-### Track 3c: T11+T12 — Harness UX Fixes
+### Track 3c: T11+T12 — Harness UX Fixes — DONE
 
-**Work description**: Two small fixes combined into one worktree.
-
-**T11 — Summary Section Population Fix**: Fix `validate-summary.sh` repeatedly firing because agent-written summary.md sections (Key Findings, Open Questions, Recommendations) are never populated at step boundaries. Either add a shared skill fragment or make validation a pre-gate blocker.
-
-**T12 — Source-TODO Auto-Populate**: Auto-populate `source_todo` field in `definition.yaml` when starting work from a `todos.yaml` entry. Add `--source-todo` or `--from-todo` flag to `commands/lib/init-work-unit.sh`.
-
-- **Branch**: `work/harness-ux-fixes`
-- **Key files (T11)**: `scripts/regenerate-summary.sh`, `hooks/validate-summary.sh`, `skills/shared/` (new fragment), `commands/lib/step-transition.sh`
-- **Key files (T12)**: `commands/lib/init-work-unit.sh`, `adapters/shared/schemas/definition.schema.yaml`
-- **Conflict risk**: None — T11 and T12 touch disjoint files
-- **Effort**: small | **Impact**: medium | **Urgency**: high (T11 fires every session)
+T11: New `skills/shared/summary-protocol.md` fragment, step-aware `validate-summary.sh`,
+hard-block in `step-transition.sh`. All 7 step skills reference the protocol.
+T12: `--source-todo` flag on `init-work-unit.sh`, writes to `state.json`.
+Bonus: `.gate_policy_hint` eliminated — `gate_policy_init` moved to `state.json`.
+Merged to main (`8d418c3`).
 
 ---
 

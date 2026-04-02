@@ -130,6 +130,16 @@
     "archived_at": {
       "type": ["string", "null"],
       "description": "ISO 8601 or null"
+    },
+    "source_todo": {
+      "type": ["string", "null"],
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+      "description": "TODO entry ID this work unit was created from, or null"
+    },
+    "gate_policy_init": {
+      "type": ["string", "null"],
+      "enum": ["supervised", "delegated", "autonomous", null],
+      "description": "Init-time gate policy hint for ideate step, or null"
     }
   },
   "additionalProperties": false,
