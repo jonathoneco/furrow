@@ -68,14 +68,10 @@ main ──┬── work/harness-ux-fixes ──────── merge ──
 - **Conflict risk**: None — new files only
 - **Effort**: medium | **Impact**: low | **Urgency**: low
 
-### Track 3b: T10 — Edge-Case Integration Tests
+### Track 3b: T10 — Edge-Case Integration Tests — DONE
 
-**Work description**: Shell-based integration tests for 5 untested edge-case code paths: multi-wave plan generation (Kahn's cycle detection), correction limit enforcement (glob matching), Phase B mixed verdicts, gate failure correction increment, and conditional pass carry-forward.
-
-- **Branch**: `work/integration-tests`
-- **Key files**: New `scripts/run-integration-tests.sh` + test fixtures. Tests (reads) `scripts/generate-plan.sh`, `hooks/correction-limit.sh`, `scripts/check-artifacts.sh`, `commands/lib/step-transition.sh`, `commands/lib/load-step.sh`
-- **Conflict risk**: Low — new test files, only reads existing scripts
-- **Effort**: medium | **Impact**: medium | **Urgency**: medium
+80/80 assertions across 5 test suites: generate-plan, correction-limit, check-artifacts,
+step-transition, load-step. Merged to main.
 
 ### Track 3c: T11+T12 — Harness UX Fixes
 
