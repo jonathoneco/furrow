@@ -65,24 +65,14 @@ main ──┬── work/e2e-test ───────────────
        └── work/todos-workflow ────────── merge ──┘── main
 ```
 
-### Track 1a: T2 — End-to-End Test with Real Task — REDUNDANT
+### Track 1a: T2 — End-to-End Test with Real Task — DONE (cancelled as redundant)
 
-**Status**: Cancelled. The other Phase 1 worktrees (T3, T4, T6) inherently exercise the full pipeline as real tasks. Previous tasks on this branch (`harness-v2-status-eval`, `review-impl-scripts`) already ran the full 7-step flow and found/fixed 14 bugs. A separate meta-test is unnecessary.
+Cancelled — other Phase 1 worktrees exercise the pipeline as real tasks.
+Edge-case integration test gaps captured in TODO 10.
 
-**Coverage gaps** not addressed by organic pipeline usage (see TODO 10):
-- Multi-deliverable dependency wave ordering (T4 has 3 independent deliverables — wave logic is trivial)
-- `correction-limit.sh` enforcement (only fires on gate failures, may not happen naturally)
-- `run-eval.sh` Phase B dimension scoring on real code deliverables with mixed pass/fail
+### Track 1b: T3 — Research Mode End-to-End Test — DONE
 
-**Original description**: Exercise the full 7-step pipeline (ideate→review) with a real task. Verify `validate-step-artifacts.sh` gates, `generate-plan.sh` with multi-deliverable definitions, `correction-limit.sh` during implementation, and `run-eval.sh` on actual deliverables.
-
-### Track 1b: T3 — Research Mode End-to-End Test
-
-**Work description**: Test the full research workflow — `--mode research` init, research.md artifact validation, deliverables/ output location, research-specific dimension selection, and Phase A/B eval on knowledge artifacts.
-
-**Branch**: `work/research-e2e`
-**Key files**: `scripts/select-dimensions.sh`, `scripts/run-eval.sh`, `scripts/validate-step-artifacts.sh`, `references/research-mode.md`, `evals/dimensions/research-*.yaml`
-**Conflict risk**: Medium — shares `hooks/lib/validate.sh` with T2. Different functions likely touched.
+Fixed 7 research-flow bugs (`6874c1a`), archived. Merged to main.
 
 ### Track 1c: T4 — Specialist Template Rewrite
 
