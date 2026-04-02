@@ -53,6 +53,20 @@ work-harness-v2/
 │
 ├── evals/                          # Harness behavioral evals
 │   ├── test_work_entry.py          # Behavior 1: work def loaded at start
+│   ├── dimensions/                 # Quality dimension rubrics per artifact type
+│   │   ├── research.yaml
+│   │   ├── plan.yaml
+│   │   ├── spec.yaml
+│   │   ├── decompose.yaml
+│   │   └── implement.yaml
+│   ├── gates/                      # Gate evaluation rubrics per step
+│   │   ├── ideation.yaml           # Post-step only
+│   │   ├── research.yaml           # Pre-step + post-step
+│   │   ├── plan.yaml               # Pre-step + post-step
+│   │   ├── spec.yaml               # Pre-step + post-step
+│   │   ├── decompose.yaml          # Pre-step + post-step
+│   │   ├── implement.yaml          # Post-step only
+│   │   └── review.yaml             # Post-step only
 │   ├── test_dependency_order.py    # Behavior 2: dependency order respected
 │   ├── test_completion_claims.py   # Behavior 3: claims before next deliverable
 │   ├── test_review_at_boundary.py  # Behavior 4: review runs at boundaries
@@ -140,6 +154,24 @@ followed and whether its enforcement mechanisms are working.
 
 Maps to the behavior catalog from the gap review (behaviors 1-6 prioritized
 for Phase 0-1 bootstrap).
+
+### evals/gates/ — Gate evaluation rubrics
+
+Gate YAML files define the dimensions used for pre-step and post-step evaluation
+at each step boundary. Pre-step dimensions determine whether a step can be skipped
+(applies to research, plan, spec, decompose). Post-step dimensions evaluate the
+quality of step output. Post-step sections reference `evals/dimensions/` via
+`dimensions_from` to avoid duplication.
+
+| File | Pre-step | Post-step |
+|------|----------|-----------|
+| `ideation.yaml` | No | Yes (completeness, alignment, feasibility, cross-model) |
+| `research.yaml` | Yes (path-relevance) | Yes (dimensions_from research.yaml) |
+| `plan.yaml` | Yes (complexity-assessment) | Yes (dimensions_from plan.yaml) |
+| `spec.yaml` | Yes (testability) | Yes (dimensions_from spec.yaml) |
+| `decompose.yaml` | Yes (wave-triviality) | Yes (dimensions_from decompose.yaml) |
+| `implement.yaml` | No | Yes (dimensions_from implement.yaml) |
+| `review.yaml` | No | Yes (Phase A + B aggregate) |
 
 ## Project Layout
 

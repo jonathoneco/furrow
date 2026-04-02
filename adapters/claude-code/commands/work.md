@@ -31,6 +31,7 @@ This command triggers the work loader skill (`skills/work-loader.md`) which hand
 - State reading and display
 - Step skill injection
 - Progressive context loading
+- Pre-step evaluation via `commands/lib/gate-precheck.sh` and `scripts/run-gate.sh`
 
 ## State Initialization
 New work units are initialized with:

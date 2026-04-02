@@ -74,7 +74,7 @@ def _autonomous_gate(
     record = {
         "boundary": boundary,
         "outcome": evaluator_verdict,
-        "decided_by": "evaluator",
+        "decided_by": "evaluated",
         "evidence": evidence,
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
@@ -107,7 +107,7 @@ def _delegated_gate(
     record = {
         "boundary": boundary,
         "outcome": evaluator_verdict,
-        "decided_by": "evaluator",
+        "decided_by": "evaluated",
         "evidence": f"[delegated] {evidence}",
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }

@@ -37,8 +37,9 @@ Read these when relevant to your current action:
 
 ## Step Mechanics
 Transition out: gate record `ideate->research` with outcome `pass` required.
-Ideation never auto-advances. The gate evaluator checks completeness, alignment,
-feasibility, and cross-model evidence (see `evals/ideation-gate.md`).
+No pre-step evaluation — ideation always runs. Post-step gate evaluates
+completeness, alignment, feasibility, and cross-model evidence.
+Reference: `evals/gates/ideate.yaml` post_step, per `skills/shared/gate-evaluator.md`.
 Next step expects: validated `definition.yaml` and initialized `state.json`.
 
 ## Learnings

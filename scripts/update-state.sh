@@ -140,7 +140,7 @@ gate_check="$(jq -r '
     elif (.boundary | split("->") | .[0] | valid_step | not) then "enum:boundary_from"
     elif (.boundary | split("->") | .[1] | valid_step | not) then "enum:boundary_to"
     elif ([.outcome] | inside(["pass","fail","conditional"]) | not) then "enum:outcome"
-    elif ([.decided_by] | inside(["human","evaluator","auto-advance"]) | not) then "enum:decided_by"
+    elif ([.decided_by] | inside(["manual","evaluated","prechecked"]) | not) then "enum:decided_by"
     elif (.evidence | type) != "string" then "type:evidence"
     elif (.evidence | length) == 0 then "empty:evidence"
     elif (.timestamp | type) != "string" then "type:timestamp"

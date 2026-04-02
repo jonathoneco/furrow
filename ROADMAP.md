@@ -7,7 +7,7 @@ Updated 2026-04-02. Phase 1 complete. Arranged for worktree parallelism.
 ## Dependency DAG (active items only)
 
 ```
-         ┌── T5 (Auto-Advance) ·····················── [terminal]
+         ┌── T5 (Gate Evaluation) ··················── [terminal]
          │
 Phase 2 ─┤── T8 (Parallel Workflows) ···············── [terminal]
          │
@@ -26,13 +26,13 @@ Legend: `──` hard dependency, `···` no dependency
 
 | Zone | Files | TODOs affected |
 |------|-------|----------------|
-| Auto-advance pipeline | `commands/lib/auto-advance.sh`, `scripts/auto-advance.sh`, `skills/spec.md` | T5 only |
+| Gate evaluation pipeline | `commands/lib/gate-precheck.sh`, `scripts/run-gate.sh`, `scripts/check-artifacts.sh`, `skills/spec.md` | T5 only |
 | Hook implementations | `hooks/state-guard.sh`, `hooks/ownership-warn.sh`, `hooks/post-compact.sh`, `hooks/timestamp-update.sh` | T8 only |
 | Context/detection | `commands/lib/detect-context.sh`, `skills/work-context.md` | T8 only |
 | Step transition | `commands/lib/step-transition.sh` | T10, T11 (low — T10 tests it, T11 modifies gate logic) |
 | Summary/regen | `scripts/regenerate-summary.sh`, `hooks/validate-summary.sh` | T11 only |
 | Init flow | `commands/lib/init-work-unit.sh` | T12 only |
-| Eval scripts | `scripts/run-eval.sh`, `hooks/correction-limit.sh`, `scripts/generate-plan.sh` | T10 only |
+| Eval scripts | `scripts/check-artifacts.sh`, `hooks/correction-limit.sh`, `scripts/generate-plan.sh` | T10 only |
 | Roadmap/todos | `commands/work-todos.md`, `todos.yaml` | T7 only |
 
 **No conflicts between Phase 2 tracks** (T5, T7, T8 touch disjoint file sets).
@@ -59,7 +59,7 @@ All four tracks merged to main.
 | T6 — TODOS Workflow | Migrated to `todos.yaml` with schema validation and archive integration (`7024260`). |
 
 **Lessons from Phase 1**:
-- T3 found real bugs in `run-eval.sh`, `select-dimensions.sh`, `auto-advance.sh`, `step-transition.sh`, `promote-components.sh`, `skills/plan.md` — Phase 2 work should re-read these files as they've changed since the original TODO descriptions were written.
+- T3 found real bugs in `check-artifacts.sh` (formerly `run-eval.sh`), `select-dimensions.sh`, `gate-precheck.sh` (formerly `auto-advance.sh`), `step-transition.sh`, `promote-components.sh`, `skills/plan.md` — Phase 2 work should re-read these files as they've changed since the original TODO descriptions were written.
 - T6 replaced `TODOS.md` with `todos.yaml` — T7 and T9 descriptions need to reference `todos.yaml`, not `TODOS.md`.
 - Merge conflicts arose because T4 and T6 branched before T2/T3 merged. Phase 2 should merge from updated main to avoid this.
 
@@ -76,14 +76,12 @@ main ──┬── work/auto-advance ──────────── merg
        └── work/roadmap-process ───────── merge ──┘── main
 ```
 
-### Track 2a: T5 — Auto-Advance Enforcement
+### Track 2a: T5 — Gate Evaluation Rearchitecture — DONE
 
-**Work description**: Decide and implement whether auto-advance criteria should be harness-enforced (deterministic shell checks) or evaluator-judged (prose in skills). Add testability checks if going the enforcement route.
-
-**Branch**: `work/auto-advance`
-**Key files**: `commands/lib/auto-advance.sh`, `scripts/auto-advance.sh`, `skills/spec.md`
-**Conflict risk**: None — auto-advance pipeline is isolated.
-**Note**: T3 modified `commands/lib/auto-advance.sh` — re-read before starting.
+Rearchitected from auto-advance enforcement to isolated subagent gate evaluation.
+Generator-evaluator separation, pre/post-step evaluation moments, YAML gate criteria
+(`evals/gates/*.yaml`), `decided_by` vocabulary migration. 6 commits, 34 files, net -208 lines.
+Merged to main.
 
 ### Track 2b: T8 — Parallel Workflow Support — DONE
 
@@ -123,7 +121,7 @@ main ──┬── work/triage-todos ──────────── merg
 **Work description**: Shell-based integration tests for 5 untested edge-case code paths: multi-wave plan generation, correction limit enforcement, Phase B mixed verdicts, gate failure correction increment, and conditional pass carry-forward.
 
 **Branch**: `work/integration-tests`
-**Key files**: New `scripts/run-integration-tests.sh` + test fixtures. Tests (reads) `scripts/generate-plan.sh`, `hooks/correction-limit.sh`, `scripts/run-eval.sh`, `commands/lib/step-transition.sh`, `commands/lib/load-step.sh`
+**Key files**: New `scripts/run-integration-tests.sh` + test fixtures. Tests (reads) `scripts/generate-plan.sh`, `hooks/correction-limit.sh`, `scripts/check-artifacts.sh`, `commands/lib/step-transition.sh`, `commands/lib/load-step.sh`
 **Conflict risk**: Low — new test files, only reads existing scripts. May discover bugs requiring fixes in tested files.
 
 ### Track 3c: T11 — Summary Section Population Fix

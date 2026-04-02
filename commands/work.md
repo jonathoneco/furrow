@@ -25,6 +25,7 @@ Scan arguments in order:
 4. Read `state.json`, load `skills/{step}.md`.
 5. Display: task name, step, step_status, deliverable progress.
 6. Continue execution within the current step.
+7. After any transition: run `commands/lib/gate-precheck.sh` then `scripts/run-gate.sh`.
 
 ### Route 2: `/work <description>` (create new unit)
 
@@ -75,6 +76,7 @@ Resolve the focused unit via `find_focused_work_unit()` logic:
 ## Step Routing After Transition
 
 After `step-transition.sh` advances the step:
-1. Run `commands/lib/auto-advance.sh "{name}"` for trivial step detection.
-2. If auto-advanced, repeat until a non-trivial step is reached.
-3. Load the new step's skill and begin.
+1. Run `commands/lib/gate-precheck.sh` to check if the next step is trivially resolvable.
+2. If precheck passes, run `scripts/run-gate.sh` for evaluator confirmation.
+3. If prechecked and confirmed, repeat until a non-trivial step is reached.
+4. Load the new step's skill and begin.

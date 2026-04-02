@@ -21,7 +21,7 @@ Save session progress for continuity across sessions or compaction.
 6. If gate passes and user approves: advance to next step.
 7. Regenerate `summary.md` via `commands/lib/generate-summary.sh "{name}"`.
 8. Git commit `.work/{name}/` with message: `chore: checkpoint {name} at {step}`.
-9. After transition: run `commands/lib/auto-advance.sh "{name}"`.
+9. After transition: run `commands/lib/gate-precheck.sh` then `scripts/run-gate.sh` for pre-step evaluation.
 
 ## Output
 

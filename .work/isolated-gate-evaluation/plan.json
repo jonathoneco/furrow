@@ -1,0 +1,122 @@
+{
+  "branch_strategy": "Single branch, commit at phase boundaries for rollback. Phase 1 commit after waves 1-2. Phase 2 commit after waves 3-4. Phase 3 commit after waves 5-6.",
+  "waves": [
+    {
+      "id": 1,
+      "phase": "foundation",
+      "assignments": {
+        "gate-yaml-schema": {
+          "specialist": "harness-engineer",
+          "file_ownership": ["evals/gates/*.yaml"],
+          "notes": "Create 7 gate YAML files with pre_step/post_step structure. Pre_step dimensions: research=path-relevance, spec=testability, plan=complexity-assessment, decompose=wave-triviality. Use existing evals/dimensions/ as pattern reference."
+        }
+      }
+    },
+    {
+      "id": 2,
+      "phase": "foundation",
+      "assignments": {
+        "ideation-gate-migration": {
+          "specialist": "harness-engineer",
+          "file_ownership": ["evals/gates/ideation.yaml", "evals/ideation-gate.md"],
+          "notes": "Migrate evals/ideation-gate.md to YAML. Preserve 4 dimensions in post_step section. Delete .md after."
+        },
+        "evaluator-prompt-template": {
+          "specialist": "harness-engineer",
+          "file_ownership": ["skills/shared/gate-evaluator.md"],
+          "notes": "Define subagent isolation contract. Specify inputs, prohibited context, response format, invocation pattern."
+        }
+      }
+    },
+    {
+      "id": 3,
+      "phase": "integration",
+      "assignments": {
+        "gate-orchestration-and-gradient": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "scripts/run-gate.sh",
+            "scripts/select-gate.sh",
+            "scripts/evaluate-gate.sh",
+            "scripts/record-gate.sh",
+            "scripts/update-state.sh",
+            "schemas/state.schema.json",
+            "adapters/shared/schemas/state.schema.json"
+          ],
+          "notes": "Create run-gate.sh (writes YAML prompt file for subagent) and select-gate.sh. Update evaluate-gate.sh, record-gate.sh, update-state.sh for new decided_by vocabulary (manual|evaluated|prechecked). Update both schema files."
+        }
+      }
+    },
+    {
+      "id": 4,
+      "phase": "integration",
+      "assignments": {
+        "script-rewire": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "scripts/check-artifacts.sh",
+            "commands/lib/gate-precheck.sh",
+            "commands/lib/auto-advance.sh",
+            "scripts/auto-advance.sh",
+            "scripts/run-eval.sh",
+            "hooks/validate-summary.sh"
+          ],
+          "notes": "Rename run-eval.sh -> check-artifacts.sh (Phase A only, writes results JSON). Rename auto-advance.sh -> gate-precheck.sh (tighten checks). Delete scripts/auto-advance.sh. Update validate-summary.sh decided_by check. Run grep sweep before and after. Smoke test end-to-end gate flow."
+        }
+      }
+    },
+    {
+      "id": 5,
+      "phase": "alignment",
+      "assignments": {
+        "skill-docs-alignment": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "skills/research.md",
+            "skills/plan.md",
+            "skills/spec.md",
+            "skills/decompose.md",
+            "skills/ideate.md",
+            "skills/implement.md",
+            "skills/review.md",
+            "skills/work-context.md"
+          ],
+          "notes": "Update all 8 step skills. Add Shell-checked/Evaluator-judged subsections for research, plan, spec, decompose. Replace auto-advance language. Update decided_by vocabulary in work-context.md."
+        },
+        "protocol-docs-update": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "skills/shared/eval-protocol.md",
+            "references/gate-protocol.md"
+          ],
+          "notes": "Add gates section to eval-protocol.md. Rewrite gate-protocol.md for new architecture."
+        }
+      }
+    },
+    {
+      "id": 6,
+      "phase": "alignment",
+      "assignments": {
+        "consumer-updates": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "_rationale.yaml",
+            "scripts/harness-doctor.sh",
+            "docs/architecture/file-structure.md",
+            "adapters/agent-sdk/callbacks/gate_callback.py",
+            "adapters/claude-code/commands/work.md",
+            "adapters/claude-code/skills/gate-prompt.md",
+            "commands/work.md",
+            "commands/checkpoint.md",
+            "commands/redirect.md",
+            "commands/lib/step-transition.sh",
+            "commands/lib/rewind.sh",
+            "ROADMAP.md",
+            "todos.yaml"
+          ],
+          "notes": "Update all remaining references. Run final grep sweep to verify no old names remain. Add merge migration note."
+        }
+      }
+    }
+  ]
+}

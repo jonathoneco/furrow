@@ -128,9 +128,17 @@ components:
     exists_because: "No platform-native harness installation; bridges harness into .claude/ with namespaced commands"
     delete_when: "Claude Code provides built-in harness package management and installation"
 
-  - path: scripts/auto-advance.sh
-    exists_because: "Claude Code has no built-in trivial step detection and auto-advance"
-    delete_when: "Claude Code supports workflow primitives with auto-advance logic"
+  - path: scripts/run-gate.sh
+    exists_because: "Claude Code has no built-in gate orchestration (Phase A shell + Phase B subagent)"
+    delete_when: "Claude Code supports workflow primitives with gate evaluation"
+
+  - path: scripts/check-artifacts.sh
+    exists_because: "Claude Code has no built-in Phase A artifact validation for gate checks"
+    delete_when: "Claude Code supports workflow primitives with artifact validation"
+
+  - path: scripts/select-gate.sh
+    exists_because: "Claude Code has no built-in gate YAML selection for step transitions"
+    delete_when: "Claude Code supports workflow primitives with gate configuration"
 
   - path: scripts/advance-step.sh
     exists_because: "Claude Code does not natively enforce sequential step transitions"
@@ -234,6 +242,15 @@ components:
   - path: evals/dimensions/implement.yaml
     exists_because: "Implementation artifacts need structured quality evaluation; no platform-native implement eval"
     delete_when: "Claude Code provides built-in implementation artifact quality evaluation"
+
+  # --- Gate evaluation (Phase 3: Alignment) ---
+  - path: evals/gates/
+    exists_because: "Gate decisions need structured YAML rubrics with pre_step and post_step dimensions"
+    delete_when: "Claude Code provides built-in gate evaluation rubrics"
+
+  - path: skills/shared/gate-evaluator.md
+    exists_because: "Isolated subagent evaluators need a contract for inputs, prohibited context, and response format"
+    delete_when: "Claude Code provides built-in generator-evaluator separation for workflow gates"
 
   # --- Adapters ---
   - path: adapters/
@@ -360,7 +377,7 @@ components:
     delete_when: "Agent SDK provides built-in workflow configuration and validation"
 
   # --- W-09: Ideation Ceremony ---
-  - path: evals/ideation-gate.md
+  - path: evals/gates/ideate.yaml
     exists_because: "Claude Code has no native ideation gate evaluation with dimension rubrics"
     delete_when: "Claude Code provides built-in ideation quality assessment"
 
@@ -381,9 +398,9 @@ components:
     exists_because: "Claude Code has no native atomic step transition with gate+summary+advance"
     delete_when: "Claude Code provides built-in step transition orchestration"
 
-  - path: commands/lib/auto-advance.sh
-    exists_because: "Claude Code has no native trivial step detection and auto-advance"
-    delete_when: "Claude Code supports workflow auto-advance based on definition shape"
+  - path: commands/lib/gate-precheck.sh
+    exists_because: "Claude Code has no native deterministic pre-step evaluation (structural checks before subagent)"
+    delete_when: "Claude Code supports workflow primitives with pre-step evaluation"
 
   - path: commands/lib/generate-summary.sh
     exists_because: "Claude Code has no native step-boundary summary generation"

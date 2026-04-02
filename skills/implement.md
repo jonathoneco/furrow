@@ -33,7 +33,9 @@ Skill injection order: code-quality, specialist skills, implement, task.
 
 ## Step Mechanics
 Transition out: gate record `implement->review` with `pass` required.
-Implement NEVER auto-advances — always requires a gate evaluation.
+No pre-step evaluation — implementation always runs. Post-step gate evaluates
+artifact presence, acceptance criteria, and quality dimensions.
+Reference: `evals/gates/implement.yaml` post_step, per `skills/shared/gate-evaluator.md`.
 Next step expects: all deliverables implemented, status updated in state.json.
 
 ## Learnings
@@ -49,4 +51,4 @@ When `state.json.mode` is `"research"`:
 - Update `research/sources.md` as sources are discovered.
 - Unsourced claims marked `[unverified]` or `[assumption]`.
 - Read `references/research-mode.md` for citation format and source types.
-- Research mode NEVER auto-advances the implement step.
+- Research mode: no pre-step evaluation — implementation always runs.

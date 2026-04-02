@@ -248,6 +248,56 @@ if [ "$_p5_missing" -eq 0 ]; then
   check_pass "all Phase 5 spec-mandated files exist"
 fi
 
+# --- Check: Gate evaluation files ---
+section "Gate evaluation files"
+_gate_missing=0
+for _step in ideate research plan spec decompose implement review; do
+  if [ ! -f "$ROOT/evals/gates/${_step}.yaml" ]; then
+    check_fail "evals/gates/${_step}.yaml missing"
+    _gate_missing=$((_gate_missing + 1))
+  fi
+done
+if [ -f "$ROOT/scripts/run-gate.sh" ]; then
+  :
+else
+  check_fail "scripts/run-gate.sh missing"
+  _gate_missing=$((_gate_missing + 1))
+fi
+if [ -f "$ROOT/scripts/check-artifacts.sh" ]; then
+  :
+else
+  check_fail "scripts/check-artifacts.sh missing"
+  _gate_missing=$((_gate_missing + 1))
+fi
+if [ -f "$ROOT/commands/lib/gate-precheck.sh" ]; then
+  :
+else
+  check_fail "commands/lib/gate-precheck.sh missing"
+  _gate_missing=$((_gate_missing + 1))
+fi
+if [ -f "$ROOT/skills/shared/gate-evaluator.md" ]; then
+  :
+else
+  check_fail "skills/shared/gate-evaluator.md missing"
+  _gate_missing=$((_gate_missing + 1))
+fi
+if [ "$_gate_missing" -eq 0 ]; then
+  check_pass "all gate evaluation files present"
+fi
+
+# --- Check: Old script names absent ---
+section "Renamed script cleanup"
+_stale_scripts=0
+for _old in "scripts/auto-advance.sh" "scripts/run-eval.sh" "commands/lib/auto-advance.sh"; do
+  if [ -f "$ROOT/$_old" ]; then
+    check_fail "stale script not removed: $_old"
+    _stale_scripts=$((_stale_scripts + 1))
+  fi
+done
+if [ "$_stale_scripts" -eq 0 ]; then
+  check_pass "all renamed scripts cleaned up"
+fi
+
 # Placeholder sections in step skills (should be filled by their owning work items)
 section "Unfilled placeholder sections"
 _placeholders=0

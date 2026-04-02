@@ -1,0 +1,19 @@
+# Gate evaluation for the review step.
+# Review has post_step only — no pre_step gate.
+# Post-step evaluates whether the review was thorough and findings were addressed.
+
+post_step:
+  # No dimensions_from — evals/dimensions/review.yaml does not exist.
+  # Review gate has unique criteria (inline), like ideation.
+  dimensions:
+    - name: "finding-resolution"
+      definition: "Whether all review findings have been addressed or explicitly deferred"
+      pass_criteria: "Every finding from the review has a resolution: fixed (with commit reference), deferred (with justification), or rejected (with rationale)"
+      fail_criteria: "Any review finding has no resolution recorded"
+      evidence_format: "List each unresolved finding"
+
+    - name: "coverage-completeness"
+      definition: "Whether the review covered all deliverables in the current wave"
+      pass_criteria: "Every deliverable in the current wave has a review record with per-dimension verdicts"
+      fail_criteria: "Any deliverable in the current wave has no review record"
+      evidence_format: "Name the unreviewed deliverable"

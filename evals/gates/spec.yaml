@@ -1,0 +1,14 @@
+# Gate evaluation for the spec step.
+# Pre-step checks whether acceptance criteria are mechanically verifiable.
+# Post-step references evals/dimensions/spec.yaml for quality evaluation.
+
+pre_step:
+  dimensions:
+    - name: "testability"
+      definition: "Whether acceptance criteria can be mechanically verified — moved from shell regex to evaluator judgment"
+      pass_criteria: "Every acceptance criterion in definition.yaml contains a concrete verification method: a command to run, a file to inspect, a value to compare, or a behavior to observe with expected output"
+      fail_criteria: "Any acceptance criterion relies on subjective judgment ('clean code', 'well-designed', 'appropriate') without a measurable threshold or observable behavior"
+      evidence_format: "Quote each untestable AC and explain what concrete condition is missing"
+
+post_step:
+  dimensions_from: "evals/dimensions/spec.yaml"
