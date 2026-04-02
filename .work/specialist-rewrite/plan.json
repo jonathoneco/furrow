@@ -1,0 +1,74 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": ["existing-rewrites"],
+      "assignments": {
+        "existing-rewrites": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "specialists/api-designer.md",
+            "specialists/test-engineer.md",
+            "specialists/relational-db-architect.md",
+            "specialists/document-db-architect.md",
+            "specialists/database-architect.md"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 2,
+      "deliverables": ["language-specialists", "architecture-specialists", "process-specialists", "reference-doc-update"],
+      "assignments": {
+        "language-specialists": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "specialists/go-specialist.md",
+            "specialists/shell-specialist.md",
+            "specialists/typescript-specialist.md",
+            "specialists/python-specialist.md"
+          ],
+          "skills": []
+        },
+        "architecture-specialists": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "specialists/systems-architect.md",
+            "specialists/security-engineer.md"
+          ],
+          "skills": []
+        },
+        "process-specialists": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "specialists/migration-strategist.md",
+            "specialists/complexity-skeptic.md",
+            "specialists/cli-designer.md"
+          ],
+          "skills": []
+        },
+        "reference-doc-update": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "references/specialist-template.md"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 3,
+      "deliverables": ["catalog-validation"],
+      "assignments": {
+        "catalog-validation": {
+          "specialist": "harness-engineer",
+          "file_ownership": [],
+          "skills": []
+        }
+      }
+    }
+  ],
+  "created_at": "2026-04-02T10:45:00Z",
+  "created_by": "plan-step"
+}

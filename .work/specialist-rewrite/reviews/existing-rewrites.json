@@ -1,0 +1,27 @@
+{
+  "deliverable": "existing-rewrites",
+  "phase_a": {
+    "criteria_met": [
+      "api-designer.md rewritten with 6 reasoning patterns replacing Responsibilities section",
+      "test-engineer.md rewritten with 7 reasoning patterns replacing Responsibilities section",
+      "database-architect.md replaced by relational-db-architect.md (7 patterns) and document-db-architect.md (7 patterns)",
+      "All 4 files match harness-engineer.md structure exactly (frontmatter with name/description/type, Domain Expertise, How This Specialist Reasons, Quality Criteria, Anti-Patterns table, Context Requirements)",
+      "Quality Criteria and Anti-Patterns receive light editing for voice alignment — concise prose paragraphs and consistent table format",
+      "Exclude lines dropped from Context Requirements (no Exclude mentions in any of the 4 files)",
+      "database-architect.md deleted after replacement files verified"
+    ],
+    "criteria_failed": [],
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "findings": [],
+    "verdict": "pass",
+    "notes": {
+      "api-designer": "Domain Expertise describes HOW the specialist thinks ('reasoning from the consumer inward', 'thinks simultaneously about happy path, error path, evolution path'). 6 reasoning patterns are actionable mental models (consumer-first design, backward compatibility calculus, resource boundary reasoning, error contract rigor, idempotency awareness, pagination as default). Quality Criteria specific and testable. 4 anti-pattern rows with distinct problem/reason/alternative.",
+      "test-engineer": "Domain Expertise describes thinking approach ('failure-detection perspective', 'what could break and how would we know'). 7 reasoning patterns are actionable (failure-first design, determinism obsession, test boundary reasoning, fixture minimalism, name as documentation, coverage strategy, gate-aligned test design). Quality Criteria specific. 4 anti-pattern rows are distinct.",
+      "relational-db-architect": "Domain Expertise describes reasoning approach ('correctness before performance', 'consistency and durability perspective'). 7 patterns cover constraint modeling, migration safety, normalization, transactions, join paths, index costs, schema as artifact. 6 anti-pattern rows are distinct and relevant. Context Requirements domain-appropriate.",
+      "document-db-architect": "Domain Expertise describes HOW thinking differs from relational ('denormalizes by design', 'shape of the query drives the shape of the document'). 7 patterns cover access-pattern-first, embedding vs referencing, schema evolution, consistency tradeoffs, aggregation avoidance, data lifecycle, collection design. 5 anti-pattern rows are distinct. Context Requirements are more detailed than most (3 Required items) — appropriate for a domain where access patterns and consistency requirements are critical inputs."
+    }
+  },
+  "overall": "pass"
+}
