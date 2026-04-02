@@ -109,3 +109,89 @@ is_work_unit_file() {
     *) return 1 ;;
   esac
 }
+
+# extract_unit_from_path <file_path> — extract work unit directory from a file path
+# Returns the work unit directory (e.g., ".work/my-unit") if path is inside
+# .work/{name}/, or empty string if not a work unit path.
+extract_unit_from_path() {
+  _path="$1"
+
+  # Normalize: strip everything up to and including .work/ to get relative remainder
+  case "$_path" in
+    .work/*)
+      _remainder="${_path#.work/}"
+      ;;
+    */.work/*)
+      _remainder="${_path#*/.work/}"
+      ;;
+    *)
+      echo ""
+      return 0
+      ;;
+  esac
+
+  # Extract the unit name (first path component)
+  _unit_name="${_remainder%%/*}"
+
+  # Skip non-unit entries (dotfiles like .focused, _meta.yaml)
+  case "$_unit_name" in
+    .*|_*|"")
+      echo ""
+      return 0
+      ;;
+  esac
+
+  # Validate the unit directory exists
+  if [ -f ".work/${_unit_name}/state.json" ]; then
+    echo ".work/${_unit_name}"
+  else
+    echo ""
+  fi
+  return 0
+}
+
+# --- focus management ---
+
+# find_focused_work_unit — find the focused work unit directory
+# Reads .work/.focused (cache semantics), validates, falls back to
+# find_active_work_unit() on invalid state. Never errors.
+find_focused_work_unit() {
+  # Try .focused file first
+  if [ -f ".work/.focused" ]; then
+    _focused_name="$(cat ".work/.focused" 2>/dev/null)" || _focused_name=""
+    if [ -n "$_focused_name" ] && [ -f ".work/${_focused_name}/state.json" ]; then
+      _archived="$(jq -r '.archived_at // "null"' ".work/${_focused_name}/state.json" 2>/dev/null)" || _archived="null"
+      if [ "$_archived" = "null" ]; then
+        echo ".work/${_focused_name}"
+        return 0
+      fi
+    fi
+    log_warning "Stale .focused file (unit: ${_focused_name:-empty}), falling back"
+  fi
+
+  # Fallback: most recently updated active unit
+  find_active_work_unit
+}
+
+# set_focus <name> — set the focused work unit
+# Returns 0 on success, 1 if unit doesn't exist or is archived.
+set_focus() {
+  _name="$1"
+  if [ ! -f ".work/${_name}/state.json" ]; then
+    log_error "Cannot focus: .work/${_name}/state.json not found"
+    return 1
+  fi
+  _archived="$(jq -r '.archived_at // "null"' ".work/${_name}/state.json" 2>/dev/null)" || _archived=""
+  if [ "$_archived" != "null" ]; then
+    log_error "Cannot focus: unit '${_name}' is archived"
+    return 1
+  fi
+  printf '%s' "$_name" > ".work/.focused"
+  return 0
+}
+
+# clear_focus — remove the focus file (idempotent)
+clear_focus() {
+  rm -f ".work/.focused"
+  return 0
+}
