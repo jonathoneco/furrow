@@ -35,12 +35,6 @@ if [ -z "$work_dir" ]; then
   exit 0
 fi
 
-# Skip archived units
-archived="$(jq -r '.archived_at // "null"' "$work_dir/state.json" 2>/dev/null)" || archived="null"
-if [ "$archived" != "null" ]; then
-  exit 0
-fi
-
 # --- check if in ideation step ---
 
 step="$(jq -r '.step' "${work_dir}/state.json" 2>/dev/null)" || step=""

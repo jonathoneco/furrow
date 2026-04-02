@@ -160,6 +160,7 @@ find_focused_work_unit() {
   if [ -f ".work/.focused" ]; then
     _focused_name="$(cat ".work/.focused" 2>/dev/null)" || _focused_name=""
     if [ -n "$_focused_name" ] && [ -f ".work/${_focused_name}/state.json" ]; then
+      # Fail-open: jq failure treats unit as not archived (permissive for reads)
       _archived="$(jq -r '.archived_at // "null"' ".work/${_focused_name}/state.json" 2>/dev/null)" || _archived="null"
       if [ "$_archived" = "null" ]; then
         echo ".work/${_focused_name}"
@@ -181,6 +182,7 @@ set_focus() {
     log_error "Cannot focus: .work/${_name}/state.json not found"
     return 1
   fi
+  # Fail-closed: jq failure rejects the unit (strict for writes)
   _archived="$(jq -r '.archived_at // "null"' ".work/${_name}/state.json" 2>/dev/null)" || _archived=""
   if [ "$_archived" != "null" ]; then
     log_error "Cannot focus: unit '${_name}' is archived"

@@ -94,8 +94,8 @@ fi
 # --- clear focus if archiving the focused unit ---
 
 if [ -f ".work/.focused" ]; then
-  _focused_name="$(cat ".work/.focused" 2>/dev/null)" || _focused_name=""
-  if [ "$_focused_name" = "$name" ]; then
+  focused_name="$(cat ".work/.focused")"
+  if [ "$focused_name" = "$name" ]; then
     rm -f ".work/.focused"
   fi
 fi

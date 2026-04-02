@@ -33,7 +33,7 @@ case "$command_str" in
 esac
 
 # Extract unit name from command: advance-step.sh <unit-name> [...]
-unit_name="$(echo "$command_str" | sed -n 's/.*advance-step[^ ]* \+\([^ ]*\).*/\1/p')"
+unit_name="$(echo "$command_str" | sed -E -n 's/.*advance-step[^ ]* +([^ ]*).*/\1/p')"
 
 if [ -n "$unit_name" ]; then
   work_dir=".work/$unit_name"
