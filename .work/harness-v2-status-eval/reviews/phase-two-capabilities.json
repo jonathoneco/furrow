@@ -1,0 +1,30 @@
+{
+  "deliverable": "phase-two-capabilities",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [
+      { "criterion": "generate-plan.sh produces valid plan.json from definition.yaml", "met": true, "evidence": "Script implements topological sort (Kahn's algorithm), wave assignment, jq pipeline, atomic write with validation" },
+      { "criterion": "correction-limit.sh blocks after N consecutive failures per deliverable", "met": true, "evidence": "Hook reads stdin JSON, discovers active work unit, reads correction_limit from harness.yaml (default 3), matches files to deliverables. Correction increment scoped to in_progress deliverables via jq filter" },
+      { "criterion": "check-wave-conflicts.sh wired into step-transition at implement->review", "met": true, "evidence": "step-transition.sh lines 110-116: calls check-wave-conflicts.sh at implement->review boundary with non-blocking warning on failure" }
+    ],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      { "name": "correctness", "verdict": "pass", "evidence": "generate-plan.sh: correct topological sort, wave assignment, validation pipeline. correction-limit.sh: correct discovery, matching, enforcement. check-wave-conflicts.sh correctly wired as non-blocking" },
+      { "name": "error-handling", "verdict": "pass", "evidence": "generate-plan.sh: 4 exit codes, dependency checks, temp file cleanup with trap. correction-limit.sh: graceful degradation (exits 0 on any error). evaluate-gate.sh now validates verdict enum" },
+      { "name": "security", "verdict": "pass", "evidence": "No secrets. Variables quoted. correction-limit.sh only reads stdin/files, no file writes" },
+      { "name": "maintainability", "verdict": "pass", "evidence": "generate-plan.sh: clear documentation header, inline Python well-contained. correction-limit.sh: linear pipeline structure, actionable error message" }
+    ],
+    "verdict": "pass"
+  },
+  "overall": "pass",
+  "corrections": 1,
+  "reviewer": "phase2-reviewer-agent",
+  "cross_model": false,
+  "timestamp": "2026-04-02T09:45:00Z"
+}

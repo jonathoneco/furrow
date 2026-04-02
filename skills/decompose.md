@@ -36,10 +36,6 @@ Next step expects: `plan.json` with waves, `team-plan.md` with coordination.
 Append reusable insights to `.work/{name}/learnings.jsonl`.
 Read `skills/shared/learnings-protocol.md` for schema and categories.
 
-## Git Conventions
-Read `skills/shared/git-conventions.md` before any commit. Branch creation
-happens at decompose->implement boundary via `scripts/create-work-branch.sh`.
-
 ## Research Mode
 When `state.json.mode` is `"research"`:
 - File ownership: `.work/{name}/deliverables/{section-name}.md` (not git tree).

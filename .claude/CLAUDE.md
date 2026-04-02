@@ -51,7 +51,7 @@ See `.claude/rules/` for platform-managed rules that survive compaction.
 <!-- harness:start -->
 ## V2 Work Harness
 
-Installed from: /home/jonco/src/work-harness-v2
+Installed from: /home/jonco/src/furrow
 
 | Command | Purpose |
 |---------|---------|
@@ -62,9 +62,7 @@ Installed from: /home/jonco/src/work-harness-v2
 | /harness:archive | Archive completed work |
 | /harness:reground | Recover context after break |
 | /harness:redirect | Record dead end and pivot |
-| /harness:doctor | Check harness health |
-| /harness:update | Check configuration drift |
-| /harness:meta | Enter self-modification mode |
+| /harness | Harness management (doctor, update, meta) |
 
 Run `/harness:doctor` to check health. Run `install.sh --check` to verify installation.
 <!-- harness:end -->

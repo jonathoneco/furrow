@@ -196,6 +196,19 @@ if [ -d "$HARNESS_ROOT/commands/lib" ]; then
   done
 fi
 
+# --- 1b. Specialists (registered as specialist:name commands) ---
+echo ""
+echo "--- Specialists ---"
+if [ -d "$HARNESS_ROOT/specialists" ]; then
+  for spec in "$HARNESS_ROOT"/specialists/*.md; do
+    [ -f "$spec" ] || continue
+    _basename="$(basename "$spec" .md)"
+    # Skip _meta.yaml and similar non-specialist files
+    case "$_basename" in _*) continue ;; esac
+    symlink "$spec" "$TARGET/commands/specialist:${_basename}.md"
+  done
+fi
+
 # --- 2. Rules ---
 echo ""
 echo "--- Rules ---"

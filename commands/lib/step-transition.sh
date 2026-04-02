@@ -82,12 +82,37 @@ else
   }
 fi
 
+# --- 1b. Validate step artifacts (only on pass/conditional) ---
+
+if [ "${outcome}" != "fail" ]; then
+  "${scripts_dir}/validate-step-artifacts.sh" "${name}" "${boundary}" || {
+    echo "Artifact validation failed for ${boundary}. Gate recorded but advancement blocked." >&2
+    exit 4
+  }
+fi
+
 # --- handle fail: do not advance ---
 
 if [ "${outcome}" = "fail" ]; then
   "${scripts_dir}/update-state.sh" "${name}" '.step_status = "in_progress"'
+  # Increment correction count for in-progress deliverables during implement/review
+  case "${current_step}" in
+    implement|review)
+      "${scripts_dir}/update-state.sh" "${name}" \
+        '.deliverables |= with_entries(if .value.status == "in_progress" then .value.corrections = ((.value.corrections // 0) + 1) else . end)' \
+        2>/dev/null || true
+      ;;
+  esac
   echo "Gate failed: ${boundary}. Step remains at ${current_step}."
   exit 0
+fi
+
+# --- 1c. Wave conflict check at implement->review boundary ---
+
+if [ "${current_step}" = "implement" ] && [ "${next_step}" = "review" ]; then
+  "${scripts_dir}/check-wave-conflicts.sh" "${name}" 2>&1 || {
+    echo "Warning: wave conflicts detected (non-blocking)" >&2
+  }
 fi
 
 # --- 2. Regenerate summary ---

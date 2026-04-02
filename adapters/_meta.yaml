@@ -1,2 +1,6 @@
 # adapters/ directory — runtime-specific bindings for the V2 harness
-# See _rationale.yaml for component rationale.
+component: adapters
+children:
+  - agent-sdk
+  - claude-code
+  - shared

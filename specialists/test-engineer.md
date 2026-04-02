@@ -1,3 +1,9 @@
+---
+name: test-engineer
+description: Test design, coverage analysis, edge case identification, flakiness prevention
+type: specialist
+---
+
 # Test Engineer Specialist
 
 ## Domain Expertise

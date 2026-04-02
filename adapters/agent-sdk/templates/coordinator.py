@@ -9,6 +9,7 @@ Usage:
 """
 
 import json
+import logging
 import subprocess
 import sys
 from pathlib import Path
@@ -21,15 +22,9 @@ except ImportError:
     sys.exit(1)
 
 from callbacks.state_mutation import StateMutator
-from config import HarnessConfig
+from config import HarnessConfig, STEP_SEQUENCE
 
-
-# --- Constants ---
-
-STEP_SEQUENCE = [
-    "ideate", "research", "plan", "spec", "decompose", "implement", "review"
-]
-
+logger = logging.getLogger("harness.coordinator")
 
 # --- Coordinator Agent ---
 
@@ -49,13 +44,13 @@ class CoordinatorAgent:
         step_idx = STEP_SEQUENCE.index(current_step)
 
         for step in STEP_SEQUENCE[step_idx:]:
-            print(f"--- Step: {step} ---")
+            logger.info(f"--- Step: {step} ---")
             self._execute_step(step)
 
             if step != "review":
                 self._handle_gate(step, STEP_SEQUENCE[STEP_SEQUENCE.index(step) + 1])
 
-        print("Work unit complete.")
+        logger.info("Work unit complete.")
 
     def _execute_step(self, step: str) -> None:
         """Execute a single step."""
@@ -67,7 +62,7 @@ class CoordinatorAgent:
             # TODO: customize — implement step-specific logic
             # For steps like ideate, research, plan, spec, decompose:
             # call the appropriate agent or logic for this step.
-            print(f"  Execute {step} step logic here")
+            logger.info(f"  Execute {step} step logic here")
 
         self.state_mutator.update({"step_status": "completed"})
 
@@ -75,7 +70,7 @@ class CoordinatorAgent:
         """Spawn specialist sub-agents per plan.json wave assignments."""
         plan_path = self.work_dir / "plan.json"
         if not plan_path.exists():
-            print("  No plan.json found — single-agent execution")
+            logger.info("  No plan.json found — single-agent execution")
             return
 
         with open(plan_path) as f:
@@ -83,7 +78,7 @@ class CoordinatorAgent:
 
         for wave in plan["waves"]:
             wave_num = wave["wave"]
-            print(f"  Wave {wave_num}: {wave['deliverables']}")
+            logger.info(f"  Wave {wave_num}: {wave['deliverables']}")
 
             # TODO: customize — spawn specialist agents per wave assignment
             # Each specialist receives:
@@ -93,8 +88,8 @@ class CoordinatorAgent:
             for deliverable_name, assignment in wave["assignments"].items():
                 specialist_type = assignment["specialist"]
                 file_ownership = assignment.get("file_ownership", [])
-                print(f"    Dispatching {specialist_type} for {deliverable_name}")
-                print(f"    File ownership: {file_ownership}")
+                logger.info(f"    Dispatching {specialist_type} for {deliverable_name}")
+                logger.info(f"    File ownership: {file_ownership}")
 
                 # TODO: customize — create and run specialist agent
                 # specialist = SpecialistAgent(
@@ -105,7 +100,7 @@ class CoordinatorAgent:
                 # )
                 # specialist.run()
 
-            print(f"  Wave {wave_num} complete — inspecting outputs")
+            logger.info(f"  Wave {wave_num} complete — inspecting outputs")
 
     def _handle_gate(self, from_step: str, to_step: str) -> None:
         """Record gate decision and advance to next step."""
@@ -122,12 +117,12 @@ class CoordinatorAgent:
         gate_record = decide_gate(gate_policy, boundary, evidence="Step completed")
 
         self.state_mutator.append_gate(gate_record)
-        print(f"  Gate {boundary}: {gate_record['outcome']}")
+        logger.info(f"  Gate {boundary}: {gate_record['outcome']}")
 
     def _validate_step_boundary(self, from_step: str, to_step: str) -> None:
         """Call hooks/lib/validate.sh for step boundary validation."""
         result = subprocess.run(
-            ["hooks/lib/validate.sh", "validate_step_boundary", from_step, to_step],
+            [str(self.config.root / "hooks" / "lib" / "validate.sh"), "validate_step_boundary", from_step, to_step],
             capture_output=True, text=True
         )
         if result.returncode != 0:

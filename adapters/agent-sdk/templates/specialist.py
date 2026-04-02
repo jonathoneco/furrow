@@ -29,12 +29,17 @@ class SpecialistAgent:
         specialist_type: str,
         file_ownership: list[str],
         context: dict | None = None,
+        config: "HarnessConfig | None" = None,
     ):
         self.work_dir = Path(work_dir)
         self.deliverable = deliverable
         self.specialist_type = specialist_type
         self.file_ownership = file_ownership
         self.context = context or {}
+        if config is None:
+            from config import HarnessConfig
+            config = HarnessConfig(work_dir)
+        self.config = config
 
     def run(self) -> dict:
         """Execute the assigned deliverable and return completion status.
@@ -70,7 +75,7 @@ class SpecialistAgent:
 
     def _load_specialist_template(self) -> str | None:
         """Load specialist template from specialists/ directory."""
-        template_path = Path(f"specialists/{self.specialist_type}.md")
+        template_path = self.config.root / "specialists" / f"{self.specialist_type}.md"
         if template_path.exists():
             return template_path.read_text()
         print(f"  Warning: no template found for {self.specialist_type}")

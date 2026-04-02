@@ -1,3 +1,9 @@
+---
+name: api-designer
+description: HTTP API design — resource modeling, error handling, backward compatibility
+type: specialist
+---
+
 # API Designer Specialist
 
 ## Domain Expertise

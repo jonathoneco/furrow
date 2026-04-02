@@ -16,6 +16,7 @@ stack:
 defaults:
   gate_policy: "supervised"   # "supervised" | "delegated" | "autonomous"
   mode: "code"                # "code" | "research"
+  correction_limit: 3         # max gate failures per deliverable before blocking
 
 # Context document manifest (paths relative to project root)
 context_docs: []

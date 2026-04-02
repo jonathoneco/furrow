@@ -1,3 +1,7 @@
+# Eval dimensions for research-mode implement artifacts.
+# Each dimension is binary (PASS/FAIL). Overall PASS requires ALL dimensions pass.
+# Loaded by Phase B review agents via evals/dimensions/{artifact-type}.yaml convention.
+
 dimensions:
   - name: "coverage"
     definition: "Breadth of investigation relative to the deliverable's acceptance criteria"

@@ -4,7 +4,7 @@
 # Usage: measure-context.sh [harness-root]
 # Exit 0 if all budgets pass, 1 if any violated.
 
-set -e
+set -eu
 
 ROOT="${1:-$(cd "$(dirname "$0")/.." && pwd)}"
 errors=0

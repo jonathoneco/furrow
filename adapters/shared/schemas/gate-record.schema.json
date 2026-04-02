@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Extended Gate Record",
-  "description": "Schema for gates/{boundary}.json — extended gate evidence per spec 00 §1.4",
+  "description": "Schema for gates/{boundary}.json files — extended review evidence. Note: This describes standalone gate evidence, NOT the inline gate_record entries in state.json.gates[].",
   "type": "object",
   "required": [
     "boundary",
@@ -14,8 +14,8 @@
   "properties": {
     "boundary": {
       "type": "string",
-      "pattern": "^[a-z]+-to-[a-z]+$",
-      "description": "Format: {from}-to-{to} (e.g., plan-to-spec)"
+      "pattern": "^[a-z]+->[a-z]+$",
+      "description": "Format: {from}->{to} (e.g., plan->spec)"
     },
     "dimensions": {
       "type": "array",

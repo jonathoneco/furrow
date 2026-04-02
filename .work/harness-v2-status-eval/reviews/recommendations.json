@@ -1,0 +1,31 @@
+{
+  "deliverable": "recommendations",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [
+      { "criterion": "Prioritized list of what to build or fix next", "met": true, "evidence": "Two categories: Architectural (A1-A5) and Enforcement (E1-E3), each with problem statement, deliverables, and effort estimates. 3-phase build order with dependencies" },
+      { "criterion": "Identifies what to explicitly defer or drop", "met": true, "evidence": "Defer table (9 items with rationale) and Drop/Simplify table (4 items). E.g., 'Agent SDK adapter completion — Defer unless actively using Agent SDK'" },
+      { "criterion": "Notes what is working well and should be preserved", "met": true, "evidence": "8 enumerated items with justifications. E.g., 'Context budget enforcement — 300-line ceiling with measurement. The #1 v1 lesson. Protect it.'" }
+    ],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      { "name": "coverage", "verdict": "pass", "evidence": "Recommendations cover all major gap categories from gap-matrix. Defer list addresses Phase 4-6 plan items" },
+      { "name": "depth", "verdict": "pass", "evidence": "Each recommendation specifies concrete deliverables with estimated scope. A1: '~80 lines of shell added to step-transition.sh or a new validate-step-artifacts.sh script'" },
+      { "name": "sources", "verdict": "pass", "evidence": "Recommendations trace to gap-matrix findings. A2 references adapters/shared/schemas/plan.schema.json. E1 references 'Two absent gap-review behaviors (#5, #13)'" },
+      { "name": "synthesis", "verdict": "pass", "evidence": "Build order synthesizes dependencies: 'Phase I: A1, A2, A3 in parallel. Phase II: A4 depends on A2, A5 depends on A4. Phase III: E2 depends on A1'" },
+      { "name": "actionability", "verdict": "pass", "evidence": "Highest actionability of the three. Each item includes problem, files to create/modify, line estimates, and scope control ('What NOT to build')" }
+    ],
+    "verdict": "pass"
+  },
+  "overall": "pass",
+  "corrections": 0,
+  "reviewer": "research-reviewer-agent",
+  "cross_model": false,
+  "timestamp": "2026-04-02T09:30:00Z"
+}

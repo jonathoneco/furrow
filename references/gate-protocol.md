@@ -51,6 +51,14 @@ next step. The next step must address all conditions before its own gate.
 Per-deliverable `gate` field overrides the top-level policy for that deliverable's
 review only.
 
+## Automated Gate Decisions
+
+`scripts/evaluate-gate.sh` provides programmatic gate routing by trust level.
+This script is called by the **eval runner** (`scripts/run-eval.sh`), NOT by
+`step-transition.sh` directly. Step-transition accepts explicit verdicts from
+human or evaluator — evaluate-gate.sh determines whether to auto-approve or
+escalate based on the gate_policy and boundary.
+
 ## Auto-Advance
 
 A step may auto-advance when its output adds no information beyond what the previous

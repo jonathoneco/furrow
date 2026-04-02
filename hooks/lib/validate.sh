@@ -63,7 +63,7 @@ validate_definition_yaml() {
       fi
 
       # Check dangling depends_on
-      _deps="$(yq -r '.deliverables[].depends_on[]? // empty' "$_def_path" 2>/dev/null)" || _deps=""
+      _deps="$(yq -r '.deliverables[].depends_on[]?' "$_def_path" 2>/dev/null)" || _deps=""
       for _dep in $_deps; do
         if ! echo "$_names" | grep -qx "$_dep"; then
           _errors="${_errors}Dangling depends_on reference: $_dep\n"
@@ -156,8 +156,8 @@ validate_plan_json() {
     [.waves[].wave] | sort |
     if length == 0 then "empty"
     elif .[0] != 1 then "must start at 1"
-    else
-      [range(length - 1) | . as $i | if .[$i + 1] - .[$i] != 1 then "non-contiguous" else empty end] |
+    else . as $arr |
+      [range($arr | length - 1) | . as $i | if $arr[$i + 1] - $arr[$i] != 1 then "non-contiguous" else empty end] |
       if length > 0 then .[0] else "ok" end
     end
   ' "$_plan_path" 2>/dev/null)" || _wave_valid="error"
@@ -185,7 +185,7 @@ validate_plan_json() {
     _dep_errors="$(jq -r --argjson def_json "$(yq -o=json '.' "$_def_path" 2>/dev/null)" '
       . as $plan |
       # Build deliverable->wave map
-      [.waves[] | .wave as $w | .deliverables[] | {name: ., wave: $w}] |
+      [.waves[] | .wave as $w | .deliverables[] | {name: ., value: $w}] |
       from_entries as $wave_map |
       # Check each dependency
       [$def_json.deliverables[] | select(.depends_on != null) |

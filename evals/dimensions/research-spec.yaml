@@ -1,3 +1,7 @@
+# Eval dimensions for research-mode spec artifacts.
+# Each dimension is binary (PASS/FAIL). Overall PASS requires ALL dimensions pass.
+# Loaded by Phase B review agents via evals/dimensions/{artifact-type}.yaml convention.
+
 dimensions:
   - name: "outline-completeness"
     definition: "Whether the outline covers all deliverables from definition.yaml"

@@ -19,10 +19,23 @@ import yaml  # TODO: customize — install pyyaml: pip install pyyaml
 
 logger = logging.getLogger("harness")
 
+STEP_SEQUENCE = [
+    "ideate", "research", "plan", "spec", "decompose", "implement", "review"
+]
+
 
 class ConfigError(Exception):
     """Raised when harness configuration is invalid."""
     pass
+
+
+def _project_root() -> Path:
+    """Compute the harness project root directory.
+
+    Returns the parent of the adapters/agent-sdk/ directory tree,
+    so relative paths resolve against the project root rather than CWD.
+    """
+    return Path(__file__).resolve().parent.parent.parent
 
 
 class HarnessConfig:
@@ -37,6 +50,7 @@ class HarnessConfig:
         Raises:
             ConfigError: If no active work unit found or validation fails.
         """
+        self.root = _project_root()
         self.work_dir = Path(work_dir) if work_dir else self._discover_work()
         self._setup_logging()
         self._validate_at_startup()
@@ -50,14 +64,18 @@ class HarnessConfig:
         Raises:
             ConfigError: If no active work unit found.
         """
-        work_root = Path(".work")
+        work_root = self.root / ".work"
         if not work_root.exists():
             raise ConfigError("No .work/ directory found")
 
         active_units = []
         for state_file in work_root.glob("*/state.json"):
-            with open(state_file) as f:
-                state = json.load(f)
+            try:
+                with open(state_file) as f:
+                    state = json.load(f)
+            except json.JSONDecodeError:
+                logger.warning(f"Skipping malformed state file: {state_file}")
+                continue
             if state.get("archived_at") is None:
                 active_units.append(state_file.parent)
 
@@ -81,7 +99,7 @@ class HarnessConfig:
         definition_path = self.work_dir / "definition.yaml"
         if definition_path.exists():
             result = subprocess.run(
-                ["hooks/lib/validate.sh", "validate_definition", str(definition_path)],
+                [str(self.root / "hooks" / "lib" / "validate.sh"), "validate_definition", str(definition_path)],
                 capture_output=True, text=True,
             )
             if result.returncode != 0:
@@ -93,7 +111,7 @@ class HarnessConfig:
         state_path = self.work_dir / "state.json"
         if state_path.exists():
             result = subprocess.run(
-                ["hooks/lib/validate.sh", "validate_state_json", str(state_path)],
+                [str(self.root / "hooks" / "lib" / "validate.sh"), "validate_state_json", str(state_path)],
                 capture_output=True, text=True,
             )
             if result.returncode != 0:
@@ -106,16 +124,22 @@ class HarnessConfig:
         path = self.work_dir / "definition.yaml"
         if not path.exists():
             raise ConfigError(f"definition.yaml not found at {path}")
-        with open(path) as f:
-            return yaml.safe_load(f)
+        try:
+            with open(path) as f:
+                return yaml.safe_load(f)
+        except yaml.YAMLError as e:
+            raise ConfigError(f"Malformed YAML in {path}: {e}")
 
     def load_state(self) -> dict:
         """Load and return state.json."""
         path = self.work_dir / "state.json"
         if not path.exists():
             raise ConfigError(f"state.json not found at {path}")
-        with open(path) as f:
-            return json.load(f)
+        try:
+            with open(path) as f:
+                return json.load(f)
+        except json.JSONDecodeError as e:
+            raise ConfigError(f"Malformed JSON in {path}: {e}")
 
     def load_specialists(self) -> dict[str, dict]:
         """Scan specialists/ directory and load all specialist templates.
@@ -124,7 +148,7 @@ class HarnessConfig:
             Dict mapping domain name to template metadata.
         """
         specialists = {}
-        specialists_dir = Path("specialists")
+        specialists_dir = self.root / "specialists"
         if not specialists_dir.exists():
             logger.warning("No specialists/ directory found")
             return specialists
@@ -149,15 +173,19 @@ class HarnessConfig:
             Dict mapping artifact type to list of dimension definitions.
         """
         dimensions = {}
-        dims_dir = Path("evals/dimensions")
+        dims_dir = self.root / "evals" / "dimensions"
         if not dims_dir.exists():
             logger.warning("No evals/dimensions/ directory found")
             return dimensions
 
         for dim_file in dims_dir.glob("*.yaml"):
             artifact_type = dim_file.stem
-            with open(dim_file) as f:
-                dims = yaml.safe_load(f)
+            try:
+                with open(dim_file) as f:
+                    dims = yaml.safe_load(f)
+            except yaml.YAMLError:
+                logger.warning(f"Skipping malformed dimension file: {dim_file}")
+                continue
             dimensions[artifact_type] = dims if isinstance(dims, list) else []
             logger.info(f"Loaded dimensions for: {artifact_type}")
 

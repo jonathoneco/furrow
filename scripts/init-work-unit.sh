@@ -49,27 +49,33 @@ now="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 # --- create state.json (atomic: temp file + move) ---
 
 tmp_state="${work_dir}/state.json.tmp.$$"
-cat > "${tmp_state}" << ENDJSON
-{
-  "name": "${name}",
-  "title": "",
-  "description": "${description}",
-  "step": "ideate",
-  "step_status": "not_started",
-  "steps_sequence": ["ideate", "research", "plan", "spec", "decompose", "implement", "review"],
-  "deliverables": {},
-  "gates": [],
-  "force_stop_at": null,
-  "branch": null,
-  "mode": "code",
-  "base_commit": "${base_commit}",
-  "epic_id": null,
-  "issue_id": null,
-  "created_at": "${now}",
-  "updated_at": "${now}",
-  "archived_at": null
-}
-ENDJSON
+trap 'rm -f "${tmp_state}"' EXIT
+
+jq -n \
+  --arg name "${name}" \
+  --arg description "${description}" \
+  --arg base_commit "${base_commit}" \
+  --arg now "${now}" \
+  '{
+    name: $name,
+    title: "",
+    description: $description,
+    step: "ideate",
+    step_status: "in_progress",
+    steps_sequence: ["ideate","research","plan","spec","decompose","implement","review"],
+    deliverables: {},
+    gates: [],
+    force_stop_at: null,
+    branch: null,
+    mode: "code",
+    base_commit: $base_commit,
+    epic_id: null,
+    issue_id: null,
+    created_at: $now,
+    updated_at: $now,
+    archived_at: null
+  }' > "${tmp_state}"
+
 mv "${tmp_state}" "${work_dir}/state.json"
 
 # --- copy _meta.yaml template if not present ---

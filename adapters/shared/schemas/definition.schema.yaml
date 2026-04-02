@@ -1,6 +1,8 @@
+# JSON Schema expressed in YAML for readability. All other shared schemas use
+# JSON format. Tooling should glob both *.json and *.yaml in this directory.
+#
 # definition.yaml validation schema
 # Validates work unit definitions per spec 00 §1.1
-# Format: JSON Schema expressed in YAML for readability
 $schema: "https://json-schema.org/draft/2020-12/schema"
 title: "Work Unit Definition"
 description: "Schema for definition.yaml — the work contract"
@@ -9,6 +11,7 @@ required:
   - objective
   - deliverables
   - context_pointers
+  - constraints
   - gate_policy
 properties:
   objective:
@@ -23,10 +26,11 @@ properties:
       required:
         - name
         - acceptance_criteria
+      additionalProperties: false
       properties:
         name:
           type: string
-          pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+          pattern: "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
           description: "Kebab-case identifier, unique within definition"
         acceptance_criteria:
           type: array
@@ -36,7 +40,7 @@ properties:
             minLength: 1
         specialist:
           type: string
-          pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+          pattern: "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
           description: "Domain type (e.g., api-designer)"
         depends_on:
           type: array
@@ -61,6 +65,7 @@ properties:
       required:
         - path
         - note
+      additionalProperties: false
       properties:
         path:
           type: string

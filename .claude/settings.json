@@ -5,7 +5,9 @@
         "matcher": "Write|Edit",
         "hooks": [
           { "type": "command", "command": "hooks/state-guard.sh" },
-          { "type": "command", "command": "hooks/ownership-warn.sh" }
+          { "type": "command", "command": "hooks/ownership-warn.sh" },
+          { "type": "command", "command": "hooks/validate-definition.sh" },
+          { "type": "command", "command": "hooks/correction-limit.sh" }
         ]
       },
       {
