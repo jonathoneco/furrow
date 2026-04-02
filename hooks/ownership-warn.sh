@@ -21,7 +21,17 @@ fi
 
 input="$(cat)"
 
-work_dir="$(find_active_work_unit)"
+target_path="$(echo "$input" | jq -r '.tool_input.file_path // .tool_input.path // ""' 2>/dev/null)" || target_path=""
+
+if [ -z "$target_path" ]; then
+  exit 0
+fi
+
+work_dir="$(extract_unit_from_path "$target_path")"
+
+if [ -z "$work_dir" ]; then
+  work_dir="$(find_focused_work_unit)"
+fi
 
 if [ -z "$work_dir" ]; then
   exit 0
@@ -31,12 +41,6 @@ state_file="$work_dir/state.json"
 current_step="$(jq -r '.step // ""' "$state_file" 2>/dev/null)" || current_step=""
 
 if [ "$current_step" != "implement" ]; then
-  exit 0
-fi
-
-target_path="$(echo "$input" | jq -r '.tool_input.file_path // .tool_input.path // ""' 2>/dev/null)" || target_path=""
-
-if [ -z "$target_path" ]; then
   exit 0
 fi
 

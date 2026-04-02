@@ -21,10 +21,10 @@ fi
 # shellcheck source=lib/common.sh
 . "$COMMON_LIB"
 
-work_dir="$(find_active_work_unit)"
+work_dir="$(find_focused_work_unit)"
 
 if [ -z "$work_dir" ]; then
-  echo "No active work unit. Start with /work."
+  echo "No focused work unit. Run /work to focus a unit."
   exit 0
 fi
 

@@ -91,6 +91,15 @@ fi
 "${script_dir}/update-state.sh" "${name}" \
   ".archived_at = \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\" | .step_status = \"completed\""
 
+# --- clear focus if archiving the focused unit ---
+
+if [ -f ".work/.focused" ]; then
+  focused_name="$(cat ".work/.focused")"
+  if [ "$focused_name" = "$name" ]; then
+    rm -f ".work/.focused"
+  fi
+fi
+
 # --- regenerate summary one final time ---
 
 "${script_dir}/regenerate-summary.sh" "${name}"
