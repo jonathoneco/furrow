@@ -19,6 +19,7 @@ Read these when relevant to your current action:
 - `skills/shared/red-flags.md` — before finalizing specs
 - `skills/shared/learnings-protocol.md` — when capturing learnings
 - `skills/shared/context-isolation.md` — when dispatching spec sub-agents
+- `skills/shared/summary-protocol.md` — before completing step
 
 ## Team Planning
 For multi-deliverable work, dispatch spec sub-agents per component. Read `skills/shared/context-isolation.md`.

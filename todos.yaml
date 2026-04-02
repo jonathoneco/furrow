@@ -156,3 +156,25 @@
   files_touched:
     - "commands/lib/init-work-unit.sh"
     - "adapters/shared/schemas/definition.schema.yaml"
+
+- id: rethink-hint-file-pattern
+  title: "Rethink hint file pattern — consolidate into state.json"
+  context: |
+    The harness uses dot-prefixed hint files (.gate_policy_hint, and nearly added .source_todo)
+    to pass init-time values from init-work-unit.sh to the ideate step. These sidecar files are
+    never read by any script — agents discover them by listing the directory. This is fragile,
+    undiscoverable, and scales poorly. The harness-ux-fixes work unit migrates both to state.json
+    fields, but the pattern should be formally deprecated and any future init-time hints should
+    go directly into state.json.
+  work_needed: |
+    - Audit for any remaining hint files (grep for hint patterns in init-work-unit.sh and skills/)
+    - Document the "init hints go in state.json" convention in _rationale.yaml
+    - Add a harness-doctor check that warns if .work/*/.* hint files are found
+  source_work_unit: "harness-ux-fixes"
+  source_type: "open-question"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "low"
+  impact: "low"
+  effort: "small"
+  phase: 4

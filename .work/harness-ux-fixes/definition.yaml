@@ -1,0 +1,81 @@
+objective: "Fix two harness UX friction points: (1) summary.md agent-written sections never populated, causing validate-summary.sh to fire every session, and (2) source_todo never auto-set when work starts from a todos.yaml entry — plus migrate hint files to state.json."
+
+deliverables:
+  - name: summary-protocol-fragment
+    acceptance_criteria:
+      - "skills/shared/summary-protocol.md exists with step-aware guidance for Key Findings, Open Questions, Recommendations"
+      - "Fragment specifies minimum content threshold (>=2 non-empty lines) matching validate-summary.sh"
+      - "Fragment provides step-aware guidance: ideate requires only Open Questions; research+ requires all three"
+      - "Fragment stays under 30 lines (context budget)"
+      - "Each step skill (research, plan, spec, decompose, implement, review) references it in Shared References"
+      - "Ideate step skill references it with note that only Open Questions applies"
+    file_ownership:
+      - "skills/shared/summary-protocol.md"
+      - "skills/*.md"
+
+  - name: summary-transition-block
+    acceptance_criteria:
+      - "step-transition.sh calls validate-summary.sh BEFORE regenerate-summary.sh (explicit ordering)"
+      - "If validation fails, step transition refuses with actionable error message"
+      - "validate-summary.sh accepts step name as argument for step-aware thresholds"
+      - "Ideate step exempt from Key Findings and Recommendations (only Open Questions required)"
+      - "Research+ steps require all three sections populated"
+    depends_on:
+      - summary-protocol-fragment
+    file_ownership:
+      - "commands/lib/step-transition.sh"
+      - "hooks/validate-summary.sh"
+
+  - name: state-schema-init-hints
+    acceptance_criteria:
+      - "state.json schema (both schemas/state.schema.json and adapters/shared/schemas/state.schema.json) includes optional source_todo field (string|null)"
+      - "state.json schema includes optional gate_policy_init field (string|null) for init-time gate policy hint"
+      - "init-work-unit.sh accepts --source-todo <id> flag, validates kebab-case, writes to state.json"
+      - "init-work-unit.sh writes --gate-policy value to state.json gate_policy_init field instead of .gate_policy_hint file"
+      - ".gate_policy_hint file creation removed from init-work-unit.sh"
+      - "No existing scripts or skills broken by .gate_policy_hint removal (confirmed by grep sweep)"
+    file_ownership:
+      - "schemas/state.schema.json"
+      - "adapters/shared/schemas/state.schema.json"
+      - "commands/lib/init-work-unit.sh"
+
+  - name: ideate-reads-init-hints
+    acceptance_criteria:
+      - "skills/ideate.md instructs agent to read source_todo from state.json and include in definition.yaml"
+      - "skills/ideate.md instructs agent to read gate_policy_init from state.json as default for gate_policy in definition.yaml"
+      - "Archive flow's existing source_todo pruning in definition.yaml continues to work unchanged"
+    depends_on:
+      - state-schema-init-hints
+    file_ownership:
+      - "skills/ideate.md"
+
+context_pointers:
+  - path: "scripts/regenerate-summary.sh"
+    note: "Creates skeleton with placeholders — preserves content >=2 lines"
+  - path: "hooks/validate-summary.sh"
+    note: "Validation logic — >=2 non-empty lines per agent section"
+  - path: "commands/lib/step-transition.sh"
+    note: "Validation enforcement point — must validate BEFORE regenerate"
+  - path: "skills/shared/"
+    note: "6 existing shared fragments — pattern to follow"
+  - path: "commands/lib/init-work-unit.sh"
+    note: "Where --source-todo flag and gate_policy migration happen"
+  - path: "skills/ideate.md"
+    note: "Reads init hints from state.json, coordinates with summary protocol"
+  - path: "schemas/state.schema.json"
+    note: "Primary state schema — adding source_todo and gate_policy_init"
+  - path: "adapters/shared/schemas/state.schema.json"
+    note: "Adapter copy — must stay in sync with primary"
+  - path: "commands/archive.md"
+    note: "Existing source_todo pruning — must remain compatible"
+
+constraints:
+  - "No new dependencies — shell scripts only, yq and jq already available"
+  - "Ideate step must not hard-block on Key Findings or Recommendations (only Open Questions)"
+  - "Shared fragment stays under 30 lines (context budget)"
+  - "Validation runs BEFORE regeneration in step-transition.sh (explicit ordering contract)"
+  - "Both state schema copies must stay in sync"
+  - "No hint files created — all init-time values go in state.json"
+  - "T11 and T12 deliverables touch disjoint files except skills/ideate.md"
+
+gate_policy: "delegated"

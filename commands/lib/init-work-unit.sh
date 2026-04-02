@@ -4,15 +4,16 @@
 # Usage: init-work-unit.sh <name> [--title <title>] [--description <desc>]
 #                                 [--mode code|research]
 #                                 [--gate-policy supervised|delegated|autonomous]
+#                                 [--source-todo <todo-id>]
 #
 #   name          — kebab-case work unit name (positional, required)
 #   --title       — human-readable title (defaults to name)
 #   --description — one-sentence summary (defaults to title)
 #   --mode        — work mode (defaults from harness.yaml or "code")
 #   --gate-policy — trust level hint (defaults from harness.yaml or "supervised")
+#   --source-todo — TODO entry ID this work unit was created from
 #
 # Creates .work/{name}/ with a valid state.json and reviews/ directory.
-# Writes .gate_policy_hint if --gate-policy is provided.
 # Does NOT overwrite existing work unit directories.
 #
 # Exit codes:
@@ -36,6 +37,7 @@ title=""
 description=""
 mode=""
 gate_policy=""
+source_todo=""
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -62,6 +64,14 @@ while [ "$#" -gt 0 ]; do
         supervised|delegated|autonomous) ;;
         *) echo "Invalid gate-policy: '${gate_policy}'. Must be supervised, delegated, or autonomous." >&2; exit 1 ;;
       esac
+      ;;
+    --source-todo)
+      source_todo="${2:-}"
+      shift 2 || { echo "Missing value for --source-todo" >&2; exit 1; }
+      if ! echo "${source_todo}" | grep -qE '^[a-z][a-z0-9]*(-[a-z0-9]+)*$'; then
+        echo "Invalid source-todo: must be kebab-case: '${source_todo}'" >&2
+        exit 1
+      fi
       ;;
     *)
       # Support legacy positional args: init-work-unit.sh <name> [title] [description]
@@ -137,6 +147,8 @@ jq -n \
   --arg mode "${mode}" \
   --arg base_commit "${base_commit}" \
   --arg now "${now}" \
+  --arg source_todo "${source_todo}" \
+  --arg gate_policy_init "${gate_policy}" \
   '{
     name: $name,
     title: $title,
@@ -154,15 +166,11 @@ jq -n \
     issue_id: null,
     created_at: $now,
     updated_at: $now,
-    archived_at: null
+    archived_at: null,
+    source_todo: (if $source_todo == "" then null else $source_todo end),
+    gate_policy_init: (if $gate_policy_init == "" then null else $gate_policy_init end)
   }' > "${tmp_file}"
 
 mv "${tmp_file}" "${work_dir}/state.json"
-
-# --- write gate policy hint ---
-
-if [ -n "${gate_policy}" ]; then
-  echo "${gate_policy}" > "${work_dir}/.gate_policy_hint"
-fi
 
 echo "Work unit initialized: ${work_dir}"

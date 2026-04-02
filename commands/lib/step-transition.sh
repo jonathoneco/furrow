@@ -118,6 +118,19 @@ if [ "${current_step}" = "implement" ] && [ "${next_step}" = "review" ]; then
   fi
 fi
 
+# --- 1d. Validate summary sections (before regeneration) ---
+
+if [ "${outcome}" != "fail" ]; then
+  validate_summary="${harness_root}/hooks/validate-summary.sh"
+  if [ -x "${validate_summary}" ]; then
+    "${validate_summary}" "${current_step}" || {
+      echo "Summary validation failed. Populate Key Findings, Open Questions, and Recommendations in summary.md before advancing." >&2
+      echo "See skills/shared/summary-protocol.md for step-specific requirements." >&2
+      exit 4
+    }
+  fi
+fi
+
 # --- 2. Regenerate summary ---
 
 "${scripts_dir}/regenerate-summary.sh" "${name}" || {
