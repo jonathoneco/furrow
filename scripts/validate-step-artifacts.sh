@@ -66,6 +66,25 @@ fail() {
 
 case "${boundary}" in
 
+  "ideate->research")
+    # definition.yaml must exist and pass schema validation
+    if [ ! -f "${def_file}" ]; then
+      fail "ideate->research: ${def_file} not found"
+    fi
+
+    if [ ! -s "${def_file}" ]; then
+      fail "ideate->research: ${def_file} is empty"
+    fi
+
+    # Validate against schema if validation script available
+    validate_script="${HARNESS_ROOT}/scripts/validate-definition.sh"
+    if [ -x "${validate_script}" ]; then
+      if ! "${validate_script}" "${def_file}" > /dev/null 2>&1; then
+        fail "ideate->research: ${def_file} failed schema validation"
+      fi
+    fi
+    ;;
+
   "research->plan")
     # research.md OR research/synthesis.md must exist, be non-empty, and contain >= 1 ## heading
     research_file=""
