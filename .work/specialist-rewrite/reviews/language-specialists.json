@@ -1,0 +1,27 @@
+{
+  "deliverable": "language-specialists",
+  "phase_a": {
+    "criteria_met": [
+      "go-specialist.md created with 7 reasoning patterns covering error chains (Error chain narration), interface discovery (Interface discovery, not invention), zero-value readiness (Zero-value readiness), goroutine lifecycle (Goroutine lifecycle ownership), plus package boundaries, composition, table-driven testing",
+      "shell-specialist.md created with 7 reasoning patterns covering quoting (Quote by default, unquote by exception), exit codes (Exit code as API contract), pipeline safety (Pipeline failure awareness), portability boundaries (Portability boundary awareness), plus atomic file operations, stderr discipline, set -eu",
+      "typescript-specialist.md created with 7 reasoning patterns covering type narrowing (Type narrowing over type assertion), discriminated unions (Discriminated union as domain model), module boundaries (Module boundary as type boundary), runtime vs compile-time (Runtime is not compile-time), plus strict mode, generic constraints, satisfies",
+      "python-specialist.md created with 7 reasoning patterns covering protocols (Protocol over inheritance), dependency boundaries (Explicit dependency boundaries), generators (Generator as memory architecture), type annotations (Type annotation as documentation contract), plus context managers, exceptions, packaging",
+      "All 4 files match harness-engineer.md structure exactly",
+      "Reasoning patterns are language-specific in idioms but technology-agnostic at the framework level — no React, Django, Express, etc. references",
+      "No harness-themed patterns found in any language specialist"
+    ],
+    "criteria_failed": [],
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "findings": [],
+    "verdict": "pass",
+    "notes": {
+      "go-specialist": "Domain Expertise describes HOW the Go expert thinks ('simplicity, explicitness, composition', 'what is the simplest thing that works correctly under concurrent access'). Patterns are actionable mental models with clear decision criteria. Anti-patterns (5 rows) are distinct and Go-specific. Quality Criteria reference specific tools (go vet, staticcheck, slog).",
+      "shell-specialist": "Domain Expertise describes thinking in 'pipelines, exit codes, file descriptors' and emphasizes defensive coding reflexes. Patterns include specific shell-domain reasoning (quote by default, pipefail awareness). Anti-patterns (5 rows) are practical shell-specific issues. Quality Criteria reference shellcheck.",
+      "typescript-specialist": "Domain Expertise describes 'thinks in types before thinking in code' — clearly HOW-focused. Patterns cover the full compile-time-to-runtime spectrum. Anti-patterns (5 rows) are TypeScript-specific with actionable alternatives. Quality Criteria measurable (strict: true, zero any, etc).",
+      "python-specialist": "Domain Expertise describes 'explicitness, structural contracts, disciplined dynamism' — frames Python's flexibility as something to constrain. Patterns cover the pythonic spectrum from protocols to packaging. Anti-patterns (5 rows) are Python-specific. Quality Criteria reference mypy --strict."
+    }
+  },
+  "overall": "pass"
+}

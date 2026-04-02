@@ -1,0 +1,119 @@
+objective: >-
+  Rewrite 4 existing specialist templates and create 9 new specialists in the
+  reasoning-focused format established by harness-engineer.md, producing a
+  13-specialist catalog that gives AI agents domain-expert mental models for
+  architecture, language idioms, security, migration strategy, and process
+  discipline.
+
+deliverables:
+  - name: existing-rewrites
+    acceptance_criteria:
+      - api-designer.md rewritten with 6-7 reasoning patterns replacing Responsibilities section
+      - test-engineer.md rewritten with 6-7 reasoning patterns replacing Responsibilities section
+      - database-architect.md replaced by relational-db-architect.md and document-db-architect.md, each with 7-8 reasoning patterns
+      - All 4 files match harness-engineer.md structure exactly (frontmatter, Domain Expertise, How This Specialist Reasons, Quality Criteria, Anti-Patterns table, Context Requirements)
+      - Existing Quality Criteria and Anti-Patterns receive light editing for voice alignment, not full rewrites
+      - Exclude lines dropped from Context Requirements
+      - database-architect.md deleted after replacement files are verified
+    specialist: harness-engineer
+    file_ownership:
+      - "specialists/api-designer.md"
+      - "specialists/test-engineer.md"
+      - "specialists/relational-db-architect.md"
+      - "specialists/document-db-architect.md"
+      - "specialists/database-architect.md"
+
+  - name: language-specialists
+    acceptance_criteria:
+      - go-specialist.md created with 6-7 reasoning patterns covering error chains, interface discovery, zero-value readiness, goroutine lifecycle
+      - shell-specialist.md created with 6-7 reasoning patterns covering quoting, exit codes, pipeline safety, portability boundaries
+      - typescript-specialist.md created with 6-7 reasoning patterns covering type narrowing, discriminated unions, module boundaries, runtime vs compile-time
+      - python-specialist.md created with 6-7 reasoning patterns covering protocols, dependency boundaries, generators, type annotations
+      - All 4 files match harness-engineer.md structure exactly
+      - Reasoning patterns are technology-agnostic at the framework level but language-specific in idioms
+      - No harness-themed patterns unless naturally arising
+    specialist: harness-engineer
+    depends_on:
+      - existing-rewrites
+    file_ownership:
+      - "specialists/go-specialist.md"
+      - "specialists/shell-specialist.md"
+      - "specialists/typescript-specialist.md"
+      - "specialists/python-specialist.md"
+
+  - name: architecture-specialists
+    acceptance_criteria:
+      - systems-architect.md created with 7-8 reasoning patterns covering dependency direction, boundary reasoning, reversibility premium, complexity budget
+      - security-engineer.md created with 6-7 reasoning patterns covering trust boundaries, least privilege, secrets lifecycle, defense in depth
+      - systems-architect.md includes harness-aware pattern (boundary-deliverable alignment) only if natural
+      - security-engineer reasons about systemic security posture, not per-technology security
+      - All files match harness-engineer.md structure exactly
+    specialist: harness-engineer
+    depends_on:
+      - existing-rewrites
+    file_ownership:
+      - "specialists/systems-architect.md"
+      - "specialists/security-engineer.md"
+
+  - name: process-specialists
+    acceptance_criteria:
+      - migration-strategist.md created with 6-7 reasoning patterns covering expand-contract, blast radius, dual-write windows, strangler fig
+      - complexity-skeptic.md created with 6-7 reasoning patterns covering adoption cost audit, shim debt accounting, removal rehearsal, standard library preference, complexity archaeology
+      - cli-designer.md created with 6-7 reasoning patterns covering progressive disclosure, Unix composability, destructive operation gates, idempotent commands
+      - migration-strategist and complexity-skeptic have distinct, non-overlapping reasoning patterns
+      - All files match harness-engineer.md structure exactly
+    specialist: harness-engineer
+    depends_on:
+      - existing-rewrites
+    file_ownership:
+      - "specialists/migration-strategist.md"
+      - "specialists/complexity-skeptic.md"
+      - "specialists/cli-designer.md"
+
+  - name: reference-doc-update
+    acceptance_criteria:
+      - references/specialist-template.md updated to reflect new format (frontmatter fields, section names, reasoning-focused structure)
+      - Two-path consumption model (solo skill invocation vs multi-agent prompt seeding) preserved
+      - Context budget guidance preserved
+      - Naming convention section preserved
+    specialist: harness-engineer
+    depends_on:
+      - existing-rewrites
+    file_ownership:
+      - "references/specialist-template.md"
+
+  - name: catalog-validation
+    acceptance_criteria:
+      - All 13 specialist files pass structural conformance check (frontmatter fields, required sections, pattern count 5-8)
+      - No two specialists share an identically-named reasoning pattern
+      - Each specialist's reasoning patterns are distinguishing (could not be moved to another specialist without changes)
+      - Overlap boundaries documented where specialists share adjacent concerns (security-engineer vs api-designer auth, migration-strategist vs DB architects on schema changes)
+    depends_on:
+      - existing-rewrites
+      - language-specialists
+      - architecture-specialists
+      - process-specialists
+      - reference-doc-update
+
+context_pointers:
+  - path: "specialists/harness-engineer.md"
+    note: "Exemplar format — all specialists must match this structure"
+  - path: "specialists/api-designer.md"
+    note: "Existing file to rewrite"
+  - path: "specialists/database-architect.md"
+    note: "Existing file to split into relational + document variants"
+  - path: "specialists/test-engineer.md"
+    note: "Existing file to rewrite"
+  - path: "schemas/definition.schema.json"
+    note: "Schema reference for definition validation"
+
+constraints:
+  - "Technology-agnostic reasoning patterns (no framework references); language-specific idioms allowed in language specialists"
+  - "Variable pattern count per specialist (5-8), quality over forced quantity"
+  - "Harness-themed patterns only where they naturally change reasoning, not forced"
+  - "Light editing of existing QC and Anti-Patterns for voice alignment, not full rewrites"
+  - "Implementation priority order: existing-rewrites > language-specialists > architecture-specialists > process-specialists"
+  - "Parallel agent implementation within each deliverable (each specialist file is independent)"
+  - "Each reasoning pattern must be distinguishing — movable between specialists means too generic"
+
+gate_policy: supervised

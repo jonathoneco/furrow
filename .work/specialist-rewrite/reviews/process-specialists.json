@@ -1,0 +1,24 @@
+{
+  "deliverable": "process-specialists",
+  "phase_a": {
+    "criteria_met": [
+      "migration-strategist.md created with 7 reasoning patterns covering expand-contract (Expand-contract discipline), blast radius (Blast radius mapping), dual-write windows (Dual-write/dual-read windows), strangler fig (Strangler fig over big bang), plus phase-gated migration, rollback cost heuristic, migration completion criteria",
+      "complexity-skeptic.md created with 6 reasoning patterns covering adoption cost audit (Adoption cost audit), shim debt accounting (Shim debt accounting), removal rehearsal (Removal rehearsal), standard library preference (Standard library preference), complexity archaeology (Complexity archaeology), plus clean cut over gradual rot",
+      "cli-designer.md created with 7 reasoning patterns covering progressive disclosure (Progressive disclosure), Unix composability (Unix composability), destructive operation gates (Destructive operation gates), idempotent commands (Idempotent by default), plus deliverable-driven CLI structure, error recovery guidance, help text as primary documentation",
+      "migration-strategist and complexity-skeptic have distinct, non-overlapping reasoning patterns — zero shared pattern names, minimal vocabulary overlap (migration-strategist focuses on transition execution, complexity-skeptic focuses on evaluation and removal)",
+      "All files match harness-engineer.md structure exactly"
+    ],
+    "criteria_failed": [],
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "findings": [],
+    "verdict": "pass",
+    "notes": {
+      "migration-strategist": "Domain Expertise describes HOW the strategist thinks ('transition paths, not target states', 'what are the safe intermediate states'). 7 patterns are actionable migration decision frameworks. Anti-patterns (5 rows) are distinct with clear problem/reason/alternative. Quality Criteria specific (rollback plan per phase, idempotent data migrations).",
+      "complexity-skeptic": "Domain Expertise describes HOW the skeptic evaluates ('total cost of ownership', 'treats every dependency as a liability until proven otherwise', 'views removal as progress'). 6 patterns are actionable evaluation frameworks. Anti-patterns (5 rows) are distinct. Quality Criteria measurable (documented justification, expiration dates, two-consumer threshold).",
+      "cli-designer": "Domain Expertise describes HOW the designer thinks about CLI UX ('terminal is a first-class UX surface', 'Unix philosophy'). 7 patterns are actionable design principles. Anti-patterns (5 rows) are distinct CLI-specific issues. Quality Criteria specific (--help, --force, --json, exit codes)."
+    }
+  },
+  "overall": "pass"
+}
