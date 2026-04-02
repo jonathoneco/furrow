@@ -1,12 +1,12 @@
-# /work-roadmap [--full]
+# /harness:triage [--full]
 
 Generate or update ROADMAP.md from `todos.yaml` with dependency-aware phase grouping and worktree parallelism strategy.
 
 ## Syntax
 
 ```
-/work-roadmap        → Incremental: preserve completed phases, update remaining
-/work-roadmap --full → Full regeneration: re-evaluate all phases from scratch
+/harness:triage        → Incremental: preserve completed phases, update remaining
+/harness:triage --full → Full regeneration: re-evaluate all phases from scratch
 ```
 
 ---
@@ -189,8 +189,8 @@ Stage and commit:
 - `todos.yaml`
 
 Commit message:
-- Incremental: `docs: refresh ROADMAP.md`
-- Full: `docs: regenerate ROADMAP.md (full)`
+- Incremental: `docs: refresh ROADMAP.md via /harness:triage`
+- Full: `docs: regenerate ROADMAP.md (full) via /harness:triage`
 
 ---
 
