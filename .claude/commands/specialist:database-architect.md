@@ -1,1 +1,0 @@
-/home/jonco/src/work-harness-v2/specialists/database-architect.md
