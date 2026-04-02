@@ -1,27 +1,69 @@
-# /status [name] [--update]
+# /status [name] [--update] [--all]
 
 Display active task progress and suggest next action. Read-only -- never mutates state.
 
 ## Arguments
 
-- `name` (optional): Specific work unit. If absent, shows active task.
+- `name` (optional): Specific work unit. If absent, shows focused unit.
 - `--update`: Generate structured developer status update.
+- `--all`: List all active units in a compact table.
 
-## Default Behavior
+## Flag Validation
 
-1. Find task via `commands/lib/detect-context.sh` or by `name` argument.
+- `--all` and `--update` are mutually exclusive. If both are passed:
+  -> Error: "--all and --update cannot be combined."
+- If `--all` is provided with a `name` argument, `name` is ignored; `--all` takes precedence.
+
+## Focused Unit Resolution
+
+Used when no `name` argument and no `--all` flag:
+
+1. Read `.work/.focused` — contains a unit name.
+2. Validate: `.work/{name}/state.json` must exist and have `archived_at: null`.
+3. If valid, that unit is focused.
+4. If `.focused` is missing, empty, or references an invalid/archived unit:
+   -> Fall back to the most-recently-updated active unit (by `state.json` mtime).
+5. Never error on invalid `.focused` state — degrade silently to fallback.
+6. If no active units exist at all:
+   -> "No active tasks. Start with /work <description>."
+
+## Default Behavior (bare `/status` or `/status <name>`)
+
+1. Find task via focused unit resolution (above) or by `name` argument.
 2. Read `state.json` and `definition.yaml`.
 3. Display:
    - Task name and title
    - Current step and step_status
    - Mode (code/research)
    - Deliverable completion: {completed}/{total}
+   - **Focused: yes/no** (whether this unit matches `.work/.focused`)
    - Gate history (last 3 entries)
 4. Suggest next action:
    - `step_status: "not_started"` -> "Run `/work` to begin {step} step."
    - `step_status: "in_progress"` -> "Run `/work` to continue {step} step."
    - `step_status: "completed"` -> "Run `/work` to evaluate gate and advance."
    - `step_status: "blocked"` -> "Resolve blocker: {last fail gate evidence}."
+
+## With --all
+
+List every active (non-archived) work unit in a compact table. The focused unit is marked with `*`.
+
+```
+  NAME                        STEP        STATUS        FOCUSED
+* parallel-workflow-support   implement   in_progress   *
+  api-redesign                research    not_started
+  fix-login-bug               review      completed
+```
+
+Columns:
+- **NAME**: work unit name (kebab-case)
+- **STEP**: current step from state.json
+- **STATUS**: step_status from state.json
+- **FOCUSED**: `*` if this is the focused unit, blank otherwise
+
+Sort order: focused unit first, then alphabetical by name.
+
+No suggested-next-action or gate history in `--all` mode — the table is overview-only.
 
 ## With --update
 
