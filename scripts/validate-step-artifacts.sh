@@ -7,6 +7,7 @@
 #
 # Exit codes:
 #   0 — artifacts valid
+#   1 — usage error (missing arguments)
 #   2 — state.json not found
 #   3 — validation failed (details on stderr)
 
@@ -35,7 +36,7 @@ HARNESS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # --- locate state ---
 
-work_dir=".work/${name}"
+work_dir="${HARNESS_ROOT}/.work/${name}"
 state_file="${work_dir}/state.json"
 def_file="${work_dir}/definition.yaml"
 
@@ -125,11 +126,14 @@ case "${boundary}" in
         fail "spec->decompose: ${work_dir}/specs/ directory required for ${count} deliverables"
       fi
       missing=""
-      for del_name in $(yq -r '.deliverables[].name' "${def_file}" 2>/dev/null); do
+      _del_tmp="$(mktemp)"
+      yq -r '.deliverables[].name' "${def_file}" 2>/dev/null > "$_del_tmp" || true
+      while IFS= read -r del_name; do
         if [ ! -f "${work_dir}/specs/${del_name}.md" ]; then
           missing="${missing} ${del_name}"
         fi
-      done
+      done < "$_del_tmp"
+      rm -f "$_del_tmp"
       if [ -n "${missing}" ]; then
         fail "spec->decompose: missing spec files for deliverables:${missing}"
       fi
@@ -195,7 +199,9 @@ case "${boundary}" in
       fail "review->archive: no deliverables found in state.json"
     fi
 
-    for del_name in ${del_names}; do
+    _del_tmp="$(mktemp)"
+    printf '%s\n' "${del_names}" > "$_del_tmp"
+    while IFS= read -r del_name; do
       review_file="${work_dir}/reviews/${del_name}.json"
       if [ ! -f "${review_file}" ]; then
         fail "review->archive: missing review file for deliverable '${del_name}'"
@@ -204,7 +210,8 @@ case "${boundary}" in
       if [ "${overall}" != "pass" ]; then
         fail "review->archive: deliverable '${del_name}' review has overall='${overall}', expected 'pass'"
       fi
-    done
+    done < "$_del_tmp"
+    rm -f "$_del_tmp"
     ;;
 
   *)

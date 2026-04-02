@@ -1,0 +1,58 @@
+objective: "Review and fix 7 scripts written by subagents during harness-v2-status-eval, targeting known bug patterns (set -eu, yq syntax, stdin JSON, atomic writes, exit codes)."
+
+deliverables:
+  - name: review-high-complexity
+    acceptance_criteria:
+      - "scripts/run-eval.sh passes shellcheck with no errors"
+      - "scripts/run-eval.sh uses atomic writes (temp+mv) for all output files"
+      - "scripts/run-eval.sh exit codes match spec in specs/phase-three-quality.md"
+      - "scripts/validate-step-artifacts.sh passes shellcheck with no errors"
+      - "scripts/validate-step-artifacts.sh sources hooks/lib/validate.sh correctly"
+      - "No command substitution under set -eu swallows failures silently"
+    specialist: harness-engineer
+    file_ownership:
+      - "scripts/run-eval.sh"
+      - "scripts/validate-step-artifacts.sh"
+
+  - name: review-medium-complexity
+    acceptance_criteria:
+      - "scripts/generate-plan.sh passes shellcheck with no errors"
+      - "scripts/generate-plan.sh Python subprocess errors are caught (not swallowed by set -eu)"
+      - "scripts/cross-model-review.sh passes shellcheck with no errors"
+      - "scripts/cross-model-review.sh JSON response parsing handles malformed input"
+      - "No yq expressions use '// empty' (jq-ism that fails in yq)"
+    specialist: harness-engineer
+    file_ownership:
+      - "scripts/generate-plan.sh"
+      - "scripts/cross-model-review.sh"
+
+  - name: review-low-complexity
+    acceptance_criteria:
+      - "hooks/correction-limit.sh passes shellcheck with no errors"
+      - "hooks/correction-limit.sh stdin JSON parsing handles missing fields gracefully"
+      - "scripts/select-dimensions.sh passes shellcheck with no errors"
+      - "scripts/evaluate-gate.sh passes shellcheck with no errors"
+      - "scripts/evaluate-gate.sh exit codes match trust gradient routing spec"
+    specialist: harness-engineer
+    file_ownership:
+      - "hooks/correction-limit.sh"
+      - "scripts/select-dimensions.sh"
+      - "scripts/evaluate-gate.sh"
+
+context_pointers:
+  - path: ".work/harness-v2-status-eval/specs/"
+    note: "Acceptance criteria and exit code contracts per phase"
+  - path: ".work/harness-v2-status-eval/learnings.jsonl"
+    note: "Bug patterns discovered during implementation"
+  - path: "hooks/lib/validate.sh"
+    note: "File with 3 bugs fixed — reference for known pitfall patterns"
+  - path: "TODOS.md"
+    note: "Item 1 — the source task description with review checklist"
+
+constraints:
+  - "Fixes must preserve existing behavior — no refactoring beyond bug fixes"
+  - "All scripts must pass shellcheck after fixes"
+  - "Exit code contracts must match their spec definitions"
+  - "Use atomic writes (temp+mv) for any file output"
+
+gate_policy: "delegated"

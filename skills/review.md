@@ -33,10 +33,6 @@ Read `skills/shared/learnings-protocol.md` for schema and categories.
 After review, scan artifacts for promotion candidates (architecture decisions,
 patterns, specialist defs, eval dimensions). Present each with rationale.
 
-## Git Conventions
-Read `skills/shared/git-conventions.md`. Run `scripts/run-ci-checks.sh` for
-pre-merge gate evidence. Use `scripts/work-unit-diff.sh` for Phase A audit.
-
 ## Research Mode
 When `state.json.mode` is `"research"`:
 - Implement step: load `evals/dimensions/research-implement.yaml`.

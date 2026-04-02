@@ -1,0 +1,90 @@
+{
+  "name": "review-impl-scripts",
+  "title": "Review 6 new scripts from harness-v2-status-eval for edge cases, set -eu issues, yq pitfalls, stdin JSON parsing, atomic writes, and exit code contracts",
+  "description": "Review 6 new scripts from harness-v2-status-eval for edge cases, set -eu issues, yq pitfalls, stdin JSON parsing, atomic writes, and exit code contracts",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "review-high-complexity": {
+      "status": "complete",
+      "review": "pass"
+    },
+    "review-medium-complexity": {
+      "status": "complete",
+      "review": "pass"
+    },
+    "review-low-complexity": {
+      "status": "complete",
+      "review": "pass"
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "human",
+      "evidence": "definition.yaml validated, 3 deliverables covering 7 scripts with shellcheck + bug-pattern criteria",
+      "timestamp": "2026-04-02T09:36:06Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "human",
+      "evidence": "Research pre-done in harness-v2-status-eval learnings.jsonl and TODOS.md item 1",
+      "timestamp": "2026-04-02T09:36:29Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "human",
+      "evidence": "Plan is: parallel shellcheck + manual review per script cluster, fix in place",
+      "timestamp": "2026-04-02T09:36:29Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "human",
+      "evidence": "Spec covered by definition.yaml ACs",
+      "timestamp": "2026-04-02T09:36:29Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "human",
+      "evidence": "3 deliverables already decomposed by complexity cluster",
+      "timestamp": "2026-04-02T09:36:29Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "human",
+      "evidence": "All 7 scripts reviewed and fixed: 12 bugs fixed by agents + 2 remaining concerns fixed. All pass shellcheck -x -e SC1091,SC2016.",
+      "timestamp": "2026-04-02T09:48:59Z"
+    },
+    {
+      "boundary": "review->archive",
+      "outcome": "pass",
+      "decided_by": "human",
+      "evidence": "All 3 deliverables pass Phase A (ACs met) and Phase B (correctness, no unplanned changes). 14 bugs fixed across 8 scripts, all pass shellcheck.",
+      "timestamp": "2026-04-02T09:55:41Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": null,
+  "mode": "code",
+  "base_commit": "d27652482732b5bd3e87c0e7564be10f5337e2e3",
+  "epic_id": null,
+  "issue_id": null,
+  "created_at": "2026-04-02T09:31:27Z",
+  "updated_at": "2026-04-02T09:55:41Z",
+  "archived_at": null
+}

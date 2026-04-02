@@ -17,6 +17,10 @@ set -eu
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 HARNESS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+# --- temp file registry for cleanup ---
+_eval_tmpdir="$(mktemp -d)"
+trap 'rm -rf "$_eval_tmpdir"' EXIT
+
 # shellcheck source=../hooks/lib/validate.sh
 . "$HARNESS_ROOT/hooks/lib/validate.sh"
 
@@ -24,7 +28,7 @@ HARNESS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 if [ $# -lt 2 ]; then
   echo "Usage: run-eval.sh <name> <deliverable>" >&2
-  exit 1
+  exit 2
 fi
 
 name="$1"
@@ -56,8 +60,8 @@ base_commit="$(jq -r '.base_commit // ""' "$state_file")"
 # =====================================================================
 
 # A1: Check deliverable exists in definition.yaml
-del_exists="$(yq -r --arg d "$deliverable" \
-  '[.deliverables[] | select(.name == $d)] | length' "$def_file")"
+del_exists="$(d="$deliverable" yq -r \
+  '[.deliverables[] | select(.name == env(d))] | length' "$def_file")"
 
 if [ "$del_exists" -eq 0 ]; then
   echo "Error: deliverable '${deliverable}' not found in definition.yaml" >&2
@@ -90,14 +94,16 @@ else
       glob_count="$(echo "$file_ownership" | jq -r '.[]' 2>/dev/null | wc -l)" || glob_count="0"
       if [ "$glob_count" -gt 0 ]; then
         matched="false"
-        for glob_pattern in $(echo "$file_ownership" | jq -r '.[]' 2>/dev/null); do
+        _globs_tmp="${_eval_tmpdir}/globs_a3"
+        echo "$file_ownership" | jq -r '.[]' 2>/dev/null > "$_globs_tmp" || true
+        while IFS= read -r glob_pattern; do
           # Use git diff with pathspec to check if any owned files changed
           match_count="$(git diff --name-only "${base_commit}..HEAD" -- "$glob_pattern" 2>/dev/null | wc -l)" || match_count="0"
           if [ "$match_count" -gt 0 ]; then
             matched="true"
             break
           fi
-        done
+        done < "$_globs_tmp"
         artifacts_present="$matched"
       else
         # No globs defined but plan exists — check if any diff at all
@@ -115,8 +121,8 @@ else
 fi
 
 # A4: Read acceptance criteria from definition.yaml
-ac_json="$(yq -o=json -r --arg d "$deliverable" \
-  '[.deliverables[] | select(.name == $d) | .acceptance_criteria[]] // []' "$def_file")"
+ac_json="$(d="$deliverable" yq -o=json -r \
+  '[.deliverables[] | select(.name == env(d)) | .acceptance_criteria[]]' "$def_file")"
 
 # A5: Build phase_a acceptance_criteria array and verdict
 phase_a_ac="$(echo "$ac_json" | jq --argjson present "$artifacts_present" '
@@ -162,15 +168,19 @@ if [ "$mode" = "code" ] && [ -n "$base_commit" ] && [ "$base_commit" != "null" ]
   all_diff_files="$(git diff --name-only "${base_commit}..HEAD" 2>/dev/null)" || all_diff_files=""
 
   if [ "$file_ownership" != "[]" ]; then
-    for glob_pattern in $(echo "$file_ownership" | jq -r '.[]' 2>/dev/null); do
+    _globs_tmp="${_eval_tmpdir}/globs_owned"
+    echo "$file_ownership" | jq -r '.[]' 2>/dev/null > "$_globs_tmp" || true
+    while IFS= read -r glob_pattern; do
       matches="$(git diff --name-only "${base_commit}..HEAD" -- "$glob_pattern" 2>/dev/null)" || matches=""
       owned_diff_files="$(printf '%s\n%s' "$owned_diff_files" "$matches")"
-    done
+    done < "$_globs_tmp"
     owned_diff_files="$(echo "$owned_diff_files" | sed '/^$/d' | sort -u)"
   fi
 fi
 
-for dim in $dim_names; do
+_dims_tmp="${_eval_tmpdir}/dims"
+printf '%s\n' "$dim_names" > "$_dims_tmp"
+while IFS= read -r dim; do
   verdict="skipped"
   evidence="requires evaluator"
 
@@ -205,14 +215,16 @@ for dim in $dim_names; do
       # Check if test files exist in file_ownership patterns
       has_tests="false"
       if [ "$file_ownership" != "[]" ]; then
-        for glob_pattern in $(echo "$file_ownership" | jq -r '.[]' 2>/dev/null); do
+        _tc_tmp="${_eval_tmpdir}/globs_tc"
+        echo "$file_ownership" | jq -r '.[]' 2>/dev/null > "$_tc_tmp" || true
+        while IFS= read -r glob_pattern; do
           case "$glob_pattern" in
             *test*|*Test*|*spec*|*Spec*)
               has_tests="true"
               break
               ;;
           esac
-        done
+        done < "$_tc_tmp"
       fi
       if [ "$has_tests" = "true" ]; then
         verdict="pass"
@@ -228,30 +240,22 @@ for dim in $dim_names; do
       # Compare git diff files against file_ownership globs
       if [ "$mode" = "code" ] && [ -n "$all_diff_files" ] && [ "$file_ownership" != "[]" ]; then
         # Collect all files matching ownership globs
-        all_owned=""
-        for glob_pattern in $(echo "$file_ownership" | jq -r '.[]' 2>/dev/null); do
-          matches="$(git diff --name-only "${base_commit}..HEAD" -- "$glob_pattern" 2>/dev/null)" || matches=""
-          all_owned="$(printf '%s\n%s' "$all_owned" "$matches")"
-        done
-        all_owned="$(echo "$all_owned" | sed '/^$/d' | sort -u)"
+        _uc_globs="${_eval_tmpdir}/uc_globs"
+        _uc_owned="${_eval_tmpdir}/uc_owned"
+        _uc_diff="${_eval_tmpdir}/uc_diff"
+        echo "$file_ownership" | jq -r '.[]' 2>/dev/null > "$_uc_globs" || true
+        while IFS= read -r glob_pattern; do
+          git diff --name-only "${base_commit}..HEAD" -- "$glob_pattern" 2>/dev/null >> "$_uc_owned" || true
+        done < "$_uc_globs"
+        sort -u -o "$_uc_owned" "$_uc_owned"
 
         # Find files in diff but not in owned set (exclude .work/ files)
-        unplanned=""
-        for f in $all_diff_files; do
-          case "$f" in
-            .work/*) continue ;;
-          esac
-          in_owned="false"
-          for o in $all_owned; do
-            if [ "$f" = "$o" ]; then
-              in_owned="true"
-              break
-            fi
-          done
-          if [ "$in_owned" = "false" ]; then
-            unplanned="${unplanned:+${unplanned}, }${f}"
-          fi
-        done
+        printf '%s\n' "$all_diff_files" | grep -v '^\.work/' | sort -u > "$_uc_diff" || true
+        if [ -s "$_uc_owned" ]; then
+          unplanned="$(grep -Fxv -f "$_uc_owned" "$_uc_diff" | paste -sd', ')" || unplanned=""
+        else
+          unplanned="$(paste -sd', ' "$_uc_diff")" || unplanned=""
+        fi
 
         if [ -z "$unplanned" ]; then
           verdict="pass"
@@ -306,7 +310,7 @@ for dim in $dim_names; do
     --arg verdict "$verdict" \
     --arg evidence "$evidence" \
     '. + [{name: $name, verdict: $verdict, evidence: $evidence}]')"
-done
+done < "$_dims_tmp"
 
 # =====================================================================
 # Compose review result

@@ -14,6 +14,9 @@
 
 set -eu
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+HARNESS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 if [ "$#" -lt 1 ]; then
   echo "Usage: run-ci-checks.sh <name>" >&2
   exit 1
@@ -21,12 +24,12 @@ fi
 
 name="$1"
 
-work_dir=".work/${name}"
+work_dir="${HARNESS_ROOT}/.work/${name}"
 gates_dir="${work_dir}/gates"
 
 # --- read CI config ---
 
-harness_config=".claude/harness.yaml"
+harness_config="${HARNESS_ROOT}/.claude/harness.yaml"
 test_cmd=""
 lint_cmd=""
 build_cmd=""
@@ -52,12 +55,16 @@ tests_total=0
 tests_passed=0
 tests_failed=0
 duration_start="$(date +%s)"
-ci_command="${test_cmd}"
+ci_command=""
+
+# Trust boundary: CI commands are read from harness.yaml, a developer-authored
+# config file. sh -c provides process isolation for command execution.
 
 # Run build
 if [ -n "${build_cmd}" ]; then
+  ci_command="${ci_command:+${ci_command}; }${build_cmd}"
   echo "Running build: ${build_cmd}"
-  if eval "${build_cmd}" > /dev/null 2>&1; then
+  if sh -c "${build_cmd}" > /dev/null 2>&1; then
     echo "Build: PASS"
   else
     echo "Build: FAIL"
@@ -67,8 +74,9 @@ fi
 
 # Run lint
 if [ -n "${lint_cmd}" ]; then
+  ci_command="${ci_command:+${ci_command}; }${lint_cmd}"
   echo "Running lint: ${lint_cmd}"
-  if eval "${lint_cmd}" > /dev/null 2>&1; then
+  if sh -c "${lint_cmd}" > /dev/null 2>&1; then
     echo "Lint: PASS"
   else
     echo "Lint: FAIL"
@@ -78,9 +86,10 @@ fi
 
 # Run tests
 if [ -n "${test_cmd}" ]; then
+  ci_command="${ci_command:+${ci_command}; }${test_cmd}"
   echo "Running tests: ${test_cmd}"
   test_output_file="${gates_dir}/ci-test-output.txt"
-  if eval "${test_cmd}" > "${test_output_file}" 2>&1; then
+  if sh -c "${test_cmd}" > "${test_output_file}" 2>&1; then
     echo "Tests: PASS"
     # Try to extract test counts from output
     tests_total="$(grep -cE '(^ok|^PASS|PASSED|--- PASS)' "${test_output_file}" 2>/dev/null || echo "0")"

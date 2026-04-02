@@ -54,7 +54,7 @@ missing_specialist="$(yq -r '
 
 if [ -n "$missing_specialist" ]; then
   echo "Error: deliverables missing specialist field:" >&2
-  for d in $missing_specialist; do
+  printf '%s\n' "$missing_specialist" | while IFS= read -r d; do
     echo "  - $d" >&2
   done
   exit 3
@@ -62,6 +62,7 @@ fi
 
 # --- step 2: build dependency graph and assign waves via Python ---
 
+python_errors="$(mktemp)"
 wave_assignments="$(python3 -c "
 import json, subprocess, sys
 
@@ -134,11 +135,13 @@ for node in topo_order:
 # Output as JSON array
 output = [{'wave': wave_map[n], 'deliverable': n} for n in topo_order]
 print(json.dumps(output))
-" "$def_file" 2>&1)" || {
+" "$def_file" 2>"$python_errors")" || {
   echo "Error: wave assignment failed" >&2
-  echo "$wave_assignments" >&2
+  cat "$python_errors" >&2
+  rm -f "$python_errors"
   exit 3
 }
+rm -f "$python_errors"
 
 # Check if Python printed errors to stderr (exit code was still 0 but output is empty/invalid)
 if ! echo "$wave_assignments" | jq empty 2>/dev/null; then

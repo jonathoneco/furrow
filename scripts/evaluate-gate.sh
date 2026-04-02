@@ -3,6 +3,13 @@
 # directly. Step-transition accepts explicit verdicts from the human or
 # evaluator; this script applies gate_policy to an evaluator's raw verdict
 # to produce the final gate decision.
+#
+# Usage: evaluate-gate.sh <name> <boundary> <evaluator_verdict>
+#   Outputs gate decision on stdout: PASS, FAIL, CONDITIONAL, or WAIT_FOR_HUMAN
+#
+# Exit codes:
+#   0 — success (decision on stdout)
+#   1 — invalid usage
 set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -19,8 +26,8 @@ evaluator_verdict="$3"
 
 # Read gate_policy from definition.yaml, default to "supervised"
 definition_file="${HARNESS_ROOT}/.work/${name}/definition.yaml"
-if [ -f "$definition_file" ]; then
-  gate_policy="$(yq -r '.gate_policy // "supervised"' "$definition_file")"
+if [ -f "$definition_file" ] && command -v yq > /dev/null 2>&1; then
+  gate_policy="$(yq -r '.gate_policy // "supervised"' "$definition_file")" || gate_policy="supervised"
 else
   gate_policy="supervised"
 fi

@@ -7,8 +7,8 @@
 #
 # Exit codes:
 #   0 — cross-model review complete, result written
-#   1 — cross_model.provider not configured (skip gracefully)
-#   2 — invocation failed
+#   1 — usage error or cross_model.provider not configured (skip gracefully)
+#   2 — invocation failed or response parsing error
 
 set -eu
 
@@ -57,7 +57,7 @@ if [ ! -f "$definition_file" ]; then
   exit 2
 fi
 
-criteria="$(yq -r --arg name "${deliverable}" '.deliverables[] | select(.name == $name) | .acceptance_criteria[]' "$definition_file" | sed 's/^/- /')"
+criteria="$(name="${deliverable}" yq -r '.deliverables[] | select(.name == env(name)) | .acceptance_criteria[]' "$definition_file" | sed 's/^/- /')"
 if [ -z "$criteria" ]; then
   echo "Error: no acceptance criteria found for deliverable '${deliverable}'" >&2
   exit 2
@@ -106,13 +106,20 @@ mkdir -p "${work_dir}/prompts"
 mkdir -p "${work_dir}/reviews"
 
 response=""
+_claude_err="$(mktemp)"
 if command -v claude >/dev/null 2>&1; then
-  response="$(claude --model "${provider}" --print "${prompt}" 2>/dev/null)" || true
+  response="$(claude --model "${provider}" --print "${prompt}" 2>"$_claude_err")" || true
 fi
+if [ -s "$_claude_err" ]; then
+  echo "claude stderr: $(cat "$_claude_err")" >&2
+fi
+rm -f "$_claude_err"
 
 if [ -z "$response" ]; then
   prompt_file="${work_dir}/prompts/review-${deliverable}-cross.md"
-  printf '%s\n' "$prompt" > "$prompt_file"
+  prompt_tmp="$(mktemp)"
+  printf '%s\n' "$prompt" > "$prompt_tmp"
+  mv "$prompt_tmp" "$prompt_file"
   if command -v claude >/dev/null 2>&1; then
     echo "Cross-model invocation failed — prompt written to ${prompt_file}" >&2
   else
@@ -123,8 +130,7 @@ fi
 
 # --- 8. Parse response ---
 
-json_block="$(printf '%s\n' "$response" | sed -n '/{/,/^}/p' | head -1)"
-# Try to extract a complete JSON object
+# Extract a complete JSON object from model response
 json_block="$(printf '%s\n' "$response" | awk '
   BEGIN { depth=0; capture=0; buf="" }
   {
@@ -143,16 +149,27 @@ json_block="$(printf '%s\n' "$response" | awk '
 
 if [ -z "$json_block" ] || ! printf '%s\n' "$json_block" | jq empty 2>/dev/null; then
   raw_file="${work_dir}/reviews/${deliverable}-cross.raw"
-  printf '%s\n' "$response" > "$raw_file"
+  raw_tmp="$(mktemp)"
+  printf '%s\n' "$response" > "$raw_tmp"
+  mv "$raw_tmp" "$raw_file"
   echo "Failed to parse JSON from model response — raw output written to ${raw_file}" >&2
   exit 2
 fi
 
 # --- 9. Write review result ---
 
-model_dims="$(printf '%s\n' "$json_block" | jq -c '.dimensions')"
-model_overall="$(printf '%s\n' "$json_block" | jq -r '.overall')"
+model_dims="$(printf '%s\n' "$json_block" | jq -c '.dimensions')" || {
+  echo "Error: failed to extract dimensions from model response" >&2
+  exit 2
+}
+model_overall="$(printf '%s\n' "$json_block" | jq -r '.overall')" || {
+  echo "Error: failed to extract overall verdict from model response" >&2
+  exit 2
+}
 timestamp="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+
+review_tmp="$(mktemp)"
+trap 'rm -f "$review_tmp"' EXIT
 
 jq -n \
   --arg deliverable "$deliverable" \
@@ -169,6 +186,9 @@ jq -n \
     reviewer: $provider,
     cross_model: true,
     timestamp: $ts
-  }' > "${work_dir}/reviews/${deliverable}-cross.json"
+  }' > "$review_tmp"
+
+mv "$review_tmp" "${work_dir}/reviews/${deliverable}-cross.json"
+trap - EXIT
 
 echo "Cross-model review written to ${work_dir}/reviews/${deliverable}-cross.json"

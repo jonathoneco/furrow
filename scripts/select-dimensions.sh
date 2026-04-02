@@ -32,7 +32,12 @@ if [ ! -f "$state_file" ]; then
 fi
 
 mode="$(jq -r '.mode // "code"' "$state_file")"
-step="$(jq -r '.step' "$state_file")"
+step="$(jq -r '.step // ""' "$state_file")"
+
+if [ -z "$step" ]; then
+  echo "Error: step is missing from ${state_file}" >&2
+  exit 2
+fi
 
 if [ "$mode" = "research" ] && [ "$step" = "implement" ]; then
   file="research-implement.yaml"
