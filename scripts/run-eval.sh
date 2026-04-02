@@ -336,7 +336,7 @@ jq -n \
     phase_a: {
       artifacts_present: $artifacts_present,
       acceptance_criteria: $acceptance_criteria,
-      plan_completion: { planned_files_touched: $artifacts_present, unplanned_changes: false },
+      plan_completion: { planned_files_touched: $artifacts_present, unplanned_changes: [] },
       verdict: $phase_a_verdict
     },
     phase_b: {

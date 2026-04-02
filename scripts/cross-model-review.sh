@@ -162,7 +162,7 @@ jq -n \
   --arg ts "$timestamp" \
   '{
     deliverable: $deliverable,
-    phase_a: { artifacts_present: true, acceptance_criteria: [], plan_completion: { planned_files_touched: true, unplanned_changes: false }, verdict: "pass" },
+    phase_a: { artifacts_present: true, acceptance_criteria: [], plan_completion: { planned_files_touched: true, unplanned_changes: [] }, verdict: "pass" },
     phase_b: { dimensions: $dims, verdict: $overall },
     overall: $overall,
     corrections: 0,
