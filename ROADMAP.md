@@ -44,7 +44,7 @@ Completed in commit `7808ec2`.
 | Track | Result |
 |-------|--------|
 | T5 — Gate Evaluation Rearchitecture | Isolated subagent evaluators, pre/post-step evaluation, YAML gate criteria, `decided_by` vocabulary migration. 6 commits, 34 files, net -208 lines. |
-| T7 — Roadmap Process | `/work-roadmap` command with triage script (`scripts/triage-todos.sh`), template system, todos.yaml schema extension (7 triage fields). |
+| T7 — Roadmap Process | `/harness:triage` command with triage script (`scripts/triage-todos.sh`), template system, todos.yaml schema extension (7 triage fields). |
 | T8 — Parallel Workflow Support | Focused+dormant model via `.work/.focused`, 4 new functions in `hooks/lib/common.sh`, all hooks scoped, `--switch`/`--all` flags. |
 
 ---
