@@ -1,0 +1,28 @@
+# Eval dimensions for the decompose step.
+# Each dimension is binary (PASS/FAIL). Overall PASS requires ALL dimensions pass.
+# Loaded by Phase B review agents via evals/dimensions/{artifact-type}.yaml convention.
+
+dimensions:
+  - name: "granularity"
+    definition: "Whether work items are appropriately sized for single-agent execution"
+    pass_criteria: "Each deliverable can be described in one sentence and implemented in a single focused session"
+    fail_criteria: "Any deliverable requires multiple unrelated changes or would take multiple sessions"
+    evidence_format: "Name the oversized deliverable and what sub-tasks it contains"
+
+  - name: "parallelism"
+    definition: "Whether wave structure maximizes concurrency"
+    pass_criteria: "Deliverables with no mutual dependencies are in the same wave"
+    fail_criteria: "Independent deliverables are serialized across waves without justification"
+    evidence_format: "Name the unnecessarily serialized deliverables"
+
+  - name: "coverage"
+    definition: "Whether all spec acceptance criteria are assigned to deliverables"
+    pass_criteria: "Every spec AC maps to at least one deliverable in plan.json"
+    fail_criteria: "Any spec AC has no deliverable assignment"
+    evidence_format: "List unassigned ACs"
+
+  - name: "ownership-clarity"
+    definition: "Whether file ownership boundaries are unambiguous"
+    pass_criteria: "File_ownership globs are non-overlapping across all assignments in each wave; every deliverable has at least one glob"
+    fail_criteria: "Any overlap exists or a deliverable has no file_ownership"
+    evidence_format: "Name the overlapping globs or unowned deliverable"

@@ -1,0 +1,28 @@
+# Eval dimensions for the plan step.
+# Each dimension is binary (PASS/FAIL). Overall PASS requires ALL dimensions pass.
+# Loaded by Phase B review agents via evals/dimensions/{artifact-type}.yaml convention.
+
+dimensions:
+  - name: "coverage"
+    definition: "Whether the plan addresses all deliverables from definition.yaml"
+    pass_criteria: "Every deliverable from definition.yaml appears in exactly one wave of plan.json"
+    fail_criteria: "Any deliverable is missing from plan.json or appears in multiple waves"
+    evidence_format: "List deliverables and their wave assignments"
+
+  - name: "feasibility"
+    definition: "Whether dependency ordering and wave structure are valid"
+    pass_criteria: "No deliverable appears in an earlier wave than any of its depends_on entries; file_ownership globs do not overlap within a wave"
+    fail_criteria: "A dependency violation exists or file ownership overlaps"
+    evidence_format: "Name the violated dependency or overlapping globs"
+
+  - name: "specificity"
+    definition: "Whether specialist assignments and file ownership are concrete"
+    pass_criteria: "Every wave assignment has a specialist type and at least one file_ownership glob"
+    fail_criteria: "Any assignment lacks specialist or file_ownership"
+    evidence_format: "List assignments with missing fields"
+
+  - name: "research-grounding"
+    definition: "Whether plan decisions reference research findings"
+    pass_criteria: "Architecture decisions cite specific research findings (file path + section)"
+    fail_criteria: "Major decisions have no research justification"
+    evidence_format: "Quote the decision and its research citation (or lack thereof)"

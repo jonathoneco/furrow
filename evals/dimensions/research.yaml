@@ -1,0 +1,28 @@
+# Eval dimensions for the research step.
+# Each dimension is binary (PASS/FAIL). Overall PASS requires ALL dimensions pass.
+# Loaded by Phase B review agents via evals/dimensions/{artifact-type}.yaml convention.
+
+dimensions:
+  - name: "coverage"
+    definition: "Breadth of investigation relative to the research questions"
+    pass_criteria: "All research questions from definition.yaml have at least one finding addressing them"
+    fail_criteria: "Any research question has zero findings"
+    evidence_format: "List each research question and the finding(s) that address it"
+
+  - name: "evidence-basis"
+    definition: "Grounding of claims in verifiable sources"
+    pass_criteria: "Every factual claim cites a source (codebase path, documentation URL, or command output)"
+    fail_criteria: "Any factual claim lacks a source citation"
+    evidence_format: "Quote the claim and its citation"
+
+  - name: "specificity"
+    definition: "Concreteness of findings vs. vague generalities"
+    pass_criteria: "Findings include specific file paths, function names, version numbers, or measurements"
+    fail_criteria: "Findings use only qualitative language ('it seems', 'generally', 'probably') without specifics"
+    evidence_format: "Quote the most and least specific finding"
+
+  - name: "contradiction-check"
+    definition: "Internal consistency of findings"
+    pass_criteria: "No two findings directly contradict each other without acknowledgment"
+    fail_criteria: "Contradictory findings exist without reconciliation"
+    evidence_format: "Quote the contradictory pair"

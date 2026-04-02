@@ -1,0 +1,27 @@
+{
+  "name": "harness-v2-status-eval",
+  "title": "Evaluate the current state of the v2 workflow harness implementation against the findings and plans in docs/",
+  "description": "Evaluate the current state of the v2 workflow harness implementation against the findings and plans in docs/",
+  "step": "ideate",
+  "step_status": "in_progress",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {},
+  "gates": [],
+  "force_stop_at": null,
+  "branch": null,
+  "mode": "research",
+  "base_commit": "a7ead0d79bd5f7b387ba10c67175855e51236ff6",
+  "epic_id": null,
+  "issue_id": null,
+  "created_at": "2026-04-02T07:35:30Z",
+  "updated_at": "2026-04-02T07:35:30Z",
+  "archived_at": null
+}

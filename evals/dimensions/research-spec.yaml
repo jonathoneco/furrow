@@ -1,0 +1,24 @@
+dimensions:
+  - name: "outline-completeness"
+    definition: "Whether the outline covers all deliverables from definition.yaml"
+    pass_criteria: "Every deliverable has a corresponding section outline with guiding question and required sub-topics"
+    fail_criteria: "Any deliverable lacks an outline section"
+    evidence_format: "List deliverables and their outline presence"
+
+  - name: "evidence-requirements"
+    definition: "Whether each section specifies what evidence is needed"
+    pass_criteria: "Every section outline states required evidence types (primary/secondary/quantitative/qualitative) and minimum source count"
+    fail_criteria: "Any section lacks evidence requirements"
+    evidence_format: "Quote the section with missing evidence requirements"
+
+  - name: "testability"
+    definition: "Whether refined acceptance criteria are mechanically verifiable"
+    pass_criteria: "Every refined AC has a concrete pass/fail condition (counts, presence checks, citation requirements) rather than subjective language"
+    fail_criteria: "Any refined AC uses subjective language ('thorough', 'comprehensive', 'adequate') without a measurable threshold"
+    evidence_format: "Quote the untestable AC"
+
+  - name: "structure-rationale"
+    definition: "Whether the artifact structure follows logically from the research questions"
+    pass_criteria: "The ordering and grouping of sections reflects logical dependencies (foundational topics before synthesis; analysis before recommendations)"
+    fail_criteria: "Sections are ordered arbitrarily or synthesis appears before its input analysis"
+    evidence_format: "Describe the structural issue"

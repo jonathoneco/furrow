@@ -1,0 +1,16 @@
+# work-unit-meta.yaml — Template for work unit directory structure documentation.
+# See _rationale.yaml for exists_because/delete_when annotations.
+
+# Work unit file descriptions (rationale in _rationale.yaml)
+components:
+  definition.yaml: "Structured work contract: objective, deliverables, constraints"
+  state.json: "Lifecycle state: step, progress, gate audit trail"
+  summary.md: "Context recovery document, regenerated at step boundaries"
+  reviews/: "Structured review results, one per deliverable"
+  plan.json: "Wave assignments and specialist mappings for parallel execution"
+  team-plan.md: "Agent team composition and coordination strategy"
+  research.md: "Single-agent research output"
+  research/: "Multi-agent research: per-topic files + synthesis.md"
+  spec.md: "Single-deliverable specification"
+  specs/: "Multi-component specifications, one per component"
+  gates/: "Structured gate evidence with dimensional verdicts"

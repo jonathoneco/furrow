@@ -1,0 +1,34 @@
+# Eval dimensions for the implement step.
+# Each dimension is binary (PASS/FAIL). Overall PASS requires ALL dimensions pass.
+# Loaded by Phase B review agents via evals/dimensions/{artifact-type}.yaml convention.
+
+dimensions:
+  - name: "correctness"
+    definition: "Whether the implementation matches spec behavior"
+    pass_criteria: "All spec acceptance criteria pass when tested (commands run, output inspected)"
+    fail_criteria: "Any AC fails when tested with a fresh run"
+    evidence_format: "Quote the AC, the test command, and the output"
+
+  - name: "test-coverage"
+    definition: "Whether new code paths have corresponding tests"
+    pass_criteria: "Every new function or method with branching logic has at least one test"
+    fail_criteria: "Any new function with branching logic has zero tests"
+    evidence_format: "Name the untested function and file path"
+
+  - name: "spec-compliance"
+    definition: "Whether the implementation follows the spec's interface contracts"
+    pass_criteria: "All interface contracts from the spec are implemented as specified (function signatures, file locations, behavior)"
+    fail_criteria: "Any interface contract is missing or differs from spec"
+    evidence_format: "Quote the spec contract and the actual implementation"
+
+  - name: "unplanned-changes"
+    definition: "Whether changes outside file_ownership are justified"
+    pass_criteria: "All files modified outside the deliverable's file_ownership globs are documented with justification"
+    fail_criteria: "Unplanned changes exist without justification"
+    evidence_format: "List the unplanned files"
+
+  - name: "code-quality"
+    definition: "Whether the code follows project conventions and code-quality skill rules"
+    pass_criteria: "Code passes linting, follows naming conventions, and does not violate code-quality rules (spec: skills/code-quality.md)"
+    fail_criteria: "Any code-quality rule violation exists"
+    evidence_format: "Quote the violation and the rule"

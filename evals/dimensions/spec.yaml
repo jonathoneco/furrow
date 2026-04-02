@@ -1,0 +1,28 @@
+# Eval dimensions for the spec step.
+# Each dimension is binary (PASS/FAIL). Overall PASS requires ALL dimensions pass.
+# Loaded by Phase B review agents via evals/dimensions/{artifact-type}.yaml convention.
+
+dimensions:
+  - name: "testability"
+    definition: "Whether acceptance criteria can be mechanically verified"
+    pass_criteria: "Every acceptance criterion has a concrete pass/fail condition (not subjective language)"
+    fail_criteria: "Any AC uses subjective language ('clean', 'well-structured', 'appropriate') without a measurable threshold"
+    evidence_format: "Quote the untestable AC"
+
+  - name: "completeness"
+    definition: "Whether the spec covers all deliverables and their interfaces"
+    pass_criteria: "Every deliverable from definition.yaml has acceptance criteria refined beyond the original definition"
+    fail_criteria: "Any deliverable has no spec-level refinement beyond definition.yaml"
+    evidence_format: "Name the deliverable with no refinement"
+
+  - name: "consistency"
+    definition: "Whether the spec's internal parts agree with each other and with upstream artifacts"
+    pass_criteria: "No spec section contradicts another section, definition.yaml, or plan.json"
+    fail_criteria: "A contradiction exists between spec sections or with upstream artifacts"
+    evidence_format: "Quote both sides of the contradiction"
+
+  - name: "implementability"
+    definition: "Whether a developer could implement from the spec without further clarification"
+    pass_criteria: "Spec includes interface contracts, file locations, and behavior descriptions sufficient to begin implementation"
+    fail_criteria: "A developer would need to ask 'what should happen when X?' for a common case"
+    evidence_format: "Describe the ambiguous scenario"

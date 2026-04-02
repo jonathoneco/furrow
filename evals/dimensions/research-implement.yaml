@@ -1,0 +1,30 @@
+dimensions:
+  - name: "coverage"
+    definition: "Breadth of investigation relative to the deliverable's acceptance criteria"
+    pass_criteria: "Every acceptance criterion from definition.yaml has at least one finding directly addressing it"
+    fail_criteria: "Any acceptance criterion has zero findings"
+    evidence_format: "List each AC and the finding(s) addressing it"
+
+  - name: "evidence-basis"
+    definition: "Grounding of factual claims in verifiable sources"
+    pass_criteria: "Every factual claim cites a source (codebase path, documentation URL, command output, or external reference) with enough specificity to verify"
+    fail_criteria: "Any factual claim lacks a citation or cites an unverifiable source"
+    evidence_format: "Quote the claim and its citation; for FAIL, quote the unsourced claim"
+
+  - name: "synthesis-quality"
+    definition: "Whether findings are integrated into coherent analysis rather than listed as raw facts"
+    pass_criteria: "The deliverable contains at least one section that explicitly connects findings across multiple sources or sub-topics, drawing conclusions beyond what any single source states"
+    fail_criteria: "The deliverable is a list of facts without integration, or conclusions are stated without connecting them to cited evidence"
+    evidence_format: "Quote the synthesis passage (or the gap where synthesis is expected)"
+
+  - name: "internal-consistency"
+    definition: "Whether the deliverable's claims agree with each other"
+    pass_criteria: "No two claims directly contradict each other; apparent tensions are explicitly acknowledged and reconciled"
+    fail_criteria: "Contradictory claims exist without acknowledgment"
+    evidence_format: "Quote the contradictory pair"
+
+  - name: "actionability"
+    definition: "Whether the deliverable provides concrete, usable output"
+    pass_criteria: "The deliverable includes at least one of: specific recommendations with rationale, a decision framework, a comparison with stated criteria, or identified next steps"
+    fail_criteria: "The deliverable ends without recommendations, decisions, or next steps; OR recommendations are generic without rationale"
+    evidence_format: "Quote the actionable output (or the absence thereof)"
