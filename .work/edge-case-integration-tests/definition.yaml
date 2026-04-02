@@ -1,0 +1,111 @@
+objective: >-
+  Build a self-contained shell-based integration test suite exercising 5 edge-case
+  code paths in the work harness that normal pipeline usage cannot reach. Tests run
+  via scripts/run-integration-tests.sh and each creates temporary fixtures, invokes
+  the script under test, and asserts exit codes plus file mutations.
+
+deliverables:
+  - name: test-runner
+    acceptance_criteria:
+      - scripts/run-integration-tests.sh discovers and runs all test files in tests/integration/
+      - tests/integration/helpers.sh provides assert_exit_code, assert_file_exists, assert_file_contains, assert_json_field
+      - Runner reports pass/fail counts and exits non-zero if any test fails
+    specialist: test-engineer
+    file_ownership:
+      - "scripts/run-integration-tests.sh"
+      - "tests/integration/helpers.sh"
+
+  - name: test-generate-plan
+    acceptance_criteria:
+      - Linear depends_on chain produces correct wave ordering
+      - Diamond dependency produces correct wave assignment
+      - Circular depends_on exits 3 with error message
+      - Multi-root DAG assigns independent wave numbers
+      - Missing specialist field exits 3
+    specialist: test-engineer
+    depends_on:
+      - test-runner
+    file_ownership:
+      - "tests/integration/test-generate-plan.sh"
+
+  - name: test-correction-limit
+    acceptance_criteria:
+      - File matching an at-limit deliverable glob exits 2 (blocked)
+      - File matching an under-limit deliverable glob exits 0 (allowed)
+      - File not owned by any deliverable exits 0 (pass-through)
+      - Non-implement step exits 0 (no enforcement)
+      - Both file_path and filePath stdin field names work
+    specialist: test-engineer
+    depends_on:
+      - test-runner
+    file_ownership:
+      - "tests/integration/test-correction-limit.sh"
+
+  - name: test-check-artifacts
+    acceptance_criteria:
+      - Owned files changed in git produces pass verdict and exit 0
+      - No owned files changed produces fail verdict and exit 1
+      - Research mode with non-empty deliverables dir produces pass
+      - Research mode with empty dir produces fail
+      - Missing base_commit produces fail
+    specialist: test-engineer
+    depends_on:
+      - test-runner
+    file_ownership:
+      - "tests/integration/test-check-artifacts.sh"
+
+  - name: test-step-transition
+    acceptance_criteria:
+      - Fail at implement increments corrections only for in_progress deliverables
+      - Fail at implement leaves completed deliverables untouched
+      - Pass at final step exits 3
+      - Fail at final step stays at step without advancing
+    specialist: test-engineer
+    depends_on:
+      - test-runner
+    file_ownership:
+      - "tests/integration/test-step-transition.sh"
+
+  - name: test-load-step
+    acceptance_criteria:
+      - Conditional gate with conditions array outputs CONDITIONAL PASS with bulleted conditions
+      - Conditional gate with null conditions outputs no conditions
+      - Pass gate (not conditional) outputs no conditions
+      - Missing skill file exits 3
+    specialist: test-engineer
+    depends_on:
+      - test-runner
+    file_ownership:
+      - "tests/integration/test-load-step.sh"
+
+context_pointers:
+  - path: scripts/generate-plan.sh
+    note: "Test area 1: wave generation, depends_on chains, cycle detection"
+  - path: hooks/correction-limit.sh
+    note: "Test area 2: glob matching, selective blocking per deliverable"
+  - path: scripts/check-artifacts.sh
+    note: "Test area 3: mixed verdicts, artifact presence detection"
+  - path: commands/lib/step-transition.sh
+    note: "Test area 4: correction increment on gate failure"
+  - path: commands/lib/load-step.sh
+    note: "Test area 5: conditional pass carry-forward"
+  - path: hooks/lib/common.sh
+    note: "Shared helpers used by scripts under test"
+  - path: hooks/lib/validate.sh
+    note: "Validation functions called by generate-plan and check-artifacts"
+  - path: adapters/shared/schemas/state.schema.json
+    note: "Fixture structure reference for state.json"
+  - path: adapters/shared/schemas/definition.schema.yaml
+    note: "Fixture structure reference for definition.yaml"
+
+constraints:
+  - Tests must be self-contained with no dependency on existing .work/ state
+  - Each test creates and cleans up its own temp directory via trap
+  - Use set -eu in all test files
+  - Tests must not modify the real repo git state; use isolated temp git repos where needed
+  - Shell only with no Python or Node test frameworks
+  - Must pass shellcheck
+
+gate_policy: supervised
+
+source_todo: edge-case-integration-tests
