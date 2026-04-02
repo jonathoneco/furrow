@@ -18,13 +18,15 @@ export HARNESS_ROOT
 
 # setup_fixture <name>
 #   Creates a temp dir with .work/<name>/ structure.
-#   Sets FIXTURE_DIR, WORK_DIR. Caller is responsible for teardown.
+#   Sets FIXTURE_DIR, WORK_DIR. Registers cleanup trap.
 setup_fixture() {
   _name="$1"
   FIXTURE_DIR="$(mktemp -d)"
   WORK_DIR="${FIXTURE_DIR}/.work/${_name}"
   mkdir -p "${WORK_DIR}"
   mkdir -p "${FIXTURE_DIR}/skills"
+  # Ensure cleanup on signal interruption
+  trap 'rm -rf "${FIXTURE_DIR:-}"' EXIT INT TERM
   export FIXTURE_DIR WORK_DIR
 }
 
@@ -64,6 +66,21 @@ assert_file_exists() {
     return 0
   else
     printf "  FAIL: %s (file not found: %s)\n" "$_desc" "$_path" >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+    return 1
+  fi
+}
+
+# assert_file_not_exists <description> <path>
+assert_file_not_exists() {
+  _desc="$1"; _path="$2"
+  TESTS_RUN=$((TESTS_RUN + 1))
+  if [ ! -f "$_path" ]; then
+    printf "  PASS: %s\n" "$_desc"
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+    return 0
+  else
+    printf "  FAIL: %s (file unexpectedly exists: %s)\n" "$_desc" "$_path" >&2
     TESTS_FAILED=$((TESTS_FAILED + 1))
     return 1
   fi

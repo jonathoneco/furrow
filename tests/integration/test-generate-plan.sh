@@ -143,16 +143,7 @@ YAML
   assert_exit_code "cycle detection exits 3" 3 "$exit_code"
   assert_file_contains "stderr mentions cycle" "$stderr_file" "cycle"
 
-  # plan.json must NOT be written
-  if [ -f "${WORK_DIR}/plan.json" ]; then
-    printf "  FAIL: plan.json should not exist after cycle error\n" >&2
-    TESTS_RUN=$((TESTS_RUN + 1))
-    TESTS_FAILED=$((TESTS_FAILED + 1))
-  else
-    printf "  PASS: no plan.json after cycle error\n"
-    TESTS_RUN=$((TESTS_RUN + 1))
-    TESTS_PASSED=$((TESTS_PASSED + 1))
-  fi
+  assert_file_not_exists "no plan.json after cycle error" "${WORK_DIR}/plan.json"
 
   teardown_fixture
 }
@@ -228,16 +219,7 @@ YAML
   assert_exit_code "missing specialist exits 3" 3 "$exit_code"
   assert_file_contains "stderr mentions specialist" "$stderr_file" "specialist"
 
-  # plan.json must NOT be written
-  if [ -f "${WORK_DIR}/plan.json" ]; then
-    printf "  FAIL: plan.json should not exist after specialist error\n" >&2
-    TESTS_RUN=$((TESTS_RUN + 1))
-    TESTS_FAILED=$((TESTS_FAILED + 1))
-  else
-    printf "  PASS: no plan.json after specialist error\n"
-    TESTS_RUN=$((TESTS_RUN + 1))
-    TESTS_PASSED=$((TESTS_PASSED + 1))
-  fi
+  assert_file_not_exists "no plan.json after specialist error" "${WORK_DIR}/plan.json"
 
   teardown_fixture
 }

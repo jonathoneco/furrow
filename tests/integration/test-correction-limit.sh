@@ -149,3 +149,22 @@ test_filepath_field_variant() {
 
   teardown_fixture
 }
+
+test_custom_correction_limit() {
+  _setup_corr_fixture
+  _write_state "implement" 2
+
+  # Set custom correction limit of 2 via harness.yaml
+  mkdir -p "${FIXTURE_DIR}/.claude"
+  cat > "${FIXTURE_DIR}/.claude/harness.yaml" << 'YAML'
+defaults:
+  correction_limit: 2
+YAML
+
+  _run_hook '{"tool_name":"Write","tool_input":{"file_path":"src/api/handler.js"}}'
+
+  assert_exit_code "custom limit=2 blocks at corrections=2" 2 "$_exit_code"
+  assert_file_contains "stderr has correction limit msg" "$_stderr_file" "Correction limit (2)"
+
+  teardown_fixture
+}
