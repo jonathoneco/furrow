@@ -1,0 +1,11 @@
+{
+  "deliverable": "harness-registration",
+  "overall": "pass",
+  "findings": [
+    {
+      "severity": "info",
+      "description": "Symlink correct, all 4 active files repaired, zero stale refs outside archived .work/ dirs."
+    }
+  ],
+  "reviewed_at": "2026-04-02T23:35:00Z"
+}

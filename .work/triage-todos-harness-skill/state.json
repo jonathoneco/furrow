@@ -2,7 +2,7 @@
   "name": "triage-todos-harness-skill",
   "title": "Replace /work-roadmap with /harness:triage command",
   "description": "Automate the manual roadmap triage process as a /harness:triage skill that reads todos.yaml, runs dependency analysis, and produces a phased ROADMAP.md with worktree parallelism strategy",
-  "step": "implement",
+  "step": "review",
   "step_status": "completed",
   "steps_sequence": [
     "ideate",
@@ -84,6 +84,13 @@
       "decided_by": "manual",
       "evidence": "All 4 deliverables implemented: glob-regex-bugfix (triage-todos.sh), triage-command-spec (commands/triage.md), work-todos-auto-commit (commands/work-todos.md), harness-registration (symlink + 4 reference repairs + deletion). Bonus: validate-step-artifacts.sh ideate->research boundary.",
       "timestamp": "2026-04-02T23:33:36Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 4 deliverables implemented across 5 commits: validate-step-artifacts fix, glob-regex bugfix, triage command + registration, reference repairs, work-todos auto-commit",
+      "timestamp": "2026-04-02T23:35:53Z"
     }
   ],
   "force_stop_at": null,
@@ -93,6 +100,6 @@
   "epic_id": null,
   "issue_id": null,
   "created_at": "2026-04-02T22:51:31Z",
-  "updated_at": "2026-04-02T23:33:51Z",
-  "archived_at": null
+  "updated_at": "2026-04-02T23:39:59Z",
+  "archived_at": "2026-04-02T23:36:00Z"
 }

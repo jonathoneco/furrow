@@ -4,7 +4,7 @@
 Replace /work-roadmap with /harness:triage — a command that reads todos.yaml, runs dependency analysis via triage-todos.sh, applies AI reasoning to fill missing triage metadata (urgency/impact/effort/depends_on), groups TODOs into conflict-free phases, and generates a phased ROADMAP.md with worktree parallelism strategy. Idempotent — re-running regenerates from current state.
 
 ## Current State
-Step: decompose | Status: completed
+Step: review | Status: completed
 Deliverables: 0/4
 Mode: code
 
@@ -23,6 +23,8 @@ Mode: code
 - **plan->spec**: pass — plan.json generated: 2 waves, wave 1 has 3 independent deliverables (glob-regex-bugfix, triage-command-spec, work-todos-auto-commit), wave 2 has harness-registration. Single specialist (harness-engineer), no file conflicts, sequential execution.
 - **spec->decompose**: pass — User approved all 4 spec files: triage-command-spec (rename+adapt work-roadmap), harness-registration (symlink+4 file repairs), work-todos-auto-commit (commit step in both modes), glob-regex-bugfix (trailing slash normalization)
 - **decompose->implement**: pass — User approved decompose: 2 waves, 4 deliverables, single implementer, sequential execution on existing work/triage-todos branch. plan.json and team-plan.md written.
+- **implement->review**: pass — All 4 deliverables implemented: glob-regex-bugfix (triage-todos.sh), triage-command-spec (commands/triage.md), work-todos-auto-commit (commands/work-todos.md), harness-registration (symlink + 4 reference repairs + deletion). Bonus: validate-step-artifacts.sh ideate->research boundary.
+- **implement->review**: pass — All 4 deliverables implemented across 5 commits: validate-step-artifacts fix, glob-regex bugfix, triage command + registration, reference repairs, work-todos auto-commit
 
 ## Context Budget
 Measurement unavailable
