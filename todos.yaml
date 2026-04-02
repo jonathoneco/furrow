@@ -1,20 +1,15 @@
-- id: auto-advance-enforcement
-  title: "Auto-Advance Enforcement"
+- id: gate-evaluation-rearchitecture
+  title: "Gate Evaluation Rearchitecture"
   context: |
-    Currently, auto-advance eligibility is checked by the gate evaluator reading skill instructions (prose). The `commands/lib/auto-advance.sh` script checks some criteria (deliverable count, dependencies, gate_policy) but doesn't enforce all the conditions described in each step skill.
+    Gate evaluation rearchitected: isolated subagent evaluators (generator-evaluator separation), pre-step/post-step evaluation moments, deterministic shell prechecks via `commands/lib/gate-precheck.sh`. Trust gradient controls human oversight.
   work_needed: |
-    Open question (from plan step Q&A): should auto-advance criteria be harness-enforced (shell checks that block/allow auto-advance) or remain evaluator-judged (prose in skills)?
-
-    Examples of unenforced criteria:
-    - spec step: auto-advance when single deliverable with >=2 testable ACs. But nothing checks AC testability (verbs, thresholds, file paths).
-    - research step: auto-advance when single deliverable + code mode + has path-like ACs. But "path-like" is a fuzzy check.
-
-    Decision needed: Is it worth adding deterministic testability checks to auto-advance, or is the current approach (evaluator judges) sufficient?
+    Resolved: hybrid approach. Shell prechecks (gate-precheck.sh) handle deterministic structural criteria; isolated subagent evaluators handle judgment calls. Trust gradient controls human oversight of evaluator verdicts. See .work/isolated-gate-evaluation/ for full implementation.
   references:
-    - "commands/lib/auto-advance.sh"
-    - "scripts/auto-advance.sh"
-    - "skills/spec.md"
-    - ".work/harness-v2-status-eval/recommendations.md"
+    - "commands/lib/gate-precheck.sh"
+    - "scripts/run-gate.sh"
+    - "scripts/check-artifacts.sh"
+    - "evals/gates/"
+    - "skills/shared/gate-evaluator.md"
   source_work_unit: "harness-v2-status-eval"
   source_type: "manual"
   created_at: "2026-04-02T00:00:00Z"
@@ -146,7 +141,7 @@
        - File-to-deliverable glob matching with real ownership patterns
        - PreToolUse hook blocking Write/Edit for exceeded deliverables while allowing others
 
-    3. `run-eval.sh` Phase B mixed verdicts:
+    3. `check-artifacts.sh` Phase B mixed verdicts:
        - Mixed dimension verdicts (some pass, some fail) → overall fail
        - `unplanned-changes` detection with real file ownership globs
        - `test-coverage` dimension with test file patterns
@@ -162,7 +157,7 @@
   references:
     - "scripts/generate-plan.sh"
     - "hooks/correction-limit.sh"
-    - "scripts/run-eval.sh"
+    - "scripts/check-artifacts.sh"
     - "commands/lib/step-transition.sh"
     - "commands/lib/load-step.sh"
   source_work_unit: "e2e-pipeline-test"

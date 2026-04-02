@@ -28,7 +28,10 @@ Resolve specialist templates from `specialists/*.md` by domain value.
 
 ## Step Mechanics
 Transition out: gate record `decompose->implement` with `pass` required.
-Auto-advance when: <=2 deliverables, no dependencies, same specialist type.
+Pre-step shell check (`gate-precheck.sh`): <=2 deliverables, no depends_on, same
+specialist type, not supervised, not force-stopped.
+Pre-step evaluator (`evals/gates/decompose.yaml`): wave-triviality — can all
+deliverables execute in a single wave without coordination? Per `skills/shared/gate-evaluator.md`.
 At this boundary, `scripts/create-work-branch.sh` creates the work branch.
 Next step expects: `plan.json` with waves, `team-plan.md` with coordination.
 

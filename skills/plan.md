@@ -37,7 +37,10 @@ When `state.json.mode` is `"research"`:
 
 ## Step Mechanics
 Transition out: gate record `plan->spec` with outcome `pass` required.
-Auto-advance when: single deliverable with no dependencies and no parallelism.
+Pre-step shell check (`gate-precheck.sh`): 1 deliverable, no depends_on, not
+supervised, not force-stopped.
+Pre-step evaluator (`evals/gates/plan.yaml`): complexity-assessment — does the
+deliverable need architectural decisions beyond definition.yaml? Per `skills/shared/gate-evaluator.md`.
 Next step expects: architecture decisions in `summary.md`, `plan.json` if
 parallel execution needed, and clear implementation path per deliverable.
 

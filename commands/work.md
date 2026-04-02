@@ -20,7 +20,7 @@ Active task + no description
   -> Continue: read state.json, load `skills/{step}.md`
   -> If step_status is "completed": run `commands/lib/step-transition.sh`
   -> If step_status is "not_started": set to "in_progress", load skill
-  -> After any transition: run `commands/lib/auto-advance.sh`
+  -> After any transition: run `commands/lib/gate-precheck.sh` then `scripts/run-gate.sh`
 
 Active task + description provided
   -> Error: "Active task '{name}' exists. Archive it first."
@@ -50,6 +50,7 @@ Multiple active tasks
 ## Step Routing After Transition
 
 After `step-transition.sh` advances the step:
-1. Run `commands/lib/auto-advance.sh "{name}"` for trivial step detection.
-2. If auto-advanced, repeat until a non-trivial step is reached.
-3. Load the new step's skill and begin.
+1. Run `commands/lib/gate-precheck.sh` to check if the next step is trivially resolvable.
+2. If precheck passes, run `scripts/run-gate.sh` for evaluator confirmation.
+3. If prechecked and confirmed, repeat until a non-trivial step is reached.
+4. Load the new step's skill and begin.

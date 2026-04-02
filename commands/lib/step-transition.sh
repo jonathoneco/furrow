@@ -4,7 +4,7 @@
 # Usage: step-transition.sh <name> <outcome> <decided_by> <evidence> [conditions_json]
 #   name            — work unit name
 #   outcome         — "pass" | "fail" | "conditional"
-#   decided_by      — "human" | "evaluator" | "auto-advance"
+#   decided_by      — "manual" | "evaluated" | "prechecked"
 #   evidence        — one-line proof summary
 #   conditions_json — JSON array (required for conditional)
 #

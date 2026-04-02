@@ -25,8 +25,10 @@ parallel sub-agents per topic. Read `skills/shared/context-isolation.md`.
 
 ## Step Mechanics
 Transition out: gate record `research->plan` with outcome `pass` required.
-Auto-advance when: single deliverable with file-path-specific criteria, code mode,
-no directory context pointers. Research mode never auto-advances research.
+Pre-step shell check (`gate-precheck.sh`): 1 deliverable, code mode, path-referencing
+ACs, no directory context pointers, not supervised, not force-stopped.
+Pre-step evaluator (`evals/gates/research.yaml`): path-relevance — are referenced
+paths sufficient without broader investigation? Per `skills/shared/gate-evaluator.md`.
 Next step expects: research findings addressing all ideation questions, recorded
 in `research.md` or `research/` directory with `synthesis.md`.
 

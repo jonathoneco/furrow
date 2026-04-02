@@ -16,7 +16,7 @@ Record a failed approach and redirect work to a new approach within the current 
    {
      "boundary": "{current_step}->{current_step}",
      "outcome": "fail",
-     "decided_by": "human",
+     "decided_by": "manual",
      "evidence": "Redirect: {reason}",
      "timestamp": "{ISO 8601 now}"
    }

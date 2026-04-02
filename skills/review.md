@@ -24,7 +24,9 @@ Evaluate implementation against spec and audit plan completion.
 For multi-deliverable work, assign review sub-agents per deliverable. Read `skills/shared/context-isolation.md`.
 
 ## Step Mechanics
-Review is the final step. NEVER auto-advances — always requires gate evaluation.
+Review is the final step. No pre-step evaluation — review always runs.
+Post-step gate evaluates Phase A and Phase B results across all deliverables.
+Reference: `evals/gates/review.yaml` post_step, per `skills/shared/gate-evaluator.md`.
 On pass: work unit ready for archive. On fail: returns to implement step.
 
 ## Learnings

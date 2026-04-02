@@ -49,6 +49,6 @@ Your decision:
 
 ## Rules
 - Present one gate decision at a time — never batch multiple gates.
-- Per-deliverable gate overrides (`gate: human | automated`) take precedence.
+- Per-deliverable gate overrides take precedence over top-level `gate_policy`.
 - Gate records are append-only — never modify a previously recorded gate.
 - Always include `timestamp` in ISO 8601 format.

@@ -30,8 +30,9 @@ Read from `.work/{name}/state.json`:
 ideate -> research -> plan -> spec -> decompose -> implement -> review
 ```
 
-All work units traverse all 7 steps. No steps are skipped. Auto-advance may
-resolve trivially-completing steps without user input (unless `gate_policy: supervised`).
+All work units traverse all 7 steps. No steps are skipped. Pre-step evaluation
+may determine a step adds no information and record a `prechecked` gate, advancing
+without user input (unless `gate_policy: supervised`).
 
 ## File Path Conventions
 
@@ -106,15 +107,28 @@ Agent-written sections: Key Findings, Open Questions, Recommendations.
 Step transitions produce gate records in `state.json.gates[]`:
 - `boundary`: `"{from}->{to}"`
 - `outcome`: `pass` | `fail` | `conditional`
-- `decided_by`: `human` | `evaluator` | `auto-advance`
+- `decided_by`: `manual` | `evaluated` | `prechecked`
 - Append-only — never modified after creation.
+
+Vocabulary:
+- `manual`: human reviewed and approved the gate
+- `evaluated`: isolated subagent evaluated, trust gradient auto-approved
+- `prechecked`: pre-step evaluation determined step not needed
+
+Gate evaluation flow:
+1. Phase A (deterministic, shell): `commands/lib/gate-precheck.sh` checks structural criteria
+2. Phase B (judgment, isolated subagent): evaluator assesses quality dimensions from `evals/gates/{step}.yaml`
+3. Trust gradient (`scripts/evaluate-gate.sh`) applies `gate_policy` to the evaluator's verdict
 
 ## Trust Gradient
 
-`gate_policy` in `definition.yaml` controls the trust level:
-- `supervised`: human approves every gate
-- `delegated`: evaluator judges most gates; human approves critical transitions
-- `autonomous`: evaluator judges all gates
+`gate_policy` in `definition.yaml` controls human oversight of evaluator verdicts
+(not whether evaluation happens — evaluation always runs):
+- `supervised`: evaluator runs, verdict presented to human for approval (`decided_by: manual`)
+- `delegated`: evaluator verdict accepted for most gates (`decided_by: evaluated`); human reviews implement->review and review->archive (`decided_by: manual`)
+- `autonomous`: evaluator verdict accepted for all gates (`decided_by: evaluated`)
+
+Pre-step evaluation that determines a step is trivially skippable records `decided_by: prechecked`.
 
 Per-deliverable `gate` field overrides the top-level policy for that deliverable.
 

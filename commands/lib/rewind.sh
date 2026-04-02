@@ -66,8 +66,8 @@ scripts_dir="${harness_root}/scripts"
 # which is intentional. The outcome "fail" distinguishes these from forward gates.
 boundary="${current_step}->${target_step}"
 
-"${scripts_dir}/record-gate.sh" "${name}" "${boundary}" "fail" "human" \
-  "User rewound: auto-advance was incorrect or step needs rework"
+"${scripts_dir}/record-gate.sh" "${name}" "${boundary}" "fail" "manual" \
+  "User rewound: pre-step evaluation was incorrect or step needs rework"
 
 # --- reset step ---
 

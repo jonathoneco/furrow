@@ -25,8 +25,10 @@ For multi-deliverable work, dispatch spec sub-agents per component. Read `skills
 
 ## Step Mechanics
 Transition out: gate record `spec->decompose` with outcome `pass` required.
-Auto-advance when: single deliverable with >=2 testable acceptance criteria
-(containing action verbs, numeric thresholds, or file path references).
+Pre-step shell check (`gate-precheck.sh`): 1 deliverable, >=2 ACs, not supervised,
+not force-stopped.
+Pre-step evaluator (`evals/gates/spec.yaml`): testability — are ACs specific enough
+to implement without refinement? Per `skills/shared/gate-evaluator.md`.
 Next step expects: implementation-ready specs in `spec.md` or `specs/` with
 refined acceptance criteria per deliverable.
 

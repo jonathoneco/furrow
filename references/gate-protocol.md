@@ -2,8 +2,55 @@
 
 ## Overview
 
-Every step transition requires a gate check. Gates are the quality enforcement
-mechanism that prevents premature advancement through the step sequence.
+Every step transition requires a gate check. Gates enforce quality and ensure
+no step advances prematurely. Gate evaluation has two phases and two moments.
+
+## Two Evaluation Moments
+
+| Moment | When | Question | Steps with this moment |
+|--------|------|----------|----------------------|
+| Pre-step | Before step begins | Should this step run, or is its output trivially determined? | research, plan, spec, decompose |
+| Post-step | After step completes | Is the step's output good enough to advance? | All 7 steps |
+
+Pre-step evaluation can determine a step adds no information beyond what previous
+steps already produced. When this happens, the gate records `decided_by: prechecked`
+and advances without executing the step.
+
+## Gate Evaluation Flow
+
+```
+Step agent signals completion (or step is next in sequence)
+  │
+  ├─ Phase A (deterministic, shell)
+  │   commands/lib/gate-precheck.sh checks structural criteria:
+  │   - Deliverable count, dependencies, specialist diversity
+  │   - Acceptance criteria presence and count
+  │   - Mode-specific exclusions (research mode blocks research pre-step)
+  │   - gate_policy and force_stop_at overrides
+  │
+  │   scripts/check-artifacts.sh checks artifact presence:
+  │   - Deliverable files exist per file_ownership
+  │   - Owned files were modified (git diff or deliverables/ check)
+  │   - Acceptance criteria from definition.yaml addressed
+  │
+  ├─ Phase B (judgment, isolated subagent)
+  │   scripts/run-gate.sh prepares evaluator inputs:
+  │   - definition.yaml content
+  │   - evals/gates/{step}.yaml content
+  │   - Phase A results
+  │   - Step output paths
+  │
+  │   In-context agent spawns isolated subagent (Agent tool):
+  │   - Subagent loads skills/shared/gate-evaluator.md
+  │   - Evaluates each dimension from gate YAML
+  │   - Returns per-dimension PASS/FAIL with evidence
+  │
+  └─ Trust gradient (scripts/evaluate-gate.sh)
+      Applies gate_policy to evaluator verdict:
+      - supervised: WAIT_FOR_HUMAN
+      - delegated: accept most, human for implement->review and review->archive
+      - autonomous: accept all
+```
 
 ## Gate Record Format
 
@@ -13,21 +60,34 @@ Each gate produces a record appended to `state.json.gates[]`:
 {
   "boundary": "{from_step}->{to_step}",
   "outcome": "pass | fail | conditional",
-  "decided_by": "human | evaluator | auto-advance",
+  "decided_by": "manual | evaluated | prechecked",
   "evidence": "one-line proof summary or path to gates/{boundary}.json",
   "conditions": ["only present when outcome is conditional"],
   "timestamp": "ISO 8601"
 }
 ```
 
-## Gate Decision Flow
+### decided_by Vocabulary
 
-1. Current step agent signals completion.
-2. Gate evaluator (human, eval agent, or auto-advance) examines step output.
-3. Evaluator produces a verdict: pass, fail, or conditional.
-4. Gate record appended to `state.json.gates[]`.
-5. On pass/conditional: advance `step` to next in sequence, set `step_status` to `not_started`.
-6. On fail: current step remains active, agent addresses feedback.
+| Value | Meaning | When used |
+|-------|---------|-----------|
+| `manual` | Human reviewed and approved | supervised mode always; delegated mode for implement->review and review->archive |
+| `evaluated` | Isolated subagent evaluated, trust gradient auto-approved | delegated mode (most gates); autonomous mode (all gates) |
+| `prechecked` | Pre-step evaluation determined step not needed | Pre-step gate-precheck.sh + evaluator agreed step is trivial |
+
+## Trust Gradient
+
+The trust gradient controls human oversight of evaluator verdicts — it does NOT
+control whether evaluation happens. Evaluation always runs.
+
+| `gate_policy` | Who Decides | Pre-Step Evaluation |
+|--------------|------------|---------------------|
+| `supervised` | Human approves every gate (`decided_by: manual`) | Evaluator runs, verdict presented to human |
+| `delegated` | Evaluator for most (`decided_by: evaluated`); human for implement->review and review->archive (`decided_by: manual`) | Allowed for all applicable steps |
+| `autonomous` | Evaluator for all gates (`decided_by: evaluated`) | Allowed for all applicable steps |
+
+Per-deliverable `gate` field overrides the top-level policy for that deliverable's
+review only.
 
 ## Outcomes
 
@@ -40,33 +100,21 @@ Each gate produces a record appended to `state.json.gates[]`:
 When `outcome` is `conditional`, the `conditions` array becomes a checklist for the
 next step. The next step must address all conditions before its own gate.
 
-## Trust Gradient Effect
+## Subagent Invocation Pattern
 
-| `gate_policy` | Who Decides | Auto-Advance Allowed |
-|--------------|------------|---------------------|
-| `supervised` | Human approves every gate | No |
-| `delegated` | Evaluator for most; human for implement->review and review->archive | Yes, for trivial steps |
-| `autonomous` | Evaluator for all gates | Yes, for all applicable steps |
+The shell layer prepares inputs but never invokes the LLM directly:
 
-Per-deliverable `gate` field overrides the top-level policy for that deliverable's
-review only.
+1. `scripts/run-gate.sh` runs Phase A (`scripts/check-artifacts.sh`)
+2. `run-gate.sh` writes an evaluator prompt file (YAML) containing inputs for the subagent
+3. `run-gate.sh` exits with code 10 ("needs subagent evaluation") and prints the prompt file path
+4. The in-context agent reads the prompt file and spawns the subagent via Agent tool
+5. Subagent follows `skills/shared/gate-evaluator.md` contract
+6. Subagent returns structured JSON: per-dimension verdicts + overall verdict
+7. In-context agent calls `scripts/evaluate-gate.sh` with the verdict to apply trust gradient
 
-## Automated Gate Decisions
-
-`scripts/evaluate-gate.sh` provides programmatic gate routing by trust level.
-This script is called by the **eval runner** (`scripts/run-eval.sh`), NOT by
-`step-transition.sh` directly. Step-transition accepts explicit verdicts from
-human or evaluator — evaluate-gate.sh determines whether to auto-approve or
-escalate based on the gate_policy and boundary.
-
-## Auto-Advance
-
-A step may auto-advance when its output adds no information beyond what the previous
-step already provided. Auto-advance:
-- MUST create a gate record with `decided_by: "auto-advance"`
-- MUST include evidence explaining why the step was trivial
-- MUST NOT apply to `implement` or `review` steps
-- CAN be disabled via `gate_policy: supervised`
+This pattern enforces generator-evaluator separation: the agent that produced the
+step's output never evaluates its own work. The subagent runs with fresh context
+and no access to the conversation that generated the artifacts.
 
 ## Extended Gate File
 
@@ -90,7 +138,7 @@ file to `gates/{from}-to-{to}.json`:
 ## Step Boundary Protocol
 
 At every boundary:
-1. Gate check evaluates step output.
+1. Gate check evaluates step output (Phase A + Phase B).
 2. Gate record appended to `state.json.gates[]`.
 3. `summary.md` regenerated (latest version only; previous in git history).
 4. `state.json.step` advanced; `step_status` set to `not_started`.
