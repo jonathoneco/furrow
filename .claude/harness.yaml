@@ -1,0 +1,41 @@
+# .claude/harness.yaml — Project configuration template for V2 work harness
+schema_version: 2
+
+# Project identity
+project:
+  name: "work-harness-v2"   # project name (kebab-case)
+  repo: ""                   # GitHub repo (owner/name)
+
+# Stack detection for language/framework-specific rules
+stack:
+  language: ""          # e.g., "go", "python", "typescript"
+  framework: ""         # e.g., "htmx", "nextjs", "django"
+  frontend: ""          # e.g., "htmx", "react", "vue"
+
+# Default gate policy for new work units
+defaults:
+  gate_policy: "supervised"   # "supervised" | "delegated" | "autonomous"
+  mode: "code"                # "code" | "research"
+
+# Context document manifest (paths relative to project root)
+context_docs: []
+  # - path: "docs/architecture.md"
+  #   inject: "work"           # "ambient" | "work" | "reference"
+  #   note: "System architecture overview"
+
+# Cross-model review provider (optional)
+# Used during ideation for outside-voice review.
+# If absent, same-model fresh-context review is used.
+cross_model:
+  provider: ""          # e.g., "openai/gpt-4o", "google/gemini-2.5-pro"
+
+# CI commands for pre-merge checks
+ci:
+  test_command: ""      # e.g., "go test ./...", "npm test"
+  lint_command: ""      # e.g., "golangci-lint run", "npm run lint"
+  build_command: ""     # e.g., "go build ./...", "npm run build"
+
+# Beans integration
+beans:
+  enabled: false
+  project_prefix: ""    # e.g., "my-project"

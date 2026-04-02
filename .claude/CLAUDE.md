@@ -1,24 +1,70 @@
-## Project
+## V2 Work Harness
 
-This is work-harness-v2 — a new agentic work harness designed from scratch.
+This project uses the V2 adaptive work harness. Task state lives in `.work/` directories.
 
-There is NO existing codebase to extend. You are designing and building something new.
+## Active Task Detection
 
-## Context
+Check `.work/*/state.json` for tasks where `archived_at` is null. If found, recover
+context before making changes. See `.claude/rules/workflow-detect.md` for details.
 
-The creator has extensive experience building a v1 harness (in a separate repo). Research findings from that experience are available in `docs/research/` as seed material. These findings inform but do not constrain — every assumption is open to challenge.
+## File Conventions
 
-## Constraints
+- Work units: `.work/{kebab-case-name}/`
+- Core files: `definition.yaml`, `state.json`, `summary.md`, `reviews/`
+- All identifiers (names, deliverables, specialists): kebab-case
+- Schema fields (JSON/YAML): snake_case
+- Timestamps: ISO 8601 with timezone
 
-- Must work as both Claude Code skills/commands (local interactive) AND Agent SDK programs (autonomous agents)
-- Eval infrastructure is a first-class concern, not an afterthought
-- Target ~20-30 files — thin convention layer on platform primitives
-- No timeline pressure — get it right
+## Step Sequence
 
-## Principles
+All work units traverse: ideate -> research -> plan -> spec -> decompose -> implement -> review
 
-- Question everything. There is no inherited process or structure that must be preserved.
-- Use Claude Code's native primitives (skills, hooks, teams, tasks) rather than reimplementing them.
-- Prefer declarative configuration over prose instructions where possible.
-- Every behavioral expectation should have an eval, not just documentation.
-- Design to shrink over time as platforms absorb capabilities.
+## State Ownership
+
+`state.json` is harness-exclusive write. Agents read it but never write it directly.
+
+## Context Budget Enforcement
+
+| Layer | Budget | Content |
+|-------|--------|---------|
+| Ambient | <=100 lines | This file + rules/ (always loaded) |
+| Work | <=150 lines | `skills/work-context.md` (during active work) |
+| Step | <=50 lines | `skills/{step}.md` (per step, replaced at boundaries) |
+| Reference | ~600 lines | `references/` (on demand, NOT injected) |
+
+Total injected (ambient + work + step) must not exceed 300 lines.
+Each instruction appears in exactly one layer. Run `scripts/measure-context.sh` to verify.
+
+## Component Rationale
+
+Component rationale is centralized in `_rationale.yaml` (not injected into context).
+
+## Commit Conventions
+
+Conventional commits: feat:, fix:, chore:, docs:, refactor:, test:, infra:
+
+## Rules
+
+See `.claude/rules/` for platform-managed rules that survive compaction.
+
+
+<!-- harness:start -->
+## V2 Work Harness
+
+Installed from: /home/jonco/src/work-harness-v2
+
+| Command | Purpose |
+|---------|---------|
+| /harness:work | Create or resume a work unit |
+| /harness:status | Show step, deliverable progress |
+| /harness:checkpoint | Save session progress |
+| /harness:review | Run structured review |
+| /harness:archive | Archive completed work |
+| /harness:reground | Recover context after break |
+| /harness:redirect | Record dead end and pivot |
+| /harness:doctor | Check harness health |
+| /harness:update | Check configuration drift |
+| /harness:meta | Enter self-modification mode |
+
+Run `/harness:doctor` to check health. Run `install.sh --check` to verify installation.
+<!-- harness:end -->

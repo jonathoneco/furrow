@@ -1,0 +1,46 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "hooks/state-guard.sh" },
+          { "type": "command", "command": "hooks/ownership-warn.sh" }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "hooks/gate-check.sh" }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "hooks/timestamp-update.sh" },
+          { "type": "command", "command": "hooks/summary-regen.sh" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          { "type": "command", "command": "hooks/work-check.sh" },
+          { "type": "command", "command": "hooks/stop-ideation.sh" },
+          { "type": "command", "command": "hooks/validate-summary.sh" }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          { "type": "command", "command": "hooks/post-compact.sh" }
+        ]
+      }
+    ]
+  }
+}
