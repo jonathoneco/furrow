@@ -56,41 +56,6 @@
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
 
-- id: parallel-workflow-support
-  title: "Parallel Workflow Support"
-  context: |
-    The harness currently supports only one active work unit at a time. `detect-context.sh` warns when multiple active tasks exist and asks the user to pick one. Hooks like `state-guard.sh`, `ownership-warn.sh`, and `timestamp-update.sh` assume a single active `.work/` directory. Real-world usage often requires concurrent streams — e.g., a bug fix while a feature is in the plan step, or two independent deliverables that could progress simultaneously.
-
-    What's blocking today:
-    - `detect-context.sh` treats multiple active tasks as an error condition (asks "which to continue?" instead of allowing both)
-    - Hooks scan all `.work/*/state.json` files but don't scope operations to a specific work unit — a write to one unit could trigger validation on another
-    - `work-context.md` skill loads context for a single active task; no mechanism to switch or scope
-    - `post-compact.sh` re-injects context for one task; a second active task loses context
-    - Step skills assume one step sequence in flight; no namespacing of step state
-  work_needed: |
-    - Work unit scoping: commands and hooks must accept/infer which work unit they're operating on (e.g., `--unit <name>` flag or CWD-based detection)
-    - Context multiplexing: `work-context.md` should support loading context for a specific unit, not just "the active one"
-    - Hook scoping: each hook must operate on the triggering work unit only, not scan all active units
-    - Session affinity: a mechanism to "focus" a session on one work unit while others remain active but dormant
-    - `detect-context.sh` should list all active units and allow continuing any one without treating multiplicity as an error
-
-    Design considerations:
-    - Start with "focused + dormant" model: one unit is focused (receives context injection, hook enforcement), others are dormant (state preserved but not actively loaded). This avoids the complexity of true concurrent execution.
-    - The `/work` command could accept a `--switch <name>` flag to change focus without archiving the current unit.
-    - Consider whether step hooks should be fully isolated per unit or share the hook pipeline with unit-scoped filtering.
-  risks: |
-    - Deferred items table (TODOS, item "Concurrent work streams") — originally Phase 4
-  references:
-    - "commands/lib/detect-context.sh"
-    - "hooks/state-guard.sh"
-    - "hooks/ownership-warn.sh"
-    - "skills/work-context.md"
-    - "hooks/post-compact.sh"
-  source_work_unit: "harness-v2-status-eval"
-  source_type: "manual"
-  created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-02T00:00:00Z"
-
 - id: triage-todos-harness-skill
   title: "Triage-TODOs Harness Skill"
   context: |

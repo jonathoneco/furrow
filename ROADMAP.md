@@ -85,13 +85,11 @@ main ──┬── work/auto-advance ──────────── merg
 **Conflict risk**: None — auto-advance pipeline is isolated.
 **Note**: T3 modified `commands/lib/auto-advance.sh` — re-read before starting.
 
-### Track 2b: T8 — Parallel Workflow Support
+### Track 2b: T8 — Parallel Workflow Support — DONE
 
-**Work description**: Enable multiple active work units via focused+dormant model. One unit receives context injection and hook enforcement, others are dormant. Add `--unit <name>` scoping to commands, `--switch` to `/work`, per-unit hook filtering, and context multiplexing.
-
-**Branch**: `work/parallel-workflows`
-**Key files**: `commands/lib/detect-context.sh`, `hooks/state-guard.sh`, `hooks/ownership-warn.sh`, `hooks/timestamp-update.sh`, `hooks/post-compact.sh`, `skills/work-context.md`
-**Conflict risk**: Low — hook files are isolated from T5's auto-advance pipeline and T7's new commands.
+Focused+dormant model via `.work/.focused` file. 4 new functions in `hooks/lib/common.sh`,
+all hooks scoped, `--switch` flag on `/work`, `--all` flag on `/status`. 7 commits, 12 files.
+Merged to main.
 
 ### Track 2c: T7 — Roadmap Process
 
