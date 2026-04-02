@@ -1,0 +1,101 @@
+{
+  "name": "parallel-workflow-support",
+  "title": "Parallel workflow support: enable multiple active work units via a focused+dormant model",
+  "description": "Parallel workflow support: enable multiple active work units via a focused+dormant model",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "focus-infrastructure": {
+      "status": "completed",
+      "assigned_to": "coordinator",
+      "wave": 1,
+      "corrections": 0
+    },
+    "hook-scoping": {
+      "status": "completed",
+      "assigned_to": "hook-scoping-agent",
+      "wave": 2,
+      "corrections": 0
+    },
+    "command-routing": {
+      "status": "completed",
+      "assigned_to": "command-and-status-agent",
+      "wave": 2,
+      "corrections": 0
+    },
+    "archive-integration": {
+      "status": "completed",
+      "assigned_to": "archive-agent",
+      "wave": 2,
+      "corrections": 0
+    },
+    "status-command-update": {
+      "status": "completed",
+      "assigned_to": "command-and-status-agent",
+      "wave": 2,
+      "corrections": 0
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "human",
+      "evidence": "definition.yaml validated. Cross-model review completed. 8 design decisions resolved.",
+      "timestamp": "2026-04-02T20:13:55Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "human",
+      "evidence": "Research complete: 11 hooks inventoried, scoping strategies mapped, helpers identified.",
+      "timestamp": "2026-04-02T20:22:04Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "human",
+      "evidence": "Plan complete: 2-wave execution, 5 deliverables, plan.json validated.",
+      "timestamp": "2026-04-02T20:39:25Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "human",
+      "evidence": "5 specs written: focus-infrastructure, hook-scoping, command-routing, archive-integration, status-command-update.",
+      "timestamp": "2026-04-02T20:45:31Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "human",
+      "evidence": "Decompose complete: plan.json validated, team-plan.md written, work branch created, deliverables initialized.",
+      "timestamp": "2026-04-02T20:53:35Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "human",
+      "evidence": "All 5 deliverables implemented: focus-infrastructure, hook-scoping, command-routing, archive-integration, status-command-update. 4 commits, 12 files.",
+      "timestamp": "2026-04-02T20:59:06Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/parallel-workflow-support",
+  "mode": "code",
+  "base_commit": "22136f6b761069a2c93920dbb2bfeaab28f10451",
+  "epic_id": null,
+  "issue_id": null,
+  "created_at": "2026-04-02T19:46:12Z",
+  "updated_at": "2026-04-02T21:01:37Z",
+  "archived_at": null
+}

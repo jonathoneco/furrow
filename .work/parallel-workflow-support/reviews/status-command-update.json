@@ -1,0 +1,1 @@
+{"overall": "pass", "reviewer": "code-reviewer", "timestamp": "2026-04-02T20:35:00Z", "findings": [{"severity": "nit", "description": "--all with name silently ignores name — consider a warning"}, {"severity": "nit", "description": "Double * marker (leading + column) is redundant but intentional per spec"}]}

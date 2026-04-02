@@ -1,0 +1,116 @@
+objective: >-
+  Enable multiple active work units via a focused+dormant model where one unit
+  receives context injection and hook enforcement while others remain dormant.
+  A .work/.focused file (cache semantics, fallback to most-recently-updated)
+  tracks the focused unit. Hooks scope to units via path extraction or focus
+  file depending on trigger type.
+
+deliverables:
+  - name: focus-infrastructure
+    acceptance_criteria:
+      - .work/.focused file created/updated by set_focus(), deleted by clear_focus() in hooks/lib/common.sh
+      - find_focused_work_unit() reads .focused, validates unit exists and is not archived, falls back to most-recently-updated active unit on invalid state
+      - extract_unit_from_path() parses .work/{name}/... paths and returns unit directory, empty string for non-work paths
+      - All functions are POSIX sh compatible
+      - Backward compatible — single active unit works identically without .focused file
+    specialist: shell-specialist
+    file_ownership:
+      - "hooks/lib/common.sh"
+      - ".work/.focused"
+
+  - name: hook-scoping
+    acceptance_criteria:
+      - "Path-scoped hooks use extract_unit_from_path(): timestamp-update.sh, ownership-warn.sh, summary-regen.sh, validate-definition.sh"
+      - "Command-scoped hook extracts unit from script args: gate-check.sh"
+      - "Focus-scoped hooks use find_focused_work_unit(): stop-ideation.sh, post-compact.sh, correction-limit.sh, validate-summary.sh"
+      - "All-units Stop hook iterates all active units: work-check.sh"
+      - "state-guard.sh unchanged (blocks all state.json globally)"
+      - No hook errors or prompts when .focused is missing — graceful degradation to fallback
+      - Writing to .work/unit-b/ timestamps unit-b even when unit-a is focused
+      - "Stop hooks (stop-ideation, validate-summary) use focused unit for step/summary checks, not inline first-found discovery"
+      - "work-check.sh iterates all active units at session end, validates each independently"
+      - post-compact.sh recovers full context for focused unit (state.json, summary.md, step skill)
+      - No dormant unit listing in post-compact output
+      - Graceful post-compact degradation when .focused is invalid (fall back to most-recently-updated)
+    specialist: shell-specialist
+    depends_on:
+      - focus-infrastructure
+    file_ownership:
+      - "hooks/timestamp-update.sh"
+      - "hooks/ownership-warn.sh"
+      - "hooks/summary-regen.sh"
+      - "hooks/validate-definition.sh"
+      - "hooks/gate-check.sh"
+      - "hooks/stop-ideation.sh"
+      - "hooks/post-compact.sh"
+      - "hooks/work-check.sh"
+      - "hooks/correction-limit.sh"
+      - "hooks/validate-summary.sh"
+
+  - name: command-routing
+    acceptance_criteria:
+      - "Bare /work with .focused continues the focused unit silently"
+      - "Bare /work without .focused and multiple active units prompts once, writes .focused"
+      - "/work --switch <name> updates .focused and loads new unit's step skill"
+      - "/work <description> creates new unit and auto-focuses it (writes .focused)"
+      - "Multiple active tasks is the normal state, not an error"
+      - "commands/work.md routing logic updated for all cases"
+      - "detect-context.sh callers updated to handle multi-unit without error"
+    specialist: cli-designer
+    depends_on:
+      - focus-infrastructure
+    file_ownership:
+      - "commands/work.md"
+      - "commands/lib/detect-context.sh"
+
+  - name: archive-integration
+    acceptance_criteria:
+      - Archiving the focused unit clears .work/.focused
+      - No auto-rotate — next /work or post-compact uses fallback logic
+      - Archiving a non-focused unit does not touch .focused
+    depends_on:
+      - focus-infrastructure
+    file_ownership:
+      - "scripts/archive-work.sh"
+
+  - name: status-command-update
+    acceptance_criteria:
+      - "/status shows focused unit details (current behavior plus focused indicator)"
+      - "/status --all lists all active units with name, step, status, and focused marker"
+      - Dormant units visible only via /status --all
+    specialist: cli-designer
+    depends_on:
+      - focus-infrastructure
+    file_ownership:
+      - "commands/status.md"
+
+context_pointers:
+  - path: "hooks/lib/common.sh"
+    symbols:
+      - "find_active_work_unit"
+    note: "The single bottleneck — called by 3+ hooks, returns one unit. Must be refactored."
+  - path: "commands/lib/detect-context.sh"
+    note: "Already multi-task aware at script level. Callers impose single-task assumption."
+  - path: "hooks/timestamp-update.sh"
+    note: "Highest-risk hook — updates wrong unit when path != focused unit."
+  - path: "hooks/ownership-warn.sh"
+    note: "Same path-vs-focus mismatch risk as timestamp-update."
+  - path: "hooks/post-compact.sh"
+    note: "Session-scoped — must use focus file, not path extraction."
+  - path: "commands/work.md"
+    note: "Command routing — current error on multiple active must become normal path."
+  - path: "ROADMAP.md"
+    note: "Phase 2, Track 2b — feature description and dependency map."
+  - path: "todos.yaml"
+    note: "parallel-workflow-support entry with blocking factors."
+
+constraints:
+  - "Context budget unchanged: ≤300 lines (ambient + work + step). Dormant units cost zero lines."
+  - ".focused is a cache — never error on invalid state, always degrade to most-recently-updated fallback."
+  - "Hooks must not prompt interactively — degrade gracefully when context is ambiguous."
+  - "Backward compatible — single active unit works identically to today (no .focused file needed)."
+  - "POSIX sh for all hook and library scripts."
+  - "Path-scoped hooks must extract unit from target_path, never call find_active_work_unit()."
+  - "Implementation order: focus-infrastructure (wave 1) > hook-scoping, command-routing, archive-integration, status-command-update (wave 2, parallel)"
+
+gate_policy: supervised
