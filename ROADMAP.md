@@ -65,14 +65,16 @@ main ──┬── work/e2e-test ───────────────
        └── work/todos-workflow ────────── merge ──┘── main
 ```
 
-### Track 1a: T2 — End-to-End Test with Real Task
+### Track 1a: T2 — End-to-End Test with Real Task — REDUNDANT
 
-**Work description**: Exercise the full 7-step pipeline (ideate→review) with a real task. Verify `validate-step-artifacts.sh` gates, `generate-plan.sh` with multi-deliverable definitions, `correction-limit.sh` during implementation, and `run-eval.sh` on actual deliverables.
+**Status**: Cancelled. The other Phase 1 worktrees (T3, T4, T6) inherently exercise the full pipeline as real tasks. Previous tasks on this branch (`harness-v2-status-eval`, `review-impl-scripts`) already ran the full 7-step flow and found/fixed 14 bugs. A separate meta-test is unnecessary.
 
-**Branch**: `work/e2e-test`
-**Key files**: `commands/lib/step-transition.sh`, `commands/lib/init-work-unit.sh`, `skills/work-context.md`
-**Conflict risk**: Medium — may fix bugs in `hooks/lib/validate.sh` or `step-transition.sh`. If T3 also fixes the same files, merge conflict.
-**Mitigation**: T2 and T3 exercise different code paths (standard vs research mode). Bug fixes should be in different functions.
+**Coverage gaps** not addressed by organic pipeline usage (see TODO 10):
+- Multi-deliverable dependency wave ordering (T4 has 3 independent deliverables — wave logic is trivial)
+- `correction-limit.sh` enforcement (only fires on gate failures, may not happen naturally)
+- `run-eval.sh` Phase B dimension scoring on real code deliverables with mixed pass/fail
+
+**Original description**: Exercise the full 7-step pipeline (ideate→review) with a real task. Verify `validate-step-artifacts.sh` gates, `generate-plan.sh` with multi-deliverable definitions, `correction-limit.sh` during implementation, and `run-eval.sh` on actual deliverables.
 
 ### Track 1b: T3 — Research Mode End-to-End Test
 
