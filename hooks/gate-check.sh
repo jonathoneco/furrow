@@ -32,17 +32,21 @@ case "$command_str" in
   *) exit 0 ;;
 esac
 
-work_dir="$(find_active_work_unit)"
+# Extract unit name from command: advance-step.sh <unit-name> [...]
+unit_name="$(echo "$command_str" | sed -n 's/.*advance-step[^ ]* \+\([^ ]*\).*/\1/p')"
 
-if [ -z "$work_dir" ]; then
+if [ -n "$unit_name" ]; then
+  work_dir=".work/$unit_name"
+else
+  # Fallback: try focused unit
+  work_dir="$(find_focused_work_unit)"
+fi
+
+if [ -z "$work_dir" ] || [ ! -f "$work_dir/state.json" ]; then
   exit 0
 fi
 
 state_file="$work_dir/state.json"
-
-if [ ! -f "$state_file" ]; then
-  exit 0
-fi
 
 if ! validate_step_boundary "$state_file" 2>/dev/null; then
   current="$(jq -r '.step' "$state_file" 2>/dev/null)" || current="unknown"

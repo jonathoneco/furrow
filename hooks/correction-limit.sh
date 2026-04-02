@@ -21,19 +21,31 @@ if [ -z "${file_path}" ]; then
   exit 0
 fi
 
-# --- locate active work unit (inline discovery, no common.sh) ---
+# --- locate work unit via path extraction + focus fallback ---
 
-work_dir=""
-for state_file in .work/*/state.json; do
-  [ -f "${state_file}" ] || continue
-  archived="$(jq -r '.archived_at // "null"' "${state_file}" 2>/dev/null)" || continue
-  if [ "${archived}" = "null" ]; then
-    work_dir="$(dirname "${state_file}")"
-    break
-  fi
-done
+HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
+HARNESS_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
+COMMON_LIB="$HARNESS_ROOT/hooks/lib/common.sh"
 
-if [ -z "${work_dir}" ]; then
+if [ ! -f "$COMMON_LIB" ]; then
+  exit 0
+fi
+
+# shellcheck source=lib/common.sh
+. "$COMMON_LIB"
+
+work_dir="$(extract_unit_from_path "$file_path")"
+
+if [ -z "$work_dir" ]; then
+  work_dir="$(find_focused_work_unit)"
+fi
+
+if [ -z "$work_dir" ] || [ ! -f "$work_dir/state.json" ]; then
+  exit 0
+fi
+
+archived="$(jq -r '.archived_at // "null"' "$work_dir/state.json" 2>/dev/null)" || archived="null"
+if [ "$archived" != "null" ]; then
   exit 0
 fi
 

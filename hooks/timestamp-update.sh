@@ -29,7 +29,11 @@ case "$target_path" in
   *) exit 0 ;;
 esac
 
-work_dir="$(find_active_work_unit)"
+work_dir="$(extract_unit_from_path "$target_path")"
+
+if [ -z "$work_dir" ]; then
+  work_dir="$(find_focused_work_unit)"
+fi
 
 if [ -z "$work_dir" ]; then
   exit 0
