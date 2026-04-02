@@ -4,7 +4,7 @@
 Enable multiple active work units via a focused+dormant model where one unit receives context injection and hook enforcement while others remain dormant. A .work/.focused file (cache semantics, fallback to most-recently-updated) tracks the focused unit. Hooks scope to units via path extraction or focus file depending on trigger type.
 
 ## Current State
-Step: implement | Status: in_progress
+Step: review | Status: completed
 Deliverables: 5/5
 Mode: code
 
