@@ -66,7 +66,7 @@ A structured review document containing:
 
 2. **Behavior Coverage Matrix**: A table mapping all 15 behaviors to their enforcement mechanisms across specs
 
-3. **Lifecycle Trace**: A walkthrough of one work unit through the complete lifecycle at each trust level, citing specific spec sections
+3. **Lifecycle Trace**: A walkthrough of one row through the complete lifecycle at each trust level, citing specific spec sections
 
 4. **Terminology Index**: Canonical names for all key concepts with the spec that defines them
 

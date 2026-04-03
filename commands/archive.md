@@ -1,10 +1,10 @@
 # /archive [name]
 
-Archive a completed work unit after review passes.
+Archive a completed row after review passes.
 
 ## Arguments
 
-- `name` (optional): Work unit name. If absent, archives the active task.
+- `name` (optional): Row name. If absent, archives the active task.
 
 ## Pre-Conditions
 
@@ -21,7 +21,7 @@ If not found: error with message indicating what is blocking archive.
    - Show current step, status, and last gate outcome.
 
 4. **Learnings promotion**: Run `commands/lib/promote-learnings.sh "{name}"`.
-   - Present per-unit learnings from `.work/{name}/learnings.jsonl`.
+   - Present per-row learnings from `.furrow/rows/{name}/learnings.jsonl`.
    - Ask user which learnings to promote to project-level `learnings.jsonl`.
 
 5. **Component promotion**: Run `commands/lib/promote-components.sh "{name}"`.
@@ -39,7 +39,7 @@ If not found: error with message indicating what is blocking archive.
 
 7. **TODO pruning**: Check if `definition.yaml` has a `source_todo` field.
    - If set, read `todos.yaml` and find the entry matching that ID.
-   - Present: "This work unit was started from TODO '{id}': {title}. Mark as resolved?"
+   - Present: "This row was started from TODO '{id}': {title}. Mark as resolved?"
    - **yes**: Remove the entry from `todos.yaml`.
    - **no**: Keep as-is.
    - **partial**: Add a note to the entry's context indicating partial completion,

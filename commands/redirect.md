@@ -27,7 +27,7 @@ Record a failed approach and redirect work to a new approach within the current 
    ```
    - [{timestamp}] {current_step}: {reason}
    ```
-6. Git commit `.work/{name}/` with message: `chore: redirect {name} at {step}`.
+6. Git commit `.furrow/rows/{name}/` with message: `chore: redirect {name} at {step}`.
 
 ## Constraints
 

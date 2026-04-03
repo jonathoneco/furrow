@@ -2,15 +2,15 @@
   title: "Rethink hint file pattern — consolidate into state.json"
   context: |
     The harness uses dot-prefixed hint files (.gate_policy_hint, and nearly added .source_todo)
-    to pass init-time values from init-work-unit.sh to the ideate step. These sidecar files are
+    to pass init-time values from init-row.sh to the ideate step. These sidecar files are
     never read by any script — agents discover them by listing the directory. This is fragile,
-    undiscoverable, and scales poorly. The harness-ux-fixes work unit migrates both to state.json
+    undiscoverable, and scales poorly. The harness-ux-fixes row migrates both to state.json
     fields, but the pattern should be formally deprecated and any future init-time hints should
     go directly into state.json.
   work_needed: |
-    - Audit for any remaining hint files (grep for hint patterns in init-work-unit.sh and skills/)
+    - Audit for any remaining hint files (grep for hint patterns in init-row.sh and skills/)
     - Document the "init hints go in state.json" convention in _rationale.yaml
-    - Add a furrow-doctor check that warns if .work/*/.* hint files are found
+    - Add a furrow-doctor check that warns if .furrow/rows/*/.* hint files are found
   source_work_unit: "harness-ux-fixes"
   source_type: "open-question"
   created_at: "2026-04-02T00:00:00Z"
@@ -121,7 +121,7 @@
     - Determine where seeding fits in the step sequence (post-research? post-plan?)
     - Consider whether seeds replace or augment the current summary.md handoff
     - Design how seeds get consumed by downstream steps (injected context? reference?)
-    - Prototype with a research work unit to validate the pattern
+    - Prototype with a research row to validate the pattern
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -163,9 +163,9 @@
 - id: research-documentation-detection
   title: "Detect when research output should be documentation instead"
   context: |
-    Some research work units produce output that is really documentation —
+    Some research rows produce output that is really documentation —
     reference material, how-to guides, architectural context. These should
-    be routed to docs/ or references/ rather than staying buried in .work/.
+    be routed to docs/ or references/ rather than staying buried in .furrow/rows/.
     Need a pattern for recognizing and promoting research-as-docs.
   work_needed: |
     - Add a check in the review step or archive ceremony for "is this really docs?"
@@ -491,9 +491,9 @@
   depends_on:
   - rename-to-furrow
 - id: work-folder-structure-and-cleanup
-  title: "Structure .work/ to prevent unbounded growth"
+  title: "Structure .furrow/rows/ to prevent unbounded growth"
   context: |
-    The .work/ directory grows indefinitely — every work unit (active and archived)
+    The .furrow/rows/ directory grows indefinitely — every row (active and archived)
     lives in the same flat directory. Archived units keep all intermediate artifacts
     (research notes, specs, plans, review results) even when only the final deliverables
     matter. Over time this becomes unruly: hard to navigate, slow to scan, and pollutes
@@ -501,9 +501,9 @@
   work_needed: |
     - Evaluate directory structure options:
       - Flat with archive pruning (delete intermediate artifacts on archive)
-      - Nested by status (.work/active/, .work/archived/)
-      - Nested by date (.work/2026-04/)
-      - Hybrid: active in .work/, archived moved to .work/.archive/ or removed entirely
+      - Nested by status (.furrow/rows/active/, .furrow/rows/archived/)
+      - Nested by date (.furrow/rows/2026-04/)
+      - Hybrid: active in .furrow/rows/, archived moved to .furrow/rows/.archive/ or removed entirely
     - Define which artifacts survive archival vs get pruned:
       - Keep: definition.yaml, state.json, summary.md, final deliverables
       - Prune candidates: research/, specs/, reviews/, plan.json, team-plan.md
@@ -514,8 +514,8 @@
   references:
   - "scripts/archive-work.sh"
   - "commands/archive.md"
-  - "references/work-unit-layout.md"
-  - "references/work-unit-meta.yaml"
+  - "references/row-layout.md"
+  - "references/row-meta.yaml"
   - "commands/lib/detect-context.sh"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
@@ -527,7 +527,7 @@
   - "scripts/archive-work.sh"
   - "commands/archive.md"
   - "commands/lib/detect-context.sh"
-  - "references/work-unit-layout.md"
+  - "references/row-layout.md"
 
 # Cluster: Integrations & Extensions
 
@@ -540,7 +540,7 @@
     transitions are valid before the harness allows step advancement.
   work_needed: |
     - Define which harness checkpoints should validate beans state
-    - Add beans issue existence check to work unit init
+    - Add beans issue existence check to row init
     - Consider beans status sync on step transitions
     - Wire into gate-check or step-transition as optional enforcement
   source_type: "brain-dump"
@@ -552,7 +552,7 @@
   files_touched:
   - "hooks/gate-check.sh"
   - "commands/lib/step-transition.sh"
-  - "commands/lib/init-work-unit.sh"
+  - "commands/lib/init-row.sh"
 
   status: active
 - id: legacy-todos-migration
@@ -648,12 +648,12 @@
     - The agent may not trust the wave plan and defaults to doing everything itself
     - Model capability — orchestration may require Opus-level reasoning while we're considering Sonnet routing
   work_needed: |
-    - Diagnose: run a multi-deliverable work unit and observe where the agent deviates from team dispatch
+    - Diagnose: run a multi-deliverable row and observe where the agent deviates from team dispatch
     - Simplify the implement skill's orchestration instructions — fewer words, clearer decision tree
     - Add a concrete orchestration example (copy-pasteable Agent tool call with specialist injection)
     - Consider a "dispatch checklist" the agent follows: read plan.json → for each wave → for each deliverable → spawn agent with specialist + context
     - Evaluate whether a shell-level orchestrator (like run-gate.sh for gates) would be more reliable than agent-level orchestration
-    - Test with a 2-wave, 3-deliverable work unit as a validation case
+    - Test with a 2-wave, 3-deliverable row as a validation case
   references:
   - "skills/implement.md"
   - "skills/decompose.md"
@@ -737,11 +737,11 @@
     where the user reviews gate results and decides whether to proceed.
     Additionally, supervised mode currently has no structural enforcement —
     the agent can call step-transition.sh with "manual" as the decider without
-    actually pausing for user review. The namespace-rename work unit demonstrated
+    actually pausing for user review. The namespace-rename row demonstrated
     this: it steamrolled from research through implement without a single user
     interaction turn after ideation.
   work_needed: |
-    - Change the default gate_policy in furrow.yaml / init-work-unit.sh to "supervised"
+    - Change the default gate_policy in furrow.yaml / init-row.sh to "supervised"
     - Ensure /work --gate-policy flag still allows override to "auto" or "manual"
     - Update documentation and CLAUDE.md to reflect the new default
     - Audit existing step-transition.sh for supervised flow (pause, present evidence, ask)
@@ -752,7 +752,7 @@
       for supervised mode — the agent must show the step's output and get user sign-off
   references:
   - "commands/lib/step-transition.sh"
-  - "commands/lib/init-work-unit.sh"
+  - "commands/lib/init-row.sh"
   - "references/gate-protocol.md"
   - "skills/shared/summary-protocol.md"
   source_type: "brain-dump"
@@ -763,7 +763,7 @@
   effort: "small"
   files_touched:
   - "commands/lib/step-transition.sh"
-  - "commands/lib/init-work-unit.sh"
+  - "commands/lib/init-row.sh"
   - ".claude/furrow.yaml"
 
   status: active

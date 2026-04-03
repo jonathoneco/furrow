@@ -4,8 +4,8 @@
 Integrate Seeds as mandatory core infrastructure into Furrow, unify row lifecycle management under the rws CLI, create the alm CLI for planning and knowledge management, and restructure all harness state under .furrow/ — executing as a clean swap with no intermediate state.
 
 ## Current State
-Step: decompose — plan.json validated (4 waves, 7 deliverables, no file ownership conflicts)
-Deliverables: 0/7 (decomposed)
+Step: decompose | Status: pending_approval
+Deliverables: 0/7 (defined)
 Mode: code
 
 ## Artifact Paths
@@ -20,8 +20,10 @@ Mode: code
 - **ideate->research**: pass — definition.yaml validated, all 16 design decisions settled through interactive ideation with user, cross-model outside voice review completed, summary written
 - **research->plan**: pass — 5 parallel research tracks completed: sds fork analysis, rws architecture, gate integration, roadmap schema, alm CLI. Research directory with synthesis written. All ideation questions addressed.
 - **plan->spec**: pass — 7 deliverables across 4 waves planned. Architecture decisions: CLIs as abstraction layer, domain hooks fold into rws, policy hooks stay separate. Operational ordering defined with checkpoints. D6 (tests) and D7 (docs) added.
-- **spec->decompose**: pass — 7 implementation-ready specs written covering all deliverables
-- **decompose->implement**: plan.json validated — 4 waves, 7 deliverables, dependency ordering respected, no file ownership conflicts within waves
+- **spec->decompose**: pass — 7 implementation-ready specs written covering all deliverables: furrow-restructure, sds-cli, rws-cli, alm-cli, seeds-row-integration, cli-test-suite, architecture-docs. Exact interfaces, exit codes, file lists, and testable ACs defined.
+- **decompose->implement**: pass — plan.json validated: 4 waves, 7 deliverables, dependency ordering respected, no file ownership conflicts. team-plan.md finalized with operational sequencing and checkpoints.
+- **decompose->implement**: pass — plan.json validated: 4 waves, 7 deliverables, dependency ordering correct, no file ownership conflicts within waves. team-plan.md finalized with wave sequencing and checkpoints.
+- **decompose->implement**: pass — plan.json validated, work branch created
 
 ## Context Budget
 Measurement unavailable

@@ -35,7 +35,7 @@ constraints: list[string]
 # Can be empty list for unconstrained work.
 
 gate_policy: enum[supervised, delegated, autonomous]
-# Trust level for this work unit. Determines how gates behave:
+# Trust level for this row. Determines how gates behave:
 #   supervised  — all gates human-mediated
 #   delegated   — human approves work def, execution gates automated
 #   autonomous  — all gates automated, human reviews final artifact
@@ -114,9 +114,9 @@ file_ownership: list[glob_pattern] (optional)
 gate: enum[human, automated] (optional)
 # Per-deliverable gate escalation. Overrides the work-level gate_policy
 # for this specific deliverable. Use sparingly — only for deliverables
-# that need different gate treatment than the work unit default.
+# that need different gate treatment than the row default.
 #
-# Example: a schema migration within a delegated work unit might need
+# Example: a schema migration within a delegated row might need
 # human sign-off even though other deliverables are auto-gated.
 ```
 
@@ -241,7 +241,7 @@ orchestration explicit rather than spontaneous.
 ```
 
 The execution plan is JSON (machine-authored, machine-read). It lives in the
-work unit directory alongside the work definition and progress state.
+row directory alongside the work definition and progress state.
 
 ## Schema Validation
 
@@ -276,4 +276,4 @@ The work definition schema is validated at Level A (structural enforcement):
 | Defaults+overrides | No — each field at exactly one level (work or deliverable) | Avoids two patterns for the same operation |
 | Review approach per deliverable | Composed by infrastructure from three signals: file_ownership, acceptance_criteria, specialist | No new field needed; specialist is a hint, not a hard key |
 | Information boundary | Acceptance criteria public (guide executor + reviewer); review methodology private (reviewer only) | Prevents gaming while maintaining guidance |
-| Per-deliverable gate | Optional `gate` field for escalation | Some deliverables have higher risk within a work unit |
+| Per-deliverable gate | Optional `gate` field for escalation | Some deliverables have higher risk within a row |

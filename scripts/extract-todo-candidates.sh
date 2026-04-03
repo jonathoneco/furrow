@@ -1,11 +1,11 @@
 #!/bin/sh
-# extract-todo-candidates.sh — Extract TODO candidates from work unit artifacts.
+# extract-todo-candidates.sh — Extract TODO candidates from row artifacts.
 #
 # A "dumb JSON collector": extracts raw candidates from three sources and
 # outputs a JSON array to stdout. All semantic reasoning (dedup, merge,
 # prioritization) happens in the agent layer, not here.
 #
-# Usage: extract-todo-candidates.sh <work-unit-name>
+# Usage: extract-todo-candidates.sh <row-name>
 #
 # Sources:
 #   1. summary.md — lines under "## Open Questions"
@@ -19,15 +19,15 @@ set -eu
 
 # --- Argument validation ---
 if [ $# -ne 1 ]; then
-  echo "Usage: $0 <work-unit-name>" >&2
+  echo "Usage: $0 <row-name>" >&2
   exit 1
 fi
 
 NAME="$1"
-WORK_DIR=".work/${NAME}"
+WORK_DIR=".furrow/rows/${NAME}"
 
 if [ ! -d "$WORK_DIR" ]; then
-  echo "Error: work unit '${NAME}' not found at ${WORK_DIR}/" >&2
+  echo "Error: row '${NAME}' not found at ${WORK_DIR}/" >&2
   exit 1
 fi
 
@@ -58,7 +58,7 @@ extract_summary() {
     return 0
   fi
 
-  source_file=".work/${NAME}/summary.md"
+  source_file=".furrow/rows/${NAME}/summary.md"
 
   # Process each non-blank line
   printf '%s\n' "$section" | while IFS= read -r line; do
@@ -75,7 +75,7 @@ extract_summary() {
       '{
         source: $source,
         title: (if (. | length) > 80 then (.[:80] + "...") else . end),
-        context: ("Open question from " + $name + " work unit"),
+        context: ("Open question from " + $name + " row"),
         raw_content: .,
         source_file: $source_file
       }'
@@ -89,7 +89,7 @@ extract_learnings() {
     return 0
   fi
 
-  source_file=".work/${NAME}/learnings.jsonl"
+  source_file=".furrow/rows/${NAME}/learnings.jsonl"
 
   # Process line-by-line: skip malformed lines, filter pitfalls
   while IFS= read -r line; do
@@ -98,7 +98,7 @@ extract_learnings() {
       {
         source: "learnings-pitfall",
         title: (if (.content | length) > 80 then (.content[:80] + "...") else .content end),
-        context: (.context // ("Pitfall from " + $name + " work unit")),
+        context: (.context // ("Pitfall from " + $name + " row")),
         raw_content: (. | tostring),
         source_file: $source_file
       }
@@ -123,7 +123,7 @@ extract_reviews() {
     fi
 
     basename_file=$(basename "$review_file")
-    source_file=".work/${NAME}/reviews/${basename_file}"
+    source_file=".furrow/rows/${NAME}/reviews/${basename_file}"
     # Filename stem for fallback deliverable name
     stem="${basename_file%.json}"
 

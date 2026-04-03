@@ -5,7 +5,7 @@
 # assigns waves via topological sort, and writes a validated plan.json.
 #
 # Usage: generate-plan.sh <name>
-#   name — work unit name (kebab-case directory under .work/)
+#   name — row name (kebab-case directory under .furrow/rows/)
 #
 # Exit codes:
 #   0 — plan.json written
@@ -28,8 +28,8 @@ if [ $# -ne 1 ]; then
 fi
 
 name="$1"
-def_file="$FURROW_ROOT/.work/${name}/definition.yaml"
-plan_file="$FURROW_ROOT/.work/${name}/plan.json"
+def_file="$FURROW_ROOT/.furrow/rows/${name}/definition.yaml"
+plan_file="$FURROW_ROOT/.furrow/rows/${name}/plan.json"
 
 if [ ! -f "$def_file" ]; then
   echo "Error: definition.yaml not found: $def_file" >&2

@@ -17,12 +17,12 @@ export FURROW_ROOT
 # --- Fixture management ---
 
 # setup_fixture <name>
-#   Creates a temp dir with .work/<name>/ structure.
+#   Creates a temp dir with .furrow/rows/<name>/ structure.
 #   Sets FIXTURE_DIR, WORK_DIR. Registers cleanup trap.
 setup_fixture() {
   _name="$1"
   FIXTURE_DIR="$(mktemp -d)"
-  WORK_DIR="${FIXTURE_DIR}/.work/${_name}"
+  WORK_DIR="${FIXTURE_DIR}/.furrow/rows/${_name}"
   mkdir -p "${WORK_DIR}"
   mkdir -p "${FIXTURE_DIR}/skills"
   # Ensure cleanup on signal interruption

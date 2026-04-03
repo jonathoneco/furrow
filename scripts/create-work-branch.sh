@@ -1,8 +1,8 @@
 #!/bin/sh
-# create-work-branch.sh — Create and checkout work unit branch
+# create-work-branch.sh — Create and checkout row branch
 #
 # Usage: create-work-branch.sh <name>
-#   name — work unit name (kebab-case)
+#   name — row name (kebab-case)
 #
 # Creates branch work/{name} from current HEAD and switches to it.
 # If branch already exists (e.g., correction cycle), checks it out.
@@ -23,7 +23,7 @@ fi
 name="$1"
 branch_name="work/${name}"
 
-work_dir=".work/${name}"
+work_dir=".furrow/rows/${name}"
 state_file="${work_dir}/state.json"
 
 if [ ! -f "${state_file}" ]; then

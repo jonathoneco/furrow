@@ -294,7 +294,7 @@ Installed from: $FURROW_ROOT
 
 | Command | Purpose |
 |---------|---------|
-| /furrow:work | Create or resume a work unit |
+| /furrow:work | Create or resume a row |
 | /furrow:status | Show step, deliverable progress |
 | /furrow:checkpoint | Save session progress |
 | /furrow:review | Run structured review |
@@ -355,6 +355,18 @@ for _dir in skills hooks scripts schemas evals specialists references adapters t
       ln -s "$_src" "$_dst"
       _link "$_src" "$_dst"
     fi
+  fi
+done
+
+# --- 6b. CLI tools (sds, rws, alm) ---
+echo ""
+echo "--- CLI tools ---"
+for _cli in sds rws alm; do
+  _src="$FURROW_ROOT/bin/$_cli"
+  _dst="$_proj_root/bin/$_cli"
+  if [ -e "$_src" ]; then
+    ensure_dir "$_proj_root/bin"
+    symlink "$_src" "$_dst"
   fi
 done
 

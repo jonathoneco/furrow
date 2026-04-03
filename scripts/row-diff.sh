@@ -1,8 +1,8 @@
 #!/bin/sh
-# work-unit-diff.sh — Diff from base_commit for plan completion audit
+# row-diff.sh — Diff from base_commit for plan completion audit
 #
-# Usage: work-unit-diff.sh <name>
-#   name — work unit name
+# Usage: row-diff.sh <name>
+#   name — row name
 #
 # Reads base_commit from state.json and produces a diff summary.
 # Used by the review step (Phase A) to audit plan completion.
@@ -15,13 +15,13 @@
 set -eu
 
 if [ "$#" -lt 1 ]; then
-  echo "Usage: work-unit-diff.sh <name>" >&2
+  echo "Usage: row-diff.sh <name>" >&2
   exit 1
 fi
 
 name="$1"
 
-work_dir=".work/${name}"
+work_dir=".furrow/rows/${name}"
 state_file="${work_dir}/state.json"
 
 if [ ! -f "${state_file}" ]; then
@@ -36,7 +36,7 @@ if [ -z "${base_commit}" ] || [ "${base_commit}" = "null" ] || [ "${base_commit}
   exit 2
 fi
 
-echo "=== Work Unit Diff: ${name} ==="
+echo "=== Row Diff: ${name} ==="
 echo "Base commit: ${base_commit}"
 echo "Current HEAD: $(git rev-parse HEAD)"
 echo ""

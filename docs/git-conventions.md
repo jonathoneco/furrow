@@ -5,7 +5,7 @@ Detailed git workflow conventions for Furrow.
 ## 1. Branch Lifecycle
 
 ### Creation
-- Branch name: `work/{work-unit-name}` (kebab-case, matches `.work/` directory)
+- Branch name: `work/{row-name}` (kebab-case, matches `.furrow/rows/` directory)
 - Created at the `decompose->implement` gate boundary by `scripts/create-work-branch.sh`
 - Branch starts from current HEAD at creation time
 - Recorded in `state.json.branch`
@@ -28,7 +28,7 @@ Detailed git workflow conventions for Furrow.
 
 ### Standard Commits
 ```
-{type}({work-unit-name}): {description}
+{type}({row-name}): {description}
 
 Deliverable: {deliverable-name}
 Step: {step}
@@ -38,14 +38,14 @@ Step: {step}
 
 ### Gate Commits
 ```
-chore({work-unit-name}): gate pass {from}->{to}
+chore({row-name}): gate pass {from}->{to}
 
 Step: {to}
 ```
 
 ### Merge Commits
 ```
-merge: complete {work-unit-name}
+merge: complete {row-name}
 
 Deliverables: {comma-separated list}
 Gate: review pass
@@ -74,7 +74,7 @@ On-branch commits (implement through review) go to `work/{name}`.
 - Always `--no-ff` merge (never fast-forward, never squash)
 - Squash is explicitly disallowed — individual commits provide traceability
 - Merge commit preserves the full commit history
-- Merge requires the work unit to be archived (review passed)
+- Merge requires the row to be archived (review passed)
 
 ## 5. Conflict Resolution
 
@@ -117,8 +117,8 @@ at `gates/implement-to-review-ci.json`.
 }
 ```
 
-## 7. Work Unit Diff
+## 7. Row Diff
 
-`scripts/work-unit-diff.sh` produces a `git diff --stat` from `state.json.base_commit`
+`scripts/row-diff.sh` produces a `git diff --stat` from `state.json.base_commit`
 to HEAD. Used by the review step (Phase A) for plan completion audit — cross-referencing
 changed files against deliverable file_ownership globs.

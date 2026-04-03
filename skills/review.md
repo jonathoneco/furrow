@@ -28,7 +28,7 @@ For multi-deliverable work, assign review sub-agents per deliverable. Read `skil
 Review is the final step. No pre-step evaluation — review always runs.
 Post-step gate evaluates Phase A and Phase B results across all deliverables.
 Reference: `evals/gates/review.yaml` post_step, per `skills/shared/gate-evaluator.md`.
-On pass: work unit ready for archive. On fail: returns to implement step.
+On pass: row ready for archive. On fail: returns to implement step.
 
 ## Supervised Transition Protocol
 Before completing review:
@@ -40,7 +40,7 @@ Before completing review:
 6. On "no": ask what needs to change, address feedback, return to step 2.
 
 ## Learnings
-Append reusable insights to `.work/{name}/learnings.jsonl`.
+Append reusable insights to `.furrow/rows/{name}/learnings.jsonl`.
 Read `skills/shared/learnings-protocol.md` for schema and categories.
 After review, scan artifacts for promotion candidates (architecture decisions,
 patterns, specialist defs, eval dimensions). Present each with rationale.
@@ -49,7 +49,7 @@ patterns, specialist defs, eval dimensions). Present each with rationale.
 When `state.json.mode` is `"research"`:
 - Implement step: load `evals/dimensions/research-implement.yaml`.
 - Spec step: load `evals/dimensions/research-spec.yaml`.
-- Phase A: verify `.work/{name}/deliverables/` files exist, match
+- Phase A: verify `.furrow/rows/{name}/deliverables/` files exist, match
   `plan.json` ownership, meet acceptance criteria from definition.yaml.
 - Phase B: evaluate coverage, evidence-basis, synthesis-quality,
   internal-consistency, actionability. Verify citations.

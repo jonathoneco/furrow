@@ -2,10 +2,10 @@
 # check-wave-conflicts.sh — Wave boundary conflict detection
 #
 # Usage: check-wave-conflicts.sh <name> [wave_number]
-#   name        — work unit name
+#   name        — row name
 #   wave_number — completed wave to check (default: most recent)
 #
-# Cross-references .work/{name}/.unplanned_changes against plan.json
+# Cross-references .furrow/rows/{name}/.unplanned_changes against plan.json
 # file_ownership assignments to detect overlapping modifications.
 #
 # Exit codes:
@@ -23,7 +23,7 @@ fi
 name="$1"
 # wave_number is accepted but currently unused (reserved for future filtering)
 
-work_dir=".work/${name}"
+work_dir=".furrow/rows/${name}"
 unplanned_file="${work_dir}/.unplanned_changes"
 plan_file="${work_dir}/plan.json"
 

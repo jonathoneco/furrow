@@ -3,7 +3,7 @@
 #
 #
 # Usage: advance-step.sh <name>
-#   name — work unit name (kebab-case)
+#   name — row name (kebab-case)
 #
 # Enforces:
 #   - Sequential-only transitions (no skips, no backwards)
@@ -30,7 +30,7 @@ name="$1"
 
 # --- locate state ---
 
-work_dir=".work/${name}"
+work_dir=".furrow/rows/${name}"
 state_file="${work_dir}/state.json"
 
 if [ ! -f "${state_file}" ]; then
@@ -50,7 +50,7 @@ total_steps="$(jq -r '.steps_sequence | length' "${state_file}")"
 # Check if at final step
 last_idx=$((total_steps - 1))
 if [ "${current_idx}" -eq "${last_idx}" ]; then
-  echo "Cannot advance past final step 'review'. Use archive to complete the work unit." >&2
+  echo "Cannot advance past final step 'review'. Use archive to complete the row." >&2
   exit 3
 fi
 

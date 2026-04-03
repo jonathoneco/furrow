@@ -27,10 +27,10 @@ if [ -z "$target_path" ]; then
   exit 0
 fi
 
-work_dir="$(extract_unit_from_path "$target_path")"
+work_dir="$(extract_row_from_path "$target_path")"
 
 if [ -z "$work_dir" ]; then
-  work_dir="$(find_focused_work_unit)"
+  work_dir="$(find_focused_row)"
 fi
 
 if [ -z "$work_dir" ]; then

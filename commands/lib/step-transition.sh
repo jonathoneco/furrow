@@ -39,7 +39,7 @@ esac
 # --- resolve paths ---
 
 resolve_paths() {
-  work_dir=".work/${name}"
+  work_dir=".furrow/rows/${name}"
   state_file="${work_dir}/state.json"
   definition_file="${work_dir}/definition.yaml"
   script_dir="$(cd "$(dirname "$0")" && pwd)"

@@ -1,15 +1,15 @@
 ## Furrow
 
-This project uses Furrow (the V2 adaptive work harness). Task state lives in `.work/` directories.
+This project uses Furrow (the V2 adaptive work harness). Task state lives in `.furrow/rows/` directories.
 
 ## Active Task Detection
 
-Check `.work/*/state.json` for tasks where `archived_at` is null. If found, recover
+Check `.furrow/rows/*/state.json` for tasks where `archived_at` is null. If found, recover
 context before making changes. See `.claude/rules/workflow-detect.md` for details.
 
 ## File Conventions
 
-- Work units: `.work/{kebab-case-name}/`
+- Rows: `.furrow/rows/{kebab-case-name}/`
 - Core files: `definition.yaml`, `state.json`, `summary.md`, `reviews/`
 - All identifiers (names, deliverables, specialists): kebab-case
 - Schema fields (JSON/YAML): snake_case
@@ -17,7 +17,7 @@ context before making changes. See `.claude/rules/workflow-detect.md` for detail
 
 ## Step Sequence
 
-All work units traverse: ideate -> research -> plan -> spec -> decompose -> implement -> review
+All rows traverse: ideate -> research -> plan -> spec -> decompose -> implement -> review
 
 ## State Ownership
 
@@ -55,7 +55,7 @@ Installed from: /home/jonco/src/furrow
 
 | Command | Purpose |
 |---------|---------|
-| /furrow:work | Create or resume a work unit |
+| /furrow:work | Create or resume a row |
 | /furrow:status | Show step, deliverable progress |
 | /furrow:checkpoint | Save session progress |
 | /furrow:review | Run structured review |

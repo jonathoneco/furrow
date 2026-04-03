@@ -145,7 +145,7 @@ This observation is empirically valid but needs refinement along two axes:
 ### Work Context: The Harness's Core Responsibility
 
 The work tier is where Furrow adds the most value. Neither platform has a
-mechanism for "load exactly the context relevant to this work unit."
+mechanism for "load exactly the context relevant to this row."
 
 **Work context includes:**
 
@@ -210,7 +210,7 @@ structural mechanisms to keep context bounded:
 
 3. **Multi-agent context isolation** — when each deliverable executes in its own
    specialist's context, context bloat is per-specialist and bounded by agent
-   lifetime, not cumulative across the work unit.
+   lifetime, not cumulative across the row.
 
 4. **Progressive loading** — session-start hook loads only the work summary
    (~200-500 tokens). Everything else retrieved on demand.
@@ -423,4 +423,4 @@ context_pointers:
 
 The work definition's structure IS the coordination specification. Human
 override available in supervised mode (e.g., forcing single-agent for a
-2-deliverable work unit where tight coupling makes multi-agent wasteful).
+2-deliverable row where tight coupling makes multi-agent wasteful).

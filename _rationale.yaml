@@ -7,7 +7,7 @@ components:
     delete_when: "Claude Code provides built-in workflow orchestration without Furrow"
 
   - path: .claude/rules/workflow-detect.md
-    exists_because: "Claude Code needs session-start detection of active work units"
+    exists_because: "Claude Code needs session-start detection of active rows"
     delete_when: "Claude Code provides native active-task detection and notification"
 
   - path: .claude/settings.json
@@ -20,7 +20,7 @@ components:
 
   # --- Work layer ---
   - path: skills/work-context.md
-    exists_because: "Models need step sequence and file conventions when a work unit is active"
+    exists_because: "Models need step sequence and file conventions when a row is active"
     delete_when: "Models reliably infer work conventions from state.json alone"
 
   # --- Step layer (skills) ---
@@ -30,19 +30,19 @@ components:
 
   - path: skills/research.md
     exists_because: "Claude Code has no native research step guidance"
-    delete_when: "Claude Code provides built-in research orchestration for work units"
+    delete_when: "Claude Code provides built-in research orchestration for rows"
 
   - path: skills/plan.md
-    exists_because: "Claude Code has no native planning step for work units"
+    exists_because: "Claude Code has no native planning step for rows"
     delete_when: "Claude Code provides built-in architecture planning with decision tracking"
 
   - path: skills/spec.md
-    exists_because: "Claude Code has no native specification step for work units"
+    exists_because: "Claude Code has no native specification step for rows"
     delete_when: "Claude Code provides built-in spec authoring with acceptance criteria management"
 
   - path: skills/decompose.md
     exists_because: "Claude Code has no native work decomposition with concurrency mapping"
-    delete_when: "Claude Code provides built-in parallel execution planning for work units"
+    delete_when: "Claude Code provides built-in parallel execution planning for rows"
 
   - path: skills/implement.md
     exists_because: "Claude Code has no native implementation orchestration with specialist dispatch"
@@ -79,15 +79,15 @@ components:
   # --- Hooks ---
   - path: hooks/lib/common.sh
     exists_because: "Claude Code hooks need shared state access and utility functions"
-    delete_when: "Claude Code provides native work unit state access API"
+    delete_when: "Claude Code provides native row state access API"
 
   - path: hooks/lib/validate.sh
-    exists_because: "Claude Code does not natively validate work unit schemas"
-    delete_when: "Claude Code provides built-in schema validation for work unit files"
+    exists_because: "Claude Code does not natively validate row schemas"
+    delete_when: "Claude Code provides built-in schema validation for row files"
 
   - path: hooks/state-guard.sh
     exists_because: "Claude Code does not natively enforce state.json write protection"
-    delete_when: "Claude Code provides built-in work unit state protection"
+    delete_when: "Claude Code provides built-in row state protection"
 
   - path: hooks/gate-check.sh
     exists_because: "Claude Code does not natively enforce gate requirements at step boundaries"
@@ -106,8 +106,8 @@ components:
     delete_when: "Claude Code provides built-in step-boundary context preservation"
 
   - path: hooks/work-check.sh
-    exists_because: "Claude Code does not natively detect active work units at session start"
-    delete_when: "Claude Code provides built-in active work unit detection"
+    exists_because: "Claude Code does not natively detect active rows at session start"
+    delete_when: "Claude Code provides built-in active row detection"
 
   - path: hooks/post-compact.sh
     exists_because: "Claude Code compaction loses injected context; re-injection is needed"
@@ -145,12 +145,12 @@ components:
     delete_when: "Claude Code supports workflow primitives with step enforcement"
 
   - path: scripts/archive-work.sh
-    exists_because: "Claude Code has no built-in work unit lifecycle completion"
-    delete_when: "Claude Code provides native work unit archival with pre-condition enforcement"
+    exists_because: "Claude Code has no built-in row lifecycle completion"
+    delete_when: "Claude Code provides native row archival with pre-condition enforcement"
 
-  - path: scripts/init-work-unit.sh
-    exists_because: "Claude Code has no built-in work unit initialization"
-    delete_when: "Claude Code provides native work unit creation with directory scaffolding"
+  - path: scripts/init-row.sh
+    exists_because: "Claude Code has no built-in row initialization"
+    delete_when: "Claude Code provides native row creation with directory scaffolding"
 
   - path: scripts/record-gate.sh
     exists_because: "Claude Code has no built-in gate audit trail with evidence"
@@ -214,12 +214,12 @@ components:
     exists_because: "V1 had 24% instruction duplication across 879 lines of context"
     delete_when: "Claude Code enforces single-source instructions natively"
 
-  - path: references/work-unit-layout.md
-    exists_because: "Claude Code has no built-in work unit directory convention documentation"
-    delete_when: "Claude Code provides native work unit scaffolding with documented layout"
+  - path: references/row-layout.md
+    exists_because: "Claude Code has no built-in row directory convention documentation"
+    delete_when: "Claude Code provides native row scaffolding with documented layout"
 
-  - path: references/work-unit-meta.yaml
-    exists_because: "Work unit files need self-documenting deletion annotations"
+  - path: references/row-meta.yaml
+    exists_because: "Row files need self-documenting deletion annotations"
     delete_when: "Claude Code provides built-in work artifact lifecycle management"
 
   # --- Evals ---
@@ -257,9 +257,9 @@ components:
     exists_because: "Dual-runtime support (Claude Code + Agent SDK) requires adapter files"
     delete_when: "Claude Code and Agent SDK share a unified runtime interface"
 
-  # --- Work unit template ---
-  - path: .work/_meta.yaml
-    exists_because: "Work unit directories need a template for structural documentation"
+  # --- Row template ---
+  - path: .furrow/_meta.yaml
+    exists_because: "Row directories need a template for structural documentation"
     delete_when: "Claude Code provides built-in work artifact lifecycle management"
 
   # --- Specialists (W-07) ---
@@ -349,7 +349,7 @@ components:
 
   # --- Agent SDK adapter (W-08) ---
   - path: adapters/agent-sdk/templates/coordinator.py
-    exists_because: "Agent SDK programs need a coordinator template for work unit lifecycle management"
+    exists_because: "Agent SDK programs need a coordinator template for row lifecycle management"
     delete_when: "Agent SDK provides built-in workflow coordinator agents"
 
   - path: adapters/agent-sdk/templates/specialist.py
@@ -385,9 +385,9 @@ components:
     exists_because: "Claude Code has no native definition.yaml schema validation hook"
     delete_when: "Claude Code validates work definitions natively at write time"
 
-  - path: commands/lib/init-work-unit.sh
-    exists_because: "Claude Code has no built-in work unit initialization with state scaffolding"
-    delete_when: "Claude Code provides native work unit creation flow"
+  - path: commands/lib/init-row.sh
+    exists_because: "Claude Code has no built-in row initialization with state scaffolding"
+    delete_when: "Claude Code provides native row creation flow"
 
   - path: hooks/stop-ideation.sh
     exists_because: "Claude Code has no native section-by-section interaction enforcement"
@@ -428,7 +428,7 @@ components:
     delete_when: "Claude Code provides built-in knowledge capture API"
 
   - path: commands/lib/promote-learnings.sh
-    exists_because: "Claude Code has no native learning promotion from work unit to project level"
+    exists_because: "Claude Code has no native learning promotion from row to project level"
     delete_when: "Claude Code provides built-in cross-session knowledge persistence"
 
   - path: commands/lib/promote-components.sh
@@ -442,7 +442,7 @@ components:
   # --- W-13: Git Workflow ---
   - path: scripts/create-work-branch.sh
     exists_because: "Claude Code has no native work branch lifecycle management"
-    delete_when: "Claude Code provides built-in branch management for work units"
+    delete_when: "Claude Code provides built-in branch management for rows"
 
   - path: scripts/check-wave-conflicts.sh
     exists_because: "Claude Code has no native wave boundary conflict detection"
@@ -453,12 +453,12 @@ components:
     delete_when: "Claude Code provides built-in CI test execution and evidence capture"
 
   - path: scripts/merge-to-main.sh
-    exists_because: "Claude Code has no native --no-ff merge workflow for archived work units"
+    exists_because: "Claude Code has no native --no-ff merge workflow for archived rows"
     delete_when: "Claude Code provides built-in merge workflow with archive verification"
 
-  - path: scripts/work-unit-diff.sh
-    exists_because: "Claude Code has no native work unit diff from base commit"
-    delete_when: "Claude Code provides built-in work unit change tracking"
+  - path: scripts/row-diff.sh
+    exists_because: "Claude Code has no native row diff from base commit"
+    delete_when: "Claude Code provides built-in row change tracking"
 
   - path: skills/shared/git-conventions.md
     exists_because: "Implementation steps need shared commit and branching conventions"
@@ -470,7 +470,7 @@ components:
 
   # --- W-11: Command Layer ---
   - path: commands/work.md
-    exists_because: "Claude Code has no native work unit creation and continuation flow"
+    exists_because: "Claude Code has no native row creation and continuation flow"
     delete_when: "Claude Code provides built-in work initialization with context detection"
 
   - path: commands/checkpoint.md
@@ -478,7 +478,7 @@ components:
     delete_when: "Claude Code provides built-in session continuity with automatic checkpointing"
 
   - path: commands/archive.md
-    exists_because: "Claude Code has no native work unit archive with review gate enforcement"
+    exists_because: "Claude Code has no native row archive with review gate enforcement"
     delete_when: "Claude Code provides built-in work lifecycle completion with promotion flows"
 
   - path: commands/status.md
@@ -503,11 +503,11 @@ components:
 
   - path: commands/next.md
     exists_because: "Claude Code has no native roadmap-to-session handoff prompt generation"
-    delete_when: "Claude Code provides built-in work unit dispatch from roadmap phases"
+    delete_when: "Claude Code provides built-in row dispatch from roadmap phases"
 
   - path: commands/lib/detect-context.sh
-    exists_because: "Claude Code has no native active task scanning across .work/ directories"
-    delete_when: "Claude Code provides built-in active work unit detection API"
+    exists_because: "Claude Code has no native active task scanning across .furrow/rows/ directories"
+    delete_when: "Claude Code provides built-in active row detection API"
 
   # --- W-14: Research Work Type ---
   - path: evals/dimensions/research-implement.yaml
@@ -520,7 +520,7 @@ components:
 
   - path: templates/research-sources.md
     exists_because: "Research steps need a standard source inventory format with attribution types"
-    delete_when: "Claude Code provides built-in source tracking for research work units"
+    delete_when: "Claude Code provides built-in source tracking for research rows"
 
   - path: templates/research-report.md
     exists_because: "Research deliverables need a standard report format template"

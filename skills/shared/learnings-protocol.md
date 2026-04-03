@@ -21,7 +21,7 @@ similar task in this project would benefit from knowing. The trigger question:
 
 ## Schema (JSONL)
 
-Append one JSON object per line to `.work/{name}/learnings.jsonl`:
+Append one JSON object per line to `.furrow/rows/{name}/learnings.jsonl`:
 
 ```json
 {"id":"{task}-{NNN}","timestamp":"ISO8601","category":"pattern|pitfall|preference|convention|dependency","content":"actionable insight","context":"what surfaced it","source_task":"{name}","source_step":"{step}","promoted":false}

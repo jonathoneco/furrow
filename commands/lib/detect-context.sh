@@ -1,12 +1,12 @@
 #!/bin/sh
-# detect-context.sh — Scan .work/ for active tasks (archived_at is null).
+# detect-context.sh — Scan .furrow/rows/ for active tasks (archived_at is null).
 # Output: one task name per line. Exit 0 with count on stderr.
 # Usage: active=$(commands/lib/detect-context.sh)
 set -eu
 
-WORK_DIR=".work"
+WORK_DIR=".furrow/rows"
 
-# No .work directory
+# No .furrow/rows directory
 if [ ! -d "$WORK_DIR" ]; then
   echo "0" >&2
   exit 0

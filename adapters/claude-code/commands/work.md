@@ -1,7 +1,7 @@
 # /work Command — Claude Code Adapter
 
 ## Purpose
-Main entry point for Furrow. Creates new work units or resumes active ones.
+Main entry point for Furrow. Creates new rows or resumes active ones.
 
 ## Usage
 ```
@@ -10,14 +10,14 @@ Main entry point for Furrow. Creates new work units or resumes active ones.
 
 ## Behavior
 
-### With no active work unit
+### With no active row
 If `description` is provided:
-1. Initialize a new work unit directory at `.work/{kebab-case-name}/`.
+1. Initialize a new row directory at `.furrow/rows/{kebab-case-name}/`.
 2. Create `state.json` with step set to `ideate` and status `not_started`.
 3. Load `skills/ideate.md` for the ideation step.
 4. Begin the ideation ceremony.
 
-### With an active work unit
+### With an active row
 1. Run the work loader skill to discover and display current state.
 2. Load the current step's skill file.
 3. Continue work at the current step.
@@ -27,14 +27,14 @@ Set `force_stop_at` in `state.json` to prevent auto-advance at the named step.
 
 ## Context Loading
 This command triggers the work loader skill (`skills/work-loader.md`) which handles:
-- Work unit discovery
+- Row discovery
 - State reading and display
 - Step skill injection
 - Progressive context loading
 - Pre-step evaluation via `commands/lib/gate-precheck.sh` and `scripts/run-gate.sh`
 
 ## State Initialization
-New work units are initialized with:
+New rows are initialized with:
 ```json
 {
   "name": "{kebab-case-name}",

@@ -5,7 +5,7 @@
 # teardown_fixture, assert_exit_code, assert_file_exists, assert_file_contains,
 # assert_json_field, FURROW_ROOT).
 
-# --- helper: create fixture with symlinked scripts and a complete work unit ---
+# --- helper: create fixture with symlinked scripts and a complete row ---
 
 _unit_name="__test-transition"
 
@@ -77,7 +77,7 @@ _write_transition_state() {
 JSON
 }
 
-# Run step-transition.sh from inside FIXTURE_DIR (so .work/ paths resolve).
+# Run step-transition.sh from inside FIXTURE_DIR (so .furrow/rows/ paths resolve).
 # Args: $1 = name, $2 = outcome, $3 = decided_by, $4 = evidence
 # Sets: _exit_code, _stderr_file, _stdout_file
 _run_transition() {

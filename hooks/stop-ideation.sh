@@ -16,7 +16,7 @@
 
 set -eu
 
-# --- locate focused work unit ---
+# --- locate focused row ---
 
 HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
 FURROW_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
@@ -29,7 +29,7 @@ fi
 # shellcheck source=lib/common.sh
 . "$COMMON_LIB"
 
-work_dir="$(find_focused_work_unit)"
+work_dir="$(find_focused_row)"
 
 if [ -z "$work_dir" ]; then
   exit 0

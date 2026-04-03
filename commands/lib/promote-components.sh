@@ -2,7 +2,7 @@
 # promote-components.sh — Review-time component promotion flow
 #
 # Usage: promote-components.sh <name> [candidates_file]
-#   name             — work unit name
+#   name             — row name
 #   candidates_file  — path to promotion candidates JSON (optional, reads from stdin)
 #
 # Presents component promotion candidates for user confirmation.
@@ -27,7 +27,7 @@ candidates_file="${2:-}"
 
 # --- research mode guard ---
 
-_state_file=".work/${name}/state.json"
+_state_file=".furrow/rows/${name}/state.json"
 if [ -f "${_state_file}" ]; then
   _mode="$(jq -r '.mode // "code"' "${_state_file}" 2>/dev/null)" || _mode="code"
   if [ "${_mode}" = "research" ]; then
@@ -42,11 +42,11 @@ if [ -n "${candidates_file}" ] && [ -f "${candidates_file}" ]; then
   input_file="${candidates_file}"
 else
   # Check default location
-  default_candidates=".work/${name}/promotion-candidates.jsonl"
+  default_candidates=".furrow/rows/${name}/promotion-candidates.jsonl"
   if [ -f "${default_candidates}" ]; then
     input_file="${default_candidates}"
   else
-    echo "No promotion candidates found for work unit '${name}'."
+    echo "No promotion candidates found for row '${name}'."
     exit 0
   fi
 fi

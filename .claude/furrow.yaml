@@ -12,7 +12,7 @@ stack:
   framework: ""         # e.g., "htmx", "nextjs", "django"
   frontend: ""          # e.g., "htmx", "react", "vue"
 
-# Default gate policy for new work units
+# Default gate policy for new rows
 defaults:
   gate_policy: "supervised"   # "supervised" | "delegated" | "autonomous"
   mode: "code"                # "code" | "research"
@@ -40,7 +40,5 @@ ci:
   lint_command: ""      # e.g., "golangci-lint run", "npm run lint"
   build_command: ""     # e.g., "go build ./...", "npm run build"
 
-# Beans integration
-beans:
-  enabled: false
-  project_prefix: ""    # e.g., "my-project"
+seeds:
+  prefix: ""    # Set during sds init

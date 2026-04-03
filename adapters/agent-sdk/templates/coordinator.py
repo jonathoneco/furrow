@@ -5,7 +5,7 @@ per plan.json wave assignments, and handles state transitions.
 
 Usage:
     Customize the TODO sections for your project, then run:
-    $ python coordinator.py --work-dir .work/<name>
+    $ python coordinator.py --work-dir .furrow/rows/<name>
 """
 
 import json
@@ -29,7 +29,7 @@ logger = logging.getLogger("harness.coordinator")
 # --- Coordinator Agent ---
 
 class CoordinatorAgent:
-    """Manages work unit lifecycle and specialist dispatch."""
+    """Manages row lifecycle and specialist dispatch."""
 
     def __init__(self, work_dir: str):
         self.work_dir = Path(work_dir)
@@ -139,7 +139,7 @@ class CoordinatorAgent:
 def main() -> None:
     """Entry point."""
     if len(sys.argv) < 3 or sys.argv[1] != "--work-dir":
-        print(f"Usage: {sys.argv[0]} --work-dir .work/<name>", file=sys.stderr)
+        print(f"Usage: {sys.argv[0]} --work-dir .furrow/rows/<name>", file=sys.stderr)
         sys.exit(1)
 
     work_dir = sys.argv[2]

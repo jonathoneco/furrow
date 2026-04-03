@@ -6,22 +6,22 @@ Quick-reference for adapter developers. See spec 00 for full details.
 
 | Path | Purpose |
 |------|---------|
-| `.work/{name}/` | Work unit directory (kebab-case name) |
-| `.work/{name}/definition.yaml` | Work contract |
-| `.work/{name}/state.json` | Lifecycle and progress |
-| `.work/{name}/summary.md` | Context recovery document |
-| `.work/{name}/plan.json` | Execution plan with waves |
-| `.work/{name}/team-plan.md` | Team coordination audit |
-| `.work/{name}/reviews/{deliverable}.json` | Per-deliverable review results |
-| `.work/{name}/gates/{from}-to-{to}.json` | Extended gate evidence |
-| `.work/{name}/research.md` or `research/` | Research findings |
-| `.work/{name}/spec.md` or `specs/` | Component specifications |
+| `.furrow/rows/{name}/` | Row directory (kebab-case name) |
+| `.furrow/rows/{name}/definition.yaml` | Work contract |
+| `.furrow/rows/{name}/state.json` | Lifecycle and progress |
+| `.furrow/rows/{name}/summary.md` | Context recovery document |
+| `.furrow/rows/{name}/plan.json` | Execution plan with waves |
+| `.furrow/rows/{name}/team-plan.md` | Team coordination audit |
+| `.furrow/rows/{name}/reviews/{deliverable}.json` | Per-deliverable review results |
+| `.furrow/rows/{name}/gates/{from}-to-{to}.json` | Extended gate evidence |
+| `.furrow/rows/{name}/research.md` or `research/` | Research findings |
+| `.furrow/rows/{name}/spec.md` or `specs/` | Component specifications |
 
 ## Naming Conventions (spec 00 §7)
 
 | Element | Convention | Example |
 |---------|-----------|---------|
-| Work unit directory | kebab-case | `.work/add-rate-limiting/` |
+| Row directory | kebab-case | `.furrow/rows/add-rate-limiting/` |
 | Deliverable names | kebab-case | `rate-limiter-middleware` |
 | Specialist types | kebab-case | `api-designer` |
 | JSON schema fields | snake_case | `step_status`, `created_at` |
@@ -53,7 +53,7 @@ All 7 steps are traversed. No steps are skipped.
 
 | Concept | Term | Never Use |
 |---------|------|-----------|
-| Parallel work units | Deliverables | streams, tasks, work items |
+| Parallel rows | Deliverables | streams, tasks, work items |
 | Domain agents | Specialists | agents, workers |
 | Step transition check | Gate | checkpoint, approval |
 | Context recovery doc | Summary | handoff prompt |

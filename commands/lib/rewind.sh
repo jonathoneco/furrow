@@ -2,7 +2,7 @@
 # rewind.sh — Rewind to a previous step
 #
 # Usage: rewind.sh <name> <target_step>
-#   name        — work unit name
+#   name        — row name
 #   target_step — step to rewind to (must be at or before current step)
 #
 # Creates a fail gate record and resets to target step.
@@ -25,7 +25,7 @@ fi
 name="$1"
 target_step="$2"
 
-work_dir=".work/${name}"
+work_dir=".furrow/rows/${name}"
 state_file="${work_dir}/state.json"
 
 if [ ! -f "${state_file}" ]; then

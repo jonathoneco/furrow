@@ -4,7 +4,7 @@
 Explore the problem space. Produce a validated `definition.yaml` as the work contract.
 
 ## What This Step Produces
-- `.work/{name}/definition.yaml` (validated against schema)
+- `.furrow/rows/{name}/definition.yaml` (validated against schema)
 
 ## Step-Specific Rules
 Run the 6-part ceremony in order:
@@ -58,5 +58,5 @@ Before requesting a step transition:
 
 ## Learnings
 When you discover a reusable insight (pattern, pitfall, preference, convention,
-or dependency quirk), append it to `.work/{name}/learnings.jsonl` using the
+or dependency quirk), append it to `.furrow/rows/{name}/learnings.jsonl` using the
 learning schema. Read `skills/shared/learnings-protocol.md` for format.

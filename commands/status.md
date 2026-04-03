@@ -4,7 +4,7 @@ Display active task progress and suggest next action. Read-only -- never mutates
 
 ## Arguments
 
-- `name` (optional): Specific work unit. If absent, shows focused unit.
+- `name` (optional): Specific row. If absent, shows focused row.
 - `--update`: Generate structured developer status update.
 - `--all`: List all active units in a compact table.
 
@@ -18,8 +18,8 @@ Display active task progress and suggest next action. Read-only -- never mutates
 
 Used when no `name` argument and no `--all` flag:
 
-1. Read `.work/.focused` — contains a unit name.
-2. Validate: `.work/{name}/state.json` must exist and have `archived_at: null`.
+1. Read `.furrow/.focused` — contains a row name.
+2. Validate: `.furrow/rows/{name}/state.json` must exist and have `archived_at: null`.
 3. If valid, that unit is focused.
 4. If `.focused` is missing, empty, or references an invalid/archived unit:
    -> Fall back to the most-recently-updated active unit (by `state.json` mtime).
@@ -36,7 +36,7 @@ Used when no `name` argument and no `--all` flag:
    - Current step and step_status
    - Mode (code/research)
    - Deliverable completion: {completed}/{total}
-   - **Focused: yes/no** (whether this unit matches `.work/.focused`)
+   - **Focused: yes/no** (whether this row matches `.furrow/.focused`)
    - Gate history (last 3 entries)
 4. Suggest next action:
    - `step_status: "not_started"` -> "Run `/work` to begin {step} step."
@@ -46,7 +46,7 @@ Used when no `name` argument and no `--all` flag:
 
 ## With --all
 
-List every active (non-archived) work unit in a compact table. The focused unit is marked with `*`.
+List every active (non-archived) row in a compact table. The focused row is marked with `*`.
 
 ```
   NAME                        STEP        STATUS        FOCUSED
@@ -56,7 +56,7 @@ List every active (non-archived) work unit in a compact table. The focused unit 
 ```
 
 Columns:
-- **NAME**: work unit name (kebab-case)
+- **NAME**: row name (kebab-case)
 - **STEP**: current step from state.json
 - **STATUS**: step_status from state.json
 - **FOCUSED**: `*` if this is the focused unit, blank otherwise

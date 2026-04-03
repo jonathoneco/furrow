@@ -1,6 +1,6 @@
 # V1 Harness Assessment — Key Findings
 
-Source: work-harness `.work/harness-rewrite-assessment/research/deliverable.md`
+Source: work-harness `.furrow/rows/harness-rewrite-assessment/research/deliverable.md`
 
 ## What v1 Was
 

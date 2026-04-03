@@ -1,20 +1,20 @@
 #!/bin/sh
-# init-work-unit.sh — Initialize work unit directory and state.json
+# init-row.sh — Initialize row directory and state.json
 #
-# Usage: init-work-unit.sh <name> [--title <title>] [--description <desc>]
-#                                 [--mode code|research]
-#                                 [--gate-policy supervised|delegated|autonomous]
-#                                 [--source-todo <todo-id>]
+# Usage: init-row.sh <name> [--title <title>] [--description <desc>]
+#                            [--mode code|research]
+#                            [--gate-policy supervised|delegated|autonomous]
+#                            [--source-todo <todo-id>]
 #
-#   name          — kebab-case work unit name (positional, required)
+#   name          — kebab-case row name (positional, required)
 #   --title       — human-readable title (defaults to name)
 #   --description — one-sentence summary (defaults to title)
 #   --mode        — work mode (defaults from furrow.yaml or "code")
 #   --gate-policy — trust level hint (defaults from furrow.yaml or "supervised")
-#   --source-todo — TODO entry ID this work unit was created from
+#   --source-todo — TODO entry ID this row was created from
 #
-# Creates .work/{name}/ with a valid state.json and reviews/ directory.
-# Does NOT overwrite existing work unit directories.
+# Creates .furrow/rows/{name}/ with a valid state.json and reviews/ directory.
+# Does NOT overwrite existing row directories.
 #
 # Exit codes:
 #   0 — success
@@ -24,7 +24,7 @@
 set -eu
 
 if [ "$#" -lt 1 ]; then
-  echo "Usage: init-work-unit.sh <name> [--title <t>] [--description <d>] [--mode code|research] [--gate-policy supervised|delegated|autonomous]" >&2
+  echo "Usage: init-row.sh <name> [--title <t>] [--description <d>] [--mode code|research] [--gate-policy supervised|delegated|autonomous]" >&2
   exit 1
 fi
 
@@ -74,7 +74,7 @@ while [ "$#" -gt 0 ]; do
       fi
       ;;
     *)
-      # Support legacy positional args: init-work-unit.sh <name> [title] [description]
+      # Support legacy positional args: init-row.sh <name> [title] [description]
       if [ -z "${title}" ]; then
         title="$1"
       elif [ -z "${description}" ]; then
@@ -119,10 +119,10 @@ fi
 
 # --- check for existing directory ---
 
-work_dir=".work/${name}"
+work_dir=".furrow/rows/${name}"
 
 if [ -d "${work_dir}" ]; then
-  echo "Work unit already exists: ${work_dir}" >&2
+  echo "Row already exists: ${work_dir}" >&2
   exit 2
 fi
 
@@ -173,4 +173,4 @@ jq -n \
 
 mv "${tmp_file}" "${work_dir}/state.json"
 
-echo "Work unit initialized: ${work_dir}"
+echo "Row initialized: ${work_dir}"

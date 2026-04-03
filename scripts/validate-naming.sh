@@ -3,14 +3,14 @@
 #
 #
 # Usage:
-#   validate-naming.sh work-unit <name>
+#   validate-naming.sh row <name>
 #   validate-naming.sh deliverable <name>
 #   validate-naming.sh gate-file <filename>
 #   validate-naming.sh review-file <filename>
 #
 # Designed to be sourced by other scripts for reuse:
 #   . validate-naming.sh
-#   validate_kebab_case "my-name" "work unit"
+#   validate_kebab_case "my-name" "row"
 
 set -eu
 
@@ -66,7 +66,7 @@ case "${0##*/}" in
   validate-naming.sh)
     if [ "$#" -lt 2 ]; then
       echo "Usage: validate-naming.sh <type> <value>" >&2
-      echo "Types: work-unit, deliverable, gate-file, review-file" >&2
+      echo "Types: row, deliverable, gate-file, review-file" >&2
       exit 1
     fi
 
@@ -74,8 +74,8 @@ case "${0##*/}" in
     value="$2"
 
     case "${type}" in
-      work-unit)
-        validate_kebab_case "${value}" "work unit"
+      row)
+        validate_kebab_case "${value}" "row"
         ;;
       deliverable)
         validate_kebab_case "${value}" "deliverable"
@@ -87,7 +87,7 @@ case "${0##*/}" in
         validate_review_filename "${value}"
         ;;
       *)
-        echo "Unknown type '${type}'. Expected: work-unit, deliverable, gate-file, review-file" >&2
+        echo "Unknown type '${type}'. Expected: row, deliverable, gate-file, review-file" >&2
         exit 1
         ;;
     esac

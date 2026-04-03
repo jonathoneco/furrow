@@ -31,7 +31,7 @@ Assign `file_ownership` globs to prevent cross-specialist conflicts in waves.
 ## Research Mode
 When `state.json.mode` is `"research"`:
 - Define knowledge artifact structure: sections, sub-topics, evidence requirements.
-- `file_ownership` targets `.work/{name}/deliverables/` paths, not git tree globs.
+- `file_ownership` targets `.furrow/rows/{name}/deliverables/` paths, not git tree globs.
 - No parallel waves needed — research deliverables are authored sequentially or by section.
 - Specialist assignment uses research roles (domain-researcher, synthesis-writer).
 - Read `references/research-mode.md` for artifact formats.
@@ -57,5 +57,5 @@ Before requesting a step transition:
 
 ## Learnings
 When you discover a reusable insight (pattern, pitfall, preference, convention,
-or dependency quirk), append it to `.work/{name}/learnings.jsonl` using the
+or dependency quirk), append it to `.furrow/rows/{name}/learnings.jsonl` using the
 learning schema. Read `skills/shared/learnings-protocol.md` for format.

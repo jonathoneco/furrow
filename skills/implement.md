@@ -50,12 +50,12 @@ Before requesting a step transition:
 7. On "no": ask what needs to change, address feedback, return to step 2.
 
 ## Learnings
-Append reusable insights to `.work/{name}/learnings.jsonl`.
+Append reusable insights to `.furrow/rows/{name}/learnings.jsonl`.
 Read `skills/shared/learnings-protocol.md` for schema and categories.
 
 ## Research Mode
 When `state.json.mode` is `"research"`:
-- Output to `.work/{name}/deliverables/` (not git working tree).
+- Output to `.furrow/rows/{name}/deliverables/` (not git working tree).
 - One markdown file per deliverable (kebab-case). Use template from
   `templates/research-{format}.md` per the spec step's chosen format.
 - Every factual claim cites a source via `[N]` with `## References`.

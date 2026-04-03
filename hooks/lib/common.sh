@@ -16,16 +16,16 @@ log_error() {
   echo "[furrow:error] $1" >&2
 }
 
-# --- work unit discovery ---
+# --- row discovery ---
 
-# find_active_work_unit — find the active work unit directory
-# Returns the path to the active work unit directory (e.g., .work/add-rate-limiting)
+# find_active_row — find the active row directory
+# Returns the path to the active row directory (e.g., .furrow/rows/add-rate-limiting)
 # or empty string if none found.
-find_active_work_unit() {
+find_active_row() {
   _best_dir=""
   _best_ts=""
 
-  for _state_file in .work/*/state.json; do
+  for _state_file in .furrow/rows/*/state.json; do
     [ -f "$_state_file" ] || continue
     _archived="$(jq -r '.archived_at // "null"' "$_state_file" 2>/dev/null)" || continue
     if [ "$_archived" = "null" ]; then
@@ -65,16 +65,16 @@ read_definition_field() {
   yq -r "$_field" "$_path" 2>/dev/null
 }
 
-# current_step — returns the current step from the active work unit
+# current_step — returns the current step from the active row
 current_step() {
-  _work_dir="${1:-$(find_active_work_unit)}"
+  _work_dir="${1:-$(find_active_row)}"
   [ -n "$_work_dir" ] || return 1
   read_state_field "$_work_dir/state.json" ".step"
 }
 
-# step_status — returns the current step status from the active work unit
+# step_status — returns the current step status from the active row
 step_status() {
-  _work_dir="${1:-$(find_active_work_unit)}"
+  _work_dir="${1:-$(find_active_row)}"
   [ -n "$_work_dir" ] || return 1
   read_state_field "$_work_dir/state.json" ".step_status"
 }
@@ -97,32 +97,32 @@ has_passing_gate() {
 
 # --- path helpers ---
 
-# work_unit_name <work_dir> — extract the work unit name from its directory path
-work_unit_name() {
+# row_name <work_dir> — extract the row name from its directory path
+row_name() {
   basename "$1"
 }
 
-# is_work_unit_file <path> — check if a path is inside a .work/ directory
-is_work_unit_file() {
+# is_row_file <path> — check if a path is inside a .furrow/rows/ directory
+is_row_file() {
   case "$1" in
-    .work/*|*/.work/*) return 0 ;;
+    .furrow/rows/*|*/.furrow/rows/*) return 0 ;;
     *) return 1 ;;
   esac
 }
 
-# extract_unit_from_path <file_path> — extract work unit directory from a file path
-# Returns the work unit directory (e.g., ".work/my-unit") if path is inside
-# .work/{name}/, or empty string if not a work unit path.
-extract_unit_from_path() {
+# extract_row_from_path <file_path> — extract row directory from a file path
+# Returns the row directory (e.g., ".furrow/rows/my-unit") if path is inside
+# .furrow/rows/{name}/, or empty string if not a row path.
+extract_row_from_path() {
   _path="$1"
 
-  # Normalize: strip everything up to and including .work/ to get relative remainder
+  # Normalize: strip everything up to and including .furrow/rows/ to get relative remainder
   case "$_path" in
-    .work/*)
-      _remainder="${_path#.work/}"
+    .furrow/rows/*)
+      _remainder="${_path#.furrow/rows/}"
       ;;
-    */.work/*)
-      _remainder="${_path#*/.work/}"
+    */.furrow/rows/*)
+      _remainder="${_path#*/.furrow/rows/}"
       ;;
     *)
       echo ""
@@ -130,10 +130,10 @@ extract_unit_from_path() {
       ;;
   esac
 
-  # Extract the unit name (first path component)
+  # Extract the row name (first path component)
   _unit_name="${_remainder%%/*}"
 
-  # Skip non-unit entries (dotfiles like .focused, _meta.yaml)
+  # Skip non-row entries (dotfiles like .focused, _meta.yaml)
   case "$_unit_name" in
     .*|_*|"")
       echo ""
@@ -141,9 +141,9 @@ extract_unit_from_path() {
       ;;
   esac
 
-  # Validate the unit directory exists
-  if [ -f ".work/${_unit_name}/state.json" ]; then
-    echo ".work/${_unit_name}"
+  # Validate the row directory exists
+  if [ -f ".furrow/rows/${_unit_name}/state.json" ]; then
+    echo ".furrow/rows/${_unit_name}"
   else
     echo ""
   fi
@@ -152,48 +152,48 @@ extract_unit_from_path() {
 
 # --- focus management ---
 
-# find_focused_work_unit — find the focused work unit directory
-# Reads .work/.focused (cache semantics), validates, falls back to
-# find_active_work_unit() on invalid state. Never errors.
-find_focused_work_unit() {
+# find_focused_row — find the focused row directory
+# Reads .furrow/.focused (cache semantics), validates, falls back to
+# find_active_row() on invalid state. Never errors.
+find_focused_row() {
   # Try .focused file first
-  if [ -f ".work/.focused" ]; then
-    _focused_name="$(cat ".work/.focused" 2>/dev/null)" || _focused_name=""
-    if [ -n "$_focused_name" ] && [ -f ".work/${_focused_name}/state.json" ]; then
-      # Fail-open: jq failure treats unit as not archived (permissive for reads)
-      _archived="$(jq -r '.archived_at // "null"' ".work/${_focused_name}/state.json" 2>/dev/null)" || _archived="null"
+  if [ -f ".furrow/.focused" ]; then
+    _focused_name="$(cat ".furrow/.focused" 2>/dev/null)" || _focused_name=""
+    if [ -n "$_focused_name" ] && [ -f ".furrow/rows/${_focused_name}/state.json" ]; then
+      # Fail-open: jq failure treats row as not archived (permissive for reads)
+      _archived="$(jq -r '.archived_at // "null"' ".furrow/rows/${_focused_name}/state.json" 2>/dev/null)" || _archived="null"
       if [ "$_archived" = "null" ]; then
-        echo ".work/${_focused_name}"
+        echo ".furrow/rows/${_focused_name}"
         return 0
       fi
     fi
-    log_warning "Stale .focused file (unit: ${_focused_name:-empty}), falling back"
+    log_warning "Stale .focused file (row: ${_focused_name:-empty}), falling back"
   fi
 
-  # Fallback: most recently updated active unit
-  find_active_work_unit
+  # Fallback: most recently updated active row
+  find_active_row
 }
 
-# set_focus <name> — set the focused work unit
-# Returns 0 on success, 1 if unit doesn't exist or is archived.
+# set_focus <name> — set the focused row
+# Returns 0 on success, 1 if row doesn't exist or is archived.
 set_focus() {
   _name="$1"
-  if [ ! -f ".work/${_name}/state.json" ]; then
-    log_error "Cannot focus: .work/${_name}/state.json not found"
+  if [ ! -f ".furrow/rows/${_name}/state.json" ]; then
+    log_error "Cannot focus: .furrow/rows/${_name}/state.json not found"
     return 1
   fi
-  # Fail-closed: jq failure rejects the unit (strict for writes)
-  _archived="$(jq -r '.archived_at // "null"' ".work/${_name}/state.json" 2>/dev/null)" || _archived=""
+  # Fail-closed: jq failure rejects the row (strict for writes)
+  _archived="$(jq -r '.archived_at // "null"' ".furrow/rows/${_name}/state.json" 2>/dev/null)" || _archived=""
   if [ "$_archived" != "null" ]; then
-    log_error "Cannot focus: unit '${_name}' is archived"
+    log_error "Cannot focus: row '${_name}' is archived"
     return 1
   fi
-  printf '%s' "$_name" > ".work/.focused"
+  printf '%s' "$_name" > ".furrow/.focused"
   return 0
 }
 
 # clear_focus — remove the focus file (idempotent)
 clear_focus() {
-  rm -f ".work/.focused"
+  rm -f ".furrow/.focused"
   return 0
 }

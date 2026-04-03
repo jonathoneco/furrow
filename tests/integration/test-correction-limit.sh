@@ -5,7 +5,7 @@
 # teardown_fixture, assert_exit_code, assert_file_exists, assert_file_contains,
 # assert_file_not_contains, assert_json_field, FURROW_ROOT).
 
-# --- helper: create fixture with symlinked hooks and a complete work unit ---
+# --- helper: create fixture with symlinked hooks and a complete row ---
 
 _unit_name="__test-corr-limit"
 
@@ -17,8 +17,8 @@ _setup_corr_fixture() {
   ln -sf "${FURROW_ROOT}/hooks/correction-limit.sh" "${FIXTURE_DIR}/hooks/correction-limit.sh"
   ln -sf "${FURROW_ROOT}/hooks/lib/common.sh" "${FIXTURE_DIR}/hooks/lib/common.sh"
 
-  # Create .focused file so find_focused_work_unit() finds our unit
-  echo "$_unit_name" > "${FIXTURE_DIR}/.work/.focused"
+  # Create .focused file so find_focused_row() finds our row
+  echo "$_unit_name" > "${FIXTURE_DIR}/.furrow/.focused"
 
   # Write plan.json with file_ownership globs
   cat > "${WORK_DIR}/plan.json" << 'JSON'
@@ -78,7 +78,7 @@ _write_state() {
 JSON
 }
 
-# Run the hook from inside FIXTURE_DIR (so .work/ paths resolve) with stdin.
+# Run the hook from inside FIXTURE_DIR (so .furrow/rows/ paths resolve) with stdin.
 # Args: $1 = JSON string for stdin
 # Sets: _exit_code, _stderr_file
 _run_hook() {

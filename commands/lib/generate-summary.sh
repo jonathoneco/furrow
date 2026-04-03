@@ -2,7 +2,7 @@
 # generate-summary.sh — Generate summary.md skeleton from state and definition
 #
 # Usage: generate-summary.sh <name> [--auto-advance <evidence>]
-#   name     — work unit name
+#   name     — row name
 #   When --auto-advance is passed, agent-written sections are auto-filled.
 #
 # Produces the skeleton sections; preserves existing agent-written sections
@@ -41,7 +41,7 @@ done
 script_dir="$(cd "$(dirname "$0")" && pwd)"
 furrow_root="$(cd "${script_dir}/../.." && pwd)"
 
-work_dir=".work/${name}"
+work_dir=".furrow/rows/${name}"
 state_file="${work_dir}/state.json"
 summary_file="${work_dir}/summary.md"
 

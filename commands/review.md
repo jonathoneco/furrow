@@ -27,7 +27,7 @@ If current step is not `"review"`:
    a. Spawn review agent with `code-quality` skill.
    b. **Phase A** (artifact validation):
       - Code mode: verify files touched match `file_ownership` globs.
-      - Research mode: verify `.work/{name}/deliverables/` files exist.
+      - Research mode: verify `.furrow/rows/{name}/deliverables/` files exist.
       - Check acceptance criteria from `definition.yaml`.
    c. **Phase B** (quality review):
       - Apply dimension rubric from loaded eval dimensions.

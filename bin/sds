@@ -1,0 +1,599 @@
+#!/bin/sh
+# seeds (sds) — minimal git-native seed tracker
+# Requires: jq, tac (GNU coreutils), flock (util-linux). Linux only.
+# No daemon, no database, no external runtime dependencies.
+set -eu
+
+SDS_DIR=".furrow/seeds"
+SDS_ISSUES="$SDS_DIR/seeds.jsonl"
+SDS_CONFIG="$SDS_DIR/config"
+SDS_LOCK="$SDS_DIR/.lock"
+
+# --- Helpers ---
+
+die() { printf 'sds: %s\n' "$*" >&2; exit 1; }
+
+require_init() {
+  [ -f "$SDS_ISSUES" ] || die "not initialized — run 'sds init' first"
+}
+
+require_jq() {
+  command -v jq >/dev/null 2>&1 || die "jq is required but not installed"
+}
+
+get_prefix() {
+  [ -f "$SDS_CONFIG" ] || die "missing $SDS_CONFIG"
+  cat "$SDS_CONFIG"
+}
+
+now_iso() {
+  date -u '+%Y-%m-%dT%H:%M:%SZ'
+}
+
+gen_id() {
+  prefix=$(get_prefix)
+  attempts=0
+  while [ "$attempts" -lt 10 ]; do
+    hex=$(od -An -tx1 -N2 /dev/urandom | tr -d ' \n')
+    candidate="${prefix}-${hex}"
+    if ! grep -q "\"id\":\"${candidate}\"" "$SDS_ISSUES" 2>/dev/null; then
+      printf '%s' "$candidate"
+      return 0
+    fi
+    attempts=$((attempts + 1))
+  done
+  die "failed to generate unique ID after 10 attempts"
+}
+
+# Read all seeds, dedup by ID (last occurrence wins), output as JSON array
+read_issues() {
+  if [ ! -s "$SDS_ISSUES" ]; then
+    printf '[]\n'
+    return 0
+  fi
+  # tac reverses lines so first seen by unique = last in file = latest update
+  tac "$SDS_ISSUES" | jq -s '
+    [group_by(.id)[] | .[0]]
+    | sort_by(.created_at)
+  '
+}
+
+# Append a new seed (locked)
+locked_append() {
+  new_issue="$1"
+  (
+    flock -x 9
+    printf '%s\n' "$new_issue" >> "$SDS_ISSUES"
+  ) 9>"$SDS_LOCK"
+}
+
+# Update a seed by ID (locked): appends the updated version
+# Uses --arg for all values to prevent jq injection
+locked_update() {
+  target_id="$1"
+  new_status="$2"
+  new_priority="$3"
+  new_title="$4"
+  new_description="$5"
+  ts=$(now_iso)
+  (
+    flock -x 9
+    issues=$(read_issues)
+    found=$(printf '%s\n' "$issues" | jq -r --arg id "$target_id" '[.[] | select(.id == $id)] | length')
+    [ "$found" -gt 0 ] || { printf 'sds: seed not found: %s\n' "$target_id" >&2; exit 1; }
+    updated=$(printf '%s\n' "$issues" | jq -c \
+      --arg id "$target_id" \
+      --arg ts "$ts" \
+      --arg ns "$new_status" \
+      --arg np "$new_priority" \
+      --arg nt "$new_title" \
+      --arg nd "$new_description" \
+      '[.[] | select(.id == $id) |
+        (if $ns != "" then .status = $ns else . end) |
+        (if $np != "" then .priority = ($np | tonumber) else . end) |
+        (if $nt != "" then .title = $nt else . end) |
+        (if $nd != "" then .description = $nd else . end) |
+        .updated_at = $ts
+      ] | .[0]')
+    printf '%s\n' "$updated" >> "$SDS_ISSUES"
+  ) 9>"$SDS_LOCK"
+}
+
+# --- Commands ---
+
+cmd_init() {
+  if [ -d "$SDS_DIR" ]; then
+    die "already initialized ($SDS_DIR exists)"
+  fi
+
+  # Determine project prefix
+  prefix=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --prefix) prefix="$2"; shift 2 ;;
+      --prefix=*) prefix="${1#--prefix=}"; shift ;;
+      *) die "init: unknown option '$1'" ;;
+    esac
+  done
+
+  if [ -z "$prefix" ]; then
+    # Auto-detect from directory name
+    prefix=$(basename "$(pwd)" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]/-/g')
+  fi
+
+  mkdir -p "$SDS_DIR"
+  printf '%s\n' "$prefix" > "$SDS_CONFIG"
+  touch "$SDS_ISSUES"
+
+  # Add merge=union to gitattributes
+  gitattr=".gitattributes"
+  entry="$SDS_ISSUES merge=union"
+  if [ -f "$gitattr" ]; then
+    if ! grep -qF "$entry" "$gitattr"; then
+      printf '%s\n' "$entry" >> "$gitattr"
+    fi
+  else
+    printf '%s\n' "$entry" > "$gitattr"
+  fi
+
+  printf 'Initialized seeds in %s/ (prefix: %s)\n' "$SDS_DIR" "$prefix"
+}
+
+cmd_create() {
+  require_init
+  title="" type="task" priority=2 description=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --title) title="$2"; shift 2 ;;
+      --title=*) title="${1#--title=}"; shift ;;
+      --type) type="$2"; shift 2 ;;
+      --type=*) type="${1#--type=}"; shift ;;
+      --priority) priority="$2"; shift 2 ;;
+      --priority=*) priority="${1#--priority=}"; shift ;;
+      --description) description="$2"; shift 2 ;;
+      --description=*) description="${1#--description=}"; shift ;;
+      *) die "create: unknown option '$1'" ;;
+    esac
+  done
+
+  [ -n "$title" ] || die "create: --title is required"
+
+  case "$type" in
+    task|bug|feature|epic) ;;
+    *) die "create: invalid type '$type' (must be task, bug, feature, or epic)" ;;
+  esac
+
+  case "$priority" in
+    [0-4]) ;;
+    *) die "create: invalid priority '$priority' (must be 0-4)" ;;
+  esac
+
+  id=$(gen_id)
+  ts=$(now_iso)
+
+  issue=$(jq -nc \
+    --arg id "$id" \
+    --arg title "$title" \
+    --arg type "$type" \
+    --argjson priority "$priority" \
+    --arg description "$description" \
+    --arg ts "$ts" \
+    '{
+      id: $id,
+      title: $title,
+      status: "open",
+      type: $type,
+      priority: $priority,
+      description: (if $description == "" then null else $description end),
+      close_reason: null,
+      depends_on: [],
+      blocks: [],
+      created_at: $ts,
+      updated_at: $ts,
+      closed_at: null
+    }')
+
+  locked_append "$issue"
+  printf '%s\n' "$id"
+}
+
+cmd_list() {
+  require_init
+  status_filter="" type_filter="" ready=false json=false
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --status) status_filter="$2"; shift 2 ;;
+      --status=*) status_filter="${1#--status=}"; shift ;;
+      --type) type_filter="$2"; shift 2 ;;
+      --type=*) type_filter="${1#--type=}"; shift ;;
+      --ready) ready=true; shift ;;
+      --json) json=true; shift ;;
+      *) die "list: unknown option '$1'" ;;
+    esac
+  done
+
+  issues=$(read_issues)
+
+  # Build jq filter using --arg for safety (no string interpolation of user values)
+  jq_args=""
+  filter='.'
+  if [ -n "$status_filter" ]; then
+    filter="${filter} | [.[] | select(.status == \$sf)]"
+    jq_args="--arg sf $status_filter"
+  fi
+  if [ -n "$type_filter" ]; then
+    filter="${filter} | [.[] | select(.type == \$tf)]"
+    jq_args="$jq_args --arg tf $type_filter"
+  fi
+
+  if [ "$ready" = true ]; then
+    # Ready = not closed + all dependencies closed
+    printf '%s\n' "$issues" | jq -c $jq_args "$filter" | jq -c \
+      --argjson all "$issues" '
+      ([$all[] | select(.status == "closed") | .id]) as $cids |
+      [.[] | select(.status != "closed") |
+       select((.depends_on // []) | all(. as $d | $cids | index($d) != null))]
+    ' | if [ "$json" = true ]; then
+      jq -c '.[]'
+    else
+      jq -r '.[] | "  \(.id)  [\(.status)] \(.title)"'
+    fi
+    return 0
+  fi
+
+  if [ "$json" = true ]; then
+    # shellcheck disable=SC2086
+    printf '%s\n' "$issues" | jq -c $jq_args "${filter} | .[]"
+  else
+    # shellcheck disable=SC2086
+    result=$(printf '%s\n' "$issues" | jq -c $jq_args "$filter")
+    count=$(printf '%s\n' "$result" | jq 'length')
+    if [ "$count" = "0" ]; then
+      printf 'No issues found.\n'
+    else
+      printf '%s\n' "$result" | jq -r '.[] | "  \(.id)  [\(.status)] P\(.priority) (\(.type)) \(.title)"'
+    fi
+  fi
+}
+
+cmd_show() {
+  require_init
+  json=false
+  id=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --json) json=true; shift ;;
+      -*) die "show: unknown option '$1'" ;;
+      *) id="$1"; shift ;;
+    esac
+  done
+
+  [ -n "$id" ] || die "show: seed ID required"
+
+  issues=$(read_issues)
+  issue=$(printf '%s\n' "$issues" | jq -c --arg id "$id" '[.[] | select(.id == $id)] | .[0] // empty')
+  [ -n "$issue" ] || die "show: seed not found: $id"
+
+  if [ "$json" = true ]; then
+    printf '%s\n' "$issue" | jq .
+  else
+    printf '%s\n' "$issue" | jq -r '
+      "Issue: \(.id)\n" +
+      "Title: \(.title)\n" +
+      "Status: \(.status)\n" +
+      "Type: \(.type)\n" +
+      "Priority: P\(.priority)\n" +
+      "Created: \(.created_at)\n" +
+      "Updated: \(.updated_at)\n" +
+      (if .closed_at then "Closed: \(.closed_at)\n" else "" end) +
+      (if .description then "\nDescription: \(.description)\n" else "" end) +
+      (if .close_reason then "Reason: \(.close_reason)\n" else "" end) +
+      (if (.depends_on // [] | length) > 0 then "Depends on: \(.depends_on | join(", "))\n" else "" end) +
+      (if (.blocks // [] | length) > 0 then "Blocks: \(.blocks | join(", "))\n" else "" end)
+    '
+  fi
+}
+
+cmd_update() {
+  require_init
+  id=""
+  status="" priority="" title="" description=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --status) status="$2"; shift 2 ;;
+      --status=*) status="${1#--status=}"; shift ;;
+      --priority) priority="$2"; shift 2 ;;
+      --priority=*) priority="${1#--priority=}"; shift ;;
+      --title) title="$2"; shift 2 ;;
+      --title=*) title="${1#--title=}"; shift ;;
+      --description) description="$2"; shift 2 ;;
+      --description=*) description="${1#--description=}"; shift ;;
+      -*) die "update: unknown option '$1'" ;;
+      *)
+        if [ -z "$id" ]; then
+          id="$1"
+        else
+          die "update: unexpected argument '$1'"
+        fi
+        shift ;;
+    esac
+  done
+
+  [ -n "$id" ] || die "update: seed ID required"
+
+  if [ -n "$status" ]; then
+    case "$status" in
+      open|claimed|ideating|researching|planning|speccing|decomposing|implementing|reviewing|closed) ;;
+      *) die "update: invalid status '$status'" ;;
+    esac
+  fi
+
+  if [ -n "$priority" ]; then
+    case "$priority" in
+      [0-4]) ;;
+      *) die "update: invalid priority '$priority'" ;;
+    esac
+  fi
+
+  [ -n "$status" ] || [ -n "$priority" ] || [ -n "$title" ] || [ -n "$description" ] || die "update: nothing to update"
+
+  locked_update "$id" "$status" "$priority" "$title" "$description"
+  printf 'Updated %s\n' "$id"
+}
+
+cmd_close() {
+  require_init
+  reason="" ids=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --reason) reason="$2"; shift 2 ;;
+      --reason=*) reason="${1#--reason=}"; shift ;;
+      -*) die "close: unknown option '$1'" ;;
+      *) ids="${ids} $1"; shift ;;
+    esac
+  done
+
+  ids=$(printf '%s' "$ids" | sed 's/^ //')
+  [ -n "$ids" ] || die "close: at least one seed ID required"
+
+  ts=$(now_iso)
+  for id in $ids; do
+    (
+      flock -x 9
+      issues=$(read_issues)
+      found=$(printf '%s\n' "$issues" | jq -r --arg id "$id" '[.[] | select(.id == $id)] | length')
+      [ "$found" -gt 0 ] || { printf 'sds: seed not found: %s\n' "$id" >&2; exit 1; }
+      updated=$(printf '%s\n' "$issues" | jq -c --arg id "$id" --arg ts "$ts" --arg reason "$reason" '
+        [.[] | select(.id == $id) |
+         .status = "closed" |
+         .closed_at = $ts |
+         .updated_at = $ts |
+         (if $reason != "" then .close_reason = $reason else . end)
+        ] | .[0]')
+      printf '%s\n' "$updated" >> "$SDS_ISSUES"
+    ) 9>"$SDS_LOCK" || die "close: failed to close $id"
+    printf 'Closed %s\n' "$id"
+  done
+}
+
+cmd_search() {
+  require_init
+  keyword="" status_filter="" json=false
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --status) status_filter="$2"; shift 2 ;;
+      --status=*) status_filter="${1#--status=}"; shift ;;
+      --json) json=true; shift ;;
+      -*) die "search: unknown option '$1'" ;;
+      *) keyword="$1"; shift ;;
+    esac
+  done
+
+  [ -n "$keyword" ] || die "search: keyword required"
+
+  # Fixed-string grep (no regex interpretation) for keyword, then dedup
+  matches=$(grep -iF "$keyword" "$SDS_ISSUES" 2>/dev/null || true)
+  if [ -z "$matches" ]; then
+    printf 'No matches.\n'
+    return 0
+  fi
+
+  # Dedup matched lines (last occurrence wins)
+  deduped=$(printf '%s\n' "$matches" | tac | jq -s 'group_by(.id) | map(.[0]) | sort_by(.created_at)')
+
+  if [ -n "$status_filter" ]; then
+    deduped=$(printf '%s\n' "$deduped" | jq -c --arg sf "$status_filter" '[.[] | select(.status == $sf)]')
+  fi
+
+  count=$(printf '%s\n' "$deduped" | jq 'length')
+  if [ "$count" = "0" ]; then
+    printf 'No matches.\n'
+    return 0
+  fi
+
+  if [ "$json" = true ]; then
+    printf '%s\n' "$deduped" | jq -c '.[]'
+  else
+    printf '%s\n' "$deduped" | jq -r '.[] |
+      "  \(.id)  [\(.status)] \(.title)" +
+      if .close_reason then "\n    Reason: \(.close_reason)" else "" end
+    '
+  fi
+}
+
+cmd_dep() {
+  require_init
+  [ $# -ge 1 ] || die "dep: subcommand required (add, rm)"
+
+  subcmd="$1"; shift
+  case "$subcmd" in
+    add) cmd_dep_add "$@" ;;
+    rm|remove) cmd_dep_rm "$@" ;;
+    *) die "dep: unknown subcommand '$subcmd' (use add or rm)" ;;
+  esac
+}
+
+cmd_dep_add() {
+  [ $# -ge 2 ] || die "dep add: requires <issue> <depends-on>"
+  issue_id="$1"
+  depends_on_id="$2"
+
+  ts=$(now_iso)
+  (
+    flock -x 9
+    issues=$(read_issues)
+
+    # Verify both exist
+    for check_id in "$issue_id" "$depends_on_id"; do
+      found=$(printf '%s\n' "$issues" | jq -r --arg id "$check_id" '[.[] | select(.id == $id)] | length')
+      [ "$found" -gt 0 ] || { printf 'sds: seed not found: %s\n' "$check_id" >&2; exit 1; }
+    done
+
+    # Update issue: add to depends_on
+    updated_issue=$(printf '%s\n' "$issues" | jq -c --arg id "$issue_id" --arg dep "$depends_on_id" --arg ts "$ts" '
+      [.[] | select(.id == $id) |
+       .depends_on = ((.depends_on // []) + [$dep] | unique) |
+       .updated_at = $ts
+      ] | .[0]')
+    printf '%s\n' "$updated_issue" >> "$SDS_ISSUES"
+
+    # Update target: add to blocks
+    updated_target=$(printf '%s\n' "$issues" | jq -c --arg id "$depends_on_id" --arg blocker "$issue_id" --arg ts "$ts" '
+      [.[] | select(.id == $id) |
+       .blocks = ((.blocks // []) + [$blocker] | unique) |
+       .updated_at = $ts
+      ] | .[0]')
+    printf '%s\n' "$updated_target" >> "$SDS_ISSUES"
+  ) 9>"$SDS_LOCK"
+
+  printf '%s now depends on %s\n' "$issue_id" "$depends_on_id"
+}
+
+cmd_dep_rm() {
+  [ $# -ge 2 ] || die "dep rm: requires <issue> <depends-on>"
+  issue_id="$1"
+  depends_on_id="$2"
+
+  ts=$(now_iso)
+  (
+    flock -x 9
+    issues=$(read_issues)
+
+    # Update issue: remove from depends_on
+    updated_issue=$(printf '%s\n' "$issues" | jq -c --arg id "$issue_id" --arg dep "$depends_on_id" --arg ts "$ts" '
+      [.[] | select(.id == $id) |
+       .depends_on = ((.depends_on // []) - [$dep]) |
+       .updated_at = $ts
+      ] | .[0]')
+    printf '%s\n' "$updated_issue" >> "$SDS_ISSUES"
+
+    # Update target: remove from blocks
+    updated_target=$(printf '%s\n' "$issues" | jq -c --arg id "$depends_on_id" --arg blocker "$issue_id" --arg ts "$ts" '
+      [.[] | select(.id == $id) |
+       .blocks = ((.blocks // []) - [$blocker]) |
+       .updated_at = $ts
+      ] | .[0]')
+    printf '%s\n' "$updated_target" >> "$SDS_ISSUES"
+  ) 9>"$SDS_LOCK"
+
+  printf 'Removed dependency: %s no longer depends on %s\n' "$issue_id" "$depends_on_id"
+}
+
+cmd_ready() {
+  require_init
+  # Pass through to list --ready
+  cmd_list --ready "$@"
+}
+
+cmd_migrate_from_beans() {
+  beans_file=".beans/issues.jsonl"
+  beans_config=".beans/config"
+  [ -f "$beans_file" ] || die "migrate: $beans_file not found"
+
+  if [ ! -d "$SDS_DIR" ]; then
+    # Auto-init with same prefix as beans
+    if [ -f "$beans_config" ]; then
+      beans_prefix=$(cat "$beans_config")
+    else
+      beans_prefix=$(head -1 "$beans_file" | jq -r '.id' | sed 's/-[^-]*$//')
+    fi
+    cmd_init --prefix "$beans_prefix"
+  fi
+
+  count=0
+  while IFS= read -r line; do
+    [ -n "$line" ] || continue
+    # Transform beans format to seeds format
+    transformed=$(printf '%s\n' "$line" | jq -c '
+      {
+        id: .id,
+        title: .title,
+        status: (
+          if .status == "in_progress" then "claimed"
+          elif .status == "closed" then "closed"
+          else .status
+          end
+        ),
+        type: (.type // "task"),
+        priority: (.priority // 2),
+        description: (.description // null),
+        close_reason: (.close_reason // null),
+        depends_on: (.depends_on // []),
+        blocks: (.blocks // []),
+        created_at: .created_at,
+        updated_at: .updated_at,
+        closed_at: (.closed_at // null)
+      }
+    ')
+    printf '%s\n' "$transformed" >> "$SDS_ISSUES"
+    count=$((count + 1))
+  done < "$beans_file"
+
+  printf 'Migrated %d seeds from beans to seeds\n' "$count"
+}
+
+# --- Main dispatcher ---
+
+require_jq
+
+case "${1:-}" in
+  init) shift; cmd_init "$@" ;;
+  create) shift; cmd_create "$@" ;;
+  list) shift; cmd_list "$@" ;;
+  show) shift; cmd_show "$@" ;;
+  update) shift; cmd_update "$@" ;;
+  close) shift; cmd_close "$@" ;;
+  search) shift; cmd_search "$@" ;;
+  dep) shift; cmd_dep "$@" ;;
+  ready) shift; cmd_ready "$@" ;;
+  migrate-from-beans) shift; cmd_migrate_from_beans "$@" ;;
+  -h|--help|help)
+    cat <<'EOF'
+seeds (sds) — minimal git-native seed tracker
+
+Commands:
+  sds init [--prefix NAME]              Initialize .furrow/seeds/ directory
+  sds create --title "..." [--type T] [--priority N] [--description "..."]
+  sds list [--status S] [--type T] [--ready] [--json]
+  sds show <id> [--json]                Show seed details
+  sds update <id> [--status S] [--priority N] [--title "..."] [--description "..."]
+  sds close <id> [<id2>...] [--reason "..."]
+  sds search <keyword> [--status S] [--json]
+  sds dep add <issue> <depends-on>      Add dependency
+  sds dep rm <issue> <depends-on>       Remove dependency
+  sds ready [--json]                    Show seeds with no open blockers
+  sds migrate-from-beans                Import .beans/issues.jsonl
+
+Status: open, claimed, ideating, researching, planning, speccing,
+        decomposing, implementing, reviewing, closed
+Types: task, bug, feature, epic
+Priority: 0=critical, 1=high, 2=medium, 3=low, 4=backlog
+EOF
+    ;;
+  "")
+    die "no command specified (try 'sds help')"
+    ;;
+  *)
+    die "unknown command '$1' (try 'sds help')"
+    ;;
+esac

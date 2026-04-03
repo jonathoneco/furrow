@@ -2,7 +2,7 @@
 # cross-model-review.sh — Invoke a cross-model review for a deliverable
 #
 # Usage: cross-model-review.sh <name> <deliverable>
-#   name        — work unit name (kebab-case)
+#   name        — row name (kebab-case)
 #   deliverable — deliverable name to review
 #
 # Exit codes:
@@ -22,7 +22,7 @@ fi
 
 name="$1"
 deliverable="$2"
-work_dir="${FURROW_ROOT}/.work/${name}"
+work_dir="${FURROW_ROOT}/.furrow/rows/${name}"
 state_file="${work_dir}/state.json"
 definition_file="${work_dir}/definition.yaml"
 furrow_config="${FURROW_ROOT}/.claude/furrow.yaml"

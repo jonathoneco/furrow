@@ -1,9 +1,9 @@
 #!/bin/sh
-# archive-work.sh — Archive a completed work unit
+# archive-work.sh — Archive a completed row
 #
 #
 # Usage: archive-work.sh <name>
-#   name — work unit name (kebab-case)
+#   name — row name (kebab-case)
 #
 # Pre-conditions (all must be true):
 #   - Current step is "review"
@@ -14,7 +14,7 @@
 # On success:
 #   - Sets archived_at to current ISO 8601 timestamp
 #   - Regenerates summary.md one final time
-#   - Work unit directory remains on disk (not deleted)
+#   - Row directory remains on disk (not deleted)
 #
 # Exit codes:
 #   0 — success
@@ -35,7 +35,7 @@ name="$1"
 
 # --- locate state ---
 
-work_dir=".work/${name}"
+work_dir=".furrow/rows/${name}"
 state_file="${work_dir}/state.json"
 
 if [ ! -f "${state_file}" ]; then
@@ -93,10 +93,10 @@ fi
 
 # --- clear focus if archiving the focused unit ---
 
-if [ -f ".work/.focused" ]; then
-  focused_name="$(cat ".work/.focused")"
+if [ -f ".furrow/.focused" ]; then
+  focused_name="$(cat ".furrow/.focused")"
   if [ "$focused_name" = "$name" ]; then
-    rm -f ".work/.focused"
+    rm -f ".furrow/.focused"
   fi
 fi
 

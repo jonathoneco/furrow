@@ -1,17 +1,17 @@
 #!/bin/sh
-# init-work-unit.sh — Create the directory structure for a new work unit
+# init-row.sh — Create the directory structure for a new row
 #
 #
-# Usage: init-work-unit.sh <name> <description>
+# Usage: init-row.sh <name> <description>
 #   name        — kebab-case identifier (e.g., add-rate-limiting)
-#   description — one-sentence summary of the work unit
+#   description — one-sentence summary of the row
 
 set -eu
 
 # --- argument validation ---
 
 if [ "$#" -lt 2 ]; then
-  echo "Usage: init-work-unit.sh <name> <description>" >&2
+  echo "Usage: init-row.sh <name> <description>" >&2
   exit 1
 fi
 
@@ -27,10 +27,10 @@ fi
 
 # --- check for duplicates ---
 
-work_dir=".work/${name}"
+work_dir=".furrow/rows/${name}"
 
 if [ -d "${work_dir}" ]; then
-  echo "Work unit '${name}' already exists. Use work-reground to resume." >&2
+  echo "Row '${name}' already exists. Use reground to resume." >&2
   exit 1
 fi
 
@@ -80,11 +80,11 @@ mv "${tmp_state}" "${work_dir}/state.json"
 
 # --- copy _meta.yaml template if not present ---
 
-meta_dir=".work"
+meta_dir=".furrow"
 if [ ! -f "${meta_dir}/_meta.yaml" ]; then
   script_dir="$(cd "$(dirname "$0")" && pwd)"
   furrow_root="$(cd "${script_dir}/.." && pwd)"
-  meta_template="${furrow_root}/references/work-unit-meta.yaml"
+  meta_template="${furrow_root}/references/row-meta.yaml"
   if [ -f "${meta_template}" ]; then
     cp "${meta_template}" "${meta_dir}/_meta.yaml"
   fi

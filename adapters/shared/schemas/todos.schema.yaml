@@ -44,7 +44,7 @@ items:
       description: "File paths providing relevant context"
     source_work_unit:
       type: string
-      description: "Name of the work unit that surfaced this TODO"
+      description: "Name of the row that surfaced this TODO"
     source_type:
       type: string
       enum:

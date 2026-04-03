@@ -3,7 +3,7 @@
 #
 #
 # Usage: record-gate.sh <name> <boundary> <outcome> <decided_by> <evidence> [conditions_json]
-#   name            — work unit name (kebab-case)
+#   name            — row name (kebab-case)
 #   boundary        — format: "{from}->{to}" (e.g., "ideate->research")
 #   outcome         — "pass" | "fail" | "conditional"
 #   decided_by      — "manual" | "evaluated" | "prechecked"
@@ -36,7 +36,7 @@ conditions_json="${6:-}"
 
 # --- locate state ---
 
-work_dir=".work/${name}"
+work_dir=".furrow/rows/${name}"
 state_file="${work_dir}/state.json"
 
 if [ ! -f "${state_file}" ]; then

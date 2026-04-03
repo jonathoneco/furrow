@@ -1,6 +1,6 @@
 # Ecosystem & Paradigm Shift — Key Findings (March 2026)
 
-Source: work-harness `.work/v2-paradigm-harness/research/deliverable.md`
+Source: work-harness `.furrow/rows/v2-paradigm-harness/research/deliverable.md`
 
 ## Platform State of the Art
 

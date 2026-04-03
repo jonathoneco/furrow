@@ -8,13 +8,13 @@ This skill loads when a `/work` command runs or when recovering context.
 
 ## Work Discovery
 
-1. Scan `.work/*/state.json` for files where `archived_at` is null.
-2. If no active work unit found, report "No active work unit" and exit.
-3. If multiple active work units found, list them and ask the user to specify.
+1. Scan `.furrow/rows/*/state.json` for files where `archived_at` is null.
+2. If no active row found, report "No active row" and exit.
+3. If multiple active rows found, list them and ask the user to specify.
 
 ## Context Loading
 
-Once the active work unit is identified:
+Once the active row is identified:
 
 1. Read `state.json` — extract `step`, `step_status`, `mode`, and deliverable progress.
 2. Read `summary.md` — load synthesized context from the previous step.
@@ -35,8 +35,8 @@ Gate policy: {gate_policy from definition.yaml}
 
 ## What This Skill Reads
 
-- `.work/{name}/state.json` — current step and progress
-- `.work/{name}/summary.md` — context recovery
+- `.furrow/rows/{name}/state.json` — current step and progress
+- `.furrow/rows/{name}/summary.md` — context recovery
 - `skills/{step}.md` — current step guidance
 
 ## What This Skill Does NOT Read
@@ -55,7 +55,7 @@ After initial load, additional context is loaded on demand per the step:
 
 ## Error Handling
 
-- Missing `state.json`: warn and suggest `/work` to create a new work unit.
+- Missing `state.json`: warn and suggest `/work` to create a new row.
 - Missing `summary.md`: warn but continue (may be first step).
 - Missing step skill file: error — the Furrow installation may be incomplete.
 - Invalid `state.json` schema: error with validation details.

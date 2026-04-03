@@ -36,10 +36,10 @@ esac
 unit_name="$(echo "$command_str" | sed -E -n 's/.*advance-step[^ ]* +([^ ]*).*/\1/p')"
 
 if [ -n "$unit_name" ]; then
-  work_dir=".work/$unit_name"
+  work_dir=".furrow/rows/$unit_name"
 else
-  # Fallback: try focused unit
-  work_dir="$(find_focused_work_unit)"
+  # Fallback: try focused row
+  work_dir="$(find_focused_row)"
 fi
 
 if [ -z "$work_dir" ] || [ ! -f "$work_dir/state.json" ]; then

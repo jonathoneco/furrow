@@ -44,7 +44,7 @@ section "Rationale containment"
 _stray=$(grep -rl 'exists_because:\|delete_when:' "$ROOT" 2>/dev/null \
   | grep -v '_rationale\.yaml' | grep -v '\.git' \
   | grep -v '/specs/' | grep -v '/research/' | grep -v '/plan/' \
-  | grep -v '/docs/' | grep -v '\.work/' \
+  | grep -v '/docs/' | grep -v '\.furrow/' \
   | grep -v '\.sh$' | grep -v '\.py$' || true)
 if [ -z "$_stray" ]; then
   _count=$(grep -c 'exists_because:' "$ROOT/_rationale.yaml" 2>/dev/null || echo 0)

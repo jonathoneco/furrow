@@ -21,7 +21,7 @@ if [ -z "${file_path}" ]; then
   exit 0
 fi
 
-# --- locate work unit via path extraction + focus fallback ---
+# --- locate row via path extraction + focus fallback ---
 
 HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
 FURROW_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
@@ -34,10 +34,10 @@ fi
 # shellcheck source=lib/common.sh
 . "$COMMON_LIB"
 
-work_dir="$(extract_unit_from_path "$file_path")"
+work_dir="$(extract_row_from_path "$file_path")"
 
 if [ -z "$work_dir" ]; then
-  work_dir="$(find_focused_work_unit)"
+  work_dir="$(find_focused_row)"
 fi
 
 if [ -z "$work_dir" ] || [ ! -f "$work_dir/state.json" ]; then

@@ -3,7 +3,7 @@
 #
 #
 # Usage: regenerate-summary.sh <name>
-#   name — work unit name (kebab-case)
+#   name — row name (kebab-case)
 #
 # Generates auto-generated skeleton sections from state.json and definition.yaml.
 # Preserves agent-written sections (Key Findings, Open Questions, Recommendations)
@@ -29,7 +29,7 @@ name="$1"
 
 # --- locate files ---
 
-work_dir=".work/${name}"
+work_dir=".furrow/rows/${name}"
 state_file="${work_dir}/state.json"
 summary_file="${work_dir}/summary.md"
 definition_file="${work_dir}/definition.yaml"

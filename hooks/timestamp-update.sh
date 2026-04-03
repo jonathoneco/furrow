@@ -23,23 +23,23 @@ input="$(cat)"
 
 target_path="$(echo "$input" | jq -r '.tool_input.file_path // .tool_input.path // ""' 2>/dev/null)" || target_path=""
 
-# Only act on writes to .work/ directories
+# Only act on writes to .furrow/rows/ directories
 case "$target_path" in
-  .work/*) ;;
+  .furrow/rows/*) ;;
   *) exit 0 ;;
 esac
 
-work_dir="$(extract_unit_from_path "$target_path")"
+work_dir="$(extract_row_from_path "$target_path")"
 
 if [ -z "$work_dir" ]; then
-  work_dir="$(find_focused_work_unit)"
+  work_dir="$(find_focused_row)"
 fi
 
 if [ -z "$work_dir" ]; then
   exit 0
 fi
 
-unit_name="$(work_unit_name "$work_dir")"
+unit_name="$(row_name "$work_dir")"
 update_script="$FURROW_ROOT/scripts/update-state.sh"
 
 if [ -x "$update_script" ] && [ -n "$unit_name" ]; then

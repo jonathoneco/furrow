@@ -2,7 +2,7 @@
 # load-step.sh — Load the appropriate skill for the current step
 #
 # Usage: load-step.sh <name>
-#   name — work unit name
+#   name — row name
 #
 # Outputs Read instructions for the current step's skill file.
 # If the step was entered via conditional pass, appends conditions.
@@ -22,7 +22,7 @@ fi
 
 name="$1"
 
-work_dir=".work/${name}"
+work_dir=".furrow/rows/${name}"
 state_file="${work_dir}/state.json"
 
 if [ ! -f "${state_file}" ]; then

@@ -1,6 +1,6 @@
 # Roadmap
 
-> Updated: 2026-04-02 | 8 phases, 4/8 complete | 30 TODOs across 13 work units
+> Updated: 2026-04-02 | 8 phases, 4/8 complete | 30 TODOs across 13 rows
 
 ---
 
@@ -42,7 +42,7 @@ Legend: `[x]` done · `[ ]` TODO · `──` hard dep · `~~` inferred (foundati
 
 | Phase | Files | Overlapping TODOs |
 |-------|-------|-------------------|
-| 4 | `step-transition.sh`, `init-work-unit.sh` | supervised-gating then beans-integration (sequential due to file overlap) |
+| 4 | `step-transition.sh`, `init-row.sh` | supervised-gating then beans-integration (sequential due to file overlap) |
 | 5 | `skills/research.md` | quality-guardrails vs interactive-collaboration (low risk — different sections) |
 | 5 | `skills/implement.md`, `skills/shared/context-isolation.md` | context-routing vs interactive-collaboration (low risk — different sections) |
 | 6 | `skills/implement.md`, `skills/shared/context-isolation.md` | agent-orchestration (low risk — lands after Phase 5) |
@@ -75,7 +75,7 @@ Completed in commit `7808ec2`.
 |-------|--------|
 | T5 — Gate Evaluation Rearchitecture | Isolated subagent evaluators, pre/post-step evaluation, YAML gate criteria, `decided_by` vocabulary migration. 6 commits, 34 files, net -208 lines. |
 | T7 — Roadmap Process | `/furrow:triage` command with triage script (`scripts/triage-todos.sh`), template system, todos.yaml schema extension (7 triage fields). |
-| T8 — Parallel Workflow Support | Focused+dormant model via `.work/.focused`, 4 new functions in `hooks/lib/common.sh`, all hooks scoped, `--switch`/`--all` flags. |
+| T8 — Parallel Workflow Support | Focused+dormant model via `.furrow/rows/.focused`, 4 new functions in `hooks/lib/common.sh`, all hooks scoped, `--switch`/`--all` flags. |
 
 ---
 
@@ -91,7 +91,7 @@ Completed in commit `7808ec2`.
 
 ## Phase 4 — Foundational Infrastructure — IN PROGRESS
 
-**Rationale:** These work units change the ground truth everything else builds on. The rename changed every file path; supervised gating ensures all subsequent work units actually pause for user review at step boundaries; beans changes the enforcement pipeline every branch merges through.
+**Rationale:** These rows change the ground truth everything else builds on. The rename changed every file path; supervised gating ensures all subsequent rows actually pause for user review at step boundaries; beans changes the enforcement pipeline every branch merges through.
 
 ### work/namespace-rename (3 TODOs) — DONE
 
@@ -101,19 +101,19 @@ Completed in commit `7808ec2`.
 | `rename-to-furrow` | Renamed project from 'harness' to 'furrow' across all files |
 | `cross-platform-compatibility` | Cross-platform shell portability fixes for macOS/WSL |
 
-Completed across commits `e2e268e`..`4500bab`. Work unit archived at `c2482ed`.
+Completed across commits `e2e268e`..`4500bab`. Row archived at `c2482ed`.
 
 ### work/supervised-gating (1 TODO, ~1 session)
 `default-supervised-gating`: Default gate policy should be supervised with structural enforcement
-- **Key files**: `commands/lib/step-transition.sh`, `commands/lib/init-work-unit.sh`, `.claude/furrow.yaml`, step skills
+- **Key files**: `commands/lib/step-transition.sh`, `commands/lib/init-row.sh`, `.claude/furrow.yaml`, step skills
 - **Conflict risk**: low (step-transition.sh shared with beans-integration, but different changes)
-- **Why here**: The namespace-rename work unit proved supervised mode has no structural enforcement — the agent steamrolled from research through implement without pausing. Every subsequent work unit benefits from this fix landing first.
+- **Why here**: The namespace-rename row proved supervised mode has no structural enforcement — the agent steamrolled from research through implement without pausing. Every subsequent row benefits from this fix landing first.
 
 ### work/beans-integration (3 TODOs, ~1-2 sessions, sequential)
 `beans-enforcement-integration`: Beans task management for enforcement layer and programmatic checks
 `merge-specialist`: Add a merge specialist template (built against new enforcement layer)
 `legacy-todos-migration`: Incorporate legacy TODOs into the system
-- **Key files**: `hooks/gate-check.sh`, `commands/lib/step-transition.sh`, `commands/lib/init-work-unit.sh`, `specialists/merge-specialist.md`, `todos.yaml`
+- **Key files**: `hooks/gate-check.sh`, `commands/lib/step-transition.sh`, `commands/lib/init-row.sh`, `specialists/merge-specialist.md`, `todos.yaml`
 - **Conflict risk**: none (after supervised-gating completes)
 - **Why together**: Beans changes the enforcement pipeline; merge specialist needs to know about beans status validation; legacy migration depends on beans being in place.
 - **Dependencies**: `legacy-todos-migration` → `beans-enforcement-integration`
@@ -124,7 +124,7 @@ Completed across commits `e2e268e`..`4500bab`. Work unit archived at `c2482ed`.
 
 ## Phase 5 — Safety, Quality & Collaboration — PLANNED
 
-**Rationale:** High-value changes built against the renamed codebase and supervised gating. Quality guardrails raise the bar for all subsequent work. Interactive collaboration is promoted here because making early steps genuinely collaborative compounds across every future work unit. Four parallel worktrees with low-risk file overlaps on different sections.
+**Rationale:** High-value changes built against the renamed codebase and supervised gating. Quality guardrails raise the bar for all subsequent work. Interactive collaboration is promoted here because making early steps genuinely collaborative compounds across every future row. Four parallel worktrees with low-risk file overlaps on different sections.
 
 ### work/safety-defaults (1 TODO, ~1 session)
 `stop-hook-false-positives`: Handle stop hooks enforcing fluff requirements
@@ -154,7 +154,7 @@ Completed across commits `e2e268e`..`4500bab`. Work unit archived at `c2482ed`.
 - **Conflict risk**: low (shared files with quality-guardrails and context-routing — different sections)
 - **Why together**: Both improve human↔agent handoff quality at different points in the workflow.
 
-**Parallelism**: all 4 work units run in parallel.
+**Parallelism**: all 4 rows run in parallel.
 
 ---
 
@@ -176,7 +176,7 @@ Completed across commits `e2e268e`..`4500bab`. Work unit archived at `c2482ed`.
 - **Conflict risk**: none
 - **Why together**: Both create new commands/workflows — review isolation and brain dump triage.
 
-**Parallelism**: both work units run in parallel.
+**Parallelism**: both rows run in parallel.
 
 ---
 
@@ -192,11 +192,11 @@ Completed across commits `e2e268e`..`4500bab`. Work unit archived at `c2482ed`.
 - **Why together**: Both protect internal plumbing — script access boundaries and hint file cleanup.
 
 ### work/work-lifecycle (2 TODOs, ~1-2 sessions)
-`work-folder-structure-and-cleanup`: Structure .work/ to prevent unbounded growth
+`work-folder-structure-and-cleanup`: Structure .furrow/rows/ to prevent unbounded growth
 `user-action-integration`: Integration points for actions the user must take
-- **Key files**: `scripts/archive-work.sh`, `commands/archive.md`, `commands/lib/detect-context.sh`, `references/work-unit-layout.md`, `skills/shared/`, `commands/lib/step-transition.sh`
+- **Key files**: `scripts/archive-work.sh`, `commands/archive.md`, `commands/lib/detect-context.sh`, `references/row-layout.md`, `skills/shared/`, `commands/lib/step-transition.sh`
 - **Conflict risk**: none
-- **Why together**: Both extend the work unit lifecycle — directory pruning on archive, user-action tracking during execution.
+- **Why together**: Both extend the row lifecycle — directory pruning on archive, user-action tracking during execution.
 
 ### work/knowledge-pipeline (3 TODOs, ~2-3 sessions)
 `seeds-concept`: Seeds as a structured knowledge reduction stage
@@ -214,7 +214,7 @@ Completed across commits `e2e268e`..`4500bab`. Work unit archived at `c2482ed`.
 - **Conflict risk**: none
 - **Why together**: All improve the TODO/roadmap pipeline — context references, tackling prompts, and CC pattern mining.
 
-**Parallelism**: all 4 work units run in parallel.
+**Parallelism**: all 4 rows run in parallel.
 
 ---
 
@@ -268,7 +268,7 @@ git worktree add ../wt-work-lifecycle     -b work/work-lifecycle     main
 git worktree add ../wt-knowledge-pipeline -b work/knowledge-pipeline main
 git worktree add ../wt-todo-roadmap       -b work/todo-roadmap-system main
 
-# Merge pattern (per work unit)
+# Merge pattern (per row)
 git checkout main && git merge --no-ff work/{branch-name}
 git worktree prune
 ```

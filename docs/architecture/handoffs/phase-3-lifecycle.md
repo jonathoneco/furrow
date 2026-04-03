@@ -65,7 +65,7 @@ These 4 specs are largely independent — use parallel agent teams.
 
 **Must include**:
 - **Deliverable-commit relationship**: One commit per deliverable? Atomic commits within deliverables? How does git history map to work progress?
-- **Branch strategy**: Branch per work unit? Per deliverable? How do feature branches relate to work definitions?
+- **Branch strategy**: Branch per row? Per deliverable? How do feature branches relate to work definitions?
 - **PR as review artifact**: At trust levels 2-3, the PR is the review surface. How is it structured? What does it contain beyond the diff? (Work summary, eval results, evidence package — where do these go in the PR?)
 - **Git as audit trail**: How do eval results, progress state, and work summaries map to git history? Are eval results committed? Is progress.json committed at each boundary?
 - **Multi-agent git interaction**: How do multi-agent teams interact with git?
@@ -84,7 +84,7 @@ These 4 specs are largely independent — use parallel agent teams.
 - **Research deliverables vs implementation deliverables**: What's different? Research produces findings, synthesis, recommendations — not code artifacts. How does the work definition schema accommodate this?
 - **Eval criteria for research**: Thoroughness? Source quality? Actionability? Balanced perspective? How do you eval something that doesn't have "tests pass" as a criterion?
 - **Research tooling**: Web search, document synthesis, source management. What tools does the research phase need? How are they provisioned via the skill injection matrix?
-- **Research-to-implementation flow**: Research findings as context pointers for subsequent implementation work. How does a research work unit's output become input for an implementation work unit?
+- **Research-to-implementation flow**: Research findings as context pointers for subsequent implementation work. How does a research row's output become input for an implementation row?
 - **Standalone vs feeding**: Research can stand alone (pure investigation) or feed into implementation. Both paths must be first-class.
 - **Research team composition**: What does a multi-agent research team look like? (Researcher + devil's advocate + synthesizer? Domain specialists per sub-topic?)
 - **Research artifacts**: How are research findings stored, indexed, and made discoverable for future work?

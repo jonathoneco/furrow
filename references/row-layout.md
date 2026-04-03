@@ -1,10 +1,10 @@
-# Work Unit Directory Layout
+# Row Directory Layout
 
-Reference document for the per-work-unit directory structure under `.work/{name}/`.
+Reference document for the per-row directory structure under `.furrow/rows/{name}/`.
 
 ## Core Files (Always Created)
 
-These files are created at work unit initialization or first step boundary.
+These files are created at row initialization or first step boundary.
 
 | File | Created By | Description |
 |------|-----------|-------------|
@@ -34,10 +34,10 @@ These files are created by specific steps when their output is substantive.
 
 ## Single-Deliverable Pattern
 
-For simple work units with one deliverable, the typical layout is:
+For simple rows with one deliverable, the typical layout is:
 
 ```
-.work/{name}/
+.furrow/rows/{name}/
   definition.yaml
   state.json
   summary.md
@@ -52,7 +52,7 @@ and `gates/` only if the gate evaluator produces detailed dimensional evidence.
 
 ## Naming Conventions
 
-- Work unit directory: kebab-case (e.g., `add-rate-limiting`)
+- Row directory: kebab-case (e.g., `add-rate-limiting`)
 - Deliverable names: kebab-case (e.g., `rate-limiter-middleware`)
 - Research topics: kebab-case `.md` (e.g., `research/prior-art.md`)
 - Spec components: kebab-case `.md` (e.g., `specs/middleware-design.md`)

@@ -4,7 +4,7 @@ Recover context after session break or compaction event.
 
 ## Arguments
 
-- `name` (optional): Specific work unit. If absent, uses active task.
+- `name` (optional): Specific row. If absent, uses active task.
 
 ## Behavior (per spec 00 SS5.4)
 

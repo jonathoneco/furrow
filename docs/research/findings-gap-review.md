@@ -89,7 +89,7 @@ The findings propose "Furrow makes session boundaries safe" via an always-curren
 
 Context doesn't fill itself. Specific behaviors fill it, and each has a structural prevention:
 
-**1. Bulk file reads.** The model reads entire files (or multiple files) when it needs a few functions. This is the single largest context consumer in typical sessions. The findings propose "load exactly the context relevant to this work unit" but offer no mechanism to encourage it.
+**1. Bulk file reads.** The model reads entire files (or multiple files) when it needs a few functions. This is the single largest context consumer in typical sessions. The findings propose "load exactly the context relevant to this row" but offer no mechanism to encourage it.
 
 _Prevention_: The work definition's context pointers should reference specific symbols or sections, not whole files. Skills and hooks that set up the session should model targeted retrieval — the initial context injection reads the work summary and progress state, demonstrating the pattern of small, specific reads. Advisory guidance in ambient context (CLAUDE.md) reinforces "use targeted tool calls." This is Level C (advisory) but the structural encouragement — context pointers that are specific, not broad — makes the targeted pattern the path of least resistance.
 
@@ -115,7 +115,7 @@ This doesn't require the model to estimate context budgets explicitly — that's
 
 This reframes the context management problem as a scoping problem. Furrow doesn't monitor context and react — it encourages deliverables small enough that context management is tractable, then relies on the correction limit as a backstop if a deliverable turns out to be larger than expected.
 
-The deepest structural answer to context management is the multi-agent team model (§6). When each deliverable executes in its own specialist's context, context bloat becomes a per-specialist problem bounded by agent lifetime — not a cumulative problem across the entire work unit. Parallel execution of independent deliverables compounds the benefit: three specialists running concurrently each have their own context window. Deliverable sizing still matters (a single deliverable can fill its specialist's context), but the blast radius is contained.
+The deepest structural answer to context management is the multi-agent team model (§6). When each deliverable executes in its own specialist's context, context bloat becomes a per-specialist problem bounded by agent lifetime — not a cumulative problem across the entire row. Parallel execution of independent deliverables compounds the benefit: three specialists running concurrently each have their own context window. Deliverable sizing still matters (a single deliverable can fill its specialist's context), but the blast radius is contained.
 
 ### What survives from the original analysis
 
@@ -206,7 +206,7 @@ Single-model eval is the lightweight option for 1-deliverable or trivial work wh
 
 The same structural benefits identified earlier, now amplified by specialization and parallelism:
 
-**Context protection (§5).** Each specialist has its own context window containing only its deliverable's context. The coordinator never accumulates execution context. Context bloat is bounded per-specialist, not cumulative across the work unit.
+**Context protection (§5).** Each specialist has its own context window containing only its deliverable's context. The coordinator never accumulates execution context. Context bloat is bounded per-specialist, not cumulative across the row.
 
 **Generator-evaluator separation.** The cross-model eval subagent receives only output artifacts and criteria — structurally isolated from the specialist's reasoning _and_ using a different model with different blind spots. This is the strongest evaluation configuration available.
 
@@ -214,7 +214,7 @@ The same structural benefits identified earlier, now amplified by specialization
 
 **Quality through specialization.** Domain-prompted agents catch issues that generalists miss. The `security-specialist` doesn't need to be told to check for CSRF — its domain priming makes it default behavior.
 
-**Speed through parallelism.** Independent deliverables execute concurrently. A 5-deliverable work unit with 3 independent deliverables completes in 3 waves instead of 5 sequential steps.
+**Speed through parallelism.** Independent deliverables execute concurrently. A 5-deliverable row with 3 independent deliverables completes in 3 waves instead of 5 sequential steps.
 
 ### Agent teams as the coordination primitive
 

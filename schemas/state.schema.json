@@ -2,8 +2,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "state.schema.json",
   "$comment": "See _rationale.yaml for component rationale",
-  "title": "Work Unit State",
-  "description": "Lifecycle and progress tracking for a Furrow work unit. Furrow-exclusive write — agents never write this file directly.",
+  "title": "Row State",
+  "description": "Lifecycle and progress tracking for a Furrow row. Furrow-exclusive write — agents never write this file directly.",
   "type": "object",
   "required": [
     "name",
@@ -28,7 +28,7 @@
     "name": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
-      "description": "Kebab-case identifier matching the work unit directory name"
+      "description": "Kebab-case identifier matching the row directory name"
     },
     "title": {
       "type": "string",
@@ -148,7 +148,7 @@
     },
     "base_commit": {
       "type": "string",
-      "description": "Git SHA at work unit creation"
+      "description": "Git SHA at row creation"
     },
     "epic_id": {
       "type": ["string", "null"],
@@ -175,7 +175,7 @@
     "source_todo": {
       "type": ["string", "null"],
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
-      "description": "TODO entry ID this work unit was created from, or null"
+      "description": "TODO entry ID this row was created from, or null"
     },
     "gate_policy_init": {
       "type": ["string", "null"],

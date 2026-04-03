@@ -2,7 +2,7 @@
 # check-artifacts.sh — Phase A deterministic artifact checks for deliverable review
 #
 # Usage: check-artifacts.sh <name> <deliverable>
-#   name        — work unit name (kebab-case)
+#   name        — row name (kebab-case)
 #   deliverable — deliverable name to evaluate
 #
 # Exit codes:
@@ -34,7 +34,7 @@ fi
 name="$1"
 deliverable="$2"
 
-work_dir="$FURROW_ROOT/.work/${name}"
+work_dir="$FURROW_ROOT/.furrow/rows/${name}"
 state_file="${work_dir}/state.json"
 def_file="${work_dir}/definition.yaml"
 plan_file="${work_dir}/plan.json"
@@ -79,7 +79,7 @@ fi
 # A3: Check owned files were actually modified
 artifacts_present="false"
 if [ "$mode" = "research" ]; then
-  # Research mode: check .work/{name}/deliverables/ has non-empty files
+  # Research mode: check .furrow/rows/{name}/deliverables/ has non-empty files
   if [ -d "${work_dir}/deliverables" ]; then
     has_content="false"
     for f in "${work_dir}/deliverables"/*; do

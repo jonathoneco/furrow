@@ -83,7 +83,7 @@ These 3 specs can be drafted in parallel.
 
 6. **Futures**: Deferred enhancements discovered during work. Captured with rationale, linked to work that surfaced them. Available as context for related future work. Format and storage.
 
-7. **Reusable artifacts**: Eval specs, team templates, specialist prompts, patterns that accumulate across work units. How they're indexed, versioned, and discovered.
+7. **Reusable artifacts**: Eval specs, team templates, specialist prompts, patterns that accumulate across rows. How they're indexed, versioned, and discovered.
 
 **Cross-cutting concerns**:
 - Artifact cleanup: when work is archived, what's retained and what's discarded?
@@ -127,7 +127,7 @@ These 3 specs can be drafted in parallel.
   - Testing: proposed component must have its own eval before promotion
 
 - **Finding-driven prevention**: When findings recur, propose structural prevention.
-  - Detection: same finding type appearing across multiple work units
+  - Detection: same finding type appearing across multiple rows
   - Response: propose new hook, eval, or convention (not just fix the symptom)
   - Example: if agents repeatedly violate file ownership, propose a structural enforcement hook
 
@@ -150,7 +150,7 @@ These 3 specs can be drafted in parallel.
 
 - **CI/CD integration**:
   - Do evals run in CI? (Deterministic evals yes, LLM-judge evals — cost/speed tradeoff)
-  - Does CI trigger autonomous work? (Test failure -> bug fix work unit)
+  - Does CI trigger autonomous work? (Test failure -> bug fix row)
   - How does PR creation integrate with CI pipelines?
   - Eval result reporting in CI (status checks, PR comments)
 

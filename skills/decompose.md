@@ -47,12 +47,12 @@ Before requesting a step transition:
 7. On "no": ask what needs to change, address feedback, return to step 2.
 
 ## Learnings
-Append reusable insights to `.work/{name}/learnings.jsonl`.
+Append reusable insights to `.furrow/rows/{name}/learnings.jsonl`.
 Read `skills/shared/learnings-protocol.md` for schema and categories.
 
 ## Research Mode
 When `state.json.mode` is `"research"`:
-- File ownership: `.work/{name}/deliverables/{section-name}.md` (not git tree).
+- File ownership: `.furrow/rows/{name}/deliverables/{section-name}.md` (not git tree).
 - Specialists: research-domain experts (`domain-researcher`,
   `comparative-analyst`, `synthesis-writer`).
 - Waves organize authoring sections; dependencies reflect authoring order.

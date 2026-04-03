@@ -2,7 +2,7 @@
 # validate-step-artifacts.sh — Deterministic artifact checks at step boundaries
 #
 # Usage: validate-step-artifacts.sh <name> <boundary>
-#   name     — work unit name (kebab-case)
+#   name     — row name (kebab-case)
 #   boundary — step boundary (e.g., "research->plan")
 #
 # Exit codes:
@@ -36,7 +36,7 @@ FURROW_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # --- locate state ---
 
-work_dir="${FURROW_ROOT}/.work/${name}"
+work_dir="${FURROW_ROOT}/.furrow/rows/${name}"
 state_file="${work_dir}/state.json"
 def_file="${work_dir}/definition.yaml"
 

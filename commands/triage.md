@@ -84,26 +84,26 @@ For TODOs missing `files_touched`: infer from `references` array and `work_neede
 
 Beyond explicit prose references, reason about **structural dependencies** — cases where one TODO's changes would ripple into another TODO's merge or execution path:
 
-- **Infrastructure TODOs**: A TODO that modifies shared infrastructure (hooks/, commands/lib/step-transition.sh, gate pipeline, state management, init-work-unit.sh, merge-to-main.sh) is potentially foundational. Every other TODO that will eventually merge through that infrastructure has an implicit ordering constraint.
+- **Infrastructure TODOs**: A TODO that modifies shared infrastructure (hooks/, commands/lib/step-transition.sh, gate pipeline, state management, init-row.sh, merge-to-main.sh) is potentially foundational. Every other TODO that will eventually merge through that infrastructure has an implicit ordering constraint.
 - **Merge implications**: If TODO A changes how branches merge, how gates evaluate, or how step transitions work, then TODOs B/C/D that will merge their worktree branches through that modified pipeline should land **after** A. Otherwise B/C/D are built against stale infrastructure and may need rework.
 - **Enforcement layer effects**: A TODO that adds new validation, enforcement, or checks (e.g., beans integration, schema validation) raises the bar for all subsequent work. Schedule it early so downstream TODOs comply from the start rather than needing retrofits.
 
 Mark inferred structural dependencies as `depends_on` entries with a `# inferred: merge-implication` or `# inferred: foundational` comment in todos.yaml.
 
-### 6. Group into Phases and Work Units
+### 6. Group into Phases and Rows
 
 Start with wave assignments from the triage script (dependency-based ordering).
 
-#### 6a. Consolidate TODOs into Work Units
+#### 6a. Consolidate TODOs into Rows
 
-Related TODOs should share a single branch (work unit) rather than each getting their own worktree. Consolidate when:
+Related TODOs should share a single branch (row) rather than each getting their own worktree. Consolidate when:
 
 - **Same subsystem**: TODOs touch the same files or adjacent files in the same module
 - **Sequential dependency**: TODO B builds directly on TODO A's output — land on one branch
 - **Coherent theme**: TODOs address different facets of the same capability gap
-- **Small + small = one session**: Multiple small-effort TODOs that share a theme are better as one work unit than N tiny branches
+- **Small + small = one session**: Multiple small-effort TODOs that share a theme are better as one row than N tiny branches
 
-Each work unit gets a branch name (`work/{descriptive-name}`) and contains 1-N TODOs.
+Each row gets a branch name (`work/{descriptive-name}`) and contains 1-N TODOs.
 
 #### 6b. Order Phases
 
@@ -111,8 +111,8 @@ Refine wave ordering with these constraints (in priority order):
 
 1. **Foundational-first**: TODOs that modify shared infrastructure (merge pipeline, gate evaluation, step transitions, enforcement layers) must land before TODOs that flow through that infrastructure. A TODO that changes how branches merge is a prerequisite for every other branch.
 2. **Rename/namespace-first when applicable**: A project-wide rename or namespace change touches `*` and conflicts with everything. If planned, either schedule it very early (before others create branches against the old names) or very late (after all other work merges). Early is usually better — the longer you wait, the more branches need rebasing against the rename.
-3. **File conflicts within a phase**: If two work units in the same phase have overlapping `files_touched`, they cannot safely parallelize. Either split into separate phases or note the conflict with a merge strategy.
-4. **Logical coupling**: Group related work units even if graph-independent.
+3. **File conflicts within a phase**: If two rows in the same phase have overlapping `files_touched`, they cannot safely parallelize. Either split into separate phases or note the conflict with a merge strategy.
+4. **Logical coupling**: Group related rows even if graph-independent.
 5. **Quick wins first**: Within dependency constraints, front-load small-effort + high-impact work.
 6. **Critical path**: Identify the longest dependency chain and prioritize it.
 
@@ -120,10 +120,10 @@ Refine wave ordering with these constraints (in priority order):
 
 Each phase gets:
 - **Number**: sequential integer (continuing from completed phases)
-- **Title**: generated from the grouped work unit themes
+- **Title**: generated from the grouped row themes
 - **Status**: `DONE` | `IN PROGRESS` | `PLANNED`
-- **Rationale**: 1-2 sentences explaining why these work units are grouped and ordered this way
-- **Parallelism**: which work units within the phase can run concurrently
+- **Rationale**: 1-2 sentences explaining why these rows are grouped and ordered this way
+- **Parallelism**: which rows within the phase can run concurrently
 
 ### 7. Generate ROADMAP.md
 
@@ -140,7 +140,7 @@ Follow the template section order from `roadmap-sections.yaml`:
 ```markdown
 ## Dependency DAG (active items only)
 ```
-Generate ASCII graph from triage script data showing work unit relationships. Use:
+Generate ASCII graph from triage script data showing row relationships. Use:
 - `──` for hard dependency (explicit `depends_on`)
 - `~~` for inferred dependency (foundational/merge-implication)
 - `···` for independent (no dependency)
@@ -171,7 +171,7 @@ Legend: `──` hard dep · `~~` inferred (foundational/merge) · `···` inde
 {todo-id-2}: {title}
 ...
 - **Key files**: {combined files_touched}
-- **Conflict risk**: {none | low | high — based on file overlaps with other work units in this phase}
+- **Conflict risk**: {none | low | high — based on file overlaps with other rows in this phase}
 - **Why together**: {1 sentence on why these TODOs share a branch}
 ```
 
@@ -179,7 +179,7 @@ Legend: `──` hard dep · `~~` inferred (foundational/merge) · `···` inde
 ```markdown
 ## Worktree Quick Reference
 ```
-Generate shell command blocks per phase. Branches map to work units, not individual TODOs:
+Generate shell command blocks per phase. Branches map to rows, not individual TODOs:
 ```sh
 # Phase N — {Title}
 git worktree add ../wt-{branch-name} -b work/{branch-name}
@@ -187,10 +187,10 @@ git worktree add ../wt-{branch-name} -b work/{branch-name}
 
 ### 8. Present for Confirmation
 
-Display the phase grouping proposal with work units:
+Display the phase grouping proposal with rows:
 
 ```
-Proposed roadmap: {N} phases, {M} work units
+Proposed roadmap: {N} phases, {M} rows
 
 Phase {N} — {Title} — {Status}
   work/{branch-1} (~{sessions} sessions):
@@ -249,4 +249,4 @@ Commit message:
 - `todos.yaml` is the source of truth for TODO status and triage metadata
 - ROADMAP.md is a sprint artifact — `--full` regenerates from scratch for strategic re-evaluation
 - Template provides structural guidance; Claude generates the actual content
-- Worktree branch convention: `work/{work-unit-name}` (work units consolidate related TODOs onto one branch)
+- Worktree branch convention: `work/{row-name}` (rows consolidate related TODOs onto one branch)
