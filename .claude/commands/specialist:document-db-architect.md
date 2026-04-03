@@ -1,1 +1,1 @@
-/home/jonco/src/work-harness-v2/specialists/document-db-architect.md
+/home/jonco/src/furrow/specialists/document-db-architect.md

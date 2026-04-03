@@ -1,1 +1,1 @@
-/home/jonco/src/work-harness-v2/specialists/python-specialist.md
+/home/jonco/src/furrow/specialists/python-specialist.md

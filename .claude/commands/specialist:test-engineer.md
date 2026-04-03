@@ -1,1 +1,1 @@
-/home/jonco/src/work-harness-v2/specialists/test-engineer.md
+/home/jonco/src/furrow/specialists/test-engineer.md

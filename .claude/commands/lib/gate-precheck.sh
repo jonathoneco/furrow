@@ -1,1 +1,1 @@
-/home/jonco/src/work-harness-v2/commands/lib/gate-precheck.sh
+/home/jonco/src/furrow/commands/lib/gate-precheck.sh

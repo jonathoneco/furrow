@@ -1,1 +1,1 @@
-/home/jonco/src/work-harness-v2/specialists/security-engineer.md
+/home/jonco/src/furrow/specialists/security-engineer.md

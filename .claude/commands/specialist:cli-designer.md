@@ -1,1 +1,1 @@
-/home/jonco/src/work-harness-v2/specialists/cli-designer.md
+/home/jonco/src/furrow/specialists/cli-designer.md

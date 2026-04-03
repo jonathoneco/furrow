@@ -1,1 +1,1 @@
-/home/jonco/src/work-harness-v2/commands/lib/promote-components.sh
+/home/jonco/src/furrow/commands/lib/promote-components.sh

@@ -1,1 +1,1 @@
-/home/jonco/src/work-harness-v2/commands/lib/validate-learning.sh
+/home/jonco/src/furrow/commands/lib/validate-learning.sh

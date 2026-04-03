@@ -1,1 +1,1 @@
-/home/jonco/src/work-harness-v2/specialists/go-specialist.md
+/home/jonco/src/furrow/specialists/go-specialist.md

@@ -1,1 +1,1 @@
-/home/jonco/src/work-harness-v2/commands/furrow.md
+/home/jonco/src/furrow/commands/furrow.md

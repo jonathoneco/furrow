@@ -1,1 +1,1 @@
-/home/jonco/src/work-harness-v2/specialists/systems-architect.md
+/home/jonco/src/furrow/specialists/systems-architect.md
