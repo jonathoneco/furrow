@@ -1,6 +1,6 @@
 # /furrow:triage [--full]
 
-Generate or update ROADMAP.md from `.furrow/almanac/todos.yaml` with dependency-aware phase grouping and worktree parallelism strategy.
+Generate or update `.furrow/almanac/roadmap.yaml` (and optional `.furrow/almanac/roadmap.md`) from `.furrow/almanac/todos.yaml` with dependency-aware phase grouping and worktree parallelism strategy.
 
 ## Syntax
 
@@ -48,7 +48,7 @@ If `todos` array is empty: "All TODOs are completed or deferred. Nothing to road
 
 Skip this step if `--full` flag is set.
 
-If `ROADMAP.md` exists:
+If `.furrow/almanac/roadmap.yaml` exists:
 - Read it and identify phase sections
 - Phases where ALL associated TODOs have `status: done` → mark as completed
 - Preserve completed phase content verbatim in the output
@@ -125,7 +125,7 @@ Each phase gets:
 - **Rationale**: 1-2 sentences explaining why these rows are grouped and ordered this way
 - **Parallelism**: which rows within the phase can run concurrently
 
-### 7. Generate ROADMAP.md
+### 7. Generate Roadmap
 
 Follow the template section order from `roadmap-sections.yaml`:
 
@@ -204,7 +204,7 @@ Phase {N} — {Title} — {Status}
 Phase {N+1} — ...
 
 Review the proposal. Respond:
-  ok          — accept and generate ROADMAP.md
+  ok          — accept and generate roadmap.yaml (+ optional roadmap.md)
   {N}: {adj}  — adjust phase N (e.g., "4: move beans-integration before rename")
   cancel      — abort, no writes
 ```
@@ -213,18 +213,20 @@ Review the proposal. Respond:
 
 After confirmation:
 1. Update triage fields in `.furrow/almanac/todos.yaml`: write `depends_on`, `files_touched`, `urgency`, `impact`, `effort`, `status` for each active TODO. Bump `updated_at`.
-2. Write `ROADMAP.md` (atomic: write to temp file, then move).
-3. Run `alm validate`. If invalid, revert .furrow/almanac/todos.yaml and error.
+2. Write `.furrow/almanac/roadmap.yaml` (primary, machine-readable — atomic: write to temp file, then move).
+3. Optionally write `.furrow/almanac/roadmap.md` (human-readable companion — same content, markdown format).
+4. Run `alm validate`. If invalid, revert .furrow/almanac/todos.yaml and error.
 
 ### 10. Commit
 
 Stage and commit:
-- `ROADMAP.md`
+- `.furrow/almanac/roadmap.yaml`
+- `.furrow/almanac/roadmap.md` (if generated)
 - `.furrow/almanac/todos.yaml`
 
 Commit message:
-- Incremental: `docs: refresh ROADMAP.md via /furrow:triage`
-- Full: `docs: regenerate ROADMAP.md (full) via /furrow:triage`
+- Incremental: `docs: refresh roadmap via /furrow:triage`
+- Full: `docs: regenerate roadmap (full) via /furrow:triage`
 
 ---
 
@@ -247,6 +249,7 @@ Commit message:
 
 - Read-only for `state.json` — this command does not modify Furrow state
 - `.furrow/almanac/todos.yaml` is the source of truth for TODO status and triage metadata
-- ROADMAP.md is a sprint artifact — `--full` regenerates from scratch for strategic re-evaluation
+- `.furrow/almanac/roadmap.yaml` is the primary roadmap artifact; `.furrow/almanac/roadmap.md` is an optional human-readable companion
+- `--full` regenerates from scratch for strategic re-evaluation
 - Template provides structural guidance; Claude generates the actual content
 - Worktree branch convention: `work/{row-name}` (rows consolidate related TODOs onto one branch)

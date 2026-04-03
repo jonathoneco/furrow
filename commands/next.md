@@ -15,7 +15,7 @@ Generate handoff prompt(s) for the next row(s) on the roadmap.
 
 ### 1. Identify Next Work
 
-1. Read `ROADMAP.md`. Parse phase sections by status (`DONE`, `IN PROGRESS`, `PLANNED`).
+1. Read `.furrow/almanac/roadmap.yaml`. Parse phase sections by status (`DONE`, `IN PROGRESS`, `PLANNED`).
 2. If `--phase N` specified: use that phase. Error if phase doesn't exist.
 3. Otherwise: find the first phase with status `PLANNED` or `IN PROGRESS`.
 4. If all phases are `DONE`: "All roadmap phases complete. Run `/furrow:triage` to plan next work."
@@ -50,7 +50,7 @@ Start with: `/work {row-name} — {one-line description synthesized from TODOs}`
 ### Scope
 
 {Sequential or parallel} deliverables on branch `work/{name}`.
-See **ROADMAP.md Phase {N}** for rationale and ordering.
+See **.furrow/almanac/roadmap.yaml Phase {N}** for rationale and ordering.
 
 Source TODOs in `.furrow/almanac/todos.yaml` (read `context` and `work_needed` for full detail):
 {For each TODO: `{id}` — {title}}
@@ -58,7 +58,7 @@ Source TODOs in `.furrow/almanac/todos.yaml` (read `context` and `work_needed` f
 ### Key files
 {Deduplicated files_touched from all TODOs in this row}
 - `.furrow/almanac/todos.yaml` — detailed context and work_needed for each TODO
-- `ROADMAP.md` — Phase {N} plan and dependency reasoning
+- `.furrow/almanac/roadmap.yaml` — Phase {N} plan and dependency reasoning
 
 ---
 ```
@@ -68,7 +68,7 @@ If the phase has **parallel rows**, generate one prompt block per row and prefix
 ```
 Phase {N} has {M} parallel rows. Start each in a separate session/worktree:
 
-{worktree commands from ROADMAP.md for this phase}
+{worktree commands from .furrow/almanac/roadmap.yaml for this phase}
 ```
 
 If the phase has **sequential rows**, generate them in order and note:
@@ -85,7 +85,7 @@ Display the handoff prompt(s) directly — no confirmation needed. This is a rea
 
 ## Constraints
 
-- Read-only: does not modify `state.json`, `.furrow/almanac/todos.yaml`, or `ROADMAP.md`
+- Read-only: does not modify `state.json`, `.furrow/almanac/todos.yaml`, or `.furrow/almanac/roadmap.yaml`
 - Handoff prompts reference files by path, not by content — the fresh session reads them
 - TODO prose (`context`, `work_needed`) is NOT duplicated in the prompt — the prompt points at `.furrow/almanac/todos.yaml`
 - If a row spans multiple TODOs, the `/work` description synthesizes the theme, not each TODO title

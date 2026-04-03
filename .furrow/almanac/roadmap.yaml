@@ -1,725 +1,367 @@
-schema_version: "1.0"
+schema_version: "2.0"
 metadata:
   project: furrow
-  generated_at: "2026-04-03T04:35:59-04:00"
-  total_phases: 1
+  generated_at: "2026-04-03T17:15:00Z"
+  total_phases: 6
   completed_phases: 0
+  active_todos: 23
+  done_todos: 1
 dependency_graph:
   nodes:
-    - id: rethink-hint-file-pattern
-      label: Rethink hint file pattern — consolidate into state.json
-      phase: 1
-      status: active
-    - id: interactive-ideation-checkpoints
-      label: Collaborative check-ins at pre-implementation steps
-      phase: 1
-      status: active
     - id: stop-hook-false-positives
-      label: Handle stop hooks enforcing fluff requirements
       phase: 1
-      status: active
-    - id: user-action-integration
-      label: Integration points for actions the user must take
-      phase: 1
-      status: active
-    - id: seeds-concept
-      label: Seeds as a structured knowledge reduction stage
-      phase: 1
-      status: active
-    - id: specialist-encoded-reasoning
-      label: Specialists need encoded reasoning, not just role descriptions
-      phase: 1
-      status: active
-    - id: research-documentation-detection
-      label: Detect when research output should be documentation instead
-      phase: 1
-      status: active
-    - id: research-source-guidance
-      label: Structured guidance for primary vs secondary source research
-      phase: 1
-      status: active
-    - id: fresh-session-review
-      label: Run review in a truly fresh session (no shared context)
-      phase: 1
-      status: active
-    - id: worktree-reintegration-summary
-      label: Produce summary for worktree reintegration
-      phase: 1
-      status: active
-    - id: todo-context-references
-      label: TODOs with context references from dump and active sessions
-      phase: 1
-      status: active
-    - id: roadmap-todo-integration
-      label: Roadmap provides tackling prompts and merges TODOs
-      phase: 1
-      status: active
-    - id: design-pattern-context-construction
-      label: Context construction driven by design pattern thinking
-      phase: 1
-      status: active
-    - id: claude-md-docs-routing
-      label: CLAUDE.md should reference docs routing
-      phase: 1
-      status: active
-    - id: sonnet-model-routing
-      label: Use Sonnet for on-rails tasks, reserve Opus for reasoning
-      phase: 1
-      status: active
-    - id: work-folder-structure-and-cleanup
-      label: Structure .furrow/rows/ to prevent unbounded growth
-      phase: 1
-      status: active
-    - id: mine-claude-code
-      label: Mine Claude Code for reusable patterns and capabilities
-      phase: 1
-      status: active
-    - id: parallel-agent-orchestration-adoption
-      label: Built-in team orchestration isn't being used — diagnose and fix
-      phase: 1
-      status: active
-    - id: memetic-algorithms-research
-      label: Research memetic algorithms for LLM orchestration
-      phase: 1
+      row: quick-harness-fixes
       status: active
     - id: skill-loading-visible-internals
-      label: Skill loading exposes internals — should be seamless
       phase: 1
+      row: quick-harness-fixes
       status: active
-    - id: script-access-restrictions
-      label: Restrict direct access to internal/dependency scripts
+    - id: claude-md-docs-routing
       phase: 1
+      row: quick-harness-fixes
       status: active
     - id: guard-against-horizontal-slices
-      label: Guard against horizontal slices in decomposition
       phase: 1
+      row: skill-quality-guards
+      status: active
+    - id: research-source-guidance
+      phase: 1
+      row: skill-quality-guards
+      status: active
+    - id: sonnet-model-routing
+      phase: 1
+      row: model-routing
+      status: active
+    - id: interactive-ideation-checkpoints
+      phase: 2
+      row: ideation-and-review-ux
+      status: active
+    - id: fresh-session-review
+      phase: 2
+      row: ideation-and-review-ux
+      status: active
+    - id: specialist-encoded-reasoning
+      phase: 2
+      row: specialist-overhaul
+      status: active
+    - id: specialist-templates-from-team-plan-not-enforced-d
+      phase: 2
+      row: specialist-overhaul
+      status: active
+    - id: parallel-agent-orchestration-adoption
+      phase: 3
+      row: parallel-agent-wiring
+      status: active
+    - id: worktree-reintegration-summary
+      phase: 3
+      row: parallel-agent-wiring
+      status: active
+    - id: user-action-integration
+      phase: 3
+      row: parallel-agent-wiring
       status: active
     - id: brain-dump-triage-command
-      label: Brain dump triage command to turn notes into actionable TODOs
-      phase: 1
+      phase: 4
+      row: todo-pipeline
       status: active
-  edges: []
+    - id: todo-context-references
+      phase: 4
+      row: todo-pipeline
+      status: active
+    - id: roadmap-todo-integration
+      phase: 4
+      row: todo-pipeline
+      status: active
+    - id: research-documentation-detection
+      phase: 4
+      row: todo-pipeline
+      status: active
+    - id: work-folder-structure-and-cleanup
+      phase: 5
+      row: infra-cleanup
+      status: active
+    - id: script-access-restrictions
+      phase: 5
+      row: infra-cleanup
+      status: active
+    - id: design-pattern-context-construction
+      phase: 5
+      row: knowledge-architecture
+      status: active
+    - id: seeds-concept
+      phase: 5
+      row: knowledge-architecture
+      status: active
+    - id: mine-claude-code
+      phase: 6
+      row: research-exploration
+      status: active
+    - id: memetic-algorithms-research
+      phase: 6
+      row: research-exploration
+      status: active
+  edges:
+    - from: quick-harness-fixes
+      to: ideation-and-review-ux
+      type: inferred
+      reason: foundational — skill layer fixes should land before skill UX changes
+    - from: skill-quality-guards
+      to: ideation-and-review-ux
+      type: inferred
+      reason: foundational — guardrails before broader skill edits
+    - from: model-routing
+      to: parallel-agent-wiring
+      type: inferred
+      reason: merge-implication — routing config affects agent dispatch
+    - from: ideation-and-review-ux
+      to: parallel-agent-wiring
+      type: inferred
+      reason: foundational — skills/implement.md stability before orchestration changes
+    - from: specialist-overhaul
+      to: parallel-agent-wiring
+      type: inferred
+      reason: foundational — specialist templates must work before agent dispatch uses them
+    - from: parallel-agent-wiring
+      to: todo-pipeline
+      type: inferred
+      reason: merge-implication — agent wiring stabilizes skills/ before command layer changes
+    - from: todo-pipeline
+      to: infra-cleanup
+      type: inferred
+      reason: merge-implication — command changes land before infrastructure restructure
+    - from: infra-cleanup
+      to: knowledge-architecture
+      type: inferred
+      reason: foundational — folder structure stable before knowledge architecture redesign
   waves:
     - wave: 1
       todos:
-        - brain-dump-triage-command
-        - claude-md-docs-routing
-        - design-pattern-context-construction
-        - fresh-session-review
-        - guard-against-horizontal-slices
-        - interactive-ideation-checkpoints
-        - memetic-algorithms-research
-        - mine-claude-code
-        - parallel-agent-orchestration-adoption
-        - research-documentation-detection
-        - research-source-guidance
-        - rethink-hint-file-pattern
-        - roadmap-todo-integration
-        - script-access-restrictions
-        - seeds-concept
-        - skill-loading-visible-internals
-        - sonnet-model-routing
-        - specialist-encoded-reasoning
         - stop-hook-false-positives
-        - todo-context-references
-        - user-action-integration
-        - work-folder-structure-and-cleanup
+        - skill-loading-visible-internals
+        - claude-md-docs-routing
+        - guard-against-horizontal-slices
+        - research-source-guidance
+        - sonnet-model-routing
+    - wave: 2
+      todos:
+        - interactive-ideation-checkpoints
+        - fresh-session-review
+        - specialist-encoded-reasoning
+        - specialist-templates-from-team-plan-not-enforced-d
+    - wave: 3
+      todos:
+        - parallel-agent-orchestration-adoption
         - worktree-reintegration-summary
+        - user-action-integration
+    - wave: 4
+      todos:
+        - brain-dump-triage-command
+        - todo-context-references
+        - roadmap-todo-integration
+        - research-documentation-detection
+    - wave: 5
+      todos:
+        - work-folder-structure-and-cleanup
+        - script-access-restrictions
+        - design-pattern-context-construction
+        - seeds-concept
+    - wave: 6
+      todos:
+        - mine-claude-code
+        - memetic-algorithms-research
+  cycles: []
 conflict_zones:
   - phase: 1
-    file_pattern: commands/, commands/review.md
-    work_units:
-      - brain-dump-triage-command
-      - fresh-session-review
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: commands/, commands/lib/promote-components.sh
-    work_units:
-      - brain-dump-triage-command
-      - research-documentation-detection
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: commands/, commands/work-roadmap.md
-    work_units:
-      - brain-dump-triage-command
-      - roadmap-todo-integration
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: commands/, commands/lib/gate-precheck.sh, commands/lib/load-step.sh
-    work_units:
-      - brain-dump-triage-command
-      - skill-loading-visible-internals
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: commands/, commands/work-todos.md
-    work_units:
-      - brain-dump-triage-command
-      - todo-context-references
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: commands/, commands/lib/step-transition.sh
-    work_units:
-      - brain-dump-triage-command
-      - user-action-integration
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: commands/, commands/archive.md, commands/lib/detect-context.sh
-    work_units:
-      - brain-dump-triage-command
-      - work-folder-structure-and-cleanup
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: references/
-    work_units:
-      - design-pattern-context-construction
-      - seeds-concept
-    severity: low
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: references/, references/specialist-template.md
-    work_units:
-      - design-pattern-context-construction
-      - specialist-encoded-reasoning
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: references/, references/row-layout.md
-    work_units:
-      - design-pattern-context-construction
-      - work-folder-structure-and-cleanup
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/shared/, skills/shared/eval-protocol.md
-    work_units:
-      - fresh-session-review
-      - interactive-ideation-checkpoints
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/review.md
-    work_units:
-      - fresh-session-review
-      - research-documentation-detection
-    severity: low
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/, skills/review.md, skills/shared/eval-protocol.md
-    work_units:
-      - fresh-session-review
-      - seeds-concept
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/, skills/review.md, skills/shared/eval-protocol.md
-    work_units:
-      - fresh-session-review
-      - skill-loading-visible-internals
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/shared/, skills/shared/eval-protocol.md
-    work_units:
-      - fresh-session-review
-      - user-action-integration
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/shared/, skills/shared/red-flags.md
-    work_units:
-      - guard-against-horizontal-slices
-      - interactive-ideation-checkpoints
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/, skills/decompose.md, skills/shared/red-flags.md
-    work_units:
-      - guard-against-horizontal-slices
-      - seeds-concept
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/, skills/decompose.md, skills/shared/red-flags.md
-    work_units:
-      - guard-against-horizontal-slices
-      - skill-loading-visible-internals
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/shared/, skills/shared/red-flags.md
-    work_units:
-      - guard-against-horizontal-slices
-      - user-action-integration
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/shared/, skills/shared/context-isolation.md
-    work_units:
-      - interactive-ideation-checkpoints
-      - parallel-agent-orchestration-adoption
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/research.md
-    work_units:
-      - interactive-ideation-checkpoints
-      - research-source-guidance
-    severity: low
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/, skills/ideate.md, skills/plan.md, skills/research.md, skills/shared/, skills/spec.md
-    work_units:
-      - interactive-ideation-checkpoints
-      - seeds-concept
+    file_pattern: "hooks/, hooks/lib/validate.sh"
+    work_units: [stop-hook-false-positives, script-access-restrictions]
     severity: high
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/, skills/ideate.md, skills/plan.md, skills/research.md, skills/shared/, skills/spec.md
-    work_units:
-      - interactive-ideation-checkpoints
-      - skill-loading-visible-internals
-    severity: high
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/shared/, skills/shared/context-isolation.md
-    work_units:
-      - interactive-ideation-checkpoints
-      - sonnet-model-routing
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/shared/
-    work_units:
-      - interactive-ideation-checkpoints
-      - user-action-integration
+    mitigation: "separated into phases 1 and 5"
+  - phase: 2
+    file_pattern: "skills/implement.md"
+    work_units: [specialist-overhaul, ideation-and-review-ux]
     severity: low
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/shared/, skills/shared/context-isolation.md
-    work_units:
-      - interactive-ideation-checkpoints
-      - worktree-reintegration-summary
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/, skills/implement.md, skills/shared/context-isolation.md
-    work_units:
-      - parallel-agent-orchestration-adoption
-      - seeds-concept
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/, skills/implement.md, skills/shared/context-isolation.md
-    work_units:
-      - parallel-agent-orchestration-adoption
-      - skill-loading-visible-internals
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/implement.md, skills/shared/context-isolation.md
-    work_units:
-      - parallel-agent-orchestration-adoption
-      - sonnet-model-routing
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/shared/, skills/shared/context-isolation.md
-    work_units:
-      - parallel-agent-orchestration-adoption
-      - user-action-integration
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/implement.md, skills/shared/context-isolation.md
-    work_units:
-      - parallel-agent-orchestration-adoption
-      - worktree-reintegration-summary
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/, skills/review.md
-    work_units:
-      - research-documentation-detection
-      - seeds-concept
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/, skills/review.md
-    work_units:
-      - research-documentation-detection
-      - skill-loading-visible-internals
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/, skills/research.md, templates/, templates/research-sources.md
-    work_units:
-      - research-source-guidance
-      - seeds-concept
-    severity: high
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/, skills/research.md
-    work_units:
-      - research-source-guidance
-      - skill-loading-visible-internals
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: scripts/, scripts/triage-todos.sh
-    work_units:
-      - roadmap-todo-integration
-      - script-access-restrictions
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: templates/, templates/roadmap.md.tmpl
-    work_units:
-      - roadmap-todo-integration
-      - seeds-concept
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: scripts/triage-todos.sh
-    work_units:
-      - roadmap-todo-integration
-      - todo-context-references
+    mitigation: "coordinate merge order — specialist-overhaul merges first"
+  - phase: 5
+    file_pattern: "references/"
+    work_units: [infra-cleanup, knowledge-architecture]
     severity: low
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: hooks/, hooks/lib/validate.sh, hooks/stop-ideation.sh, hooks/validate-summary.sh
-    work_units:
-      - script-access-restrictions
-      - stop-hook-false-positives
-    severity: high
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: scripts/, scripts/triage-todos.sh
-    work_units:
-      - script-access-restrictions
-      - todo-context-references
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: scripts/, scripts/archive-work.sh
-    work_units:
-      - script-access-restrictions
-      - work-folder-structure-and-cleanup
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/
-    work_units:
-      - seeds-concept
-      - skill-loading-visible-internals
-    severity: low
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/, skills/implement.md, skills/shared/context-isolation.md
-    work_units:
-      - seeds-concept
-      - sonnet-model-routing
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: references/, references/specialist-template.md
-    work_units:
-      - seeds-concept
-      - specialist-encoded-reasoning
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/, skills/shared/
-    work_units:
-      - seeds-concept
-      - user-action-integration
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: references/, references/row-layout.md
-    work_units:
-      - seeds-concept
-      - work-folder-structure-and-cleanup
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/, skills/implement.md, skills/shared/context-isolation.md
-    work_units:
-      - seeds-concept
-      - worktree-reintegration-summary
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/, skills/implement.md, skills/shared/context-isolation.md
-    work_units:
-      - skill-loading-visible-internals
-      - sonnet-model-routing
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/, skills/shared/
-    work_units:
-      - skill-loading-visible-internals
-      - user-action-integration
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/, skills/implement.md, skills/shared/context-isolation.md
-    work_units:
-      - skill-loading-visible-internals
-      - worktree-reintegration-summary
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: specialists/
-    work_units:
-      - sonnet-model-routing
-      - specialist-encoded-reasoning
-    severity: low
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/shared/, skills/shared/context-isolation.md
-    work_units:
-      - sonnet-model-routing
-      - user-action-integration
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/implement.md, skills/shared/context-isolation.md
-    work_units:
-      - sonnet-model-routing
-      - worktree-reintegration-summary
-    severity: medium
-    mitigation: sequential ordering
-  - phase: 1
-    file_pattern: skills/shared/, skills/shared/context-isolation.md
-    work_units:
-      - user-action-integration
-      - worktree-reintegration-summary
-    severity: medium
-    mitigation: sequential ordering
+    mitigation: "different subdirectories — low actual overlap"
 phases:
   - number: 1
-    title: Phase 1
+    title: "Quick Wins & Foundational Guards"
     status: planned
-    rationale: Wave 1 of dependency graph
-    work_units:
-      - index: 1
-        branch_name: work/brain-dump-triage-command
-        description: brain-dump-triage-command
-        todos:
-          - brain-dump-triage-command
-        depends_on: []
-        key_files: []
-        conflict_risk: none
-        completed_at: null
-      - index: 2
-        branch_name: work/claude-md-docs-routing
-        description: claude-md-docs-routing
-        todos:
-          - claude-md-docs-routing
-        depends_on: []
-        key_files: []
-        conflict_risk: none
-        completed_at: null
-      - index: 3
-        branch_name: work/design-pattern-context-construction
-        description: design-pattern-context-construction
-        todos:
-          - design-pattern-context-construction
-        depends_on: []
-        key_files: []
-        conflict_risk: none
-        completed_at: null
-      - index: 4
-        branch_name: work/fresh-session-review
-        description: fresh-session-review
-        todos:
-          - fresh-session-review
-        depends_on: []
-        key_files: []
-        conflict_risk: none
-        completed_at: null
-      - index: 5
-        branch_name: work/guard-against-horizontal-slices
-        description: guard-against-horizontal-slices
-        todos:
-          - guard-against-horizontal-slices
-        depends_on: []
-        key_files: []
-        conflict_risk: none
-        completed_at: null
-      - index: 6
-        branch_name: work/interactive-ideation-checkpoints
-        description: interactive-ideation-checkpoints
-        todos:
-          - interactive-ideation-checkpoints
-        depends_on: []
-        key_files: []
-        conflict_risk: none
-        completed_at: null
-      - index: 7
-        branch_name: work/memetic-algorithms-research
-        description: memetic-algorithms-research
-        todos:
-          - memetic-algorithms-research
-        depends_on: []
-        key_files: []
-        conflict_risk: none
-        completed_at: null
-      - index: 8
-        branch_name: work/mine-claude-code
-        description: mine-claude-code
-        todos:
-          - mine-claude-code
-        depends_on: []
-        key_files: []
-        conflict_risk: none
-        completed_at: null
-      - index: 9
-        branch_name: work/parallel-agent-orchestration-adoption
-        description: parallel-agent-orchestration-adoption
-        todos:
-          - parallel-agent-orchestration-adoption
-        depends_on: []
-        key_files: []
-        conflict_risk: none
-        completed_at: null
-      - index: 10
-        branch_name: work/research-documentation-detection
-        description: research-documentation-detection
-        todos:
-          - research-documentation-detection
-        depends_on: []
-        key_files: []
-        conflict_risk: none
-        completed_at: null
-      - index: 11
-        branch_name: work/research-source-guidance
-        description: research-source-guidance
-        todos:
-          - research-source-guidance
-        depends_on: []
-        key_files: []
-        conflict_risk: none
-        completed_at: null
-      - index: 12
-        branch_name: work/rethink-hint-file-pattern
-        description: rethink-hint-file-pattern
-        todos:
-          - rethink-hint-file-pattern
-        depends_on: []
-        key_files: []
-        conflict_risk: none
-        completed_at: null
-      - index: 13
-        branch_name: work/roadmap-todo-integration
-        description: roadmap-todo-integration
-        todos:
-          - roadmap-todo-integration
-        depends_on: []
-        key_files: []
-        conflict_risk: none
-        completed_at: null
-      - index: 14
-        branch_name: work/script-access-restrictions
-        description: script-access-restrictions
-        todos:
-          - script-access-restrictions
-        depends_on: []
-        key_files: []
-        conflict_risk: none
-        completed_at: null
-      - index: 15
-        branch_name: work/seeds-concept
-        description: seeds-concept
-        todos:
-          - seeds-concept
-        depends_on: []
-        key_files: []
-        conflict_risk: none
-        completed_at: null
-      - index: 16
-        branch_name: work/skill-loading-visible-internals
-        description: skill-loading-visible-internals
-        todos:
-          - skill-loading-visible-internals
-        depends_on: []
-        key_files: []
-        conflict_risk: none
-        completed_at: null
-      - index: 17
-        branch_name: work/sonnet-model-routing
-        description: sonnet-model-routing
-        todos:
-          - sonnet-model-routing
-        depends_on: []
-        key_files: []
-        conflict_risk: none
-        completed_at: null
-      - index: 18
-        branch_name: work/specialist-encoded-reasoning
-        description: specialist-encoded-reasoning
-        todos:
-          - specialist-encoded-reasoning
-        depends_on: []
-        key_files: []
-        conflict_risk: none
-        completed_at: null
-      - index: 19
-        branch_name: work/stop-hook-false-positives
-        description: stop-hook-false-positives
+    rationale: "Small-effort, high-impact fixes that don't conflict with each other. Front-loads quick wins to improve daily workflow before larger refactors."
+    parallelism: "quick-harness-fixes || skill-quality-guards || model-routing"
+    rows:
+      - branch: work/quick-harness-fixes
+        description: "Hook false positives, skill loading internals, CLAUDE.md docs routing"
         todos:
           - stop-hook-false-positives
-        depends_on: []
-        key_files: []
+          - skill-loading-visible-internals
+          - claude-md-docs-routing
+        estimated_sessions: 2
+        key_files:
+          - hooks/validate-summary.sh
+          - hooks/stop-ideation.sh
+          - hooks/lib/validate.sh
+          - bin/rws
+          - .claude/CLAUDE.md
         conflict_risk: none
         completed_at: null
-      - index: 20
-        branch_name: work/todo-context-references
-        description: todo-context-references
+      - branch: work/skill-quality-guards
+        description: "Decomposition guardrails and research source guidance"
         todos:
-          - todo-context-references
-        depends_on: []
-        key_files: []
+          - guard-against-horizontal-slices
+          - research-source-guidance
+        estimated_sessions: 1
+        key_files:
+          - skills/decompose.md
+          - skills/shared/red-flags.md
+          - evals/dimensions/decompose.yaml
+          - skills/research.md
+          - templates/research-sources.md
         conflict_risk: none
         completed_at: null
-      - index: 21
-        branch_name: work/user-action-integration
-        description: user-action-integration
+      - branch: work/model-routing
+        description: "Sonnet for on-rails tasks, Opus for reasoning"
         todos:
+          - sonnet-model-routing
+        estimated_sessions: 1
+        key_files:
+          - specialists/
+          - skills/implement.md
+          - skills/shared/context-isolation.md
+        conflict_risk: none
+        completed_at: null
+  - number: 2
+    title: "Skill Layer UX"
+    status: planned
+    rationale: "Deeper skill and specialist improvements that build on Phase 1 guardrails. Two parallel rows targeting different file domains."
+    parallelism: "ideation-and-review-ux || specialist-overhaul"
+    rows:
+      - branch: work/ideation-and-review-ux
+        description: "Interactive ideation checkpoints and fresh-session review"
+        todos:
+          - interactive-ideation-checkpoints
+          - fresh-session-review
+        estimated_sessions: 3
+        key_files:
+          - skills/ideate.md
+          - skills/research.md
+          - skills/plan.md
+          - skills/spec.md
+          - skills/shared/
+          - skills/review.md
+          - commands/review.md
+        conflict_risk: low
+        completed_at: null
+      - branch: work/specialist-overhaul
+        description: "Encoded reasoning and template enforcement for specialists"
+        todos:
+          - specialist-encoded-reasoning
+          - specialist-templates-from-team-plan-not-enforced-d
+        estimated_sessions: 2
+        key_files:
+          - specialists/
+          - references/specialist-template.md
+          - skills/implement.md
+        conflict_risk: low
+        completed_at: null
+  - number: 3
+    title: "Agent Orchestration"
+    status: planned
+    rationale: "Wiring up parallel agent execution, worktree handoffs, and user-action integration. All touch skills/implement.md and context-isolation.md — must be one row."
+    parallelism: none
+    rows:
+      - branch: work/parallel-agent-wiring
+        description: "Parallel agent adoption, worktree summaries, user action integration"
+        todos:
+          - parallel-agent-orchestration-adoption
+          - worktree-reintegration-summary
           - user-action-integration
-        depends_on: []
-        key_files: []
+        estimated_sessions: 3
+        key_files:
+          - skills/implement.md
+          - skills/shared/context-isolation.md
+          - bin/rws
         conflict_risk: none
         completed_at: null
-      - index: 22
-        branch_name: work/work-folder-structure-and-cleanup
-        description: work-folder-structure-and-cleanup
+  - number: 4
+    title: "CLI & Command Pipeline"
+    status: planned
+    rationale: "Improvements to the TODO extraction, triage, and roadmap generation pipeline. All operate on commands/ and bin/alm."
+    parallelism: none
+    rows:
+      - branch: work/todo-pipeline
+        description: "Brain dump triage, TODO context refs, roadmap integration, research-to-docs detection"
+        todos:
+          - brain-dump-triage-command
+          - todo-context-references
+          - roadmap-todo-integration
+          - research-documentation-detection
+        estimated_sessions: 3
+        key_files:
+          - commands/
+          - commands/work-todos.md
+          - commands/triage.md
+          - commands/next.md
+          - commands/lib/promote-components.sh
+          - bin/alm
+          - skills/review.md
+        conflict_risk: none
+        completed_at: null
+  - number: 5
+    title: "Structure & Knowledge Architecture"
+    status: planned
+    rationale: "Infrastructure cleanup and the largest conceptual TODO (seeds). Two parallel rows with different file domains."
+    parallelism: "infra-cleanup || knowledge-architecture"
+    rows:
+      - branch: work/infra-cleanup
+        description: ".furrow/rows/ structure and script access restrictions"
         todos:
           - work-folder-structure-and-cleanup
-        depends_on: []
-        key_files: []
+          - script-access-restrictions
+        estimated_sessions: 2
+        key_files:
+          - bin/rws
+          - commands/archive.md
+          - references/row-layout.md
+          - scripts/
+          - hooks/
         conflict_risk: none
         completed_at: null
-      - index: 23
-        branch_name: work/worktree-reintegration-summary
-        description: worktree-reintegration-summary
+      - branch: work/knowledge-architecture
+        description: "Design pattern context construction and seeds concept"
         todos:
-          - worktree-reintegration-summary
-        depends_on: []
+          - design-pattern-context-construction
+          - seeds-concept
+        estimated_sessions: 4
+        key_files:
+          - references/
+          - docs/
+          - skills/
+          - templates/
+        conflict_risk: low
+        completed_at: null
+  - number: 6
+    title: "Research & Exploration"
+    status: planned
+    rationale: "Low-urgency research items deferred to last. No production dependencies."
+    parallelism: none
+    rows:
+      - branch: work/research-exploration
+        description: "Mine Claude Code patterns and memetic algorithms research"
+        todos:
+          - mine-claude-code
+          - memetic-algorithms-research
+        estimated_sessions: 3
         key_files: []
         conflict_risk: none
         completed_at: null
 deferred: []
 handoff:
   template: |-
-    Start with: `/work {branch_name} — {description}`
-    Source TODOs: {todo_ids}
+    Start with: `/work {branch} — {description}`
+    Source TODOs in `.furrow/almanac/todos.yaml`: {todo_ids}
     Key files: {key_files}
+    See `.furrow/almanac/roadmap.yaml` Phase {phase} for rationale.
