@@ -20,7 +20,7 @@ set -eu
 # --- paths ---
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-HARNESS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+FURROW_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # --- argument validation ---
 
@@ -40,7 +40,7 @@ case "$gate_type" in
     ;;
 esac
 
-work_dir="${HARNESS_ROOT}/.work/${name}"
+work_dir="${FURROW_ROOT}/.work/${name}"
 state_file="${work_dir}/state.json"
 def_file="${work_dir}/definition.yaml"
 
@@ -158,7 +158,7 @@ step_outputs: |
 $(echo "$step_outputs" | sed 's/^/  /')
 
 # Evaluator contract
-evaluator_skill: ${HARNESS_ROOT}/skills/shared/gate-evaluator.md
+evaluator_skill: ${FURROW_ROOT}/skills/shared/gate-evaluator.md
 PROMPT_EOF
 
 echo "Prompt file written: ${prompt_file}" >&2

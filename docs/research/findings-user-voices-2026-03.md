@@ -40,7 +40,7 @@ and developer blogs. Focus on ground truth from people building real things.
 
 **PI Agent** (formerly Ampcode) -- open-source Claude Code alternative
 - "Aggressively extensible" philosophy, 20+ extension hooks
-- Appeals to engineers who want control over the harness itself
+- Appeals to engineers who want control over Furrow itself
 
 **OpenCode** / **Codex CLI** -- alternative CLI agents
 - Some users switching to these for cost reasons or model flexibility
@@ -381,7 +381,7 @@ What the "just use plan mode" camp actually does:
    exist because the mainstream plugins don't address autonomous agent
    safety well. This is a gap.
 
-6. **The harness should shrink, not grow.** Users consistently strip tools
+6. **Furrow should shrink, not grow.** Users consistently strip tools
    back. Design for the 30% that survives contact with reality, not the
    100% that looks good in a README.
 

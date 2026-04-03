@@ -8,9 +8,9 @@
 set -eu
 
 HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
-HARNESS_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
+FURROW_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
 
-COMMON_LIB="$HARNESS_ROOT/hooks/lib/common.sh"
+COMMON_LIB="$FURROW_ROOT/hooks/lib/common.sh"
 
 if [ ! -f "$COMMON_LIB" ]; then
   exit 0
@@ -25,7 +25,7 @@ target_path="$(echo "$input" | jq -r '.tool_input.file_path // .tool_input.path 
 
 case "$target_path" in
   */state.json|state.json)
-    log_error "state.json is harness-exclusive — use scripts/update-state.sh"
+    log_error "state.json is Furrow-exclusive — use scripts/update-state.sh"
     exit 2
     ;;
 esac

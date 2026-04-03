@@ -12,8 +12,8 @@
 set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-HARNESS_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-TEST_DIR="${HARNESS_ROOT}/tests/integration"
+FURROW_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+TEST_DIR="${FURROW_ROOT}/tests/integration"
 HELPERS="${TEST_DIR}/helpers.sh"
 
 if [ ! -f "${HELPERS}" ]; then

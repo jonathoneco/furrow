@@ -2,7 +2,7 @@
 
 ## Role
 
-You are designing the knowledge management and ecosystem integration layer for a v2 agentic work harness. Phases 1-4 established everything from the data model through operations. This phase designs how the harness accumulates knowledge, evolves itself, and connects to external systems.
+You are designing the knowledge management and ecosystem integration layer for a v2 agentic workflow harness. Phases 1-4 established everything from the data model through operations. This phase designs how Furrow accumulates knowledge, evolves itself, and connects to external systems.
 
 ## Required Reading
 
@@ -53,7 +53,7 @@ These 3 specs can be drafted in parallel.
 
 ### Spec 16: Artifacts (`docs/architecture/artifacts.md`)
 
-**What**: The full lifecycle of every artifact type the harness produces.
+**What**: The full lifecycle of every artifact type Furrow produces.
 
 **Must include for each artifact type**:
 - Format and structure
@@ -92,7 +92,7 @@ These 3 specs can be drafted in parallel.
 
 ### Spec 18: Self-Improvement (`docs/architecture/self-improvement.md`)
 
-**What**: How the harness evolves from its own operational data.
+**What**: How Furrow evolves from its own operational data.
 
 **Must include**:
 
@@ -131,18 +131,18 @@ These 3 specs can be drafted in parallel.
   - Response: propose new hook, eval, or convention (not just fix the symptom)
   - Example: if agents repeatedly violate file ownership, propose a structural enforcement hook
 
-- **Shrinkage over time**: How the harness tracks its own trajectory toward getting smaller.
+- **Shrinkage over time**: How Furrow tracks its own trajectory toward getting smaller.
   - Component count over time
   - Deletion test results (what's been safely deleted)
   - Model capability tracking (which model limitations are the components encoding? are those limitations still present?)
 
 ### Spec 19: Integrations (`docs/architecture/integrations.md`)
 
-**What**: How the harness connects to external systems.
+**What**: How Furrow connects to external systems.
 
 **Must include**:
 
-- **MCP servers**: How the harness uses MCP for persistent knowledge and tool extension.
+- **MCP servers**: How Furrow uses MCP for persistent knowledge and tool extension.
   - Memory servers (work-log for persistent work history, personal-agent for preferences)
   - Code intelligence (Serena for semantic navigation — already in use)
   - Custom MCP servers for harness-specific tools

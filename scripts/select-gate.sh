@@ -13,7 +13,7 @@
 set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-HARNESS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+FURROW_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 if [ $# -lt 1 ]; then
   echo "Usage: select-gate.sh <name>" >&2
@@ -21,7 +21,7 @@ if [ $# -lt 1 ]; then
 fi
 
 name="$1"
-state_file="${HARNESS_ROOT}/.work/${name}/state.json"
+state_file="${FURROW_ROOT}/.work/${name}/state.json"
 
 if [ ! -f "$state_file" ]; then
   echo "Error: state.json not found at ${state_file}" >&2
@@ -36,7 +36,7 @@ if [ -z "$step" ]; then
 fi
 
 # Gate YAML path follows a simple 1:1 convention: step name = file name
-gate_path="${HARNESS_ROOT}/evals/gates/${step}.yaml"
+gate_path="${FURROW_ROOT}/evals/gates/${step}.yaml"
 
 if [ ! -f "$gate_path" ]; then
   echo "Error: gate file not found at ${gate_path}" >&2

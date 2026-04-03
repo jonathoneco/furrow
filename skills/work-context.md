@@ -51,9 +51,9 @@ without user input (unless `gate_policy: supervised`).
 
 | File | Writer | Readers |
 |------|--------|---------|
-| `definition.yaml` | Human or ideation agent | All agents, harness |
+| `definition.yaml` | Human or ideation agent | All agents, Furrow |
 | `state.json` | Harness only | All agents (read-only) |
-| `plan.json` | Coordinator (write-once) | All agents, harness |
+| `plan.json` | Coordinator (write-once) | All agents, Furrow |
 | `summary.md` | Harness + step agent | Next step, reground |
 | `reviews/*.json` | Review agent | Harness, human |
 
@@ -75,15 +75,15 @@ NEVER re-read: raw research notes, previous handoff prompts, gate evidence, tran
 ## Platform Plan Mode
 
 CC plan mode (EnterPlanMode) is a tool for planning **within** the current step —
-not a replacement for steps or for the harness pipeline.
+not a replacement for steps or for the Furrow pipeline.
 
 Correct usage: plan mode coordinates the current step's execution (get clarity
 from the user, explore the codebase, design the approach for this step's work).
 
 Incorrect usage: plan mode produces artifacts that span or replace multiple
-harness steps (e.g., a single plan that covers spec + decompose + implement).
+Furrow steps (e.g., a single plan that covers spec + decompose + implement).
 
-Each harness step exists to produce a specific artifact with a specific gate.
+Each Furrow step exists to produce a specific artifact with a specific gate.
 Plan mode helps you do the current step well. It does not skip steps.
 
 ## Step Skill Loading
@@ -94,7 +94,7 @@ At step boundaries, the previous skill is replaced (not appended).
 ## Component Rationale
 
 Harness components have rationale documented in `_rationale.yaml`.
-Run harness-doctor for deletion-readiness audits.
+Run furrow-doctor for deletion-readiness audits.
 
 ## Summary Format
 

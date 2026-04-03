@@ -59,8 +59,8 @@ fi
 # --- record fail gate ---
 
 script_dir="$(cd "$(dirname "$0")" && pwd)"
-harness_root="$(cd "${script_dir}/../.." && pwd)"
-scripts_dir="${harness_root}/scripts"
+furrow_root="$(cd "${script_dir}/../.." && pwd)"
+scripts_dir="${furrow_root}/scripts"
 
 # Note: Rewind gates produce non-sequential boundaries (e.g., implement->plan)
 # which is intentional. The outcome "fail" distinguishes these from forward gates.

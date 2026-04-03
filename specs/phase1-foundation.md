@@ -9,7 +9,7 @@ Deliverables: gate-yaml-schema, ideation-gate-migration, evaluator-prompt-templa
 ## Deliverable 1: gate-yaml-schema
 
 Create `evals/gates/` directory with 7 YAML files. Each gate defines pre-step
-and/or post-step evaluation dimensions for one harness step.
+and/or post-step evaluation dimensions for one Furrow step.
 
 **Schema rules:**
 - `pre_step` section: only research, plan, spec, decompose (4 of 7 steps)

@@ -7,10 +7,10 @@
 set -eu
 
 HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
-HARNESS_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
+FURROW_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
 
-COMMON_LIB="$HARNESS_ROOT/hooks/lib/common.sh"
-VALIDATE_LIB="$HARNESS_ROOT/hooks/lib/validate.sh"
+COMMON_LIB="$FURROW_ROOT/hooks/lib/common.sh"
+VALIDATE_LIB="$FURROW_ROOT/hooks/lib/validate.sh"
 
 if [ ! -f "$COMMON_LIB" ]; then
   exit 0
@@ -39,7 +39,7 @@ if [ -f "$VALIDATE_LIB" ]; then
   . "$VALIDATE_LIB"
 fi
 
-update_script="$HARNESS_ROOT/scripts/update-state.sh"
+update_script="$FURROW_ROOT/scripts/update-state.sh"
 
 for work_dir in $active_units; do
   state_file="$work_dir/state.json"

@@ -1,6 +1,6 @@
 # Git Conventions Reference
 
-Detailed git workflow conventions for the V2 work harness.
+Detailed git workflow conventions for Furrow.
 
 ## 1. Branch Lifecycle
 
@@ -18,7 +18,7 @@ Detailed git workflow conventions for the V2 work harness.
 ### After Review
 - Branch is merged to main with `scripts/merge-to-main.sh`
 - Merge uses `--no-ff` to preserve individual commit history
-- Branch deletion is manual (not automated by the harness)
+- Branch deletion is manual (not automated by Furrow)
 
 ### Idempotent Checkout
 - If the branch already exists (e.g., correction cycle), `create-work-branch.sh`
@@ -97,7 +97,7 @@ Conflict resolution commits use type `fix`.
 
 ### Pre-Merge Checks
 `scripts/run-ci-checks.sh` runs the project's test suite (configured in
-`.claude/harness.yaml` under `ci`) and produces structured gate evidence
+`.claude/furrow.yaml` under `ci`) and produces structured gate evidence
 at `gates/implement-to-review-ci.json`.
 
 ### Gate Evidence Format

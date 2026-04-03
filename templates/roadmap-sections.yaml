@@ -1,5 +1,5 @@
 # roadmap-sections.yaml — Section registry for ROADMAP.md generation
-# Defines section order, requirements, and rendering hints for /harness:triage
+# Defines section order, requirements, and rendering hints for /furrow:triage
 
 sections:
   - name: header

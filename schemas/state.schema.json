@@ -3,7 +3,7 @@
   "$id": "state.schema.json",
   "$comment": "See _rationale.yaml for component rationale",
   "title": "Work Unit State",
-  "description": "Lifecycle and progress tracking for a V2 work harness work unit. Harness-exclusive write — agents never write this file directly.",
+  "description": "Lifecycle and progress tracking for a Furrow work unit. Furrow-exclusive write — agents never write this file directly.",
   "type": "object",
   "required": [
     "name",

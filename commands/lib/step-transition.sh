@@ -65,8 +65,8 @@ boundary="${current_step}->${next_step}"
 # --- resolve script paths ---
 
 script_dir="$(cd "$(dirname "$0")" && pwd)"
-harness_root="$(cd "${script_dir}/../.." && pwd)"
-scripts_dir="${harness_root}/scripts"
+furrow_root="$(cd "${script_dir}/../.." && pwd)"
+scripts_dir="${furrow_root}/scripts"
 
 # --- 1. Record gate ---
 
@@ -121,7 +121,7 @@ fi
 # --- 1d. Validate summary sections (before regeneration) ---
 
 if [ "${outcome}" != "fail" ]; then
-  validate_summary="${harness_root}/hooks/validate-summary.sh"
+  validate_summary="${furrow_root}/hooks/validate-summary.sh"
   if [ -x "${validate_summary}" ]; then
     "${validate_summary}" "${current_step}" || {
       echo "Summary validation failed. Populate Key Findings, Open Questions, and Recommendations in summary.md before advancing." >&2

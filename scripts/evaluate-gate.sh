@@ -15,7 +15,7 @@
 set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-HARNESS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+FURROW_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 if [ $# -lt 3 ]; then
   echo "Usage: evaluate-gate.sh <name> <boundary> <evaluator_verdict>" >&2
@@ -27,7 +27,7 @@ boundary="$2"
 evaluator_verdict="$3"
 
 # Read gate_policy from definition.yaml, default to "supervised"
-definition_file="${HARNESS_ROOT}/.work/${name}/definition.yaml"
+definition_file="${FURROW_ROOT}/.work/${name}/definition.yaml"
 if [ -f "$definition_file" ] && command -v yq > /dev/null 2>&1; then
   gate_policy="$(yq -r '.gate_policy // "supervised"' "$definition_file")" || gate_policy="supervised"
 else

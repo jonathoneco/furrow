@@ -2,7 +2,7 @@
 
 ## Role
 
-You are designing the foundational architecture for a v2 agentic work harness. This phase produces the 4 specs that everything else builds on. Work collaboratively with the human — present options and tradeoffs at each decision point rather than producing finished specs autonomously.
+You are designing the foundational architecture for a v2 agentic workflow harness. This phase produces the 4 specs that everything else builds on. Work collaboratively with the human — present options and tradeoffs at each decision point rather than producing finished specs autonomously.
 
 ## Required Reading
 
@@ -36,7 +36,7 @@ Produce 4 specs in `docs/architecture/`, working through them sequentially since
 
 ### Deliverable 0: Structured Prompt Format Decision
 
-**What**: The harness involves structured prompts throughout — work definitions, eval specs, agent seeding contracts, handoff prompts. Recommend the standard format.
+**What**: Furrow involves structured prompts throughout — work definitions, eval specs, agent seeding contracts, handoff prompts. Recommend the standard format.
 
 **Options to evaluate**:
 - YAML frontmatter + markdown body (Anthropic Skills standard)
@@ -83,7 +83,7 @@ Produce 4 specs in `docs/architecture/`, working through them sequentially since
 
 ### Deliverable 2: File Structure (`docs/architecture/file-structure.md`)
 
-**What**: The complete directory layout of the harness. Every file, its purpose, and which research finding it implements.
+**What**: The complete directory layout of Furrow. Every file, its purpose, and which research finding it implements.
 
 **Must include**:
 - Convention files (work definition schema, eval spec format, progress tracking format)
@@ -111,9 +111,9 @@ Produce 4 specs in `docs/architecture/`, working through them sequentially since
 **What**: Deep specification of the three context tiers, cross-work context flow, and the skill injection matrix.
 
 **Must include**:
-- **Ambient tier**: What exactly goes in CLAUDE.md? How does the harness contribute? Size budget (target: <=200 lines). Maintenance strategy.
+- **Ambient tier**: What exactly goes in CLAUDE.md? How does Furrow contribute? Size budget (target: <=200 lines). Maintenance strategy.
 - **Work tier**: Storage format, loading strategy (eager vs on-demand), eviction policy, maximum budget. Context pointers reference specific symbols/sections, not whole files.
-- **Session tier**: How does the harness interact with conversation context? What should be in conversation vs on disk?
+- **Session tier**: How does Furrow interact with conversation context? What should be in conversation vs on disk?
 - **Skill injection matrix**: Different work phases need different skills loaded. A routing table mapping phase/deliverable-type to the skill set needed.
 - **Model-specific context handling**: Context anxiety is model-dependent. The context strategy should be configurable per model.
 - **Cross-work flow**: How does context promote between tiers? What triggers promotion? Who decides?

@@ -122,23 +122,23 @@ model-dependent, not monotonic. The Harness Design post provides the most
 detailed treatment: it documents the iterative process of building, testing,
 and simplifying a harness across two model generations.
 
-**The harness iteration story** (central narrative of the _Harness Design_ post):
+**Furrow iteration story** (central narrative of the _Harness Design_ post):
 
 A solo run (~$9/20min) and a V1 harness run (~$200/6hr, Opus 4.5) both built a
 game level editor from the same one-sentence prompt. The solo run produced a
-broken app. The harness run — planner expanding the prompt into a 16-feature
+broken app. Furrow run — planner expanding the prompt into a 16-feature
 spec, generator and evaluator negotiating testable sprint contracts — produced
 qualitatively superior output. "The difference in output quality was immediately
 apparent."
 
 But the blog's main contribution is what happened next:
 
-1. **Radical simplification failed**: "I cut the harness back radically and tried
+1. **Radical simplification failed**: "I cut Furrow back radically and tried
    a few creative new ideas, but I wasn't able to replicate the performance."
 2. **Methodical simplification succeeded**: "removing one component at a time and
    reviewing what impact it had." Sprint constructs removed — Opus 4.6 no longer
    needed that decomposition. Evaluator moved from per-sprint to single pass.
-3. **V2 harness** (Opus 4.6): ~$124/4hr for a DAW. Cost breakdown: planner
+3. **Furrow** (Opus 4.6): ~$124/4hr for a DAW. Cost breakdown: planner
    $0.46, builds $71 + $37 + $6, QA $3-5 per round. QA is cheap relative to
    building.
 
@@ -352,7 +352,7 @@ Effort scaling: simple fact-finding (1 agent, 3-10 calls) -> comparisons
 | Long-context retrieval gain          | 27% -> 98%                        | Claude 2.1 Prompting   |
 | Anthropic internal PRs/eng/day       | 67% increase                      | Contribution Metrics   |
 | V1 harness cost (game editor)        | ~$200/6hr                         | Harness Design         |
-| V2 harness cost (DAW)               | ~$124/4hr                         | Harness Design         |
+| Furrow cost (DAW)               | ~$124/4hr                         | Harness Design         |
 | V2 planner cost                      | $0.46/5min                        | Harness Design         |
 | V2 QA cost per round                 | $3-5/7-10min                      | Harness Design         |
 

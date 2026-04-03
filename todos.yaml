@@ -10,7 +10,7 @@
   work_needed: |
     - Audit for any remaining hint files (grep for hint patterns in init-work-unit.sh and skills/)
     - Document the "init hints go in state.json" convention in _rationale.yaml
-    - Add a harness-doctor check that warns if .work/*/.* hint files are found
+    - Add a furrow-doctor check that warns if .work/*/.* hint files are found
   source_work_unit: "harness-ux-fixes"
   source_type: "open-question"
   created_at: "2026-04-02T00:00:00Z"
@@ -18,12 +18,6 @@
   urgency: "low"
   impact: "low"
   effort: "small"
-  phase: 7
-
-# --- Brain dump: 2026-04-02 ---
-
-# Cluster: Interactive Collaboration / Human-in-the-Loop
-
   status: active
 - id: interactive-ideation-checkpoints
   title: "Collaborative check-ins at pre-implementation steps"
@@ -61,7 +55,6 @@
   - "skills/spec.md"
   - "skills/shared/"
 
-  phase: 6
   status: active
 - id: stop-hook-false-positives
   title: "Handle stop hooks enforcing fluff requirements"
@@ -89,7 +82,6 @@
   - "hooks/stop-ideation.sh"
   - "hooks/lib/validate.sh"
 
-  phase: 5
   status: active
 - id: user-action-integration
   title: "Integration points for actions the user must take"
@@ -115,7 +107,6 @@
 
 # Cluster: Seeds & Knowledge Flow
 
-  phase: 7
   status: active
 - id: seeds-concept
   title: "Seeds as a structured knowledge reduction stage"
@@ -142,7 +133,6 @@
   - "references/"
   - "templates/"
 
-  phase: 7
   status: active
 - id: specialist-encoded-reasoning
   title: "Specialists need encoded reasoning, not just role descriptions"
@@ -169,7 +159,6 @@
   - "specialists/"
   - "references/specialist-template.md"
 
-  phase: 6
   status: active
 - id: research-documentation-detection
   title: "Detect when research output should be documentation instead"
@@ -198,7 +187,6 @@
 
 # Cluster: Research Process
 
-  phase: 7
   status: active
 - id: research-source-guidance
   title: "Structured guidance for primary vs secondary source research"
@@ -226,7 +214,6 @@
   - "skills/research.md"
   - "templates/research-sources.md"
 
-  phase: 5
   status: active
 - id: fresh-session-review
   title: "Run review in a truly fresh session (no shared context)"
@@ -255,7 +242,6 @@
   - "skills/shared/eval-protocol.md"
   - "commands/review.md"
 
-  phase: 6
   status: active
 - id: worktree-reintegration-summary
   title: "Produce summary for worktree reintegration"
@@ -280,7 +266,6 @@
 
 # Cluster: TODO / Roadmap System
 
-  phase: 6
   status: active
 - id: todo-context-references
   title: "TODOs with context references from dump and active sessions"
@@ -310,7 +295,6 @@
   - "scripts/triage-todos.sh"
   - "todos.yaml"
 
-  phase: 7
   status: active
 - id: roadmap-todo-integration
   title: "Roadmap provides tackling prompts and merges TODOs"
@@ -341,7 +325,6 @@
 
 # Cluster: Context & Design Patterns
 
-  phase: 7
   status: active
 - id: design-pattern-context-construction
   title: "Context construction driven by design pattern thinking"
@@ -370,7 +353,6 @@
   - "references/"
   - "docs/"
 
-  phase: 7
   status: active
 - id: claude-md-docs-routing
   title: "CLAUDE.md should reference docs routing"
@@ -396,7 +378,6 @@
 
 # Cluster: Model Selection & Cost
 
-  phase: 5
   status: active
 - id: sonnet-model-routing
   title: "Use Sonnet for on-rails tasks, reserve Opus for reasoning"
@@ -426,7 +407,6 @@
 
 # Cluster: Infrastructure / Cleanup
 
-  phase: 5
   status: active
 - id: rename-to-furrow
   title: "Rename project from 'harness' to 'furrow'"
@@ -436,9 +416,9 @@
     references in code, commands, docs, and CLAUDE.md.
   work_needed: |
     - Rename the repository/directory
-    - Update all command names (/harness:* → /furrow:* or similar)
+    - Update all command names (/furrow:* → /furrow:* or similar)
     - Update CLAUDE.md, rules, docs references
-    - Update install.sh and harness.yaml naming
+    - Update install.sh and furrow.yaml naming
     - Update _rationale.yaml references
     - Grep for "harness" across all files and replace
   source_type: "brain-dump"
@@ -450,7 +430,6 @@
   files_touched:
   - "*"
 
-  phase: 4
   status: active
   depends_on:
   - duplication-cleanup
@@ -460,16 +439,16 @@
     There's duplication between the harness source (furrow) and installed copies
     in .claude/. Either use symlinks to keep a single source of truth or implement
     a build-time copy step that stamps versions. Additionally, command naming is
-    inconsistent — some commands are namespaced (harness:work, harness:status) while
+    inconsistent — some commands are namespaced (furrow:work, furrow:status) while
     others are bare (work-todos, work-roadmap, work-fix, etc.). All tooling should
-    be under a consistent namespace (harness:* now, furrow:* after rename).
+    be under a consistent namespace (furrow:* now, furrow:* after rename).
   work_needed: |
     - Audit current duplication between harness source and installed locations
     - Evaluate symlinks vs build-time copy tradeoffs (symlinks are simpler but less portable)
     - Implement the chosen strategy in install.sh
     - Ensure cross-platform compatibility (symlinks behave differently on Windows)
     - Audit all command names for namespace consistency
-    - Align all commands under harness:* (or furrow:* if rename-to-furrow lands first)
+    - Align all commands under furrow:* (or furrow:* if rename-to-furrow lands first)
     - Update install.sh to enforce the namespace during installation
     - Update CLAUDE.md command table, rules, and any docs referencing old names
   references:
@@ -483,7 +462,6 @@
   files_touched:
   - "install.sh"
 
-  phase: 4
   status: active
 - id: cross-platform-compatibility
   title: "Cross-platform compatibility check"
@@ -509,7 +487,6 @@
 
 # Cluster: Work Artifact Lifecycle
 
-  phase: 4
   status: active
   depends_on:
   - rename-to-furrow
@@ -554,7 +531,6 @@
 
 # Cluster: Integrations & Extensions
 
-  phase: 7
   status: active
 - id: beans-enforcement-integration
   title: "Beans task management for enforcement layer and programmatic checks"
@@ -578,7 +554,6 @@
   - "commands/lib/step-transition.sh"
   - "commands/lib/init-work-unit.sh"
 
-  phase: 4
   status: active
 - id: legacy-todos-migration
   title: "Incorporate legacy TODOs into the system after beans integration"
@@ -602,7 +577,6 @@
   files_touched:
   - "todos.yaml"
 
-  phase: 4
   status: active
 - id: mine-claude-code
   title: "Mine Claude Code for reusable patterns and capabilities"
@@ -623,7 +597,6 @@
   impact: "medium"
   effort: "small"
   files_touched: []
-  phase: 7
   status: active
 
 - id: merge-specialist
@@ -653,7 +626,6 @@
 
 # Cluster: Agent Orchestration Adoption
 
-  phase: 4
   status: active
 - id: parallel-agent-orchestration-adoption
   title: "Built-in team orchestration isn't being used — diagnose and fix"
@@ -702,7 +674,6 @@
 
 # Cluster: Advanced / Exploratory
 
-  phase: 6
   status: active
 - id: memetic-algorithms-research
   title: "Research memetic algorithms for LLM orchestration"
@@ -723,7 +694,6 @@
   impact: "low"
   effort: "large"
   files_touched: []
-  phase: 8
   status: active
 
 # Cluster: Harness UX / Ergonomics
@@ -757,7 +727,6 @@
   - "commands/lib/gate-precheck.sh"
   - "skills/"
 
-  phase: 5
   status: active
 - id: default-supervised-gating
   title: "Default gate policy should be supervised, not auto-advance"
@@ -766,15 +735,26 @@
     passage rather than the agent auto-advancing. Auto-advance is appropriate
     for well-understood pipelines, but the default should be the safer option
     where the user reviews gate results and decides whether to proceed.
+    Additionally, supervised mode currently has no structural enforcement —
+    the agent can call step-transition.sh with "manual" as the decider without
+    actually pausing for user review. The namespace-rename work unit demonstrated
+    this: it steamrolled from research through implement without a single user
+    interaction turn after ideation.
   work_needed: |
-    - Change the default gate_policy in harness.yaml / init-work-unit.sh to "supervised"
+    - Change the default gate_policy in furrow.yaml / init-work-unit.sh to "supervised"
     - Ensure /work --gate-policy flag still allows override to "auto" or "manual"
     - Update documentation and CLAUDE.md to reflect the new default
     - Audit existing step-transition.sh for supervised flow (pause, present evidence, ask)
+    - Enforce supervised pause structurally: step-transition.sh or a hook should reject
+      transitions in supervised mode unless there's evidence of user interaction (e.g.,
+      a conversation turn marker, or explicit "present output and wait" in step skills)
+    - Add explicit "present and wait" instructions to each step skill's transition section
+      for supervised mode — the agent must show the step's output and get user sign-off
   references:
   - "commands/lib/step-transition.sh"
   - "commands/lib/init-work-unit.sh"
   - "references/gate-protocol.md"
+  - "skills/shared/summary-protocol.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -784,9 +764,8 @@
   files_touched:
   - "commands/lib/step-transition.sh"
   - "commands/lib/init-work-unit.sh"
-  - ".claude/harness.yaml"
+  - ".claude/furrow.yaml"
 
-  phase: 5
   status: active
 - id: script-access-restrictions
   title: "Restrict direct access to internal/dependency scripts"
@@ -817,7 +796,6 @@
   - "scripts/"
   - "hooks/"
 
-  phase: 7
   status: active
 - id: guard-against-horizontal-slices
   title: "Guard against horizontal slices in decomposition"
@@ -851,7 +829,6 @@
 
 # Cluster: Meta-Process
 
-  phase: 5
   status: active
 - id: brain-dump-triage-command
   title: "Brain dump triage command to turn notes into actionable TODOs"
@@ -880,5 +857,4 @@
   files_touched:
   - "commands/"
   - "commands/work-todos.md"
-  phase: 6
   status: active

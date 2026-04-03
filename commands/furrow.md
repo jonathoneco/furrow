@@ -1,4 +1,4 @@
-# /harness <subcommand>
+# /furrow <subcommand>
 
 Harness-level management operations: health check, updates, self-modification.
 
@@ -6,40 +6,40 @@ Harness-level management operations: health check, updates, self-modification.
 
 ### doctor
 
-Run health check on harness installation.
+Run health check on Furrow installation.
 
-1. Check `_rationale.yaml` for missing entries (every harness file must have one).
+1. Check `_rationale.yaml` for missing entries (every Furrow file must have one).
 2. Check for stale `delete_when` conditions that may now be satisfied.
 3. Verify skill instruction counts (step skills must be <=50 lines).
 4. Verify total injected context (ambient + work + step) <=300 lines.
-5. Run `scripts/harness-doctor.sh` for structural validation.
+5. Run `scripts/furrow-doctor.sh` for structural validation.
 6. Report findings with severity (error, warning, info).
 
 ### update
 
-Compare project configuration against installed harness version.
+Compare project configuration against installed Furrow version.
 
-1. Read `.claude/harness.yaml` from the project.
-2. Compare against the installed harness version's expected configuration.
+1. Read `.claude/furrow.yaml` from the project.
+2. Compare against the installed Furrow version's expected configuration.
 3. Report drift: missing fields, deprecated fields, version mismatches.
 4. Suggest updates if the project config is behind.
 
 ### meta
 
-Enter harness self-modification mode.
+Enter Furrow self-modification mode.
 
-1. Load harness component inventory from `_rationale.yaml`.
-2. Display harness structure: layers, files, hooks, commands.
+1. Load Furrow component inventory from `_rationale.yaml`.
+2. Display Furrow structure: layers, files, hooks, commands.
 3. Present modification guidelines:
    - Sync contract: command table in `workflow.md` must match `commands/`.
    - Context budget: changes must not exceed layer budgets.
    - Rationale: every new file needs a `_rationale.yaml` entry.
-4. Agent is ready to accept harness modification instructions.
+4. Agent is ready to accept Furrow modification instructions.
 
 ## Usage
 
 ```
-/harness doctor    — Check harness health
-/harness update    — Check for configuration drift
-/harness meta      — Enter self-modification mode
+/furrow doctor    — Check Furrow health
+/furrow update    — Check for configuration drift
+/furrow meta      — Enter self-modification mode
 ```

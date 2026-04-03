@@ -23,20 +23,20 @@ fi
 name="$1"
 boundary="$2"
 
-# --- resolve harness root and source libraries ---
+# --- resolve Furrow root and source libraries ---
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-HARNESS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+FURROW_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # shellcheck source=../hooks/lib/validate.sh
-. "$HARNESS_ROOT/hooks/lib/validate.sh"
+. "$FURROW_ROOT/hooks/lib/validate.sh"
 
 # shellcheck source=../hooks/lib/common.sh
-. "$HARNESS_ROOT/hooks/lib/common.sh"
+. "$FURROW_ROOT/hooks/lib/common.sh"
 
 # --- locate state ---
 
-work_dir="${HARNESS_ROOT}/.work/${name}"
+work_dir="${FURROW_ROOT}/.work/${name}"
 state_file="${work_dir}/state.json"
 def_file="${work_dir}/definition.yaml"
 
@@ -77,7 +77,7 @@ case "${boundary}" in
     fi
 
     # Validate against schema if validation script available
-    validate_script="${HARNESS_ROOT}/scripts/validate-definition.sh"
+    validate_script="${FURROW_ROOT}/scripts/validate-definition.sh"
     if [ -x "${validate_script}" ]; then
       if ! "${validate_script}" "${def_file}" > /dev/null 2>&1; then
         fail "ideate->research: ${def_file} failed schema validation"

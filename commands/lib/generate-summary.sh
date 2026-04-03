@@ -39,7 +39,7 @@ done
 # --- delegate to existing regenerate-summary.sh for skeleton ---
 
 script_dir="$(cd "$(dirname "$0")" && pwd)"
-harness_root="$(cd "${script_dir}/../.." && pwd)"
+furrow_root="$(cd "${script_dir}/../.." && pwd)"
 
 work_dir=".work/${name}"
 state_file="${work_dir}/state.json"
@@ -51,7 +51,7 @@ if [ ! -f "${state_file}" ]; then
 fi
 
 # Generate the skeleton using the existing script
-"${harness_root}/scripts/regenerate-summary.sh" "${name}"
+"${furrow_root}/scripts/regenerate-summary.sh" "${name}"
 
 # --- if auto-advance, overwrite agent sections with auto-generated content ---
 

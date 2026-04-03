@@ -2,7 +2,7 @@
 
 ## Decision: Three formats, matched to authoring pattern
 
-The harness has three distinct artifact types. Each gets the format that fits its authoring and consumption pattern.
+Furrow has three distinct artifact types. Each gets the format that fits its authoring and consumption pattern.
 
 ### 1. YAML — human-authored data
 

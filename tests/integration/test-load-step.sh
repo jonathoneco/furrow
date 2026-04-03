@@ -3,7 +3,7 @@
 #
 # Sourced by the test runner. Requires helpers.sh (provides setup_fixture,
 # teardown_fixture, assert_exit_code, assert_file_exists, assert_file_contains,
-# assert_file_not_contains, HARNESS_ROOT).
+# assert_file_not_contains, FURROW_ROOT).
 
 # --- helper: set up fixture with symlinked load-step.sh and commands/lib structure ---
 
@@ -12,7 +12,7 @@ _setup_load_step_fixture() {
   setup_fixture "$_name"
 
   mkdir -p "${FIXTURE_DIR}/commands/lib"
-  ln -sf "${HARNESS_ROOT}/commands/lib/load-step.sh" "${FIXTURE_DIR}/commands/lib/load-step.sh"
+  ln -sf "${FURROW_ROOT}/commands/lib/load-step.sh" "${FIXTURE_DIR}/commands/lib/load-step.sh"
 }
 
 # --- helper: write state.json with a given step and gates array ---

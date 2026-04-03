@@ -14,14 +14,14 @@ V1 reimplemented ~70% of what Claude Code provides natively. The platforms have
 converged — Claude Code, Agent SDK, and every major framework now offer agent
 loops, tool management, subagents, session management, and lifecycle hooks.
 
-**The harness's job is not to provide infrastructure.** It is to define:
+**Furrow's job is not to provide infrastructure.** It is to define:
 
 - **What** work looks like (decomposition and definition)
 - **How** to evaluate work (eval framework)
 - **Where** context lives and how it flows (context architecture)
 - **When** to involve humans or specialized reviewers (quality gates)
 
-Everything else should be delegated to the platform. If the harness is doing
+Everything else should be delegated to the platform. If Furrow is doing
 something Claude Code or the Agent SDK already does, that component should be
 deleted.
 
@@ -42,7 +42,7 @@ enforced by platform primitives.
 
 Claude Code (interactive, human-in-loop, skills/hooks) and Agent SDK
 (autonomous, programmatic, callback-based) are fundamentally different execution
-models. The only way to serve both is to define the harness at a level *above*
+models. The only way to serve both is to define Furrow at a level *above*
 the runtime:
 
 - Work definitions (what needs to be done)
@@ -92,10 +92,10 @@ The key refinement: each tier should map to a different **management mechanism**
 and **storage location**, not just a different lifespan:
 
 - **Ambient** → CLAUDE.md + hooks + skill metadata (platform-native, auto-loaded)
-- **Scoped** → structured files in a work directory (harness-managed, loaded at work start)
+- **Scoped** → structured files in a work directory (Furrow-managed, loaded at work start)
 - **Ephemeral** → conversation context + task system + worktree state (platform-native, session-bound)
 
-The harness owns the middle tier. The platform owns the other two.
+Furrow owns the middle tier. The platform owns the other two.
 
 ### 5. Generator-Evaluator Separation is the Core Architectural Principle
 
@@ -134,7 +134,7 @@ strategy within these guardrails.
 ### 7. The Harness Should Be Mostly Files
 
 The dual-runtime constraint + thin convention layer + file-based inter-agent
-communication pattern all converge: **the harness is primarily a set of file
+communication pattern all converge: **Furrow is primarily a set of file
 conventions**, not a software system.
 
 - Work definitions: files
@@ -150,7 +150,7 @@ whether it works, not by line count.
 ### 8. Design for Deletion, Not Extension
 
 Every component encodes an assumption about what the model can't do on its own.
-Those assumptions have a half-life. The harness should be designed so that
+Those assumptions have a half-life. Furrow should be designed so that
 removing any component is easy and low-risk:
 
 - Each component has a "this exists because [model limitation]" annotation
@@ -168,7 +168,7 @@ Decisions are not independent. Some constrain others:
 
 ```
 ┌──────────────────────────────────┐
-│  What is the harness?            │  ← Foundational: defines identity
+│  What is Furrow?            │  ← Foundational: defines identity
 │  (Platform boundary)             │
 └──────────┬───────────────────────┘
            │ constrains
@@ -217,13 +217,13 @@ Structure should be *outcome-shaped*, not *process-shaped*.
 
 The research identifies real gaps that neither platform fills (eval
 infrastructure, work-level context management, generator-evaluator enforcement).
-Being too thin means the harness doesn't actually help. Being too thick means it
+Being too thin means Furrow doesn't actually help. Being too thick means it
 reimplements the platform.
 
-**Resolution direction**: The harness provides conventions + enforcement skeleton
+**Resolution direction**: Furrow provides conventions + enforcement skeleton
 from platform primitives. Platform-native enforcement (hooks, callbacks, schema
 validation) IS convention — it's declarative lifecycle binding, not custom code.
-The harness uses platform primitives for enforcement where failure severity is
+Furrow uses platform primitives for enforcement where failure severity is
 High or Critical.
 
 ### Tension 3: Eval Rigor vs. Bootstrap Cost
@@ -256,7 +256,7 @@ for that type.
 
 ### Tension 5: Human-in-Loop vs. Autonomous
 
-The harness must work interactively (Claude Code, human present) and
+Furrow must work interactively (Claude Code, human present) and
 autonomously (Agent SDK, human absent). These have different trust models,
 different failure modes, and different quality requirements.
 
@@ -288,6 +288,6 @@ The research points toward a harness that is:
 
 The detailed analysis of each decision area follows in companion documents:
 
-- [Platform Boundary Analysis](findings-platform-boundary.md) — what the harness is and isn't
+- [Platform Boundary Analysis](findings-platform-boundary.md) — what Furrow is and isn't
 - [Work & Context Architecture](findings-work-and-context.md) — decomposition, context flow, coordination
 - [Eval Architecture & Quality Gates](findings-eval-and-quality.md) — eval strategy, quality calibration, bootstrapping

@@ -3,17 +3,17 @@
 #
 # Sourced by the test runner. Requires helpers.sh (provides setup_fixture,
 # teardown_fixture, assert_exit_code, assert_file_exists, assert_json_field,
-# HARNESS_ROOT).
+# FURROW_ROOT).
 
-# --- helper: set up symlink structure so check-artifacts.sh resolves HARNESS_ROOT to FIXTURE_DIR ---
+# --- helper: set up symlink structure so check-artifacts.sh resolves FURROW_ROOT to FIXTURE_DIR ---
 
 _setup_artifacts_fixture() {
   _name="$1"
   setup_fixture "$_name"
 
   mkdir -p "${FIXTURE_DIR}/scripts" "${FIXTURE_DIR}/hooks/lib"
-  ln -sf "${HARNESS_ROOT}/scripts/check-artifacts.sh" "${FIXTURE_DIR}/scripts/check-artifacts.sh"
-  ln -sf "${HARNESS_ROOT}/hooks/lib/validate.sh" "${FIXTURE_DIR}/hooks/lib/validate.sh"
+  ln -sf "${FURROW_ROOT}/scripts/check-artifacts.sh" "${FIXTURE_DIR}/scripts/check-artifacts.sh"
+  ln -sf "${FURROW_ROOT}/hooks/lib/validate.sh" "${FIXTURE_DIR}/hooks/lib/validate.sh"
 }
 
 # --- helper: write a minimal valid state.json ---

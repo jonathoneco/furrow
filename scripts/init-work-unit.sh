@@ -83,8 +83,8 @@ mv "${tmp_state}" "${work_dir}/state.json"
 meta_dir=".work"
 if [ ! -f "${meta_dir}/_meta.yaml" ]; then
   script_dir="$(cd "$(dirname "$0")" && pwd)"
-  harness_root="$(cd "${script_dir}/.." && pwd)"
-  meta_template="${harness_root}/references/work-unit-meta.yaml"
+  furrow_root="$(cd "${script_dir}/.." && pwd)"
+  meta_template="${furrow_root}/references/work-unit-meta.yaml"
   if [ -f "${meta_template}" ]; then
     cp "${meta_template}" "${meta_dir}/_meta.yaml"
   fi

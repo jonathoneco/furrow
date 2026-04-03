@@ -29,23 +29,23 @@ The central question for each proposal: **what happens when the model doesn't do
 
 The findings describe what happens _inside_ the workflow but are thin on how the model enters it. This is the most critical gap.
 
-**In Agent SDK mode**, entry is clean — the program loads the work definition, injects it as system context, and controls the agent loop. The model starts inside the harness because the program put it there.
+**In Agent SDK mode**, entry is clean — the program loads the work definition, injects it as system context, and controls the agent loop. The model starts inside Furrow because the program put it there.
 
 **In Claude Code mode**, the model has full agency. A skill or hook can inject the work definition, but nothing prevents the model from treating it as reference material it reads once and then ignores. The Anthropic blog documents exactly this: instructions fade over long context horizons.
 
 **Minimum enforcement**: A session-start hook (or skill invocation) that loads the work definition and current progress state into the conversation. This is necessary but not sufficient — the model must also _stay_ in the workflow. The real backstop is the eval gate: even if the model drifts during execution, it cannot claim completion without triggering evaluation. The entry hook gets the model oriented; the eval gate keeps the output honest.
 
-**What this means for the architecture**: The harness needs a concept of "active work" — a session is either operating within a work definition or it isn't. The hook at session start establishes this. The progress.json file is the persistent proof. If no work definition is active, the harness conventions don't apply (the model is just doing ad-hoc work, which is fine).
+**What this means for the architecture**: Furrow needs a concept of "active work" — a session is either operating within a work definition or it isn't. The hook at session start establishes this. The progress.json file is the persistent proof. If no work definition is active, Furrow conventions don't apply (the model is just doing ad-hoc work, which is fine).
 
 ## 2. The Enforcement Spectrum
 
-The findings position the harness as "conventions, not engine." This is the right identity, but "convention" spans a wide range. The key insight the findings miss: there are three enforcement levels available, not two.
+The findings position Furrow as "conventions, not engine." This is the right identity, but "convention" spans a wide range. The key insight the findings miss: there are three enforcement levels available, not two.
 
-**Level A — Structural convention** (tools respect it automatically): `.editorconfig`, `tsconfig.json`, progress.json schema validation, subagent context isolation. The model doesn't choose to follow these; the tooling or architecture enforces them. The harness should use this level wherever possible — schema validation on work definitions and progress files, directory structure conventions that tools expect, and subagent boundaries that enforce context isolation and generator-evaluator separation by construction.
+**Level A — Structural convention** (tools respect it automatically): `.editorconfig`, `tsconfig.json`, progress.json schema validation, subagent context isolation. The model doesn't choose to follow these; the tooling or architecture enforces them. Furrow should use this level wherever possible — schema validation on work definitions and progress files, directory structure conventions that tools expect, and subagent boundaries that enforce context isolation and generator-evaluator separation by construction.
 
-**Level B — Event-driven enforcement** (hooks/callbacks at decision points): This is where Claude Code hooks and Agent SDK callbacks shine. Not front-loaded instructions that fade, but reminders injected at the moment of decision. The Anthropic blog and paradigm-shift doc both validate this: event-triggered system reminders at decision points outperform passive instructions. The harness should use this for: eval triggering at completion claims, context loading at session start, progress validation before proceeding to next deliverable.
+**Level B — Event-driven enforcement** (hooks/callbacks at decision points): This is where Claude Code hooks and Agent SDK callbacks shine. Not front-loaded instructions that fade, but reminders injected at the moment of decision. The Anthropic blog and paradigm-shift doc both validate this: event-triggered system reminders at decision points outperform passive instructions. Furrow should use this for: eval triggering at completion claims, context loading at session start, progress validation before proceeding to next deliverable.
 
-**Level C — Advisory convention** (model chooses to follow): CLAUDE.md instructions, work definition constraints, process guidance. The model may or may not comply. The harness should use this only for things where non-compliance is tolerable or where the behavior is too contextual to enforce procedurally.
+**Level C — Advisory convention** (model chooses to follow): CLAUDE.md instructions, work definition constraints, process guidance. The model may or may not comply. Furrow should use this only for things where non-compliance is tolerable or where the behavior is too contextual to enforce procedurally.
 
 **The findings implicitly treat most conventions as Level C.** The gap review's primary recommendation is to promote critical conventions to Level A or B:
 
@@ -69,13 +69,13 @@ The findings state "design for deletion — each component encodes an assumption
 
 **Assumption: Outcome-based guardrails are sufficient without process guardrails.** The findings argue for "constrain deliverables, not process." This is correct as a design principle but insufficient as an enforcement strategy. If the model one-shots all deliverables in a single pass, the outcome eval runs once at the end against an unstructured blob. The eval architecture assumes deliverables are completed and evaluated sequentially. Process guardrails — specifically, the one-at-a-time discipline enforced at Level B — are necessary for the outcome-based eval architecture to function.
 
-**Assumption: The model will self-report progress accurately.** Progress.json is the lynchpin. It triggers evals, tracks state across sessions, enables the work summary. If the model doesn't update it, or updates it dishonestly, the harness loses its feedback loop. The mitigation: evals verify artifacts, not claims. Progress.json is a trigger mechanism and index, not evidence. The eval itself checks whether the deliverable actually exists and works.
+**Assumption: The model will self-report progress accurately.** Progress.json is the lynchpin. It triggers evals, tracks state across sessions, enables the work summary. If the model doesn't update it, or updates it dishonestly, Furrow loses its feedback loop. The mitigation: evals verify artifacts, not claims. Progress.json is a trigger mechanism and index, not evidence. The eval itself checks whether the deliverable actually exists and works.
 
 ## 4. Implicit Scaling Needs a Procedural Floor
 
 The implicit scaling proposal — same format for everything, deliverable count _is_ the tier — is elegant. But it has an unaddressed failure mode at both ends.
 
-**At the simple end**: The model skips the work definition entirely. A one-line bug fix doesn't feel like it needs a definition file, deliverables, and eval criteria. The model will just fix the bug. This is arguably fine — the overhead of creating a work definition for trivial work exceeds the value. **The harness should explicitly support this**: work below a complexity threshold doesn't need a work definition. The threshold is the model's judgment in supervised mode, and a simple heuristic (e.g., estimated changes touch ≤2 files) in autonomous mode.
+**At the simple end**: The model skips the work definition entirely. A one-line bug fix doesn't feel like it needs a definition file, deliverables, and eval criteria. The model will just fix the bug. This is arguably fine — the overhead of creating a work definition for trivial work exceeds the value. **Furrow should explicitly support this**: work below a complexity threshold doesn't need a work definition. The threshold is the model's judgment in supervised mode, and a simple heuristic (e.g., estimated changes touch ≤2 files) in autonomous mode.
 
 **At the complex end**: The model under-scopes. Writing 3 vague deliverables for a 10-deliverable initiative is the default failure mode. In supervised mode, the human catches this. In autonomous mode, nothing does.
 
@@ -83,7 +83,7 @@ The implicit scaling proposal — same format for everything, deliverable count 
 
 ## 5. Context Management Should Be Proactive, Not Reactive
 
-The findings propose "the harness makes session boundaries safe" via an always-current work summary. This treats the symptom. The actual problem is uncontrolled context growth. If context is managed well, unplanned boundaries (compaction, crash, user closes terminal) are cheap to recover from because work state lives in files, not conversation history. The harness should focus on not filling context uncontrollably in the first place.
+The findings propose "Furrow makes session boundaries safe" via an always-current work summary. This treats the symptom. The actual problem is uncontrolled context growth. If context is managed well, unplanned boundaries (compaction, crash, user closes terminal) are cheap to recover from because work state lives in files, not conversation history. Furrow should focus on not filling context uncontrollably in the first place.
 
 ### Root causes of context bloat
 
@@ -95,7 +95,7 @@ _Prevention_: The work definition's context pointers should reference specific s
 
 **2. Verbose tool output accumulation.** Tool results (compiler errors, test output, grep results) can be large and accumulate across iterations. Each correction cycle adds another round of full output.
 
-_Prevention_: Tool output is ephemeral by nature — it belongs in the session tier, not the work tier. The key defense is the correction limit (behavior #5 in the catalog): after N failed eval or fix cycles on one deliverable, the model pauses rather than accumulating more verbose output. This is a Level B enforcement (hook-enforced limit). Beyond the correction limit, the harness can't control tool output size — that's a platform concern. But it can prevent the spiral that generates unbounded amounts of it.
+_Prevention_: Tool output is ephemeral by nature — it belongs in the session tier, not the work tier. The key defense is the correction limit (behavior #5 in the catalog): after N failed eval or fix cycles on one deliverable, the model pauses rather than accumulating more verbose output. This is a Level B enforcement (hook-enforced limit). Beyond the correction limit, Furrow can't control tool output size — that's a platform concern. But it can prevent the spiral that generates unbounded amounts of it.
 
 **3. Correction spiral accumulation.** Each failed attempt leaves its reasoning, diffs, error messages, and retry logic in context. After 3-4 cycles, the correction history may dominate the window.
 
@@ -113,7 +113,7 @@ The connection: deliverable granularity should be informed by context capacity. 
 
 This doesn't require the model to estimate context budgets explicitly — that's fragile and model-dependent. Instead, it's a scoping heuristic: **a deliverable should be completable in a single focused session.** If the model (or human, in supervised mode) can't envision completing a deliverable without needing to "load a lot of code" or "do many rounds of iteration," it's too large. The scope-check eval (§4) can incorporate this: does each deliverable look completable in one pass, or does it require deep cross-cutting context?
 
-This reframes the context management problem as a scoping problem. The harness doesn't monitor context and react — it encourages deliverables small enough that context management is tractable, then relies on the correction limit as a backstop if a deliverable turns out to be larger than expected.
+This reframes the context management problem as a scoping problem. Furrow doesn't monitor context and react — it encourages deliverables small enough that context management is tractable, then relies on the correction limit as a backstop if a deliverable turns out to be larger than expected.
 
 The deepest structural answer to context management is the multi-agent team model (§6). When each deliverable executes in its own specialist's context, context bloat becomes a per-specialist problem bounded by agent lifetime — not a cumulative problem across the entire work unit. Parallel execution of independent deliverables compounds the benefit: three specialists running concurrently each have their own context window. Deliverable sizing still matters (a single deliverable can fill its specialist's context), but the blast radius is contained.
 
@@ -127,7 +127,7 @@ The deepest structural answer to context management is the multi-agent team mode
 
 ### What's removed
 
-The "context at 70% — consider completing current deliverable" warning is removed. It induces the context anxiety behavior documented in the Anthropic blog: the model rushes to close work, writes a superficial completion claim, and either evaluates half-finished work or skips eval entirely. A reactive warning that tells the model "you're running out of room" creates exactly the panic behavior the harness is designed to prevent. If the proactive mechanisms (targeted loading, correction limits, deliverable sizing) work, the warning is unnecessary. If they don't, the warning makes things worse.
+The "context at 70% — consider completing current deliverable" warning is removed. It induces the context anxiety behavior documented in the Anthropic blog: the model rushes to close work, writes a superficial completion claim, and either evaluates half-finished work or skips eval entirely. A reactive warning that tells the model "you're running out of room" creates exactly the panic behavior Furrow is designed to prevent. If the proactive mechanisms (targeted loading, correction limits, deliverable sizing) work, the warning is unnecessary. If they don't, the warning makes things worse.
 
 ## 6. Multi-Agent Execution as the Default Model
 
@@ -137,7 +137,7 @@ For any work with 2+ deliverables, the default execution model is a **multi-agen
 
 ### The four-role architecture
 
-The Anthropic blog validates a planner-generator-evaluator separation. The harness extends this into four roles:
+The Anthropic blog validates a planner-generator-evaluator separation. Furrow extends this into four roles:
 
 **Planner.** Reads the objective and produces the work definition: deliverables with eval criteria, dependency graph, specialist assignments, and context pointers. The planner's output is the contract. In supervised mode, the human collaborates on planning. In delegated mode, the planner's output is what the human approves at the handoff moment (§7). In autonomous mode, the planner operates independently — the scope-check eval (§4) validates its output.
 
@@ -218,12 +218,12 @@ The same structural benefits identified earlier, now amplified by specialization
 
 ### Agent teams as the coordination primitive
 
-Both platforms provide team-level primitives that the harness should use directly:
+Both platforms provide team-level primitives that Furrow should use directly:
 
 - **Claude Code**: The teams feature manages agent composition, communication, and lifecycle. The work definition maps to a team: coordinator + specialists + evaluator.
 - **Agent SDK**: Nested agent spawning with programmatic lifecycle control. The coordinator program spawns specialist agents and eval agents.
 
-The harness's team convention: the work definition specifies (or the coordinator derives) a **team composition** — which specialists are needed, how many can run in parallel, and what eval configuration to use. The coordinator manages the team, not individual spawn/kill cycles.
+Furrow's team convention: the work definition specifies (or the coordinator derives) a **team composition** — which specialists are needed, how many can run in parallel, and what eval configuration to use. The coordinator manages the team, not individual spawn/kill cycles.
 
 ### Where single-agent remains appropriate
 
@@ -250,7 +250,7 @@ The findings frame the dual-runtime constraint as "Claude Code vs Agent SDK" wit
 | **Delegated** | Human + agent | Autonomous | Artifact review | Prep gate human, execution gates automated |
 | **Autonomous** | Agent or trigger | Autonomous | PR review | All gates automated, human reviews final artifact |
 
-**Key implications for the harness:**
+**Key implications for the furrow:**
 
 The agent behaves identically at every level. Same work definitions, same eval gates, same progress tracking. The only variable is a **gate policy**: does this gate pause for human input, or proceed automatically? This is a configuration parameter on the work definition, not an architectural split.
 
@@ -262,9 +262,9 @@ The artifact contract intensifies at higher trust levels. At supervised, the hum
 
 ## 8. The Calibration Bootstrap
 
-The eval architecture proposes iterative calibration of LLM-as-judge evaluators, but faces a circular dependency: calibration needs human-reviewed outputs, which need the harness producing work, which may need calibrated evaluators.
+The eval architecture proposes iterative calibration of LLM-as-judge evaluators, but faces a circular dependency: calibration needs human-reviewed outputs, which need Furrow producing work, which may need calibrated evaluators.
 
-The resolution: LLM-judge gates from first use. Calibration is ongoing improvement, not a prerequisite for gating. The bootstrap corpus comes from the harness's own development.
+The resolution: LLM-judge gates from first use. Calibration is ongoing improvement, not a prerequisite for gating. The bootstrap corpus comes from Furrow's own development.
 
 **Phase 0: Foundation (day 1)**
 
@@ -278,7 +278,7 @@ The resolution: LLM-judge gates from first use. Calibration is ongoing improveme
 - Run pytest/shell evals at deliverable boundaries — gating.
 - Run behavioral trace evals (one-at-a-time discipline, eval-at-boundaries, completion claims) — gating.
 - Both eval types gate: work doesn't proceed until they pass.
-- Use the harness to build itself. Human-reviewed artifacts become the initial calibration corpus.
+- Use Furrow to build itself. Human-reviewed artifacts become the initial calibration corpus.
 
 **Phase 2: LLM-judge gating + cross-model eval (week 1-2)**
 
@@ -331,13 +331,13 @@ This catalog reveals the enforcement skeleton: behaviors 1, 4, 10 need hard gate
 
 ## 10. Revisions to Key Insights
 
-**Insight #1 (Convention Layer, Not Engine)** — Upheld, but needs qualification. A convention layer without an enforcement skeleton is a README. The harness is conventions + the minimum hooks/gates that make those conventions trustworthy. The enforcement skeleton is part of the convention layer, not a departure from it.
+**Insight #1 (Convention Layer, Not Engine)** — Upheld, but needs qualification. A convention layer without an enforcement skeleton is a README. Furrow is conventions + the minimum hooks/gates that make those conventions trustworthy. The enforcement skeleton is part of the convention layer, not a departure from it.
 
 **Insight #3 (Eval-First Means Evals Define Behavior)** — Upheld in principle, but the behavior list the evals would test is missing. This insight is incomplete until the behavior catalog exists. The catalog is the bridge between the eval architecture and the enforcement spectrum.
 
-**Insight #6 (Outcome-Based, Not Process-Based)** — Needs revision. Outcome-based decomposition is correct. But the eval architecture depends on sequential deliverable completion — which is a process constraint. The harness needs minimal process guardrails (one-at-a-time, eval-at-boundaries) to make the outcome-based eval architecture function. "Outcome-based with structural process guardrails" is the accurate framing.
+**Insight #6 (Outcome-Based, Not Process-Based)** — Needs revision. Outcome-based decomposition is correct. But the eval architecture depends on sequential deliverable completion — which is a process constraint. Furrow needs minimal process guardrails (one-at-a-time, eval-at-boundaries) to make the outcome-based eval architecture function. "Outcome-based with structural process guardrails" is the accurate framing.
 
-**Insight #7 (The Harness Should Be Mostly Files)** — Upheld and reinforced. The multi-agent team model depends on file-based communication. Specialists receive context via files, return results via files. The coordinator reads file-based progress and results. The harness's file-centric identity enables the team architecture.
+**Insight #7 (The Harness Should Be Mostly Files)** — Upheld and reinforced. The multi-agent team model depends on file-based communication. Specialists receive context via files, return results via files. The coordinator reads file-based progress and results. Furrow's file-centric identity enables the team architecture.
 
 **Insight #8 (Design for Deletion)** — Upheld. The enforcement skeleton itself should be designed for deletion. Each hook encodes an assumption about model behavior that should be re-tested as models improve. Specialist agents are a deletion candidate: if future models don't benefit from domain priming, generalist execution suffices. Cross-model evaluation is a deletion candidate: if single-model self-evaluation becomes reliable, the second model adds no value. Parallelism is not a deletion candidate — it's a permanent speed advantage.
 
@@ -369,6 +369,6 @@ This catalog reveals the enforcement skeleton: behaviors 1, 4, 10 need hard gate
 
 6. **How does the work definition schema support team composition?** The schema needs: dependency annotations between deliverables, specialist type mappings, eval model configuration (default cross-model). How much is explicit in the work definition vs derived by the coordinator?
 
-7. **What is the specialist agent definition format?** Domain specialists need system prompts that prime their reasoning. Where do these live — in the harness as reusable agent definitions, or inline in the work definition? How many specialist types does the harness ship with vs how many are defined per-project?
+7. **What is the specialist agent definition format?** Domain specialists need system prompts that prime their reasoning. Where do these live — in Furrow as reusable agent definitions, or inline in the work definition? How many specialist types does Furrow ship with vs how many are defined per-project?
 
 8. **How does cross-model evaluation work in practice with Agent SDK?** Claude Code can spawn agents with different models via the Agent tool. The Agent SDK's model selection is programmatic. What's the concrete mechanism for the evaluator using a different model than the specialist? Is this a harness convention or does it require platform support?

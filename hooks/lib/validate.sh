@@ -1,5 +1,5 @@
 #!/bin/sh
-# validate.sh — Structural validation functions for V2 harness schemas
+# validate.sh — Structural validation functions for Furrow schemas
 #
 # Sourced by hook scripts; not executed directly.
 # Dependencies: jq, yq

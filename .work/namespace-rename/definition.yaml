@@ -1,0 +1,66 @@
+objective: >
+  Rename project namespace from "harness" to "furrow", consolidate any
+  denormalized content, and audit shell scripts for macOS/WSL portability.
+
+deliverables:
+  - name: rename-to-furrow
+    acceptance_criteria:
+      - "Zero occurrences of 'harness' as project identifier in non-archived files (harness-engineer specialist name excluded)"
+      - "All commands use furrow:* namespace"
+      - "install.sh --check passes"
+      - "CLAUDE.md injection markers use <!-- furrow:start/end -->"
+      - "No denormalized content: each piece of information has a single source of truth"
+      - "harness.yaml renamed to furrow.yaml with all references updated"
+    specialist: shell-specialist
+    file_ownership:
+      - "install.sh"
+      - "commands/**"
+      - ".claude/CLAUDE.md"
+      - ".claude/harness.yaml"
+      - ".claude/settings.json"
+      - "hooks/**"
+      - "scripts/**"
+      - "docs/**"
+      - "schemas/**"
+      - "_rationale.yaml"
+      - "specialists/harness-engineer.md"
+      - ".serena/project.yml"
+
+  - name: cross-platform-compatibility
+    acceptance_criteria:
+      - "shellcheck passes on all #!/bin/sh scripts (error + warning levels)"
+      - "No (( )) or [[ ]] in #!/bin/sh scripts"
+      - "readlink -f has BSD-compatible fallback"
+      - "GNU-specific flags documented or replaced with portable alternatives"
+      - "Residual risk documented (no macOS runtime verification)"
+    specialist: shell-specialist
+    depends_on:
+      - rename-to-furrow
+    file_ownership:
+      - "scripts/**"
+      - "hooks/**"
+      - "commands/lib/**"
+      - "install.sh"
+
+context_pointers:
+  - path: "todos.yaml"
+    note: "Source TODOs: duplication-cleanup, rename-to-furrow, cross-platform-compatibility"
+  - path: "ROADMAP.md"
+    note: "Phase 4 rationale and dependency ordering"
+  - path: "install.sh"
+    note: "Central install script — symlink strategy, PREFIX variable, CLAUDE.md injection"
+  - path: "hooks/lib/common.sh"
+    note: "Log prefixes [harness:warning]/[harness:error] — single point of change"
+  - path: "_rationale.yaml"
+    note: "Component manifest with harness references"
+
+constraints:
+  - "harness-engineer specialist name preserved (concept word, not project brand)"
+  - "Archived .work/ directories excluded from rename"
+  - "Symlink-based installation strategy preserved"
+  - "Only this repo has harness installed — no external re-installs needed"
+  - "macOS + WSL scope; native Windows out of scope"
+  - "No macOS runtime testing — shellcheck + manual review only"
+  - "Migration sequence: content rename → delete symlinks → update install.sh → re-run install → verify"
+
+gate_policy: supervised

@@ -10,9 +10,9 @@ TESTS_PASSED=0
 TESTS_FAILED=0
 TESTS_RUN=0
 
-# Resolve harness root (two levels up from tests/integration/)
-HARNESS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-export HARNESS_ROOT
+# Resolve Furrow root (two levels up from tests/integration/)
+FURROW_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+export FURROW_ROOT
 
 # --- Fixture management ---
 

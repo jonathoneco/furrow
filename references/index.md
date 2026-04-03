@@ -15,7 +15,7 @@ a step skill or agent needs detailed protocol information.
 | Context deduplication rules | `references/deduplication-strategy.md` | Harness maintenance |
 | Work unit directory layout | `references/work-unit-layout.md` | All steps |
 | Research mode conventions | `references/research-mode.md` | research, decompose, implement, review |
-| Work unit meta annotations | `references/work-unit-meta.yaml` | harness-doctor, archive |
+| Work unit meta annotations | `references/work-unit-meta.yaml` | furrow-doctor, archive |
 
 ## Usage Pattern
 

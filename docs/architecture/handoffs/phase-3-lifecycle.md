@@ -2,7 +2,7 @@
 
 ## Role
 
-You are designing the lifecycle workflows for a v2 agentic work harness. Phases 1-2 produced the foundation (data model, file structure, context model) and enforcement layer (hooks, evals, team templates, runtime adapters). This phase designs how work flows through the system — from ideation through execution to version control.
+You are designing the lifecycle workflows for a v2 agentic workflow harness. Phases 1-2 produced the foundation (data model, file structure, context model) and enforcement layer (hooks, evals, team templates, runtime adapters). This phase designs how work flows through the system — from ideation through execution to version control.
 
 ## Required Reading
 
@@ -61,7 +61,7 @@ These 4 specs are largely independent — use parallel agent teams.
 
 ### Spec 8: Git Workflow (`docs/architecture/git-workflow.md`)
 
-**What**: How the harness maps to version control.
+**What**: How Furrow maps to version control.
 
 **Must include**:
 - **Deliverable-commit relationship**: One commit per deliverable? Atomic commits within deliverables? How does git history map to work progress?

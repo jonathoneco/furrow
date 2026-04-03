@@ -3,7 +3,7 @@
 #
 # Sourced by the test runner. Requires helpers.sh (provides setup_fixture,
 # teardown_fixture, assert_exit_code, assert_file_exists, assert_file_contains,
-# assert_file_not_contains, assert_json_field, HARNESS_ROOT).
+# assert_file_not_contains, assert_json_field, FURROW_ROOT).
 
 # --- helper: create fixture with symlinked hooks and a complete work unit ---
 
@@ -12,10 +12,10 @@ _unit_name="__test-corr-limit"
 _setup_corr_fixture() {
   setup_fixture "$_unit_name"
 
-  # Symlink hooks so the script resolves HARNESS_ROOT to FIXTURE_DIR
+  # Symlink hooks so the script resolves FURROW_ROOT to FIXTURE_DIR
   mkdir -p "${FIXTURE_DIR}/hooks/lib"
-  ln -sf "${HARNESS_ROOT}/hooks/correction-limit.sh" "${FIXTURE_DIR}/hooks/correction-limit.sh"
-  ln -sf "${HARNESS_ROOT}/hooks/lib/common.sh" "${FIXTURE_DIR}/hooks/lib/common.sh"
+  ln -sf "${FURROW_ROOT}/hooks/correction-limit.sh" "${FIXTURE_DIR}/hooks/correction-limit.sh"
+  ln -sf "${FURROW_ROOT}/hooks/lib/common.sh" "${FIXTURE_DIR}/hooks/lib/common.sh"
 
   # Create .focused file so find_focused_work_unit() finds our unit
   echo "$_unit_name" > "${FIXTURE_DIR}/.work/.focused"
@@ -154,9 +154,9 @@ test_custom_correction_limit() {
   _setup_corr_fixture
   _write_state "implement" 2
 
-  # Set custom correction limit of 2 via harness.yaml
+  # Set custom correction limit of 2 via furrow.yaml
   mkdir -p "${FIXTURE_DIR}/.claude"
-  cat > "${FIXTURE_DIR}/.claude/harness.yaml" << 'YAML'
+  cat > "${FIXTURE_DIR}/.claude/furrow.yaml" << 'YAML'
 defaults:
   correction_limit: 2
 YAML

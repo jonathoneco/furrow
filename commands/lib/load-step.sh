@@ -35,8 +35,8 @@ step="$(jq -r '.step' "${state_file}")"
 # --- locate skill file ---
 
 script_dir="$(cd "$(dirname "$0")" && pwd)"
-harness_root="$(cd "${script_dir}/../.." && pwd)"
-skill_file="${harness_root}/skills/${step}.md"
+furrow_root="$(cd "${script_dir}/../.." && pwd)"
+skill_file="${furrow_root}/skills/${step}.md"
 
 if [ ! -f "${skill_file}" ]; then
   echo "Skill file not found: skills/${step}.md" >&2

@@ -1,12 +1,12 @@
-# /harness:triage [--full]
+# /furrow:triage [--full]
 
 Generate or update ROADMAP.md from `todos.yaml` with dependency-aware phase grouping and worktree parallelism strategy.
 
 ## Syntax
 
 ```
-/harness:triage        → Incremental: preserve completed phases, update remaining
-/harness:triage --full → Full regeneration: re-evaluate all phases from scratch
+/furrow:triage        → Incremental: preserve completed phases, update remaining
+/furrow:triage --full → Full regeneration: re-evaluate all phases from scratch
 ```
 
 ---
@@ -21,9 +21,9 @@ Generate or update ROADMAP.md from `todos.yaml` with dependency-aware phase grou
 ### 2. Resolve Template
 
 Check in order, use first found:
-1. `harness.yaml` key `roadmap.template` → use that path
+1. `furrow.yaml` key `roadmap.template` → use that path
 2. `.claude/roadmap.tmpl` → project-level override
-3. `templates/roadmap.md.tmpl` → harness default
+3. `templates/roadmap.md.tmpl` → Furrow default
 
 Read `templates/roadmap-sections.yaml` for section registry (names, order, required/optional, repeating).
 
@@ -212,7 +212,7 @@ Review the proposal. Respond:
 ### 9. Write Outputs
 
 After confirmation:
-1. Update triage fields in `todos.yaml`: write `depends_on`, `files_touched`, `urgency`, `impact`, `effort`, `phase`, `status` for each active TODO. Bump `updated_at`.
+1. Update triage fields in `todos.yaml`: write `depends_on`, `files_touched`, `urgency`, `impact`, `effort`, `status` for each active TODO. Bump `updated_at`.
 2. Write `ROADMAP.md` (atomic: write to temp file, then move).
 3. Run `scripts/validate-todos.sh todos.yaml`. If invalid, revert todos.yaml and error.
 
@@ -223,8 +223,8 @@ Stage and commit:
 - `todos.yaml`
 
 Commit message:
-- Incremental: `docs: refresh ROADMAP.md via /harness:triage`
-- Full: `docs: regenerate ROADMAP.md (full) via /harness:triage`
+- Incremental: `docs: refresh ROADMAP.md via /furrow:triage`
+- Full: `docs: regenerate ROADMAP.md (full) via /furrow:triage`
 
 ---
 
@@ -245,7 +245,7 @@ Commit message:
 
 ## Constraints
 
-- Read-only for `state.json` — this command does not modify harness state
+- Read-only for `state.json` — this command does not modify Furrow state
 - `todos.yaml` is the source of truth for TODO status and triage metadata
 - ROADMAP.md is a sprint artifact — `--full` regenerates from scratch for strategic re-evaluation
 - Template provides structural guidance; Claude generates the actual content

@@ -1,9 +1,9 @@
-# .claude/harness.yaml — Project configuration template for V2 work harness
+# .claude/furrow.yaml — Project configuration template for Furrow
 schema_version: 2
 
 # Project identity
 project:
-  name: "work-harness-v2"   # project name (kebab-case)
+  name: "furrow"   # project name (kebab-case)
   repo: ""                   # GitHub repo (owner/name)
 
 # Stack detection for language/framework-specific rules
