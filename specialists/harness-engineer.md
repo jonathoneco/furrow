@@ -38,9 +38,9 @@ Scripts use `set -eu` and follow exit code conventions (0=success, 1=usage, 2=no
 |---------|---------------|-----------------|
 | Using `// empty` in yq expressions | Invalid yq v4 syntax (jq-ism) | Use `[]?` operator or `\|\| var=""` fallback |
 | Writing state.json directly | Bypasses validation in update-state.sh | Use `scripts/update-state.sh` with jq expression |
-| Hardcoding file paths in validators | Breaks when schemas move | Use $HARNESS_ROOT-relative paths |
+| Hardcoding file paths in validators | Breaks when schemas move | Use $FURROW_ROOT-relative paths |
 | Advisory enforcement for critical behaviors | Model may ignore prose instructions | Use hooks with non-zero exit codes |
-| CC plan mode replacing harness steps | Bypasses gated artifact pipeline | Use plan mode within current step only |
+| CC plan mode replacing Furrow steps | Bypasses gated artifact pipeline | Use plan mode within current step only |
 
 ## Context Requirements
 
