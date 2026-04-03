@@ -34,7 +34,7 @@ and developer blogs. Focus on ground truth from people building real things.
 - Now an official Claude Code plugin
 - Often combined with other tools (Superpowers planning + Ralph execution)
 
-**HumanLayer** -- YC startup, context engineering for large codebases
+**HumanLayer** -- context engineering for large codebases
 - 4-phase: Research -> Plan -> Implement -> Validate
 - Key discipline: never exceed 60% context, clear between phases
 
@@ -136,7 +136,7 @@ and developer blogs. Focus on ground truth from people building real things.
 
 > "Noone seems to have mentioned that Gstack has 'Telemetry' on your usage
 > data. Is this not a backdoor way for YC to get signal on what people are
-> building and find more startup ideas?"
+> building and find more ideas?"
 > -- lasky, HN (Mar 2026)
 
 ### The GSD Experience

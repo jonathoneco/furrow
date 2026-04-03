@@ -235,7 +235,7 @@
 - **URL**: https://github.com/trailofbits/claude-code-config
 
 ### OneRedOak/claude-code-workflows (3.8k stars)
-- **What**: "Best workflows and configurations" from heavy daily usage at an AI-native startup
+- **What**: "Best workflows and configurations" from heavy daily usage
 - **Active**: Very active (updated today)
 - **Scope**: Claude Code specific
 - **URL**: https://github.com/OneRedOak/claude-code-workflows
