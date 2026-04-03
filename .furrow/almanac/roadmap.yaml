@@ -172,7 +172,7 @@ dependency_graph:
   cycles: []
 conflict_zones:
   - phase: 1
-    file_pattern: "hooks/, hooks/lib/validate.sh"
+    file_pattern: "bin/frw.d/hooks/, bin/frw.d/lib/validate.sh"
     work_units: [stop-hook-false-positives, script-access-restrictions]
     severity: high
     mitigation: "separated into phases 1 and 5"
@@ -201,9 +201,9 @@ phases:
           - claude-md-docs-routing
         estimated_sessions: 2
         key_files:
-          - hooks/validate-summary.sh
-          - hooks/stop-ideation.sh
-          - hooks/lib/validate.sh
+          - bin/frw.d/hooks/validate-summary.sh
+          - bin/frw.d/hooks/stop-ideation.sh
+          - bin/frw.d/lib/validate.sh
           - bin/rws
           - .claude/CLAUDE.md
         conflict_risk: none
@@ -326,8 +326,8 @@ phases:
           - bin/rws
           - commands/archive.md
           - references/row-layout.md
-          - scripts/
-          - hooks/
+          - bin/frw.d/scripts/
+          - bin/frw.d/hooks/
         conflict_risk: none
         completed_at: null
       - branch: work/knowledge-architecture

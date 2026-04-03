@@ -21,7 +21,7 @@ Legend: `──` hard dep · `~~` inferred (foundational/merge) · `···` inde
 | Zone | Files | TODOs affected |
 |------|-------|----------------|
 | skills/ broad | skills/*.md, skills/shared/ | interactive-ideation-checkpoints, seeds-concept, skill-loading-visible-internals |
-| hooks/ | hooks/*.sh, hooks/lib/ | stop-hook-false-positives, script-access-restrictions |
+| bin/frw.d/hooks/ | bin/frw.d/hooks/*.sh, bin/frw.d/lib/ | stop-hook-false-positives, script-access-restrictions |
 | skills/implement.md | skills/implement.md, skills/shared/context-isolation.md | parallel-agent-orchestration-adoption, sonnet-model-routing, worktree-reintegration-summary |
 | commands/ | commands/*.md | brain-dump-triage-command, todo-context-references, roadmap-todo-integration |
 
@@ -33,7 +33,7 @@ Small-effort, high-impact fixes that don't conflict with each other. Front-loads
 stop-hook-false-positives: Handle stop hooks enforcing fluff requirements
 skill-loading-visible-internals: Skill loading exposes internals — should be seamless
 claude-md-docs-routing: CLAUDE.md should reference docs routing
-- **Key files**: hooks/validate-summary.sh, hooks/stop-ideation.sh, hooks/lib/validate.sh, bin/rws, .claude/CLAUDE.md
+- **Key files**: bin/frw.d/hooks/validate-summary.sh, bin/frw.d/hooks/stop-ideation.sh, bin/frw.d/lib/validate.sh, bin/rws, .claude/CLAUDE.md
 - **Conflict risk**: none
 - **Why together**: All address rough edges in the harness shell — hooks, skill loading, and docs routing
 
@@ -100,7 +100,7 @@ Infrastructure cleanup and the largest conceptual TODO (seeds). Two parallel row
 ### work/infra-cleanup (2 TODOs, ~2 sessions)
 work-folder-structure-and-cleanup: Structure .furrow/rows/ to prevent unbounded growth
 script-access-restrictions: Restrict direct access to internal/dependency scripts
-- **Key files**: bin/rws, commands/archive.md, references/row-layout.md, scripts/, hooks/
+- **Key files**: bin/rws, commands/archive.md, references/row-layout.md, bin/frw.d/scripts/, bin/frw.d/hooks/
 - **Conflict risk**: none
 - **Why together**: Both address harness infrastructure hygiene
 

@@ -74,8 +74,8 @@ Completed in commit `7808ec2`.
 | Track | Result |
 |-------|--------|
 | T5 — Gate Evaluation Rearchitecture | Isolated subagent evaluators, pre/post-step evaluation, YAML gate criteria, `decided_by` vocabulary migration. 6 commits, 34 files, net -208 lines. |
-| T7 — Roadmap Process | `/furrow:triage` command with triage script (`scripts/triage-todos.sh`), template system, todos.yaml schema extension (7 triage fields). |
-| T8 — Parallel Workflow Support | Focused+dormant model via `.furrow/rows/.focused`, 4 new functions in `hooks/lib/common.sh`, all hooks scoped, `--switch`/`--all` flags. |
+| T7 — Roadmap Process | `/furrow:triage` command with triage via `alm triage`, template system, todos.yaml schema extension (7 triage fields). |
+| T8 — Parallel Workflow Support | Focused+dormant model via `.furrow/rows/.focused`, 4 new functions in `bin/frw.d/lib/common.sh`, all hooks scoped, `--switch`/`--all` flags. |
 
 ---
 
@@ -113,7 +113,7 @@ Completed across commits `e2e268e`..`4500bab`. Row archived at `c2482ed`.
 `beans-enforcement-integration`: Beans task management for enforcement layer and programmatic checks
 `merge-specialist`: Add a merge specialist template (built against new enforcement layer)
 `legacy-todos-migration`: Incorporate legacy TODOs into the system
-- **Key files**: `hooks/gate-check.sh`, `commands/lib/step-transition.sh`, `commands/lib/init-row.sh`, `specialists/merge-specialist.md`, `todos.yaml`
+- **Key files**: `bin/frw.d/hooks/gate-check.sh`, `commands/lib/step-transition.sh`, `commands/lib/init-row.sh`, `specialists/merge-specialist.md`, `todos.yaml`
 - **Conflict risk**: none (after supervised-gating completes)
 - **Why together**: Beans changes the enforcement pipeline; merge specialist needs to know about beans status validation; legacy migration depends on beans being in place.
 - **Dependencies**: `legacy-todos-migration` → `beans-enforcement-integration`
@@ -128,7 +128,7 @@ Completed across commits `e2e268e`..`4500bab`. Row archived at `c2482ed`.
 
 ### work/safety-defaults (1 TODO, ~1 session)
 `stop-hook-false-positives`: Handle stop hooks enforcing fluff requirements
-- **Key files**: `hooks/validate-summary.sh`, `hooks/stop-ideation.sh`, `hooks/lib/validate.sh`
+- **Key files**: `bin/frw.d/hooks/validate-summary.sh`, `bin/frw.d/hooks/stop-ideation.sh`, `bin/frw.d/lib/validate.sh`
 - **Conflict risk**: none
 - **Why standalone**: Fix hook false positives that block valid work.
 
@@ -187,14 +187,14 @@ Completed across commits `e2e268e`..`4500bab`. Row archived at `c2482ed`.
 ### work/script-hardening (2 TODOs, ~1-2 sessions)
 `script-access-restrictions`: Restrict direct access to internal/dependency scripts
 `rethink-hint-file-pattern`: Rethink hint file pattern — consolidate into state.json
-- **Key files**: `scripts/`, `hooks/`, `hooks/state-guard.sh`
+- **Key files**: `bin/frw.d/scripts/`, `bin/frw.d/hooks/`, `bin/frw.d/hooks/state-guard.sh`
 - **Conflict risk**: none
 - **Why together**: Both protect internal plumbing — script access boundaries and hint file cleanup.
 
 ### work/work-lifecycle (2 TODOs, ~1-2 sessions)
 `work-folder-structure-and-cleanup`: Structure .furrow/rows/ to prevent unbounded growth
 `user-action-integration`: Integration points for actions the user must take
-- **Key files**: `scripts/archive-work.sh`, `commands/archive.md`, `commands/lib/detect-context.sh`, `references/row-layout.md`, `skills/shared/`, `commands/lib/step-transition.sh`
+- **Key files**: `commands/archive.md`, `references/row-layout.md`, `skills/shared/`, `bin/rws`
 - **Conflict risk**: none
 - **Why together**: Both extend the row lifecycle — directory pruning on archive, user-action tracking during execution.
 
@@ -210,7 +210,7 @@ Completed across commits `e2e268e`..`4500bab`. Row archived at `c2482ed`.
 `todo-context-references`: TODOs with context references from dump and active sessions
 `roadmap-todo-integration`: Roadmap provides tackling prompts and merges TODOs
 `mine-claude-code`: Mine Claude Code for reusable patterns and capabilities
-- **Key files**: `commands/work-todos.md`, `scripts/triage-todos.sh`, `todos.yaml`, `templates/roadmap.md.tmpl`
+- **Key files**: `commands/work-todos.md`, `bin/alm`, `todos.yaml`, `templates/roadmap.md.tmpl`
 - **Conflict risk**: none
 - **Why together**: All improve the TODO/roadmap pipeline — context references, tackling prompts, and CC pattern mining.
 

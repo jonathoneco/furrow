@@ -25,12 +25,14 @@ Scan arguments in order:
 4. Read `state.json`, run `rws load-step "{name}"` to inject current skill.
 5. Display: task name, step, step_status, deliverable progress.
 6. Continue execution within the current step.
-7. After any transition: run `rws gate-check` then `scripts/run-gate.sh`.
+7. After any transition: run `rws gate-check` then `frw run-gate`.
 
 ### Route 2: `/work <description>` (create new row)
 
 Any number of existing active tasks is fine — creating alongside them is expected.
 
+0. **Pre-flight**: If `.furrow/seeds/seeds.jsonl` or `.claude/furrow.yaml` does not exist,
+   run `frw init` first (see `commands/init.md`). Do not proceed until init completes.
 1. Derive `{name}` from description (kebab-case, max 40 chars).
 2. Run `rws init "{name}" --title "{description}"`.
 3. Set focus: `rws focus "{name}"`
@@ -70,13 +72,13 @@ Resolve the focused row via `find_focused_row()` logic:
 3. Run `rws load-step "{name}"` to inject current skill.
 4. If step_status is "completed": run `rws transition "{name}"`.
 5. If step_status is "not_started": set to "in_progress", load skill.
-6. After any transition: run `rws gate-check` then `scripts/run-gate.sh`.
+6. After any transition: run `rws gate-check` then `frw run-gate`.
 7. Continue execution within the current step.
 
 ## Step Routing After Transition
 
 After `rws transition` advances the step:
 1. Run `rws gate-check` to check if the next step is trivially resolvable.
-2. If precheck passes, run `scripts/run-gate.sh` for evaluator confirmation.
+2. If precheck passes, run `frw run-gate` for evaluator confirmation.
 3. If prechecked and confirmed, repeat until a non-trivial step is reached.
 4. Load the new step's skill and begin.

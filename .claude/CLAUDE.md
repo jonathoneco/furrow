@@ -33,7 +33,7 @@ All rows traverse: ideate -> research -> plan -> spec -> decompose -> implement 
 | Reference | ~600 lines | `references/` (on demand, NOT injected) |
 
 Total injected (ambient + work + step) must not exceed 300 lines.
-Each instruction appears in exactly one layer. Run `scripts/measure-context.sh` to verify.
+Each instruction appears in exactly one layer. Run `frw measure-context` to verify.
 
 ## Component Rationale
 
@@ -65,7 +65,10 @@ Installed from: /home/jonco/src/furrow
 | /work-todos | Extract or create TODOs in todos.yaml |
 | /furrow:triage | Triage todos.yaml and generate ROADMAP.md |
 | /furrow:next | Generate handoff prompt(s) for next roadmap work |
-| /furrow | Furrow management (doctor, update, meta) |
+| /furrow:init | Initialize Furrow in a new project |
+| /furrow:doctor | Check Furrow health |
+| /furrow:update | Check configuration drift |
+| /furrow:meta | Enter self-modification mode |
 
 Run `/furrow:doctor` to check health. Run `install.sh --check` to verify installation.
 <!-- furrow:end -->

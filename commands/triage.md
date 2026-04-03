@@ -84,7 +84,7 @@ For TODOs missing `files_touched`: infer from `references` array and `work_neede
 
 Beyond explicit prose references, reason about **structural dependencies** — cases where one TODO's changes would ripple into another TODO's merge or execution path:
 
-- **Infrastructure TODOs**: A TODO that modifies shared infrastructure (hooks/, bin/rws, gate pipeline, state management, bin/alm, merge-to-main.sh) is potentially foundational. Every other TODO that will eventually merge through that infrastructure has an implicit ordering constraint.
+- **Infrastructure TODOs**: A TODO that modifies shared infrastructure (bin/frw.d/, bin/rws, gate pipeline, state management, bin/alm, merge-to-main) is potentially foundational. Every other TODO that will eventually merge through that infrastructure has an implicit ordering constraint.
 - **Merge implications**: If TODO A changes how branches merge, how gates evaluate, or how step transitions work, then TODOs B/C/D that will merge their worktree branches through that modified pipeline should land **after** A. Otherwise B/C/D are built against stale infrastructure and may need rework.
 - **Enforcement layer effects**: A TODO that adds new validation, enforcement, or checks (e.g., beans integration, schema validation) raises the bar for all subsequent work. Schedule it early so downstream TODOs comply from the start rather than needing retrofits.
 

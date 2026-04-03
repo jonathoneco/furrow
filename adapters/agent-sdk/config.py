@@ -90,7 +90,7 @@ class HarnessConfig:
     def _validate_at_startup(self) -> None:
         """Validate definition.yaml and state.json at startup.
 
-        Calls hooks/lib/validate.sh via subprocess (AC-6.2a).
+        Calls bin/frw.d/lib/validate.sh via subprocess (AC-6.2a).
 
         Raises:
             ConfigError: If validation fails.
@@ -99,7 +99,7 @@ class HarnessConfig:
         definition_path = self.work_dir / "definition.yaml"
         if definition_path.exists():
             result = subprocess.run(
-                [str(self.root / "hooks" / "lib" / "validate.sh"), "validate_definition", str(definition_path)],
+                [str(self.root / "bin" / "frw.d" / "lib" / "validate.sh"), "validate_definition", str(definition_path)],
                 capture_output=True, text=True,
             )
             if result.returncode != 0:
@@ -111,7 +111,7 @@ class HarnessConfig:
         state_path = self.work_dir / "state.json"
         if state_path.exists():
             result = subprocess.run(
-                [str(self.root / "hooks" / "lib" / "validate.sh"), "validate_state_json", str(state_path)],
+                [str(self.root / "bin" / "frw.d" / "lib" / "validate.sh"), "validate_state_json", str(state_path)],
                 capture_output=True, text=True,
             )
             if result.returncode != 0:

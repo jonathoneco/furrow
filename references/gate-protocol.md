@@ -28,14 +28,14 @@ Step agent signals completion (or step is next in sequence)
   |   - Mode-specific exclusions (research mode blocks research pre-step)
   |   - gate_policy and force_stop_at overrides
   |
-  |   scripts/check-artifacts.sh checks artifact presence:
+  |   frw check-artifacts checks artifact presence:
   |   - Deliverable files exist per file_ownership
   |   - Owned files were modified (git diff or deliverables/ check)
   |   - Acceptance criteria from definition.yaml addressed
   |   - Seed consistency (A6): seed exists and is not closed
   |
   +- Phase B (judgment, isolated subagent)
-  |   scripts/run-gate.sh prepares evaluator inputs:
+  |   frw run-gate prepares evaluator inputs:
   |   - definition.yaml content
   |   - evals/gates/{step}.yaml content
   |   - Phase A results
@@ -46,7 +46,7 @@ Step agent signals completion (or step is next in sequence)
   |   - Evaluates each dimension from gate YAML
   |   - Returns per-dimension PASS/FAIL with evidence
   |
-  +- Trust gradient (scripts/evaluate-gate.sh)
+  +- Trust gradient (frw evaluate-gate)
       Applies gate_policy to evaluator verdict:
       - supervised: WAIT_FOR_HUMAN
       - delegated: accept most, human for implement->review and review->archive
@@ -105,13 +105,13 @@ next step. The next step must address all conditions before its own gate.
 
 The shell layer prepares inputs but never invokes the LLM directly:
 
-1. `scripts/run-gate.sh` runs Phase A (`scripts/check-artifacts.sh`)
-2. `run-gate.sh` writes an evaluator prompt file (YAML) containing inputs for the subagent
-3. `run-gate.sh` exits with code 10 ("needs subagent evaluation") and prints the prompt file path
+1. `frw run-gate` runs Phase A (`frw check-artifacts`)
+2. `frw run-gate` writes an evaluator prompt file (YAML) containing inputs for the subagent
+3. `frw run-gate` exits with code 10 ("needs subagent evaluation") and prints the prompt file path
 4. The in-context agent reads the prompt file and spawns the subagent via Agent tool
 5. Subagent follows `skills/shared/gate-evaluator.md` contract
 6. Subagent returns structured JSON: per-dimension verdicts + overall verdict
-7. In-context agent calls `scripts/evaluate-gate.sh` with the verdict to apply trust gradient
+7. In-context agent calls `frw evaluate-gate` with the verdict to apply trust gradient
 
 This pattern enforces generator-evaluator separation: the agent that produced the
 step's output never evaluates its own work. The subagent runs with fresh context

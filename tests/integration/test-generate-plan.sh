@@ -1,19 +1,15 @@
 #!/bin/bash
-# test-generate-plan.sh — Integration tests for scripts/generate-plan.sh
+# test-generate-plan.sh — Integration tests for frw generate-plan
 #
 # Sourced by the test runner. Requires helpers.sh (provides setup_fixture,
 # teardown_fixture, assert_exit_code, assert_file_exists, assert_file_contains,
 # assert_json_field, FURROW_ROOT).
 
-# --- helper: set up symlink structure so generate-plan.sh resolves FURROW_ROOT to FIXTURE_DIR ---
+# --- helper: set up fixture for generate-plan tests ---
 
 _setup_plan_fixture() {
   _name="$1"
   setup_fixture "$_name"
-
-  mkdir -p "${FIXTURE_DIR}/scripts" "${FIXTURE_DIR}/hooks/lib"
-  ln -sf "${FURROW_ROOT}/scripts/generate-plan.sh" "${FIXTURE_DIR}/scripts/generate-plan.sh"
-  ln -sf "${FURROW_ROOT}/hooks/lib/validate.sh" "${FIXTURE_DIR}/hooks/lib/validate.sh"
 }
 
 # --- test functions ---
@@ -43,7 +39,7 @@ gate_policy: supervised
 YAML
 
   exit_code=0
-  "${FIXTURE_DIR}/scripts/generate-plan.sh" "__test-gen-plan-linear" > /dev/null 2>&1 || exit_code=$?
+  "${FURROW_ROOT}/bin/frw" generate-plan "__test-gen-plan-linear" > /dev/null 2>&1 || exit_code=$?
 
   assert_exit_code "linear chain exits 0" 0 "$exit_code"
   assert_file_exists "plan.json created" "${WORK_DIR}/plan.json"
@@ -90,7 +86,7 @@ gate_policy: supervised
 YAML
 
   exit_code=0
-  "${FIXTURE_DIR}/scripts/generate-plan.sh" "__test-gen-plan-diamond" > /dev/null 2>&1 || exit_code=$?
+  "${FURROW_ROOT}/bin/frw" generate-plan "__test-gen-plan-diamond" > /dev/null 2>&1 || exit_code=$?
 
   assert_exit_code "diamond dependency exits 0" 0 "$exit_code"
   assert_file_exists "plan.json created" "${WORK_DIR}/plan.json"
@@ -138,7 +134,7 @@ YAML
   stderr_file="${FIXTURE_DIR}/stderr.txt"
 
   exit_code=0
-  "${FIXTURE_DIR}/scripts/generate-plan.sh" "__test-gen-plan-cycle" > /dev/null 2>"$stderr_file" || exit_code=$?
+  "${FURROW_ROOT}/bin/frw" generate-plan "__test-gen-plan-cycle" > /dev/null 2>"$stderr_file" || exit_code=$?
 
   assert_exit_code "cycle detection exits 3" 3 "$exit_code"
   assert_file_contains "stderr mentions cycle" "$stderr_file" "cycle"
@@ -176,7 +172,7 @@ gate_policy: supervised
 YAML
 
   exit_code=0
-  "${FIXTURE_DIR}/scripts/generate-plan.sh" "__test-gen-plan-multi-root" > /dev/null 2>&1 || exit_code=$?
+  "${FURROW_ROOT}/bin/frw" generate-plan "__test-gen-plan-multi-root" > /dev/null 2>&1 || exit_code=$?
 
   assert_exit_code "multi-root DAG exits 0" 0 "$exit_code"
   assert_file_exists "plan.json created" "${WORK_DIR}/plan.json"
@@ -214,7 +210,7 @@ YAML
   stderr_file="${FIXTURE_DIR}/stderr.txt"
 
   exit_code=0
-  "${FIXTURE_DIR}/scripts/generate-plan.sh" "__test-gen-plan-no-spec" > /dev/null 2>"$stderr_file" || exit_code=$?
+  "${FURROW_ROOT}/bin/frw" generate-plan "__test-gen-plan-no-spec" > /dev/null 2>"$stderr_file" || exit_code=$?
 
   assert_exit_code "missing specialist exits 3" 3 "$exit_code"
   assert_file_contains "stderr mentions specialist" "$stderr_file" "specialist"

@@ -16,7 +16,7 @@ Detailed git workflow conventions for Furrow.
 - Rebase onto main periodically to stay current: `git rebase main`
 
 ### After Review
-- Branch is merged to main with `scripts/merge-to-main.sh`
+- Branch is merged to main with `frw merge-to-main`
 - Merge uses `--no-ff` to preserve individual commit history
 - Branch deletion is manual (not automated by Furrow)
 
@@ -96,7 +96,7 @@ Conflict resolution commits use type `fix`.
 ## 6. CI Integration
 
 ### Pre-Merge Checks
-`scripts/run-ci-checks.sh` runs the project's test suite (configured in
+`frw run-ci-checks` runs the project's test suite (configured in
 `.claude/furrow.yaml` under `ci`) and produces structured gate evidence
 at `gates/implement-to-review-ci.json`.
 
