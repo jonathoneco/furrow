@@ -4,7 +4,7 @@
 Create frw, a modularized POSIX sh CLI that centralizes all harness-level concerns (hooks, scripts, init, install, doctor) behind a single PATH-resolved entry point, eliminating relative path fragility and consolidating scattered shell scripts into a coherent tool.
 
 ## Current State
-Step: implement | Status: pending_approval
+Step: review | Status: completed
 Deliverables: 6/6
 Mode: code
 
