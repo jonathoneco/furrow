@@ -78,9 +78,9 @@ if [ -f todos.yaml ] && [ ! -f .furrow/almanac/todos.yaml ]; then
   log "  move: todos.yaml → .furrow/almanac/todos.yaml"
   run mv todos.yaml .furrow/almanac/todos.yaml
 fi
-if [ -f ROADMAP.md ] && [ ! -f .furrow/almanac/roadmap.md ]; then
-  log "  move: ROADMAP.md → .furrow/almanac/roadmap.md"
-  run mv ROADMAP.md .furrow/almanac/roadmap.md
+if [ -f ROADMAP.md ] && [ ! -f .furrow/almanac/roadmap-legacy.md ]; then
+  log "  move: ROADMAP.md → .furrow/almanac/roadmap-legacy.md (run 'alm triage' to generate roadmap.yaml)"
+  run mv ROADMAP.md .furrow/almanac/roadmap-legacy.md
 fi
 if [ -f _rationale.yaml ] && [ ! -f .furrow/almanac/rationale.yaml ]; then
   log "  move: _rationale.yaml → .furrow/almanac/rationale.yaml"

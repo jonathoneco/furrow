@@ -1260,7 +1260,9 @@ rws_init() {
       fi
     fi
   else
-    echo "Warning: sds command not found — seed not created" >&2
+    echo "rws: sds command not found — seeds are mandatory. Install sds and ensure it is on PATH." >&2
+    rm -rf "$_init_work_dir"
+    exit 1
   fi
 
   echo "Row initialized: $_init_work_dir"

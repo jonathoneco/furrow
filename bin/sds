@@ -278,7 +278,7 @@ cmd_show() {
     printf '%s\n' "$issue" | jq .
   else
     printf '%s\n' "$issue" | jq -r '
-      "Issue: \(.id)\n" +
+      "Seed: \(.id)\n" +
       "Title: \(.title)\n" +
       "Status: \(.status)\n" +
       "Type: \(.type)\n" +

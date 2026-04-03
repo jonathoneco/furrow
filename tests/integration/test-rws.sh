@@ -185,6 +185,39 @@ test_regenerate_summary() {
   assert_file_contains "summary has Current State" ".furrow/rows/test-row/summary.md" "## Current State"
 }
 
+test_archive() {
+  echo "--- test_archive ---"
+  # Set up a row that can be archived:
+  # Must be at review step with step_status=completed and all deliverables completed
+  rws init archive-row --title "Archive Test"
+  _write_definition ".furrow/rows/archive-row"
+
+  # Fast-forward state to review/completed via direct state manipulation
+  # (testing the archive subcommand, not the full lifecycle)
+  _archive_state=".furrow/rows/archive-row/state.json"
+  _seed_id="$(jq -r '.seed_id' "$_archive_state")"
+  jq '.step = "review" | .step_status = "completed" | .deliverables = {"test-deliverable": {"status": "completed", "wave": 1, "corrections": 0}}' \
+    "$_archive_state" > "$_archive_state.tmp" && mv "$_archive_state.tmp" "$_archive_state"
+
+  # Add required gate record
+  jq --arg ts "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+    '.gates += [{"boundary": "implement->review", "outcome": "pass", "decided_by": "manual", "evidence": "test", "timestamp": $ts}]' \
+    "$_archive_state" > "$_archive_state.tmp" && mv "$_archive_state.tmp" "$_archive_state"
+
+  # Sync seed to reviewing status
+  sds update "$_seed_id" --status reviewing 2>/dev/null || true
+
+  _archive_rc=0
+  rws archive archive-row || _archive_rc=$?
+  assert_exit_code "rws archive succeeds" 0 "$_archive_rc"
+
+  assert_file_contains "archived_at is set" "$_archive_state" "archived_at"
+
+  # Verify seed was closed
+  _seed_status="$(sds show "$_seed_id" --json | jq -r '.status')"
+  assert_output_contains "seed closed after archive" "$_seed_status" "closed"
+}
+
 # --- Run all tests ---
 
 test_init
@@ -196,6 +229,7 @@ test_transition
 test_rewind
 test_diff
 test_regenerate_summary
+test_archive
 
 # --- Summary ---
 
