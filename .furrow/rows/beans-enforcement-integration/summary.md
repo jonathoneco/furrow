@@ -4,8 +4,8 @@
 Integrate Seeds as mandatory core infrastructure into Furrow, unify row lifecycle management under the rws CLI, create the alm CLI for planning and knowledge management, and restructure all harness state under .furrow/ — executing as a clean swap with no intermediate state.
 
 ## Current State
-Step: implement | Status: pending_approval
-Deliverables: 0/7 (defined)
+Step: review | Status: completed
+Deliverables: 7/7
 Mode: code
 
 ## Artifact Paths
