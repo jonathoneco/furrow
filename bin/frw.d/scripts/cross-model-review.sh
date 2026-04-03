@@ -45,7 +45,7 @@ frw_cross_model_review() {
 
   # --- 3. Get dimensions ---
 
-  dim_path="$(frw select-dimensions "$name")"
+  dim_path="$("$FURROW_ROOT/bin/frw" select-dimensions "$name")"
   dimensions="$(yq -r '.dimensions[] | "- **" + .name + "**: " + .definition + "\n  Pass: " + .pass_criteria + "\n  Fail: " + .fail_criteria' "$dim_path")"
 
   # --- 4. Read acceptance criteria for this deliverable ---

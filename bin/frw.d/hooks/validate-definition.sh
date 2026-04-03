@@ -3,7 +3,7 @@
 # Hook: PreToolUse (matcher: Write|Edit)
 # Note: This hook provides lightweight yq-based validation for the Write|Edit
 # lifecycle. For full schema validation with JSON Schema and cycle detection,
-# see scripts/validate-definition.sh.
+# see frw validate-definition.
 #
 # Return codes:
 #   0 — valid

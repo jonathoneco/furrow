@@ -57,7 +57,7 @@ frw_run_gate() {
 
   # --- select gate YAML ---
 
-  gate_yaml_path="$(frw select-gate "$name")" || {
+  gate_yaml_path="$("$FURROW_ROOT/bin/frw" select-gate "$name")" || {
     echo "Error: failed to select gate for '${name}'" >&2
     return 2
   }

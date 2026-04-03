@@ -263,7 +263,7 @@ validate_step_boundary() {
   _boundary="${_current}->${_next}"
 
   # Source common.sh for has_passing_gate if not already sourced
-  _lib_dir="$(cd "$(dirname "$0")" 2>/dev/null && pwd)" || _lib_dir=""
+  _lib_dir="$FURROW_ROOT/bin/frw.d/lib"
   if [ -n "$_lib_dir" ] && [ -f "$_lib_dir/common.sh" ]; then
     # shellcheck source=common.sh
     . "$_lib_dir/common.sh" 2>/dev/null || true

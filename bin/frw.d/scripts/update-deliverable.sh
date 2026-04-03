@@ -85,7 +85,7 @@ frw_update_deliverable() {
       }] | from_entries
     ')"
 
-    frw update-state "${name}" \
+    "$FURROW_ROOT/bin/frw" update-state "${name}" \
       ".deliverables = ${deliv_map}"
 
     echo "Deliverables populated from definition.yaml"
@@ -109,7 +109,7 @@ frw_update_deliverable() {
   # --- increment corrections mode ---
 
   if [ "$#" -ge 1 ] && [ "$1" = "--increment-corrections" ]; then
-    frw update-state "${name}" \
+    "$FURROW_ROOT/bin/frw" update-state "${name}" \
       ".deliverables.\"${deliverable}\".corrections += 1"
 
     echo "Corrections incremented for deliverable '${deliverable}'"
@@ -156,10 +156,10 @@ frw_update_deliverable() {
 
   # Build jq expression
   if [ -n "${assigned_to}" ]; then
-    frw update-state "${name}" \
+    "$FURROW_ROOT/bin/frw" update-state "${name}" \
       ".deliverables.\"${deliverable}\".status = \"${status}\" | .deliverables.\"${deliverable}\".assigned_to = \"${assigned_to}\""
   else
-    frw update-state "${name}" \
+    "$FURROW_ROOT/bin/frw" update-state "${name}" \
       ".deliverables.\"${deliverable}\".status = \"${status}\""
   fi
 

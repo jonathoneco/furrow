@@ -34,7 +34,7 @@ frw_doctor() {
 
   # --- Check 1: Context budget ---
   section "Context budgets"
-  if frw measure-context "$ROOT" > /dev/null 2>&1; then
+  if "$FURROW_ROOT/bin/frw" measure-context "$ROOT" > /dev/null 2>&1; then
     check_pass "context budgets within limits"
   else
     check_fail "context budget violations (run frw measure-context for details)"
@@ -104,18 +104,18 @@ frw_doctor() {
   # --- Check 5: settings.json has entries for all hooks/*.sh ---
   section "Hook registrations"
   _hook_missing=0
-  for _hook in "$ROOT"/hooks/*.sh; do
+  for _hook in "$ROOT"/bin/frw.d/hooks/*.sh; do
     [ -f "$_hook" ] || continue
     # Skip validation scripts that aren't lifecycle hooks (they take args, not stdin JSON)
     grep -q '^# Hook:' "$_hook" 2>/dev/null || continue
-    _hook_rel="hooks/$(basename "$_hook")"
-    if ! grep -q "$_hook_rel" "$ROOT/.claude/settings.json" 2>/dev/null; then
-      check_fail "hook not registered in settings.json: $_hook_rel"
+    _hook_name="$(basename "$_hook" .sh)"
+    if ! grep -q "frw hook ${_hook_name}" "$ROOT/.claude/settings.json" 2>/dev/null; then
+      check_fail "hook not registered in settings.json: frw hook ${_hook_name}"
       _hook_missing=$((_hook_missing + 1))
     fi
   done
   if [ "$_hook_missing" -eq 0 ]; then
-    check_pass "all hooks/*.sh registered in settings.json"
+    check_pass "all hooks registered in settings.json"
   fi
 
   # --- Check 6: No stale adapter YAML artifacts ---
@@ -199,11 +199,11 @@ frw_doctor() {
   }
 
   # Spec 09: Ideation ceremony
-  _spec_check "Spec 09" "hooks/stop-ideation.sh"
-  _spec_check "Spec 09" "hooks/validate-definition.sh"
+  _spec_check "Spec 09" "bin/frw.d/hooks/stop-ideation.sh"
+  _spec_check "Spec 09" "bin/frw.d/hooks/validate-definition.sh"
 
   # Spec 10: Step sequence & auto-advance
-  _spec_check "Spec 10" "hooks/validate-summary.sh"
+  _spec_check "Spec 10" "bin/frw.d/hooks/validate-summary.sh"
 
   # Spec 12: Knowledge & learnings
   _spec_check "Spec 12" "skills/shared/learnings-protocol.md"
@@ -214,7 +214,7 @@ frw_doctor() {
   # Spec 13: Git workflow
   _spec_check "Spec 13" "skills/shared/git-conventions.md"
   _spec_check "Spec 13" "bin/rws"
-  _spec_check "Spec 13" "scripts/merge-to-main.sh"
+  _spec_check "Spec 13" "bin/frw.d/scripts/merge-to-main.sh"
 
   if [ "$_spec_missing" -eq 0 ]; then
     check_pass "all Phase 4 spec-mandated files exist"
@@ -258,16 +258,16 @@ frw_doctor() {
       _gate_missing=$((_gate_missing + 1))
     fi
   done
-  if [ -f "$ROOT/scripts/run-gate.sh" ]; then
+  if [ -f "$ROOT/bin/frw.d/scripts/run-gate.sh" ]; then
     :
   else
-    check_fail "scripts/run-gate.sh missing"
+    check_fail "bin/frw.d/scripts/run-gate.sh missing"
     _gate_missing=$((_gate_missing + 1))
   fi
-  if [ -f "$ROOT/scripts/check-artifacts.sh" ]; then
+  if [ -f "$ROOT/bin/frw.d/scripts/check-artifacts.sh" ]; then
     :
   else
-    check_fail "scripts/check-artifacts.sh missing"
+    check_fail "bin/frw.d/scripts/check-artifacts.sh missing"
     _gate_missing=$((_gate_missing + 1))
   fi
   if [ -x "$ROOT/bin/rws" ]; then
@@ -337,10 +337,10 @@ frw_doctor() {
       "test -f '$ROOT/.furrow/almanac/rationale.yaml' && grep -q 'exists_because:' '$ROOT/.furrow/almanac/rationale.yaml'"
 
     _sd 2 "three enforcement levels present" \
-      "test -d '$ROOT/hooks' && test -d '$ROOT/skills' && test -f '$ROOT/hooks/lib/validate.sh'"
+      "test -d '$ROOT/bin/frw.d/hooks' && test -d '$ROOT/skills' && test -f '$ROOT/bin/frw.d/lib/validate.sh'"
 
     _sd 3 "context budget script exists and passes" \
-      "frw measure-context '$ROOT'"
+      "'$FURROW_ROOT/bin/frw' measure-context '$ROOT'"
 
     _sd 4 "definition schema has required fields" \
       "test -f '$ROOT/schemas/definition.schema.json' && grep -q 'objective' '$ROOT/schemas/definition.schema.json'"
@@ -358,10 +358,10 @@ frw_doctor() {
       "grep -q 'gates' '$ROOT/bin/rws'"
 
     _sd 9 "instruction budget enforced" \
-      "frw measure-context '$ROOT'"
+      "'$FURROW_ROOT/bin/frw' measure-context '$ROOT'"
 
     _sd 10 "file-based agent communication" \
-      "! grep -rq 'shared_memory\|shared_state\|IPC_' '$ROOT/hooks/' '$ROOT/scripts/' --exclude='furrow-doctor.sh' 2>/dev/null"
+      "! grep -rq 'shared_memory\|shared_state\|IPC_' '$ROOT/bin/frw.d/hooks/' '$ROOT/bin/frw.d/scripts/' --exclude='doctor.sh' 2>/dev/null"
 
     _sd 11 "dual-runtime adapters exist" \
       "test -d '$ROOT/adapters/claude-code' && test -d '$ROOT/adapters/agent-sdk'"
@@ -370,7 +370,7 @@ frw_doctor() {
       "grep -q 'supervised' '$ROOT/references/gate-protocol.md' && grep -q 'autonomous' '$ROOT/references/gate-protocol.md'"
 
     _sd 13 "post-compact reads only state+summary+skill" \
-      "grep -q 'state.json\|summary.md' '$ROOT/hooks/post-compact.sh'"
+      "grep -q 'state.json\|summary.md' '$ROOT/bin/frw.d/hooks/post-compact.sh'"
 
     _sd 14 "findings as first-class entities" \
       "grep -q 'OPEN\|FIXED\|DEFERRED\|WONTFIX' '$ROOT/docs/architecture/handoffs/phase-5-knowledge.md' 2>/dev/null || grep -q 'OPEN' '$ROOT/references/review-methodology.md' 2>/dev/null"
@@ -384,7 +384,7 @@ frw_doctor() {
       "grep -q 'outcome.*pass.*conditional\|outcome == .pass' '$ROOT/bin/rws'"
 
     _sd 17 "naming validation exists" \
-      "test -f '$ROOT/scripts/validate-naming.sh'"
+      "test -f '$ROOT/bin/frw.d/scripts/validate-naming.sh'"
 
     _sd 18 "step sequence is 7-step canonical" \
       "grep -c 'ideate\|research\|plan\|spec\|decompose\|implement\|review' '$ROOT/skills/work-context.md' | awk '\$1 >= 7'"

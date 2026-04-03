@@ -24,7 +24,8 @@ hook_work_check() {
     . "$FURROW_ROOT/bin/frw.d/lib/validate.sh"
   fi
 
-  update_script="$FURROW_ROOT/scripts/update-state.sh"
+  # Source update-state module for direct function call (avoids recursive frw invocation)
+  . "$FURROW_ROOT/bin/frw.d/scripts/update-state.sh"
 
   for work_dir in $active_units; do
     state_file="$work_dir/state.json"
@@ -63,8 +64,8 @@ hook_work_check() {
     fi
 
     # Update timestamp
-    if [ -x "$update_script" ] && [ -n "$unit_name" ]; then
-      "$update_script" "$unit_name" ".updated_at = \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"" 2>/dev/null || true
+    if [ -n "$unit_name" ]; then
+      frw_update_state "$unit_name" ".updated_at = \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"" 2>/dev/null || true
     fi
   done
 

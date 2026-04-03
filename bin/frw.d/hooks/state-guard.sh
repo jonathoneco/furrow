@@ -11,7 +11,7 @@ hook_state_guard() {
 
   case "$target_path" in
     */state.json|state.json)
-      log_error "state.json is Furrow-exclusive — use scripts/update-state.sh"
+      log_error "state.json is Furrow-exclusive — use frw update-state"
       return 2
       ;;
   esac
