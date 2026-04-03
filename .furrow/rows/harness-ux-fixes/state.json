@@ -1,0 +1,95 @@
+{
+  "name": "harness-ux-fixes",
+  "title": "Harness UX fixes: summary section population + source_todo auto-populate",
+  "description": "Two independent fixes: (1) Fix validate-summary.sh firing every session because summary.md agent-written sections are never populated (T11), and (2) auto-populate source_todo in definition.yaml when starting work from a todos.yaml entry (T12).",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "summary-protocol-fragment": {
+      "status": "completed",
+      "assigned_to": null,
+      "wave": 0,
+      "corrections": 0
+    },
+    "state-schema-init-hints": {
+      "status": "completed",
+      "assigned_to": null,
+      "wave": 0,
+      "corrections": 0
+    },
+    "summary-transition-block": {
+      "status": "completed",
+      "assigned_to": null,
+      "wave": 1,
+      "corrections": 0
+    },
+    "ideate-reads-init-hints": {
+      "status": "completed",
+      "assigned_to": null,
+      "wave": 1,
+      "corrections": 0
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "definition.yaml validated; cross-model review completed with 3 findings incorporated",
+      "timestamp": "2026-04-02T23:18:17Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 4 deliverables researched: exact file locations, insertion points, and schema changes identified in research.md",
+      "timestamp": "2026-04-02T23:20:08Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "2-wave plan with clear file ownership; no architectural ambiguity",
+      "timestamp": "2026-04-02T23:20:57Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Implementation-ready specs for all 4 deliverables with exact insertion points and code patterns",
+      "timestamp": "2026-04-02T23:21:52Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "4 deliverables in 2 waves registered; plan.json defines wave dependencies",
+      "timestamp": "2026-04-02T23:22:05Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 4 deliverables complete: summary-protocol-fragment, state-schema-init-hints, summary-transition-block, ideate-reads-init-hints",
+      "timestamp": "2026-04-02T23:26:01Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/harness-ux-fixes",
+  "mode": "code",
+  "base_commit": "0ec4048c0ea681cb7a5fe10428976e4244708476",
+  "created_at": "2026-04-02T22:51:05Z",
+  "updated_at": "2026-04-02T23:31:34Z",
+  "archived_at": "2026-04-02T23:55:00Z",
+  "seed_id": null,
+  "epic_seed_id": null
+}

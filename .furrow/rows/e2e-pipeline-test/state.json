@@ -1,0 +1,27 @@
+{
+  "name": "e2e-pipeline-test",
+  "title": "Exercise the full 7-step pipeline (ideate→review) with a real task. Verify validate-step-artifacts.sh gates, generate-plan.sh with multi-deliverable definitions, correction-limit.sh during implementation, and run-eval.sh on actual deliverables.",
+  "description": "Exercise the full 7-step pipeline (ideate→review) with a real task. Verify validate-step-artifacts.sh gates, generate-plan.sh with multi-deliverable definitions, correction-limit.sh during implementation, and run-eval.sh on actual deliverables.",
+  "step": "ideate",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {},
+  "gates": [],
+  "force_stop_at": null,
+  "branch": null,
+  "mode": "code",
+  "base_commit": "4c1a612d1883fc55efd9c431f411daca4030f59f",
+  "created_at": "2026-04-02T10:10:02Z",
+  "updated_at": "2026-04-02T10:18:11Z",
+  "archived_at": "2026-04-02T10:18:11Z",
+  "seed_id": null,
+  "epic_seed_id": null
+}

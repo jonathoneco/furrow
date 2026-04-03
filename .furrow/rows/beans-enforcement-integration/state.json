@@ -1,0 +1,86 @@
+{
+  "name": "beans-enforcement-integration",
+  "title": "Beans task management for enforcement layer and programmatic checks",
+  "description": "Integrate Beans task management into Furrow enforcement layer with programmatic checks for issue existence, status sync on step transitions, and optional gating",
+  "step": "review",
+  "step_status": "not_started",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {},
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "definition.yaml validated, all 16 design decisions settled through interactive ideation with user, cross-model outside voice review completed, summary written",
+      "timestamp": "2026-04-03T05:16:31Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "5 parallel research tracks completed: sds fork analysis, rws architecture, gate integration, roadmap schema, alm CLI. Research directory with synthesis written. All ideation questions addressed.",
+      "timestamp": "2026-04-03T05:28:05Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "7 deliverables across 4 waves planned. Architecture decisions: CLIs as abstraction layer, domain hooks fold into rws, policy hooks stay separate. Operational ordering defined with checkpoints. D6 (tests) and D7 (docs) added.",
+      "timestamp": "2026-04-03T05:45:49Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "7 implementation-ready specs written covering all deliverables: furrow-restructure, sds-cli, rws-cli, alm-cli, seeds-row-integration, cli-test-suite, architecture-docs. Exact interfaces, exit codes, file lists, and testable ACs defined.",
+      "timestamp": "2026-04-03T05:57:10Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "plan.json validated: 4 waves, 7 deliverables, dependency ordering respected, no file ownership conflicts. team-plan.md finalized with operational sequencing and checkpoints.",
+      "timestamp": "2026-04-03T05:58:52Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "plan.json validated: 4 waves, 7 deliverables, dependency ordering correct, no file ownership conflicts within waves. team-plan.md finalized with wave sequencing and checkpoints.",
+      "timestamp": "2026-04-03T05:59:31Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "plan.json validated, work branch created",
+      "timestamp": "2026-04-03T05:59:49Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 4 waves implemented: sds (531), rws (1874), alm (1079), migration, 106-file restructure, seeds integration, 70 tests, architecture docs",
+      "timestamp": "2026-04-03T07:14:59Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/beans-integration",
+  "mode": "code",
+  "base_commit": "775c91d269b4263fa238751b100843424d37a31c",
+  "created_at": "2026-04-03T04:20:12Z",
+  "updated_at": "2026-04-03T07:15:03Z",
+  "archived_at": null,
+  "source_todo": null,
+  "gate_policy_init": "supervised",
+  "seed_id": null,
+  "epic_seed_id": null
+}
