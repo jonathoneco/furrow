@@ -1,1 +1,1 @@
-/home/jonco/src/work-harness-v2/specialists/typescript-specialist.md
+/home/jonco/src/furrow/specialists/typescript-specialist.md

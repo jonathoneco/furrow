@@ -1,1 +1,1 @@
-/home/jonco/src/work-harness-v2/commands/lib/generate-summary.sh
+/home/jonco/src/furrow/commands/lib/generate-summary.sh

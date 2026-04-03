@@ -1,1 +1,1 @@
-/home/jonco/src/work-harness-v2/specialists/relational-db-architect.md
+/home/jonco/src/furrow/specialists/relational-db-architect.md

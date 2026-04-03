@@ -1,1 +1,1 @@
-/home/jonco/src/work-harness-v2/commands/checkpoint.md
+/home/jonco/src/furrow/commands/checkpoint.md

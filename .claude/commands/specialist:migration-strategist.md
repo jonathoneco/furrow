@@ -1,1 +1,1 @@
-/home/jonco/src/work-harness-v2/specialists/migration-strategist.md
+/home/jonco/src/furrow/specialists/migration-strategist.md
