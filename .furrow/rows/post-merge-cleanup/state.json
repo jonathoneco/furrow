@@ -1,0 +1,100 @@
+{
+  "name": "post-merge-cleanup",
+  "title": "Post-merge cleanup: fix path refs, CLI install, step budgets",
+  "description": "Post-merge cleanup: fix path refs, CLI install, step budgets",
+  "step": "implement",
+  "step_status": "not_started",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {},
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "definition.yaml validated; 4 deliverables approved by user",
+      "timestamp": "2026-04-03T08:52:16Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "19 stale references identified across furrow-doctor.sh, measure-context.sh, alm, commands/furrow.md, and command specs; CLI symlink issue confirmed",
+      "timestamp": "2026-04-03T08:53:37Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "research artifact written; 19 stale refs mapped",
+      "timestamp": "2026-04-03T08:53:59Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "research complete; 19 stale refs mapped",
+      "timestamp": "2026-04-03T08:54:11Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "plan: 3 waves — script fixes, command spec fixes, state cleanup + verify",
+      "timestamp": "2026-04-03T16:10:02Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "plan: 3 waves — scripts+CLI, command specs, state cleanup",
+      "timestamp": "2026-04-03T16:10:19Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "spec complete: 5 deliverables with line-level change tables",
+      "timestamp": "2026-04-03T16:19:48Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "spec complete: 5 per-deliverable specs in specs/",
+      "timestamp": "2026-04-03T16:20:19Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "decompose: plan.json + team-plan.md ready, single-agent execution",
+      "timestamp": "2026-04-03T16:20:41Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "all 5 deliverables implemented + bonus rationale cleanup; doctor down 27→8 (remaining are out-of-scope skill budgets)",
+      "timestamp": "2026-04-03T16:30:19Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/post-merge-cleanup",
+  "mode": "code",
+  "base_commit": "88ddb1a17ad4b6453d720f45d2ec5f4e5c90ff83",
+  "seed_id": "furrow-e4b3",
+  "epic_seed_id": null,
+  "created_at": "2026-04-03T08:49:26Z",
+  "updated_at": "2026-04-03T16:30:19Z",
+  "archived_at": null,
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}

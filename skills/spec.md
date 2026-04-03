@@ -4,7 +4,8 @@
 Define exactly what should be built in enough detail to implement.
 
 ## What This Step Produces
-- `spec.md` (single deliverable) or `specs/` directory (multiple components)
+- `spec.md` (single deliverable) or `specs/` directory (multiple components).
+  Use `templates/spec.md` as the schema reference for spec structure.
 - Refined acceptance criteria per deliverable
 - Code mode: component specifications; Research mode: knowledge artifact structure
 

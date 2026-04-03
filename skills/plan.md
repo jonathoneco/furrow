@@ -5,7 +5,8 @@ Synthesize research into architecture decisions and execution strategy.
 
 ## What This Step Produces
 - Architecture decisions recorded in `summary.md`
-- `plan.json` if parallel execution is needed (multiple deliverables)
+- `plan.json` if parallel execution is needed (multiple deliverables).
+  Use `templates/plan.json` as the schema reference for plan.json structure.
 - `team-plan.md` if agent teams will be used
 
 ## Step-Specific Rules

@@ -30,7 +30,7 @@ From the target phase, extract each row:
 ### 3. Read TODO Context
 
 For each TODO ID in the row(s):
-- Read its `context` and `work_needed` from `todos.yaml`
+- Read its `context` and `work_needed` from `.furrow/almanac/todos.yaml`
 - Read its `depends_on`, `files_touched`
 
 ### 4. Check for Active Rows
@@ -52,12 +52,12 @@ Start with: `/work {row-name} — {one-line description synthesized from TODOs}`
 {Sequential or parallel} deliverables on branch `work/{name}`.
 See **ROADMAP.md Phase {N}** for rationale and ordering.
 
-Source TODOs in `todos.yaml` (read `context` and `work_needed` for full detail):
+Source TODOs in `.furrow/almanac/todos.yaml` (read `context` and `work_needed` for full detail):
 {For each TODO: `{id}` — {title}}
 
 ### Key files
 {Deduplicated files_touched from all TODOs in this row}
-- `todos.yaml` — detailed context and work_needed for each TODO
+- `.furrow/almanac/todos.yaml` — detailed context and work_needed for each TODO
 - `ROADMAP.md` — Phase {N} plan and dependency reasoning
 
 ---
@@ -85,7 +85,7 @@ Display the handoff prompt(s) directly — no confirmation needed. This is a rea
 
 ## Constraints
 
-- Read-only: does not modify `state.json`, `todos.yaml`, or `ROADMAP.md`
+- Read-only: does not modify `state.json`, `.furrow/almanac/todos.yaml`, or `ROADMAP.md`
 - Handoff prompts reference files by path, not by content — the fresh session reads them
-- TODO prose (`context`, `work_needed`) is NOT duplicated in the prompt — the prompt points at `todos.yaml`
+- TODO prose (`context`, `work_needed`) is NOT duplicated in the prompt — the prompt points at `.furrow/almanac/todos.yaml`
 - If a row spans multiple TODOs, the `/work` description synthesizes the theme, not each TODO title

@@ -1,6 +1,6 @@
 # /furrow:triage [--full]
 
-Generate or update ROADMAP.md from `todos.yaml` with dependency-aware phase grouping and worktree parallelism strategy.
+Generate or update ROADMAP.md from `.furrow/almanac/todos.yaml` with dependency-aware phase grouping and worktree parallelism strategy.
 
 ## Syntax
 
@@ -15,7 +15,7 @@ Generate or update ROADMAP.md from `todos.yaml` with dependency-aware phase grou
 
 ### 1. Validate Inputs
 
-- Check `todos.yaml` exists at project root. Error if not: "No todos.yaml found. Create TODOs first with `/work-todos --new`."
+- Check `.furrow/almanac/todos.yaml` exists. Error if not: "No .furrow/almanac/todos.yaml found. Create TODOs first with `/work-todos --new`."
 - Run `alm validate`. If invalid, show errors and abort.
 
 ### 2. Resolve Template
@@ -88,7 +88,7 @@ Beyond explicit prose references, reason about **structural dependencies** — c
 - **Merge implications**: If TODO A changes how branches merge, how gates evaluate, or how step transitions work, then TODOs B/C/D that will merge their worktree branches through that modified pipeline should land **after** A. Otherwise B/C/D are built against stale infrastructure and may need rework.
 - **Enforcement layer effects**: A TODO that adds new validation, enforcement, or checks (e.g., beans integration, schema validation) raises the bar for all subsequent work. Schedule it early so downstream TODOs comply from the start rather than needing retrofits.
 
-Mark inferred structural dependencies as `depends_on` entries with a `# inferred: merge-implication` or `# inferred: foundational` comment in todos.yaml.
+Mark inferred structural dependencies as `depends_on` entries with a `# inferred: merge-implication` or `# inferred: foundational` comment in .furrow/almanac/todos.yaml.
 
 ### 6. Group into Phases and Rows
 
@@ -212,15 +212,15 @@ Review the proposal. Respond:
 ### 9. Write Outputs
 
 After confirmation:
-1. Update triage fields in `todos.yaml`: write `depends_on`, `files_touched`, `urgency`, `impact`, `effort`, `status` for each active TODO. Bump `updated_at`.
+1. Update triage fields in `.furrow/almanac/todos.yaml`: write `depends_on`, `files_touched`, `urgency`, `impact`, `effort`, `status` for each active TODO. Bump `updated_at`.
 2. Write `ROADMAP.md` (atomic: write to temp file, then move).
-3. Run `alm validate`. If invalid, revert todos.yaml and error.
+3. Run `alm validate`. If invalid, revert .furrow/almanac/todos.yaml and error.
 
 ### 10. Commit
 
 Stage and commit:
 - `ROADMAP.md`
-- `todos.yaml`
+- `.furrow/almanac/todos.yaml`
 
 Commit message:
 - Incremental: `docs: refresh ROADMAP.md via /furrow:triage`
@@ -232,21 +232,21 @@ Commit message:
 
 | Condition | Message | Exit |
 |-----------|---------|------|
-| No todos.yaml | "No todos.yaml found. Create TODOs first with `/work-todos --new`." | abort |
-| Invalid todos.yaml | Show validation errors | abort |
+| No .furrow/almanac/todos.yaml | "No .furrow/almanac/todos.yaml found. Create TODOs first with `/work-todos --new`." | abort |
+| Invalid .furrow/almanac/todos.yaml | Show validation errors | abort |
 | Triage script cycle | "Dependency cycle detected: {details}" | abort |
 | Triage script dangling dep | "Dangling dependency: {details}" | abort |
 | No template found | "No roadmap template found. Expected at templates/roadmap.md.tmpl" | abort |
 | All TODOs done/deferred | "All TODOs are completed or deferred. Nothing to roadmap." | clean exit |
 | User cancels | "Roadmap generation cancelled." | clean exit |
-| Validation fails after write | Revert todos.yaml, show errors | abort |
+| Validation fails after write | Revert .furrow/almanac/todos.yaml, show errors | abort |
 
 ---
 
 ## Constraints
 
 - Read-only for `state.json` — this command does not modify Furrow state
-- `todos.yaml` is the source of truth for TODO status and triage metadata
+- `.furrow/almanac/todos.yaml` is the source of truth for TODO status and triage metadata
 - ROADMAP.md is a sprint artifact — `--full` regenerates from scratch for strategic re-evaluation
 - Template provides structural guidance; Claude generates the actual content
 - Worktree branch convention: `work/{row-name}` (rows consolidate related TODOs onto one branch)

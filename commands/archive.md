@@ -32,20 +32,20 @@ If not found: error with message indicating what is blocking archive.
    - Runs `alm extract "{name}"` to harvest candidates
      from summary.md open questions, learnings.jsonl unpromoted pitfalls,
      and reviews/*.json failed dimensions.
-   - Agent deduplicates candidates against existing `todos.yaml` entries.
+   - Agent deduplicates candidates against existing `.furrow/almanac/todos.yaml` entries.
    - Presents candidates with proposed actions (add/merge/skip).
-   - User confirms. Writes to `todos.yaml` and validates.
+   - User confirms. Writes to `.furrow/almanac/todos.yaml` and validates.
    - If no candidates found, skip silently.
 
 7. **TODO pruning**: Check if `definition.yaml` has a `source_todo` field.
-   - If set, read `todos.yaml` and find the entry matching that ID.
+   - If set, read `.furrow/almanac/todos.yaml` and find the entry matching that ID.
    - Present: "This row was started from TODO '{id}': {title}. Mark as resolved?"
-   - **yes**: Remove the entry from `todos.yaml`.
+   - **yes**: Remove the entry from `.furrow/almanac/todos.yaml`.
    - **no**: Keep as-is.
    - **partial**: Add a note to the entry's context indicating partial completion,
      bump `updated_at`.
-   - If `source_todo` is not set or `todos.yaml` has no matching entry, skip.
-   - Validate `todos.yaml` after any changes.
+   - If `source_todo` is not set or `.furrow/almanac/todos.yaml` has no matching entry, skip.
+   - Validate `.furrow/almanac/todos.yaml` after any changes.
 
 8. Run `rws archive "{name}"` to set `state.json.archived_at` to current ISO 8601 timestamp.
 9. Regenerate final `summary.md` via `rws regenerate-summary "{name}"`.

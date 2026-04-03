@@ -1,6 +1,6 @@
 # /work-todos [--extract [name]] [--new]
 
-Manage TODO entries in `todos.yaml`. Two modes: extract candidates from row artifacts, or create a new TODO interactively.
+Manage TODO entries in `.furrow/almanac/todos.yaml`. Two modes: extract candidates from row artifacts, or create a new TODO interactively.
 
 ## Syntax
 
@@ -34,7 +34,7 @@ If empty array: "No TODO candidates found in {name}." — exit.
 
 ### 3. Load Existing Entries
 
-Read `todos.yaml` at project root. If absent, treat as empty array `[]`.
+Read `.furrow/almanac/todos.yaml`. If absent, treat as empty array `[]`.
 
 ### 4. Dedup Reasoning
 
@@ -109,8 +109,8 @@ Run `alm validate`. If fails, report error, do not commit, ask user to review.
 Stage and commit:
 
 ```sh
-git add todos.yaml
-git commit -m "chore: extract TODOs from {name} into todos.yaml"
+git add .furrow/almanac/todos.yaml
+git commit -m "chore: extract TODOs from {name} into .furrow/almanac/todos.yaml"
 ```
 
 Where `{name}` is the source row name.
@@ -118,7 +118,7 @@ Where `{name}` is the source row name.
 ### 10. Report
 
 ```
-Updated todos.yaml:
+Updated .furrow/almanac/todos.yaml:
   Added: {count} new entries ({ids})
   Merged: {count} entries ({ids})
   Skipped: {count} candidates
@@ -140,7 +140,7 @@ Fields to populate: title, context, work_needed, risks, references.
 
 ### 3. Check Overlap
 
-Read `todos.yaml`. If semantic overlap found:
+Read `.furrow/almanac/todos.yaml`. If semantic overlap found:
 
 ```
 This seems related to existing TODO "{id}":
@@ -169,8 +169,8 @@ Run `alm validate`.
 Stage and commit:
 
 ```sh
-git add todos.yaml
-git commit -m "chore: add TODO {id} to todos.yaml"
+git add .furrow/almanac/todos.yaml
+git commit -m "chore: add TODO {id} to .furrow/almanac/todos.yaml"
 ```
 
 Where `{id}` is the generated TODO slug.
@@ -178,7 +178,7 @@ Where `{id}` is the generated TODO slug.
 ### 7. Report
 
 ```
-Added TODO "{id}" to todos.yaml.
+Added TODO "{id}" to .furrow/almanac/todos.yaml.
   Title: {title}
   Source: manual
 ```
