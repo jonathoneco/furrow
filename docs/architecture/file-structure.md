@@ -1,6 +1,6 @@
 # File Structure
 
-> Component rationale is tracked in _rationale.yaml at the Furrow root.
+> Component rationale is tracked in .furrow/almanac/rationale.yaml.
 
 ## Overview
 

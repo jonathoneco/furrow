@@ -47,8 +47,8 @@ _stray=$(grep -rl 'exists_because:\|delete_when:' "$ROOT" 2>/dev/null \
   | grep -v '/docs/' | grep -v '\.furrow/' \
   | grep -v '\.sh$' | grep -v '\.py$' || true)
 if [ -z "$_stray" ]; then
-  _count=$(grep -c 'exists_because:' "$ROOT/_rationale.yaml" 2>/dev/null || echo 0)
-  check_pass "rationale contained ($_count entries in _rationale.yaml, 0 inline)"
+  _count=$(grep -c 'exists_because:' "$ROOT/.furrow/almanac/rationale.yaml" 2>/dev/null || echo 0)
+  check_pass "rationale contained ($_count entries in rationale.yaml, 0 inline)"
 else
   for _f in $_stray; do
     _short=$(echo "$_f" | sed "s|^$ROOT/||")
@@ -56,10 +56,10 @@ else
   done
 fi
 
-# --- Check 3: All _rationale.yaml paths exist on disk ---
+# --- Check 3: All rationale.yaml paths exist on disk ---
 section "Rationale manifest integrity"
 if command -v yq > /dev/null 2>&1; then
-  _paths=$(yq -r '.components[].path' "$ROOT/_rationale.yaml" 2>/dev/null) || _paths=""
+  _paths=$(yq -r '.components[].path' "$ROOT/.furrow/almanac/rationale.yaml" 2>/dev/null) || _paths=""
   _missing=0
   _total=0
   for _p in $_paths; do
@@ -333,7 +333,7 @@ if [ "$research" -eq 1 ]; then
   }
 
   _sd 1 "rationale manifest exists with entries" \
-    "test -f '$ROOT/_rationale.yaml' && grep -q 'exists_because:' '$ROOT/_rationale.yaml'"
+    "test -f '$ROOT/.furrow/almanac/rationale.yaml' && grep -q 'exists_because:' '$ROOT/.furrow/almanac/rationale.yaml'"
 
   _sd 2 "three enforcement levels present" \
     "test -d '$ROOT/hooks' && test -d '$ROOT/skills' && test -f '$ROOT/hooks/lib/validate.sh'"
@@ -375,7 +375,7 @@ if [ "$research" -eq 1 ]; then
     "grep -q 'OPEN\|FIXED\|DEFERRED\|WONTFIX' '$ROOT/docs/architecture/handoffs/phase-5-knowledge.md' 2>/dev/null || grep -q 'OPEN' '$ROOT/references/review-methodology.md' 2>/dev/null"
 
   _sd 15 "designed to shrink (delete_when present)" \
-    "grep -c 'delete_when:' '$ROOT/_rationale.yaml' | grep -qv '^0$'"
+    "grep -c 'delete_when:' '$ROOT/.furrow/almanac/rationale.yaml' | grep -qv '^0$'"
 
   section "Additional Tier 2 checks"
 

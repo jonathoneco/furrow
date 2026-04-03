@@ -1,0 +1,49 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": ["cli-path-install", "script-path-fixes"],
+      "assignments": {
+        "cli-path-install": {
+          "specialist": "shell-specialist",
+          "file_ownership": ["install.sh"],
+          "skills": []
+        },
+        "script-path-fixes": {
+          "specialist": "shell-specialist",
+          "file_ownership": ["scripts/furrow-doctor.sh", "scripts/measure-context.sh"],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 2,
+      "deliverables": ["command-spec-fixes", "skill-template-refs"],
+      "assignments": {
+        "command-spec-fixes": {
+          "specialist": "cli-designer",
+          "file_ownership": ["commands/furrow.md", "commands/triage.md", "commands/work-todos.md", "commands/next.md", "commands/archive.md"],
+          "skills": []
+        },
+        "skill-template-refs": {
+          "specialist": "harness-engineer",
+          "file_ownership": ["skills/plan.md"],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 3,
+      "deliverables": ["stale-state-cleanup"],
+      "assignments": {
+        "stale-state-cleanup": {
+          "specialist": "harness-engineer",
+          "file_ownership": [".furrow/.focused"],
+          "skills": []
+        }
+      }
+    }
+  ],
+  "created_at": "2026-04-03T08:55:00Z",
+  "created_by": "agent"
+}

@@ -93,7 +93,7 @@ At step boundaries, the previous skill is replaced (not appended).
 
 ## Component Rationale
 
-Harness components have rationale documented in `_rationale.yaml`.
+Harness components have rationale documented in `.furrow/almanac/rationale.yaml`.
 Run furrow-doctor for deletion-readiness audits.
 
 ## Summary Format

@@ -53,7 +53,7 @@ Scripts use `set -eu` and follow exit code conventions (0=success, 1=usage, 2=no
 - Required: `skills/shared/eval-protocol.md` — two-phase review protocol and dimension structure
 - Required: `adapters/shared/conventions.md` — naming, paths, step sequence, write ownership
 - Helpful: `.claude/settings.json` for hook registration patterns
-- Helpful: `_rationale.yaml` for understanding component justifications
+- Helpful: `.furrow/almanac/rationale.yaml` for understanding component justifications
 - Helpful: `.furrow/seeds/` — seed registry (seeds.jsonl format, config for project prefix)
 - Helpful: `.furrow/almanac/` — centralized knowledge (rationale.yaml, todos.yaml)
 - Helpful: `adapters/claude-code/` — Claude Code runtime adapter (commands, skills, progressive-loading)

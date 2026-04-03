@@ -69,7 +69,7 @@ if [ -d "$ROOT/skills/shared" ]; then
   done
 fi
 
-# --- Total injected (excludes _rationale.yaml, skills/shared/) ---
+# --- Total injected (excludes rationale.yaml, skills/shared/) ---
 total_injected=$((ambient + work_layer + step_max))
 
 # --- Report ---
@@ -139,8 +139,8 @@ fi
 
 echo ""
 echo "Excluded from budgets:"
-rationale_lines=$(count_lines "$ROOT/_rationale.yaml")
-echo "  _rationale.yaml:      ${rationale_lines} lines (not injected)"
+rationale_lines=$(count_lines "$ROOT/.furrow/almanac/rationale.yaml")
+echo "  rationale.yaml:       ${rationale_lines} lines (not injected)"
 
 echo ""
 if [ "$errors" -ne 0 ]; then

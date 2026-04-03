@@ -335,7 +335,7 @@ else
 fi
 
 # Symlink key directories if they don't exist at project root
-for _dir in skills hooks scripts schemas evals specialists references adapters templates tests _rationale.yaml; do
+for _dir in skills hooks scripts schemas evals specialists references adapters templates tests; do
   _src="$FURROW_ROOT/$_dir"
   _dst="$_proj_root/$_dir"
   if [ -e "$_src" ]; then

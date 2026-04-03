@@ -1,5 +1,5 @@
 # specialists/ directory — reusable domain expert definitions
-# See _rationale.yaml for component rationale.
+# See .furrow/almanac/rationale.yaml for component rationale.
 
 merge-specialist:
   file: merge-specialist.md

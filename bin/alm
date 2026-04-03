@@ -45,14 +45,10 @@ slugify() {
     | sed 's/-$//'
 }
 
-# Resolve the todos.yaml path: explicit arg > ALM_TODOS > ./todos.yaml fallback
+# Resolve the todos.yaml path: explicit arg > ALM_TODOS
 resolve_todos_path() {
   if [ -n "${1:-}" ]; then
     printf '%s' "$1"
-  elif [ -f "$ALM_TODOS" ]; then
-    printf '%s' "$ALM_TODOS"
-  elif [ -f "./todos.yaml" ]; then
-    printf '%s' "./todos.yaml"
   else
     printf '%s' "$ALM_TODOS"
   fi

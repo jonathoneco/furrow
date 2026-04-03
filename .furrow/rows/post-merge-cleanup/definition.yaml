@@ -1,0 +1,63 @@
+objective: "Fix post-beans-integration drift: CLI PATH install, stale path references in scripts/commands, and stale .focused file"
+
+deliverables:
+  - name: cli-path-install
+    acceptance_criteria:
+      - "alm, rws, sds symlinked to ~/.local/bin and runnable without full path"
+      - "install.sh symlink logic verified end-to-end"
+    file_ownership:
+      - "install.sh"
+    specialist: shell-specialist
+
+  - name: script-path-fixes
+    acceptance_criteria:
+      - "furrow-doctor.sh checks .furrow/almanac/rationale.yaml (not root _rationale.yaml)"
+      - "measure-context.sh references .furrow/almanac/ paths"
+      - "furrow-doctor.sh passes with no path-related failures"
+    file_ownership:
+      - "scripts/furrow-doctor.sh"
+      - "scripts/measure-context.sh"
+    specialist: shell-specialist
+
+  - name: command-spec-fixes
+    acceptance_criteria:
+      - "triage.md references .furrow/almanac/todos.yaml, not root todos.yaml"
+      - "All command specs that reference alm/rws/sds assume PATH availability, not root-level files"
+    file_ownership:
+      - "commands/triage.md"
+      - "commands/*.md"
+    specialist: cli-designer
+
+  - name: skill-template-refs
+    acceptance_criteria:
+      - "skills/plan.md references templates/plan.json for schema"
+      - "Any other step skills that produce templated artifacts also reference their templates"
+    file_ownership:
+      - "skills/plan.md"
+    specialist: harness-engineer
+
+  - name: stale-state-cleanup
+    acceptance_criteria:
+      - ".furrow/.focused cleared or set to active row"
+      - "No references to archived rows in active state"
+    file_ownership:
+      - ".furrow/.focused"
+
+context_pointers:
+  - path: scripts/furrow-doctor.sh
+    note: "Main health check script — references _rationale.yaml at root"
+  - path: scripts/measure-context.sh
+    note: "Context budget validator — references _rationale.yaml at root"
+  - path: commands/triage.md
+    note: "Triage command spec — references todos.yaml at root"
+  - path: .furrow/almanac/
+    note: "Actual location of rationale.yaml, todos.yaml, roadmap.yaml post-beans-integration"
+  - path: install.sh
+    note: "CLI symlink logic for alm/rws/sds"
+
+constraints:
+  - "Do not change the .furrow/almanac/ directory structure — it is the settled design"
+  - "Scripts must remain POSIX sh compatible"
+  - "All changes must pass furrow-doctor.sh and measure-context.sh afterward"
+
+gate_policy: supervised
