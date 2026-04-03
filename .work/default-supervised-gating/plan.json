@@ -1,0 +1,72 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": [
+        "two-phase-gate",
+        "summary-generation-fix",
+        "bypass-prevention",
+        "precheck-supervised-update"
+      ],
+      "assignments": {
+        "two-phase-gate": {
+          "specialist": "shell-specialist",
+          "file_ownership": [
+            "commands/lib/step-transition.sh",
+            "schemas/state.schema.json",
+            "scripts/update-state.sh",
+            "hooks/lib/validate.sh"
+          ]
+        },
+        "summary-generation-fix": {
+          "specialist": "shell-specialist",
+          "file_ownership": [
+            "scripts/regenerate-summary.sh"
+          ]
+        },
+        "bypass-prevention": {
+          "specialist": "shell-specialist",
+          "file_ownership": [
+            "hooks/transition-guard.sh"
+          ]
+        },
+        "precheck-supervised-update": {
+          "specialist": "shell-specialist",
+          "file_ownership": [
+            "commands/lib/gate-precheck.sh"
+          ]
+        }
+      }
+    },
+    {
+      "wave": 2,
+      "deliverables": [
+        "verdict-file-enforcement",
+        "skill-transition-protocol"
+      ],
+      "assignments": {
+        "verdict-file-enforcement": {
+          "specialist": "shell-specialist",
+          "file_ownership": [
+            "scripts/run-gate.sh",
+            "hooks/verdict-guard.sh"
+          ]
+        },
+        "skill-transition-protocol": {
+          "specialist": "shell-specialist",
+          "file_ownership": [
+            "skills/ideate.md",
+            "skills/research.md",
+            "skills/plan.md",
+            "skills/spec.md",
+            "skills/decompose.md",
+            "skills/implement.md",
+            "skills/review.md"
+          ]
+        }
+      }
+    }
+  ],
+  "created_at": "2026-04-03T02:50:00Z",
+  "created_by": "plan-step"
+}
