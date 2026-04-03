@@ -53,7 +53,12 @@ items:
         - review-finding
         - brain-dump
         - manual
+        - legacy
       description: "How this TODO was extracted"
+    seed_id:
+      type: string
+      pattern: "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+      description: "ID of the linked seed in .furrow/seeds/ (optional)"
     depends_on:
       type: array
       items:
