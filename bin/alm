@@ -10,7 +10,11 @@ ALM_DIR=".furrow/almanac"
 ALM_TODOS="$ALM_DIR/todos.yaml"
 ALM_ROADMAP="$ALM_DIR/roadmap.yaml"
 ROWS_DIR=".furrow/rows"
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+_alm_self="$0"
+if [ -L "$_alm_self" ]; then
+  _alm_self="$(readlink -f "$_alm_self")"
+fi
+SCRIPT_DIR="$(cd "$(dirname "$_alm_self")" && pwd)"
 SCHEMA_FILE="$SCRIPT_DIR/../adapters/shared/schemas/todos.schema.yaml"
 
 # --- Helpers ---
