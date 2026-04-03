@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/reground.md
+../../commands/reground.md

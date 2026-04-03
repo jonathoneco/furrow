@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/lib/generate-summary.sh
+../../../commands/lib/generate-summary.sh

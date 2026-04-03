@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/specialists/shell-specialist.md
+../../specialists/shell-specialist.md

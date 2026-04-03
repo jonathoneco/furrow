@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/lib/promote-learnings.sh
+../../../commands/lib/promote-learnings.sh

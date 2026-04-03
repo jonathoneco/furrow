@@ -1,1 +1,16 @@
 .remember/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment
+.env
+.env.*
+
+# OS / editor
+.DS_Store
+*.swp
+*.swo
+*~

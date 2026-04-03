@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/redirect.md
+../../commands/redirect.md

@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/specialists/cli-designer.md
+../../specialists/cli-designer.md

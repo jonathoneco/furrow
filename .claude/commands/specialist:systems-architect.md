@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/specialists/systems-architect.md
+../../specialists/systems-architect.md

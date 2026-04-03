@@ -20,9 +20,9 @@ Scripts, commands, and the `alm` CLI still reference the old locations.
 
 **Immediate fix**: Symlink all three CLIs to `~/.local/bin/`:
 ```sh
-ln -sf /home/jonco/src/furrow/bin/alm ~/.local/bin/alm
-ln -sf /home/jonco/src/furrow/bin/rws ~/.local/bin/rws
-ln -sf /home/jonco/src/furrow/bin/sds ~/.local/bin/sds
+ln -sf <furrow-root>/bin/alm ~/.local/bin/alm
+ln -sf <furrow-root>/bin/rws ~/.local/bin/rws
+ln -sf <furrow-root>/bin/sds ~/.local/bin/sds
 ```
 
 **Verification**: `which alm && which rws && which sds` all resolve.

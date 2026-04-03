@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/specialists/go-specialist.md
+../../specialists/go-specialist.md

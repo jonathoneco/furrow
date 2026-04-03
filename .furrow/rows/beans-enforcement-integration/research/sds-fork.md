@@ -2,7 +2,7 @@
 
 ## Source Analysis
 
-`bn` at `/home/jonco/src/work-harness/bin/bn` is ~450 lines POSIX shell + jq.
+`bn` at `<work-harness>/bin/bn` is ~450 lines POSIX shell + jq.
 
 ### Change Surface
 

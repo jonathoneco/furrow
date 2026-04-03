@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/lib/validate-learning.sh
+../../../commands/lib/validate-learning.sh

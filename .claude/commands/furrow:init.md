@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/init.md
+../../commands/init.md

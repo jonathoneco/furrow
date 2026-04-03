@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/lib/detect-context.sh
+../../../commands/lib/detect-context.sh

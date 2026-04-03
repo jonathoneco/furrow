@@ -51,7 +51,7 @@ See `.claude/rules/` for platform-managed rules that survive compaction.
 <!-- furrow:start -->
 ## Furrow
 
-Installed from: /home/jonco/src/furrow
+Installed from: this repository (self-hosted)
 
 | Command | Purpose |
 |---------|---------|

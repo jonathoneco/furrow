@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/specialists/migration-strategist.md
+../../specialists/migration-strategist.md

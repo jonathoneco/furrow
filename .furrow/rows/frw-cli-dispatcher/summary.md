@@ -4,8 +4,8 @@
 Create frw, a modularized POSIX sh CLI that centralizes all harness-level concerns (hooks, scripts, init, install, doctor) behind a single PATH-resolved entry point, eliminating relative path fragility and consolidating scattered shell scripts into a coherent tool.
 
 ## Current State
-Step: implement | Status: in_progress
-Deliverables: 6/6 complete
+Step: implement | Status: pending_approval
+Deliverables: 6/6
 Mode: code
 
 ## Artifact Paths
@@ -22,6 +22,8 @@ Mode: code
 - **plan->spec**: pass — Plan complete — 4 waves, 6 deliverables, architecture decisions recorded, plan.json validated
 - **spec->decompose**: pass — Specs complete — 6 implementation-ready specs with interface contracts, refined ACs, and dependency maps
 - **decompose->implement**: pass — Decompose complete — 4 waves, team plan with 3 parallel wave-2 agents, plan.json validated
+- **implement->review**: pass — Implementation complete — 6/6 deliverables, frw CLI operational, 90+ refs updated, old dirs deleted, install check passes
+- **implement->review**: pass — Implementation complete — 6/6 deliverables, 5 commits, frw operational from PATH
 
 ## Context Budget
 Measurement unavailable

@@ -24,17 +24,65 @@ if [ -z "$_user_bin" ]; then
   exit 1
 fi
 
-# --- Symlink CLI tools ---
+# --- Symlink CLI tools (relative paths for portability) ---
+
+# Compute relative path from directory $1 to file/dir $2.
+# Both arguments must be absolute paths. Uses only POSIX constructs.
+_relpath() {
+  _rp_from="${1%/}"
+  _rp_to="${2%/}"
+  _rp_common="$_rp_from"
+  _rp_up=""
+  while true; do
+    case "$_rp_to/" in
+      "$_rp_common/"*) break ;;
+    esac
+    _rp_common="${_rp_common%/*}"
+    _rp_up="../$_rp_up"
+  done
+  _rp_tail="${_rp_to#"$_rp_common"}"
+  _rp_tail="${_rp_tail#/}"
+  if [ -n "$_rp_up" ] && [ -n "$_rp_tail" ]; then
+    echo "${_rp_up}${_rp_tail}"
+  elif [ -n "$_rp_up" ]; then
+    echo "${_rp_up%/}"
+  elif [ -n "$_rp_tail" ]; then
+    echo "$_rp_tail"
+  else
+    echo "."
+  fi
+}
+
+# Portable readlink -f
+_canonicalize() {
+  _cl_path="$1"
+  while [ -L "$_cl_path" ]; do
+    _cl_dir="$(cd "$(dirname "$_cl_path")" && pwd)"
+    _cl_path="$(readlink "$_cl_path")"
+    case "$_cl_path" in
+      /*) ;;
+      *) _cl_path="$_cl_dir/$_cl_path" ;;
+    esac
+  done
+  _cl_dir="$(cd "$(dirname "$_cl_path")" 2>/dev/null && pwd)"
+  echo "$_cl_dir/$(basename "$_cl_path")"
+}
+
 for _cli in frw sds rws alm; do
   _src="$FURROW_ROOT/bin/$_cli"
   _dst="$_user_bin/$_cli"
   if [ ! -e "$_src" ]; then continue; fi
-  if [ -L "$_dst" ] && [ "$(readlink "$_dst")" = "$_src" ]; then
-    continue  # already correct
+  if [ -L "$_dst" ]; then
+    _existing="$(_canonicalize "$_dst")"
+    _expected="$(_canonicalize "$_src")"
+    if [ "$_existing" = "$_expected" ]; then
+      continue  # already correct
+    fi
+    rm "$_dst"
   fi
-  [ -L "$_dst" ] && rm "$_dst"
-  ln -s "$_src" "$_dst"
-  echo "  [LINK] $_dst -> $_src"
+  _rel="$(_relpath "$_user_bin" "$FURROW_ROOT/bin/$_cli")"
+  ln -s "$_rel" "$_dst"
+  echo "  [LINK] $_dst -> $_rel"
 done
 
 # --- Delegate to frw install ---

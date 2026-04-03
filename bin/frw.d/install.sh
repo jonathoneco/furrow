@@ -39,7 +39,44 @@ _canonicalize() {
   echo "$_cl_dir/$(basename "$_cl_path")"
 }
 
-# Create a symlink, skipping if target already points to the right place.
+# Compute relative path from directory $1 to file/dir $2.
+# Both arguments must be absolute paths. Uses only POSIX constructs.
+_relpath() {
+  _rp_from="$1"
+  _rp_to="$2"
+
+  # Normalize: strip trailing slashes
+  _rp_from="${_rp_from%/}"
+  _rp_to="${_rp_to%/}"
+
+  # Find common prefix
+  _rp_common="$_rp_from"
+  _rp_up=""
+  while true; do
+    case "$_rp_to/" in
+      "$_rp_common/"*) break ;;
+    esac
+    _rp_common="${_rp_common%/*}"
+    _rp_up="../$_rp_up"
+  done
+
+  # Build relative path
+  _rp_tail="${_rp_to#"$_rp_common"}"
+  _rp_tail="${_rp_tail#/}"
+  if [ -n "$_rp_up" ] && [ -n "$_rp_tail" ]; then
+    echo "${_rp_up}${_rp_tail}"
+  elif [ -n "$_rp_up" ]; then
+    # Strip trailing slash from _rp_up
+    echo "${_rp_up%/}"
+  elif [ -n "$_rp_tail" ]; then
+    echo "$_rp_tail"
+  else
+    echo "."
+  fi
+}
+
+# Create a relative symlink, skipping if target already points to the right place.
+# Arguments: $1 = absolute path to target, $2 = absolute path to link location
 symlink() {
   _src="$1"
   _dst="$2"
@@ -56,8 +93,12 @@ symlink() {
     echo "  [WARN] $_dst exists as a regular file, backing up to ${_dst}.bak"
     mv "$_dst" "${_dst}.bak"
   fi
-  ln -s "$_src" "$_dst"
-  _link "$_src" "$_dst"
+  # Compute relative path from the symlink's parent directory to the target
+  _dst_dir="$(cd "$(dirname "$_dst")" && pwd)"
+  _src_abs="$(_canonicalize "$_src")"
+  _rel="$(_relpath "$_dst_dir" "$_src_abs")"
+  ln -s "$_rel" "$_dst"
+  _link "$_rel" "$_dst"
 }
 
 # --- check mode ---
@@ -338,14 +379,20 @@ Run \`/furrow:doctor\` to check health. Run \`install.sh --check\` to verify ins
           _skip "$_dir (already linked)"
         else
           rm "$_dst"
-          ln -s "$_src" "$_dst"
-          _link "$_src" "$_dst"
+          _src_abs="$(_canonicalize "$_src")"
+          _dst_parent="$(cd "$(dirname "$_dst")" && pwd)"
+          _rel="$(_relpath "$_dst_parent" "$_src_abs")"
+          ln -s "$_rel" "$_dst"
+          _link "$_rel" "$_dst"
         fi
       elif [ -e "$_dst" ]; then
         _skip "$_dir (exists as real file/dir, not overwriting)"
       else
-        ln -s "$_src" "$_dst"
-        _link "$_src" "$_dst"
+        _src_abs="$(_canonicalize "$_src")"
+        _dst_parent="$(cd "$(dirname "$_dst")" && pwd)"
+        _rel="$(_relpath "$_dst_parent" "$_src_abs")"
+        ln -s "$_rel" "$_dst"
+        _link "$_rel" "$_dst"
       fi
     fi
   done

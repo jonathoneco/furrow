@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/status.md
+../../commands/status.md
