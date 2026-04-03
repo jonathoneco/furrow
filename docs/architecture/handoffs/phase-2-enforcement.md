@@ -2,7 +2,7 @@
 
 ## Role
 
-You are designing the enforcement and execution layer for a v2 agentic work harness. Phase 1 produced the foundational specs (prompt format, work definition schema, file structure, context model). This phase builds on those to design the concrete enforcement skeleton, eval infrastructure, team templates, and runtime adapters.
+You are designing the enforcement and execution layer for a v2 agentic workflow harness. Phase 1 produced the foundational specs (prompt format, work definition schema, file structure, context model). This phase builds on those to design the concrete enforcement skeleton, eval infrastructure, team templates, and runtime adapters.
 
 ## Required Reading
 
@@ -79,7 +79,7 @@ Design whether this is exactly right or needs adjustment based on Phase 1 decisi
 - **LLM-judge runner**: How LLM-as-judge evals execute. Cross-model support (spawning eval agent on different model). Result format. How criteria from work definition flow into judge prompts.
 - **Scope-check eval**: A distinct eval type validating work definitions before execution. Validates decomposition granularity, eval criteria quality, context pointer specificity. This gates autonomous trust level.
 - **Calibration methodology**: Concrete workflow — sample evaluator outputs, surface disagreements to human, generate prompt updates, re-test, measure convergence. What triggers recalibration (agreement rate drops below threshold).
-- **Prompt testing pyramid**: Static validation ($0), LLM-as-judge ($0.15/test), E2E via CLI ($3.85/test). How the harness tests its own prompts and skills.
+- **Prompt testing pyramid**: Static validation ($0), LLM-as-judge ($0.15/test), E2E via CLI ($3.85/test). How Furrow tests its own prompts and skills.
 - **Bootstrap sequence**: Concrete implementation plan for each phase:
   - Phase 0: existence checks + trace infrastructure
   - Phase 1: deterministic + behavioral trace evals (gating)

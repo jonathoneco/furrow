@@ -2,7 +2,7 @@
 
 ## Role
 
-You are performing a final consistency review across all architectural specs for a v2 agentic work harness. Phases 1-5 produced 19 specs. Your job is to find and fix inconsistencies, gaps, and contradictions.
+You are performing a final consistency review across all architectural specs for a v2 agentic workflow harness. Phases 1-5 produced 19 specs. Your job is to find and fix inconsistencies, gaps, and contradictions.
 
 ## Required Reading
 

@@ -4,7 +4,7 @@
 # Usage: run-ci-checks.sh <name>
 #   name — work unit name
 #
-# Reads CI commands from .claude/harness.yaml ci section.
+# Reads CI commands from .claude/furrow.yaml ci section.
 # Produces gate evidence at .work/{name}/gates/implement-to-review-ci.json.
 #
 # Exit codes:
@@ -15,7 +15,7 @@
 set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-HARNESS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+FURROW_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 if [ "$#" -lt 1 ]; then
   echo "Usage: run-ci-checks.sh <name>" >&2
@@ -24,24 +24,24 @@ fi
 
 name="$1"
 
-work_dir="${HARNESS_ROOT}/.work/${name}"
+work_dir="${FURROW_ROOT}/.work/${name}"
 gates_dir="${work_dir}/gates"
 
 # --- read CI config ---
 
-harness_config="${HARNESS_ROOT}/.claude/harness.yaml"
+furrow_config="${FURROW_ROOT}/.claude/furrow.yaml"
 test_cmd=""
 lint_cmd=""
 build_cmd=""
 
-if [ -f "${harness_config}" ] && command -v yq > /dev/null 2>&1; then
-  test_cmd="$(yq -r '.ci.test_command // ""' "${harness_config}" 2>/dev/null)" || test_cmd=""
-  lint_cmd="$(yq -r '.ci.lint_command // ""' "${harness_config}" 2>/dev/null)" || lint_cmd=""
-  build_cmd="$(yq -r '.ci.build_command // ""' "${harness_config}" 2>/dev/null)" || build_cmd=""
+if [ -f "${furrow_config}" ] && command -v yq > /dev/null 2>&1; then
+  test_cmd="$(yq -r '.ci.test_command // ""' "${furrow_config}" 2>/dev/null)" || test_cmd=""
+  lint_cmd="$(yq -r '.ci.lint_command // ""' "${furrow_config}" 2>/dev/null)" || lint_cmd=""
+  build_cmd="$(yq -r '.ci.build_command // ""' "${furrow_config}" 2>/dev/null)" || build_cmd=""
 fi
 
 if [ -z "${test_cmd}" ] && [ -z "${lint_cmd}" ] && [ -z "${build_cmd}" ]; then
-  echo "No CI commands configured in ${harness_config} under 'ci' key." >&2
+  echo "No CI commands configured in ${furrow_config} under 'ci' key." >&2
   echo "Configure ci.test_command, ci.lint_command, or ci.build_command." >&2
   exit 2
 fi
@@ -57,7 +57,7 @@ tests_failed=0
 duration_start="$(date +%s)"
 ci_command=""
 
-# Trust boundary: CI commands are read from harness.yaml, a developer-authored
+# Trust boundary: CI commands are read from furrow.yaml, a developer-authored
 # config file. sh -c provides process isolation for command execution.
 
 # Run build

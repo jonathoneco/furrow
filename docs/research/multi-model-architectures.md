@@ -37,7 +37,7 @@ Cross-model review implementations exist at three levels of sophistication: one-
 
 Skills designed as "job descriptions" (outcomes and quality standards) port across model providers. Skills designed as API wrappers are locked to one provider. Multi-model routing should happen below the skill layer.
 
-File-based coordination dominates in practice. Practitioners use markdown files and handoff logs (CHANGES.log, state.json) for multi-agent coordination — validating the harness's file-based state approach over framework-mediated communication.
+File-based coordination dominates in practice. Practitioners use markdown files and handoff logs (CHANGES.log, state.json) for multi-agent coordination — validating Furrow's file-based state approach over framework-mediated communication.
 
 **Practitioner sentiment consensus**: Multi-model task routing is clearly worth it. Multi-agent coordination is fragile and expensive. 2-3 models is the sweet spot. The human is the bottleneck, not the models.
 

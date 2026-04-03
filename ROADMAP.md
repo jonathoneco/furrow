@@ -1,6 +1,6 @@
 # Roadmap
 
-> Updated: 2026-04-02 | 8 phases, 3/8 complete | 30 TODOs across 12 work units
+> Updated: 2026-04-02 | 8 phases, 3/8 complete | 30 TODOs across 13 work units
 
 ---
 
@@ -70,7 +70,7 @@ Completed in commit `7808ec2`.
 | Track | Result |
 |-------|--------|
 | T5 — Gate Evaluation Rearchitecture | Isolated subagent evaluators, pre/post-step evaluation, YAML gate criteria, `decided_by` vocabulary migration. 6 commits, 34 files, net -208 lines. |
-| T7 — Roadmap Process | `/harness:triage` command with triage script (`scripts/triage-todos.sh`), template system, todos.yaml schema extension (7 triage fields). |
+| T7 — Roadmap Process | `/furrow:triage` command with triage script (`scripts/triage-todos.sh`), template system, todos.yaml schema extension (7 triage fields). |
 | T8 — Parallel Workflow Support | Focused+dormant model via `.work/.focused`, 4 new functions in `hooks/lib/common.sh`, all hooks scoped, `--switch`/`--all` flags. |
 
 ---
@@ -79,7 +79,7 @@ Completed in commit `7808ec2`.
 
 | Track | Result |
 |-------|--------|
-| T9 — Triage-TODOs Harness Skill | New `/harness:triage` command replaces `/work-roadmap`. Same 10-step pipeline with AI-driven triage assessment. |
+| T9 — Triage-TODOs Harness Skill | New `/furrow:triage` command replaces `/work-roadmap`. Same 10-step pipeline with AI-driven triage assessment. |
 | T10 — Edge-Case Integration Tests | 80/80 assertions across 5 test suites. |
 | T11+T12 — Harness UX Fixes | Summary protocol, step-aware validation, `--source-todo` flag, `.gate_policy_hint` eliminated. |
 
@@ -87,7 +87,7 @@ Completed in commit `7808ec2`.
 
 ## Phase 4 — Foundational Infrastructure — PLANNED
 
-**Rationale:** Both work units change the ground truth everything else builds on. The rename changes every file path in the project; beans changes the enforcement pipeline every branch merges through. Doing these first means all downstream branches are built against the final namespace and enforcement layer — no rebasing against stale names or missing enforcement hooks.
+**Rationale:** Three work units change the ground truth everything else builds on. The rename changes every file path; beans changes the enforcement pipeline every branch merges through; supervised gating ensures all subsequent work units actually pause for user review at step boundaries. The namespace-rename incident (steamrolled research→implement without user interaction) proved this is foundational, not cosmetic.
 
 ### work/namespace-rename (3 TODOs, ~2-3 sessions, sequential)
 `duplication-cleanup`: Clean up file duplication and align command namespace
@@ -98,6 +98,12 @@ Completed in commit `7808ec2`.
 - **Why together**: Sequential pipeline: clean up duplication first (so rename is clean), rename everything, then audit the final codebase for portability.
 - **Dependencies**: `rename-to-furrow` → `duplication-cleanup`, `cross-platform-compatibility` → `rename-to-furrow`
 
+### work/supervised-gating (1 TODO, ~1 session)
+`default-supervised-gating`: Default gate policy should be supervised with structural enforcement
+- **Key files**: `commands/lib/step-transition.sh`, `commands/lib/init-work-unit.sh`, `.claude/furrow.yaml`, step skills
+- **Conflict risk**: low (step-transition.sh shared with namespace-rename, but different changes)
+- **Why here**: The namespace-rename work unit proved supervised mode has no structural enforcement — the agent steamrolled from research through implement without pausing. Every subsequent work unit benefits from this fix landing first.
+
 ### work/beans-integration (3 TODOs, ~1-2 sessions, sequential)
 `beans-enforcement-integration`: Beans task management for enforcement layer and programmatic checks
 `merge-specialist`: Add a merge specialist template (built against new enforcement layer)
@@ -107,20 +113,19 @@ Completed in commit `7808ec2`.
 - **Why together**: Beans changes the enforcement pipeline; merge specialist needs to know about beans status validation; legacy migration depends on beans being in place.
 - **Dependencies**: `legacy-todos-migration` → `beans-enforcement-integration`
 
-**Parallelism**: namespace-rename completes first (touches `*`), then beans-integration.
+**Parallelism**: namespace-rename first (touches `*`), then supervised-gating and beans-integration can parallel.
 
 ---
 
 ## Phase 5 — Safety & Quality Defaults — PLANNED
 
-**Rationale:** All small-effort, high-value changes. Built against the renamed codebase and beans enforcement layer. Safety defaults (supervised gating, hook false positives) and quality guardrails (source hierarchy, vertical slices, model routing) that raise the bar for all subsequent work. Minimal file conflicts — 3 parallel worktrees.
+**Rationale:** All small-effort, high-value changes. Built against the renamed codebase, supervised gating, and beans enforcement layer. Quality guardrails (source hierarchy, vertical slices, model routing) and hook fixes that raise the bar for all subsequent work. Minimal file conflicts — 3 parallel worktrees.
 
-### work/safety-defaults (2 TODOs, ~1 session)
-`default-supervised-gating`: Default gate policy should be supervised, not auto-advance
+### work/safety-defaults (1 TODO, ~1 session)
 `stop-hook-false-positives`: Handle stop hooks enforcing fluff requirements
-- **Key files**: `commands/lib/step-transition.sh`, `commands/lib/init-work-unit.sh`, `.claude/harness.yaml`, `hooks/validate-summary.sh`, `hooks/stop-ideation.sh`, `hooks/lib/validate.sh`
+- **Key files**: `hooks/validate-summary.sh`, `hooks/stop-ideation.sh`, `hooks/lib/validate.sh`
 - **Conflict risk**: none
-- **Why together**: Both fix overly-permissive/rigid defaults in the same enforcement surface (hooks + step transitions).
+- **Why standalone**: Fix hook false positives that block valid work. Supervised gating enforcement moved to Phase 4.
 
 ### work/quality-guardrails (3 TODOs, ~1 session)
 `research-source-guidance`: Structured guidance for primary vs secondary source research
@@ -194,7 +199,7 @@ Completed in commit `7808ec2`.
 `design-pattern-context-construction`: Context construction driven by design pattern thinking
 - **Key files**: `skills/`, `references/`, `templates/`, `docs/`, `commands/lib/promote-components.sh`, `skills/review.md`
 - **Conflict risk**: low (references/ overlap with script-hardening — different files)
-- **Why together**: All about how knowledge flows through the harness — reduction, routing, and assembly patterns.
+- **Why together**: All about how knowledge flows through Furrow — reduction, routing, and assembly patterns.
 
 ### work/todo-roadmap-system (3 TODOs, ~1-2 sessions)
 `todo-context-references`: TODOs with context references from dump and active sessions

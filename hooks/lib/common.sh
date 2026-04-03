@@ -1,5 +1,5 @@
 #!/bin/sh
-# common.sh — Shared utility functions for V2 harness hooks
+# common.sh — Shared utility functions for Furrow hooks
 #
 # Sourced by hook scripts; not executed directly.
 # Dependencies: jq, yq
@@ -9,11 +9,11 @@ set -eu
 # --- logging ---
 
 log_warning() {
-  echo "[harness:warning] $1" >&2
+  echo "[furrow:warning] $1" >&2
 }
 
 log_error() {
-  echo "[harness:error] $1" >&2
+  echo "[furrow:error] $1" >&2
 }
 
 # --- work unit discovery ---

@@ -44,8 +44,8 @@ fi
 # --- locate schema ---
 
 script_dir="$(cd "$(dirname "$0")" && pwd)"
-harness_root="$(cd "${script_dir}/.." && pwd)"
-schema_file="${harness_root}/schemas/state.schema.json"
+furrow_root="$(cd "${script_dir}/.." && pwd)"
+schema_file="${furrow_root}/schemas/state.schema.json"
 
 if [ ! -f "${schema_file}" ]; then
   echo "Schema file not found: ${schema_file}" >&2

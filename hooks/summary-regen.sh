@@ -9,9 +9,9 @@
 set -eu
 
 HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
-HARNESS_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
+FURROW_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
 
-COMMON_LIB="$HARNESS_ROOT/hooks/lib/common.sh"
+COMMON_LIB="$FURROW_ROOT/hooks/lib/common.sh"
 
 if [ ! -f "$COMMON_LIB" ]; then
   exit 0
@@ -48,7 +48,7 @@ if [ "$step_status" != "completed" ]; then
 fi
 
 unit_name="$(work_unit_name "$work_dir")"
-regen_script="$HARNESS_ROOT/scripts/regenerate-summary.sh"
+regen_script="$FURROW_ROOT/scripts/regenerate-summary.sh"
 
 if [ -x "$regen_script" ] && [ -n "$unit_name" ]; then
   "$regen_script" "$unit_name" 2>/dev/null || log_warning "summary.md regeneration failed"

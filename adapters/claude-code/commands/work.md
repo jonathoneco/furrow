@@ -1,7 +1,7 @@
 # /work Command — Claude Code Adapter
 
 ## Purpose
-Main entry point for the V2 work harness. Creates new work units or resumes active ones.
+Main entry point for Furrow. Creates new work units or resumes active ones.
 
 ## Usage
 ```

@@ -10,7 +10,7 @@
 
 ### The Fundamental Question
 
-Should the harness prescribe *how* to decompose work, or just *that*
+Should Furrow prescribe *how* to decompose work, or just *that*
 decomposition happens?
 
 The seed research argues both sides:
@@ -29,7 +29,7 @@ The seed research argues both sides:
 
 ### Proposed Model: Outcome-Based with Structural Guardrails
 
-The harness should define **what** and **when**, not **how**.
+Furrow should define **what** and **when**, not **how**.
 
 A work definition specifies:
 
@@ -39,7 +39,7 @@ A work definition specifies:
 4. **Context pointers** — what information is needed (links to relevant files, docs, code)
 5. **Constraints** — boundaries the work must stay within (tech choices, scope limits, standards)
 
-The harness does NOT specify:
+Furrow does NOT specify:
 - Implementation order (the model decides)
 - Decomposition strategy (the model decides)
 - Tool usage (the model decides)
@@ -134,7 +134,7 @@ This observation is empirically valid but needs refinement along two axes:
    different management needs. Persistent audit records (what was done, when, by
    whom) are better handled by git history than by a custom record format.
 
-2. **Clarified management responsibility.** The harness manages the work tier.
+2. **Clarified management responsibility.** Furrow manages the work tier.
    The platform manages ambient and session tiers. This is the minimal-footprint
    ownership model.
 
@@ -144,7 +144,7 @@ This observation is empirically valid but needs refinement along two axes:
 
 ### Work Context: The Harness's Core Responsibility
 
-The work tier is where the harness adds the most value. Neither platform has a
+The work tier is where Furrow adds the most value. Neither platform has a
 mechanism for "load exactly the context relevant to this work unit."
 
 **Work context includes:**
@@ -174,7 +174,7 @@ The seed research documents a tension:
 
 At session start, load:
 1. **Ambient context** (platform-managed, automatic): ~50-100 tokens of CLAUDE.md
-2. **Work summary** (harness-managed): ~200-500 tokens — objective, current state,
+2. **Work summary** (Furrow-managed): ~200-500 tokens — objective, current state,
    next deliverable, key decisions. NOT the full work definition.
 3. **Nothing else** — all other context retrieved on demand via tools.
 
@@ -195,9 +195,9 @@ The seed research identifies multiple signals for session boundaries:
 - Compaction loses detail on half-implemented work
 - Fresh context for evaluation is a feature (independent evaluator perspective)
 
-**Approach: The harness manages context proactively, not reactively.**
+**Approach: Furrow manages context proactively, not reactively.**
 
-Rather than letting context accumulate until something breaks, the harness uses
+Rather than letting context accumulate until something breaks, Furrow uses
 structural mechanisms to keep context bounded:
 
 1. **Deliverable sizing** — deliverables should be completable in a single focused
@@ -219,7 +219,7 @@ structural mechanisms to keep context bounded:
    live on disk. Context compaction or session loss doesn't destroy work state.
 
 The work summary is auto-generated at session/deliverable boundaries (Level B
-enforcement via hook). Session boundaries remain emergent, but the harness
+enforcement via hook). Session boundaries remain emergent, but Furrow
 prevents the conditions that make unplanned boundaries catastrophic.
 
 ---
@@ -300,13 +300,13 @@ bottleneck" and "brain fry managing parallel agents." This is especially
 relevant for a solo developer.
 
 **For interactive mode (Claude Code):** The human is the natural coordinator.
-Claude Code's teams/subagents handle the mechanics. The harness's role is to
+Claude Code's teams/subagents handle the mechanics. Furrow's role is to
 make coordination decisions explicit in the work definition: which deliverables
 can be parallelized, which need sequential treatment, which need specialized
 agents.
 
 **For autonomous mode (Agent SDK):** The coordinator agent manages execution
-programmatically. The harness provides the four-role architecture: planner
+programmatically. Furrow provides the four-role architecture: planner
 produces the work definition, coordinator reads it and spawns specialists,
 evaluator reviews deliverables. The work definition's structure drives
 coordination automatically.

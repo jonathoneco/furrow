@@ -19,8 +19,8 @@ set -eu
 # --- locate focused work unit ---
 
 HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
-HARNESS_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
-COMMON_LIB="$HARNESS_ROOT/hooks/lib/common.sh"
+FURROW_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
+COMMON_LIB="$FURROW_ROOT/hooks/lib/common.sh"
 
 if [ ! -f "$COMMON_LIB" ]; then
   exit 0

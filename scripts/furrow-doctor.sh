@@ -1,7 +1,7 @@
 #!/bin/sh
-# harness-doctor.sh — Self-diagnosis for V2 work harness structural health.
+# furrow-doctor.sh — Self-diagnosis for Furrow structural health.
 #
-# Usage: harness-doctor.sh [--research] [harness-root]
+# Usage: furrow-doctor.sh [--research] [furrow-root]
 # Exit 0 = all pass, 1 = failures found.
 
 set -eu
@@ -29,7 +29,7 @@ check_warn() { echo "  [WARN] $1"; warnings=$((warnings + 1)); }
 # Tier 1: Structural (always run)
 # ============================================================
 
-echo "=== Harness Doctor ==="
+echo "=== Furrow Doctor ==="
 
 # --- Check 1: Context budget ---
 section "Context budgets"
@@ -360,7 +360,7 @@ if [ "$research" -eq 1 ]; then
     "'$ROOT/scripts/measure-context.sh' '$ROOT'"
 
   _sd 10 "file-based agent communication" \
-    "! grep -rq 'shared_memory\|shared_state\|IPC_' '$ROOT/hooks/' '$ROOT/scripts/' --exclude='harness-doctor.sh' 2>/dev/null"
+    "! grep -rq 'shared_memory\|shared_state\|IPC_' '$ROOT/hooks/' '$ROOT/scripts/' --exclude='furrow-doctor.sh' 2>/dev/null"
 
   _sd 11 "dual-runtime adapters exist" \
     "test -d '$ROOT/adapters/claude-code' && test -d '$ROOT/adapters/agent-sdk'"
@@ -394,7 +394,7 @@ fi
 # ============================================================
 
 echo ""
-echo "=== Harness Doctor Summary ==="
+echo "=== Furrow Doctor Summary ==="
 echo "  Failures: $failures"
 echo "  Warnings: $warnings"
 if [ "$failures" -gt 0 ]; then

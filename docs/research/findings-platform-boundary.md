@@ -1,6 +1,6 @@
 # Platform Boundary Analysis
 
-> What is the harness? What isn't it? How does the dual-runtime constraint
+> What is Furrow? What isn't it? How does the dual-runtime constraint
 > shape its identity? How does it stay thin and get thinner over time?
 
 ---
@@ -37,7 +37,7 @@
 
 ### What Neither Platform Provides
 
-These are the genuine gaps — where the harness must add value:
+These are the genuine gaps — where Furrow must add value:
 
 | Gap | Why It Matters |
 |---|---|
@@ -51,7 +51,7 @@ These are the genuine gaps — where the harness must add value:
 
 ### What the Platforms Provide That the Harness Should Leverage for Enforcement
 
-The harness fills the genuine gaps above AND leverages platform primitives for
+Furrow fills the genuine gaps above AND leverages platform primitives for
 enforcement of its conventions:
 
 | Platform Primitive | Enforcement Role |
@@ -67,9 +67,9 @@ enforcement of its conventions:
 
 ## The Harness's Identity
 
-Given the platform map, the harness occupies a specific niche:
+Given the platform map, Furrow occupies a specific niche:
 
-**The harness is a set of conventions with an enforcement skeleton built from
+**Furrow is a set of conventions with an enforcement skeleton built from
 platform primitives — file formats, directory structures, naming patterns,
 evaluation specifications, and hooks/callbacks that make those conventions
 trustworthy rather than advisory.**
@@ -100,7 +100,7 @@ It *does* use platform primitives for enforcement and isolation:
 
 ### Design Principle: Shared Declarations, Separate Adapters
 
-The harness defines work in a runtime-agnostic format. Each runtime has a thin
+Furrow defines work in a runtime-agnostic format. Each runtime has a thin
 adapter that knows how to load and execute that format.
 
 ```
@@ -180,7 +180,7 @@ components without evals that would catch the regression.
 
 ### Component Annotation Pattern
 
-Each component in the harness has an entry in `_rationale.yaml` with two fields:
+Each component in Furrow has an entry in `_rationale.yaml` with two fields:
 the reason it exists (what limitation it addresses) and the condition under which
 it can be safely removed. Example:
 
@@ -217,7 +217,7 @@ Based on platform trajectory and model improvement patterns:
 | Cross-session handoff | Platform session management | Compaction quality reaches structured-handoff quality |
 | Quality gate orchestration | Platform lifecycle hooks | Hooks gain conditional evaluation and routing |
 
-The harness components most likely to *persist* are the ones encoding user
+Furrow components most likely to *persist* are the ones encoding user
 preferences rather than model limitations: what "good" looks like for this
 specific developer, what quality standards apply to this specific project.
 Capability uplift shrinks; encoded preference persists.
@@ -239,16 +239,16 @@ Capability uplift shrinks; encoded preference persists.
    them for a new runtime is trivial. The value is in the conventions, not the
    adapters.
 
-3. **The harness gets smaller over time.** Each component should be designed
+3. **Furrow gets smaller over time.** Each component should be designed
    with its own obsolescence in mind. The maintenance model is periodic deletion
    testing, not feature addition.
 
 4. **Platform-native when possible.** If Claude Code adds cross-session task
-   persistence, delete the harness's progress tracking convention. If the Agent
-   SDK adds structured eval hooks, delete the harness's eval runner adapter.
+   persistence, delete Furrow's progress tracking convention. If the Agent
+   SDK adds structured eval hooks, delete Furrow's eval runner adapter.
    Always prefer the platform primitive.
 
-5. **The harness uses the platform for enforcement, not just execution.** Hooks
+5. **Furrow uses the platform for enforcement, not just execution.** Hooks
    and callbacks are as much part of the convention layer as file formats and
    directory structures. They are declarative, lightweight, and deletable — not
    a departure from the convention-layer identity, but its procedural

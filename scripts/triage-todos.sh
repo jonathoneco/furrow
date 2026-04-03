@@ -139,8 +139,7 @@ for t in active:
         'urgency': t.get('urgency'),
         'impact': t.get('impact'),
         'effort': t.get('effort'),
-        'status': t.get('status', 'active'),
-        'phase': wave_map.get(tid, 1)
+        'status': t.get('status', 'active')
     })
 
 result = {

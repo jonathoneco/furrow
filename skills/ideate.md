@@ -16,7 +16,7 @@ Run the 6-part ceremony in order:
    (Option A/B/C) with a stated lean. Wait for user response in supervised mode.
    Emit `<!-- ideation:section:{name} -->` before each decision block.
 4. **Cross-model outside voice** — request a cross-model review of problem framing
-   and deliverables. Read `cross_model.provider` from `harness.yaml`; if absent,
+   and deliverables. Read `cross_model.provider` from `furrow.yaml`; if absent,
    use a fresh same-model subagent. Record findings in gate evidence.
 5. **Section-by-section approval** — build `definition.yaml` incrementally. Present
    each section individually: objective, each deliverable, context pointers,

@@ -3,17 +3,17 @@
 #
 # Sourced by the test runner. Requires helpers.sh (provides setup_fixture,
 # teardown_fixture, assert_exit_code, assert_file_exists, assert_file_contains,
-# assert_json_field, HARNESS_ROOT).
+# assert_json_field, FURROW_ROOT).
 
-# --- helper: set up symlink structure so generate-plan.sh resolves HARNESS_ROOT to FIXTURE_DIR ---
+# --- helper: set up symlink structure so generate-plan.sh resolves FURROW_ROOT to FIXTURE_DIR ---
 
 _setup_plan_fixture() {
   _name="$1"
   setup_fixture "$_name"
 
   mkdir -p "${FIXTURE_DIR}/scripts" "${FIXTURE_DIR}/hooks/lib"
-  ln -sf "${HARNESS_ROOT}/scripts/generate-plan.sh" "${FIXTURE_DIR}/scripts/generate-plan.sh"
-  ln -sf "${HARNESS_ROOT}/hooks/lib/validate.sh" "${FIXTURE_DIR}/hooks/lib/validate.sh"
+  ln -sf "${FURROW_ROOT}/scripts/generate-plan.sh" "${FIXTURE_DIR}/scripts/generate-plan.sh"
+  ln -sf "${FURROW_ROOT}/hooks/lib/validate.sh" "${FIXTURE_DIR}/hooks/lib/validate.sh"
 }
 
 # --- test functions ---

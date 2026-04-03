@@ -15,14 +15,14 @@ set -eu
 # --- paths ---
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-HARNESS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+FURROW_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # --- temp file registry for cleanup ---
 _eval_tmpdir="$(mktemp -d)"
 trap 'rm -rf "$_eval_tmpdir"' EXIT
 
 # shellcheck source=../hooks/lib/validate.sh
-. "$HARNESS_ROOT/hooks/lib/validate.sh"
+. "$FURROW_ROOT/hooks/lib/validate.sh"
 
 # --- argument validation ---
 
@@ -34,7 +34,7 @@ fi
 name="$1"
 deliverable="$2"
 
-work_dir="$HARNESS_ROOT/.work/${name}"
+work_dir="$FURROW_ROOT/.work/${name}"
 state_file="${work_dir}/state.json"
 def_file="${work_dir}/definition.yaml"
 plan_file="${work_dir}/plan.json"

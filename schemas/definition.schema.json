@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Work Definition",
-  "description": "Schema for definition.yaml — the work contract for a V2 harness work unit.",
+  "description": "Schema for definition.yaml — the work contract for a Furrow work unit.",
   "type": "object",
   "required": ["objective", "deliverables", "context_pointers", "constraints", "gate_policy"],
   "additionalProperties": false,

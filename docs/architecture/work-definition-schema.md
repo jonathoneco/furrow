@@ -75,7 +75,7 @@ acceptance_criteria: list[string]
 #   2. Define what the reviewer checks against
 #
 # Criteria are PUBLIC — visible to both executor and reviewer.
-# Review METHODOLOGY is private (lives in harness review infrastructure).
+# Review METHODOLOGY is private (lives in Furrow review infrastructure).
 #
 # Guidance for writing criteria:
 #   - State outcomes, not process ("token rotation is transparent"
@@ -257,9 +257,9 @@ The work definition schema is validated at Level A (structural enforcement):
 | Concept | Relationship to work definition |
 |---------|-------------------------------|
 | **Acceptance criteria** | Inline per deliverable — what done looks like (public) |
-| **Review methodology** | NOT in work def — lives in harness review infrastructure (private to reviewer) |
+| **Review methodology** | NOT in work def — lives in Furrow review infrastructure (private to reviewer) |
 | **Review config** | Work-level `review` field — how automated review operates |
-| **Behavioral evals** | NOT in work def — harness-level concern (is the harness working?) |
+| **Behavioral evals** | NOT in work def — Furrow-level concern (is the Furrow working?) |
 | **Calibration** | NOT in work def — infrastructure concern (is the reviewer accurate?) |
 | **Progress state** | Separate JSON file — machine-written, references deliverable names |
 | **Execution plan** | Separate JSON file — coordinator-produced from work def |

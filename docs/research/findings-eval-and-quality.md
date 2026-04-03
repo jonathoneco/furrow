@@ -76,7 +76,7 @@ expensive. Reserve for high-stakes work or periodic calibration checks.
 
 ### Deterministic Evals (Level 1)
 
-Standard testing tools. The harness doesn't need to build anything here — it
+Standard testing tools. Furrow doesn't need to build anything here — it
 needs to *require* that evals exist and *run* them at the right time.
 
 **Convention**: Evals for a work unit live in `evals/` relative to the work
@@ -86,7 +86,7 @@ definition. They can be:
 - Shell scripts (`check_*.sh`)
 - Any executable that returns 0 for pass, non-zero for fail
 
-**The harness's job**: Discover and run these at evaluation boundaries. Not
+**Furrow's job**: Discover and run these at evaluation boundaries. Not
 build a test framework.
 
 ### LLM-as-Judge Evals (Levels 2, 4)
@@ -169,7 +169,7 @@ def test_evaluation_at_boundaries(trace):
 ```
 
 **The trace normalization layer is essential infrastructure.** Claude Code and
-Agent SDK produce different event formats. The harness needs a common normalized
+Agent SDK produce different event formats. Furrow needs a common normalized
 event format across both runtimes. This is not optional — without it, behavioral
 evals are either runtime-specific (doubling maintenance) or impossible.
 
@@ -214,7 +214,7 @@ the start:
 
 ### The Eval Runner
 
-The harness needs an eval runner that:
+Furrow needs an eval runner that:
 
 1. Discovers eval files for a work unit (by convention: `evals/` directory)
 2. Executes them (shell out to pytest, bash, or a custom runner for LLM-judge specs)
@@ -244,7 +244,7 @@ mechanism differs. The eval *results format* is identical.
 
 ### The Generator-Evaluator Separation
 
-The seed research is unambiguous: self-review fails. The harness must
+The seed research is unambiguous: self-review fails. Furrow must
 structurally separate generation from evaluation.
 
 **Structural separation means:**
@@ -265,7 +265,7 @@ that spawns a fresh evaluation agent.
 
 ### Quality Gate Depth
 
-Not all work needs the same evaluation depth. The harness should support
+Not all work needs the same evaluation depth. Furrow should support
 configurable gate depth:
 
 | Gate | What it catches | Default usage |
@@ -354,7 +354,7 @@ assumption still holds.
 - If human agreement drops → the judge needs recalibration (or the quality
   standards have shifted).
 
-**Eval coverage as health metric**: The harness is healthy when its evals cover
+**Eval coverage as health metric**: Furrow is healthy when its evals cover
 all behavioral expectations. A behavioral rule without an eval is documentation
 that will drift — exactly the failure mode that sank v1.
 

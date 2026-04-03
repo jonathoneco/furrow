@@ -13,7 +13,7 @@
 set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-HARNESS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+FURROW_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 if [ $# -lt 2 ]; then
   echo "Usage: cross-model-review.sh <name> <deliverable>" >&2
@@ -22,14 +22,14 @@ fi
 
 name="$1"
 deliverable="$2"
-work_dir="${HARNESS_ROOT}/.work/${name}"
+work_dir="${FURROW_ROOT}/.work/${name}"
 state_file="${work_dir}/state.json"
 definition_file="${work_dir}/definition.yaml"
-harness_config="${HARNESS_ROOT}/.claude/harness.yaml"
+furrow_config="${FURROW_ROOT}/.claude/furrow.yaml"
 
 # --- 1. Read cross-model provider ---
 
-provider="$(yq -r '.cross_model.provider // ""' "$harness_config")"
+provider="$(yq -r '.cross_model.provider // ""' "$furrow_config")"
 if [ -z "$provider" ]; then
   echo "Cross-model review skipped: no provider configured" >&2
   exit 1

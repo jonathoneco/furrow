@@ -57,5 +57,5 @@ After initial load, additional context is loaded on demand per the step:
 
 - Missing `state.json`: warn and suggest `/work` to create a new work unit.
 - Missing `summary.md`: warn but continue (may be first step).
-- Missing step skill file: error — the harness installation may be incomplete.
+- Missing step skill file: error — the Furrow installation may be incomplete.
 - Invalid `state.json` schema: error with validation details.

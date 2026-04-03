@@ -1,7 +1,7 @@
 #!/bin/sh
 # measure-context.sh — Report per-layer line counts and enforce budgets.
 #
-# Usage: measure-context.sh [harness-root]
+# Usage: measure-context.sh [furrow-root]
 # Exit 0 if all budgets pass, 1 if any violated.
 
 set -eu

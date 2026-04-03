@@ -59,7 +59,7 @@ items:
       items:
         type: string
         pattern: "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
-      description: "IDs of TODOs this depends on (populated by /harness:triage)"
+      description: "IDs of TODOs this depends on (populated by /furrow:triage)"
     files_touched:
       type: array
       items:
@@ -73,25 +73,21 @@ items:
         - high
         - medium
         - low
-      description: "How time-sensitive (populated by /harness:triage)"
+      description: "How time-sensitive (populated by /furrow:triage)"
     impact:
       type: string
       enum:
         - high
         - medium
         - low
-      description: "How many other items this unblocks (populated by /harness:triage)"
+      description: "How many other items this unblocks (populated by /furrow:triage)"
     effort:
       type: string
       enum:
         - small
         - medium
         - large
-      description: "Estimated implementation effort (populated by /harness:triage)"
-    phase:
-      type: integer
-      minimum: 0
-      description: "Phase number assigned by /harness:triage (0-indexed)"
+      description: "Estimated implementation effort (populated by /furrow:triage)"
     status:
       type: string
       enum:
@@ -99,7 +95,7 @@ items:
         - done
         - blocked
         - deferred
-      description: "Current status (lightweight, replaced by task tracker long-term)"
+      description: "Current status"
     created_at:
       type: string
       format: date-time

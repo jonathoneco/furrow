@@ -18,7 +18,7 @@ set -eu
 # --- paths ---
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-HARNESS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+FURROW_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # --- argument validation ---
 
@@ -28,8 +28,8 @@ if [ $# -ne 1 ]; then
 fi
 
 name="$1"
-def_file="$HARNESS_ROOT/.work/${name}/definition.yaml"
-plan_file="$HARNESS_ROOT/.work/${name}/plan.json"
+def_file="$FURROW_ROOT/.work/${name}/definition.yaml"
+plan_file="$FURROW_ROOT/.work/${name}/plan.json"
 
 if [ ! -f "$def_file" ]; then
   echo "Error: definition.yaml not found: $def_file" >&2
@@ -201,7 +201,7 @@ jq -n \
 # --- step 4: validate ---
 
 # shellcheck source=../hooks/lib/validate.sh
-. "$HARNESS_ROOT/hooks/lib/validate.sh"
+. "$FURROW_ROOT/hooks/lib/validate.sh"
 
 if ! validate_plan_json "$tmp_file" "$def_file"; then
   echo "Error: generated plan.json failed validation" >&2

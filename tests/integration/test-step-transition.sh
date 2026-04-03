@@ -3,7 +3,7 @@
 #
 # Sourced by the test runner. Requires helpers.sh (provides setup_fixture,
 # teardown_fixture, assert_exit_code, assert_file_exists, assert_file_contains,
-# assert_json_field, HARNESS_ROOT).
+# assert_json_field, FURROW_ROOT).
 
 # --- helper: create fixture with symlinked scripts and a complete work unit ---
 
@@ -12,29 +12,29 @@ _unit_name="__test-transition"
 _setup_transition_fixture() {
   setup_fixture "$_unit_name"
 
-  # Symlink commands/lib/step-transition.sh so harness_root resolves to FIXTURE_DIR
-  # (step-transition.sh does: script_dir -> commands/lib, harness_root -> ../.. = FIXTURE_DIR)
+  # Symlink commands/lib/step-transition.sh so furrow_root resolves to FIXTURE_DIR
+  # (step-transition.sh does: script_dir -> commands/lib, furrow_root -> ../.. = FIXTURE_DIR)
   mkdir -p "${FIXTURE_DIR}/commands/lib"
-  ln -sf "${HARNESS_ROOT}/commands/lib/step-transition.sh" "${FIXTURE_DIR}/commands/lib/step-transition.sh"
+  ln -sf "${FURROW_ROOT}/commands/lib/step-transition.sh" "${FIXTURE_DIR}/commands/lib/step-transition.sh"
 
   # Symlink all scripts from scripts/ into FIXTURE_DIR/scripts/
-  # (step-transition.sh calls ${harness_root}/scripts/*, and update-state.sh
+  # (step-transition.sh calls ${furrow_root}/scripts/*, and update-state.sh
   #  resolves schema via ${script_dir}/.. which will be FIXTURE_DIR)
   mkdir -p "${FIXTURE_DIR}/scripts"
   for script in record-gate.sh update-state.sh validate-step-artifacts.sh \
                 regenerate-summary.sh advance-step.sh check-wave-conflicts.sh; do
-    ln -sf "${HARNESS_ROOT}/scripts/${script}" "${FIXTURE_DIR}/scripts/${script}"
+    ln -sf "${FURROW_ROOT}/scripts/${script}" "${FIXTURE_DIR}/scripts/${script}"
   done
 
   # Symlink schema for update-state.sh validation
-  # (update-state.sh: harness_root = script_dir/.., schema = harness_root/schemas/state.schema.json)
+  # (update-state.sh: furrow_root = script_dir/.., schema = furrow_root/schemas/state.schema.json)
   mkdir -p "${FIXTURE_DIR}/schemas"
-  ln -sf "${HARNESS_ROOT}/schemas/state.schema.json" "${FIXTURE_DIR}/schemas/state.schema.json"
+  ln -sf "${FURROW_ROOT}/schemas/state.schema.json" "${FIXTURE_DIR}/schemas/state.schema.json"
 
   # Symlink hooks/lib/ for validate-step-artifacts.sh (needed on pass path)
   mkdir -p "${FIXTURE_DIR}/hooks/lib"
-  ln -sf "${HARNESS_ROOT}/hooks/lib/common.sh" "${FIXTURE_DIR}/hooks/lib/common.sh"
-  ln -sf "${HARNESS_ROOT}/hooks/lib/validate.sh" "${FIXTURE_DIR}/hooks/lib/validate.sh"
+  ln -sf "${FURROW_ROOT}/hooks/lib/common.sh" "${FIXTURE_DIR}/hooks/lib/common.sh"
+  ln -sf "${FURROW_ROOT}/hooks/lib/validate.sh" "${FIXTURE_DIR}/hooks/lib/validate.sh"
 
   # Create minimal summary.md and definition.yaml (needed by regenerate-summary)
   touch "${WORK_DIR}/summary.md"

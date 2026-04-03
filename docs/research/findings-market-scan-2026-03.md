@@ -494,7 +494,7 @@ Projects in this space routinely hit 10k-100k+ stars. The ecosystem has moved fr
 
 ---
 
-## Key Gaps for work-harness-v2
+## Key Gaps for Furrow
 
 1. **Eval-first design**: No existing tool treats eval as a first-class concern. All are "workflow first, eval if you get to it."
 2. **Dual-mode (interactive + autonomous)**: Most tools target either Claude Code CLI (interactive) or Agent SDK (programmatic), not both.

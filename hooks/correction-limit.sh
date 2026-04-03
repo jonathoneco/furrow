@@ -24,8 +24,8 @@ fi
 # --- locate work unit via path extraction + focus fallback ---
 
 HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
-HARNESS_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
-COMMON_LIB="$HARNESS_ROOT/hooks/lib/common.sh"
+FURROW_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
+COMMON_LIB="$FURROW_ROOT/hooks/lib/common.sh"
 
 if [ ! -f "$COMMON_LIB" ]; then
   exit 0
@@ -56,11 +56,11 @@ if [ "${step}" != "implement" ]; then
   exit 0
 fi
 
-# --- read correction limit from harness.yaml ---
+# --- read correction limit from furrow.yaml ---
 
 limit=3
-if [ -f ".claude/harness.yaml" ] && command -v yq > /dev/null 2>&1; then
-  limit="$(yq -r '.defaults.correction_limit // 3' ".claude/harness.yaml" 2>/dev/null)" || limit=3
+if [ -f ".claude/furrow.yaml" ] && command -v yq > /dev/null 2>&1; then
+  limit="$(yq -r '.defaults.correction_limit // 3' ".claude/furrow.yaml" 2>/dev/null)" || limit=3
 fi
 
 # --- require plan.json to map files to deliverables ---

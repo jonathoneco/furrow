@@ -9,8 +9,8 @@
 #   name          — kebab-case work unit name (positional, required)
 #   --title       — human-readable title (defaults to name)
 #   --description — one-sentence summary (defaults to title)
-#   --mode        — work mode (defaults from harness.yaml or "code")
-#   --gate-policy — trust level hint (defaults from harness.yaml or "supervised")
+#   --mode        — work mode (defaults from furrow.yaml or "code")
+#   --gate-policy — trust level hint (defaults from furrow.yaml or "supervised")
 #   --source-todo — TODO entry ID this work unit was created from
 #
 # Creates .work/{name}/ with a valid state.json and reviews/ directory.
@@ -93,18 +93,18 @@ done
 title="${title:-${name}}"
 description="${description:-${title}}"
 
-# Read defaults from harness.yaml if flags not provided
-_harness_yaml=".claude/harness.yaml"
+# Read defaults from furrow.yaml if flags not provided
+_furrow_yaml=".claude/furrow.yaml"
 if [ -z "${mode}" ]; then
-  if [ -f "${_harness_yaml}" ] && command -v yq > /dev/null 2>&1; then
-    mode="$(yq -r '.defaults.mode // "code"' "${_harness_yaml}" 2>/dev/null)" || mode="code"
+  if [ -f "${_furrow_yaml}" ] && command -v yq > /dev/null 2>&1; then
+    mode="$(yq -r '.defaults.mode // "code"' "${_furrow_yaml}" 2>/dev/null)" || mode="code"
   else
     mode="code"
   fi
 fi
 if [ -z "${gate_policy}" ]; then
-  if [ -f "${_harness_yaml}" ] && command -v yq > /dev/null 2>&1; then
-    gate_policy="$(yq -r '.defaults.gate_policy // "supervised"' "${_harness_yaml}" 2>/dev/null)" || gate_policy="supervised"
+  if [ -f "${_furrow_yaml}" ] && command -v yq > /dev/null 2>&1; then
+    gate_policy="$(yq -r '.defaults.gate_policy // "supervised"' "${_furrow_yaml}" 2>/dev/null)" || gate_policy="supervised"
   else
     gate_policy="supervised"
   fi

@@ -1,5 +1,5 @@
 #!/bin/sh
-# validate-naming.sh — Validate naming conventions for work harness artifacts
+# validate-naming.sh — Validate naming conventions for Furrow artifacts
 #
 #
 # Usage:

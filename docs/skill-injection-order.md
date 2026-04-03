@@ -1,7 +1,7 @@
 # Skill Injection Order
 
 > **Note**: `skills/code-quality.md` is a globally-installed skill provided by the
-> harness installer. It is NOT part of the V2 harness package itself.
+> Furrow installer. It is NOT part of the Furrow package itself.
 
 Reference for the order in which skills are loaded into sub-agent prompts.
 

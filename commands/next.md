@@ -1,12 +1,12 @@
-# /harness:next [--phase N]
+# /furrow:next [--phase N]
 
 Generate handoff prompt(s) for the next work unit(s) on the roadmap.
 
 ## Syntax
 
 ```
-/harness:next           → Next unstarted phase
-/harness:next --phase 5 → Specific phase
+/furrow:next           → Next unstarted phase
+/furrow:next --phase 5 → Specific phase
 ```
 
 ---
@@ -18,7 +18,7 @@ Generate handoff prompt(s) for the next work unit(s) on the roadmap.
 1. Read `ROADMAP.md`. Parse phase sections by status (`DONE`, `IN PROGRESS`, `PLANNED`).
 2. If `--phase N` specified: use that phase. Error if phase doesn't exist.
 3. Otherwise: find the first phase with status `PLANNED` or `IN PROGRESS`.
-4. If all phases are `DONE`: "All roadmap phases complete. Run `/harness:triage` to plan next work."
+4. If all phases are `DONE`: "All roadmap phases complete. Run `/furrow:triage` to plan next work."
 
 ### 2. Extract Work Units
 

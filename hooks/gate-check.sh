@@ -8,10 +8,10 @@
 set -eu
 
 HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
-HARNESS_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
+FURROW_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
 
-COMMON_LIB="$HARNESS_ROOT/hooks/lib/common.sh"
-VALIDATE_LIB="$HARNESS_ROOT/hooks/lib/validate.sh"
+COMMON_LIB="$FURROW_ROOT/hooks/lib/common.sh"
+VALIDATE_LIB="$FURROW_ROOT/hooks/lib/validate.sh"
 
 if [ ! -f "$COMMON_LIB" ] || [ ! -f "$VALIDATE_LIB" ]; then
   exit 0

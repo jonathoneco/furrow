@@ -1,4 +1,4 @@
-# adapters/ directory — runtime-specific bindings for the V2 harness
+# adapters/ directory — runtime-specific bindings for Furrow
 component: adapters
 children:
   - agent-sdk

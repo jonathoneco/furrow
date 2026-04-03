@@ -1,20 +1,20 @@
 # File Structure
 
-> Component rationale is tracked in _rationale.yaml at the harness root.
+> Component rationale is tracked in _rationale.yaml at the Furrow root.
 
 ## Overview
 
-Two trees: the **harness** (this repo, reusable across projects) and the
-**project** (any project using the harness, instance artifacts).
+Two trees: **Furrow** (this repo, reusable across projects) and the
+**project** (any project using Furrow, instance artifacts).
 
-The harness is grouped by concern. Each top-level directory maps to a distinct
+Furrow is grouped by concern. Each top-level directory maps to a distinct
 architectural role. Content files (specialist definitions, review methodologies)
 are distinguished from infrastructure files (schemas, hooks, runner code).
 
 ## Harness Layout
 
 ```
-work-harness-v2/
+furrow/
 │
 ├── conventions/                    # Schemas and format definitions
 │   ├── work-definition.schema.json
@@ -141,15 +141,15 @@ Frontmatter+markdown files that define domain specialist agents. The
 frontmatter carries metadata (name, domain). The body carries the system
 prompt that primes the agent's domain reasoning.
 
-These are **content, not infrastructure**. The harness ships with common
+These are **content, not infrastructure**. Furrow ships with common
 specialist types. Projects can add project-specific specialists by placing
-additional definition files in the harness's specialists directory (or a
+additional definition files in Furrow's specialists directory (or a
 project-level override location, TBD in Phase 2).
 
 ### evals/ — Harness behavioral evals
 
-Behavioral evals for the harness itself — distinct from acceptance criteria
-review of work output. These test whether the harness's conventions are being
+Behavioral evals for Furrow itself — distinct from acceptance criteria
+review of work output. These test whether Furrow's conventions are being
 followed and whether its enforcement mechanisms are working.
 
 Maps to the behavior catalog from the gap review (behaviors 1-6 prioritized
@@ -175,7 +175,7 @@ quality of step output. Post-step sections reference `evals/dimensions/` via
 
 ## Project Layout
 
-When a project uses the harness, instance artifacts live in `.work/` at the
+When a project uses Furrow, instance artifacts live in `.work/` at the
 project root (configurable).
 
 ```
@@ -192,8 +192,8 @@ project-root/
 │   └── previous-work-unit/
 │       └── ...
 ├── .claude/
-│   ├── CLAUDE.md                   # Includes harness ambient context
-│   └── settings.json               # Includes harness hook configuration
+│   ├── CLAUDE.md                   # Includes Furrow ambient context
+│   └── settings.json               # Includes Furrow hook configuration
 └── (project files)
 ```
 
@@ -225,7 +225,7 @@ active from complete work. `git log` provides the audit trail.
 
 Work unit directories SHOULD be committed — they're the audit trail for what
 was built, what was reviewed, and what passed. The only exception: calibration
-data in the harness repo may contain large volumes of LLM-judge outputs that
+data in the Furrow repo may contain large volumes of LLM-judge outputs that
 don't belong in the project's git history.
 
 ## File Count Budget

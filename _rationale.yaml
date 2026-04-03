@@ -1,10 +1,10 @@
 # Component rationale manifest — NOT injected into context.
-# Read on demand during deletion audits and harness-doctor runs.
+# Read on demand during deletion audits and furrow-doctor runs.
 components:
   # --- Ambient layer ---
   - path: .claude/CLAUDE.md
-    exists_because: "Claude Code needs an ambient context layer for harness conventions"
-    delete_when: "Claude Code provides built-in workflow orchestration without a harness"
+    exists_because: "Claude Code needs an ambient context layer for Furrow conventions"
+    delete_when: "Claude Code provides built-in workflow orchestration without Furrow"
 
   - path: .claude/rules/workflow-detect.md
     exists_because: "Claude Code needs session-start detection of active work units"
@@ -14,8 +14,8 @@ components:
     exists_because: "CC-3 requires hook registrations in settings.json with matcher-based filtering"
     delete_when: "Claude Code provides built-in hook registration without settings.json"
 
-  - path: .claude/harness.yaml
-    exists_because: "Projects need a config file to customize harness behavior"
+  - path: .claude/furrow.yaml
+    exists_because: "Projects need a config file to customize Furrow behavior"
     delete_when: "Claude Code provides native project-level workflow configuration"
 
   # --- Work layer ---
@@ -118,15 +118,15 @@ components:
     exists_because: "No platform-native context budget enforcement"
     delete_when: "Claude Code enforces context budgets natively"
 
-  - path: scripts/harness-doctor.sh
-    exists_because: "No platform-native structural health verification for harness integrity"
-    delete_when: "Claude Code provides built-in harness self-diagnosis and structural validation"
+  - path: scripts/furrow-doctor.sh
+    exists_because: "No platform-native structural health verification for Furrow integrity"
+    delete_when: "Claude Code provides built-in Furrow self-diagnosis and structural validation"
 
-  # commands/harness-doctor.md — removed, absorbed into commands/harness.md (W-11)
+  # commands/furrow-doctor.md — removed, absorbed into commands/furrow.md (W-11)
 
   - path: install.sh
-    exists_because: "No platform-native harness installation; bridges harness into .claude/ with namespaced commands"
-    delete_when: "Claude Code provides built-in harness package management and installation"
+    exists_because: "No platform-native Furrow installation; bridges Furrow into .claude/ with namespaced commands"
+    delete_when: "Claude Code provides built-in Furrow package management and installation"
 
   - path: scripts/run-gate.sh
     exists_because: "Claude Code has no built-in gate orchestration (Phase A shell + Phase B subagent)"
@@ -165,7 +165,7 @@ components:
     delete_when: "Claude Code provides native deliverable status management"
 
   - path: scripts/update-state.sh
-    exists_because: "Claude Code has no harness-exclusive state mutation with schema validation"
+    exists_because: "Claude Code has no Furrow-exclusive state mutation with schema validation"
     delete_when: "Claude Code provides built-in task state management with validated writes"
 
   - path: scripts/validate-definition.sh
@@ -264,7 +264,7 @@ components:
 
   # --- Specialists (W-07) ---
   - path: specialists/_meta.yaml
-    exists_because: "Specialist directory needs deletion annotations for harness-doctor"
+    exists_because: "Specialist directory needs deletion annotations for furrow-doctor"
     delete_when: "Claude Code provides built-in agent template registry"
 
   - path: specialists/api-designer.md
@@ -290,7 +290,7 @@ components:
 
   # --- Adapter meta files (W-08) ---
   - path: adapters/_meta.yaml
-    exists_because: "Adapter directory needs deletion annotations for harness-doctor"
+    exists_because: "Adapter directory needs deletion annotations for furrow-doctor"
     delete_when: "Claude Code and Agent SDK share a unified runtime interface"
 
   - path: adapters/claude-code/_meta.yaml
@@ -497,8 +497,8 @@ components:
     exists_because: "Claude Code has no native dead-end recording with step-level reset"
     delete_when: "Claude Code provides built-in approach pivot tracking"
 
-  - path: commands/harness.md
-    exists_because: "Claude Code has no native harness health check, update, or self-modification"
+  - path: commands/furrow.md
+    exists_because: "Claude Code has no native Furrow health check, update, or self-modification"
     delete_when: "Claude Code provides built-in workflow infrastructure management"
 
   - path: commands/next.md

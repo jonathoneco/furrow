@@ -2,7 +2,7 @@
 
 ## Context
 
-I've spent significant time researching, designing, and planning a custom agentic work harness. The research is solid — but I need to be doing my actual work, not building tools. Talented engineers are already building these systems. I want to adopt one.
+I've spent significant time researching, designing, and planning a custom agentic workflow harness. The research is solid — but I need to be doing my actual work, not building tools. Talented engineers are already building these systems. I want to adopt one.
 
 The research in `docs/research/` gives me a strong evaluation framework. Use it to assess the market and recommend a solution I can adopt now.
 
@@ -74,6 +74,6 @@ Use findings from `docs/research/` as the evaluation framework:
 
 ## What NOT to Do
 
-- Don't recommend building a custom harness. That's what I'm moving away from.
+- Don't recommend building a custom workflow harness. That's what I'm moving away from.
 - Don't recommend a framework that requires weeks of setup. I need to be productive NOW.
 - If nothing meets the bar, say so clearly — but also say what the best available option is and what's missing.

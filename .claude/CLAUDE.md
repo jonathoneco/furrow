@@ -1,6 +1,6 @@
-## V2 Work Harness
+## Furrow
 
-This project uses the V2 adaptive work harness. Task state lives in `.work/` directories.
+This project uses Furrow (the V2 adaptive work harness). Task state lives in `.work/` directories.
 
 ## Active Task Detection
 
@@ -21,7 +21,7 @@ All work units traverse: ideate -> research -> plan -> spec -> decompose -> impl
 
 ## State Ownership
 
-`state.json` is harness-exclusive write. Agents read it but never write it directly.
+`state.json` is Furrow-exclusive write. Agents read it but never write it directly.
 
 ## Context Budget Enforcement
 
@@ -48,24 +48,24 @@ Conventional commits: feat:, fix:, chore:, docs:, refactor:, test:, infra:
 See `.claude/rules/` for platform-managed rules that survive compaction.
 
 
-<!-- harness:start -->
-## V2 Work Harness
+<!-- furrow:start -->
+## Furrow
 
 Installed from: /home/jonco/src/furrow
 
 | Command | Purpose |
 |---------|---------|
-| /harness:work | Create or resume a work unit |
-| /harness:status | Show step, deliverable progress |
-| /harness:checkpoint | Save session progress |
-| /harness:review | Run structured review |
-| /harness:archive | Archive completed work |
-| /harness:reground | Recover context after break |
-| /harness:redirect | Record dead end and pivot |
+| /furrow:work | Create or resume a work unit |
+| /furrow:status | Show step, deliverable progress |
+| /furrow:checkpoint | Save session progress |
+| /furrow:review | Run structured review |
+| /furrow:archive | Archive completed work |
+| /furrow:reground | Recover context after break |
+| /furrow:redirect | Record dead end and pivot |
 | /work-todos | Extract or create TODOs in todos.yaml |
-| /harness:triage | Triage todos.yaml and generate ROADMAP.md |
-| /harness:next | Generate handoff prompt(s) for next roadmap work |
-| /harness | Harness management (doctor, update, meta) |
+| /furrow:triage | Triage todos.yaml and generate ROADMAP.md |
+| /furrow:next | Generate handoff prompt(s) for next roadmap work |
+| /furrow | Furrow management (doctor, update, meta) |
 
-Run `/harness:doctor` to check health. Run `install.sh --check` to verify installation.
-<!-- harness:end -->
+Run `/furrow:doctor` to check health. Run `install.sh --check` to verify installation.
+<!-- furrow:end -->

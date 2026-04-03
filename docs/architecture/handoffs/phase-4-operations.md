@@ -2,7 +2,7 @@
 
 ## Role
 
-You are designing the operational layer for a v2 agentic work harness. Phases 1-3 established the data model, enforcement skeleton, eval infrastructure, team templates, and lifecycle workflows. This phase designs how the harness operates in production — autonomous triggering, observability, concurrency, error recovery, and health checks.
+You are designing the operational layer for a v2 agentic workflow harness. Phases 1-3 established the data model, enforcement skeleton, eval infrastructure, team templates, and lifecycle workflows. This phase designs how Furrow operates in production — autonomous triggering, observability, concurrency, error recovery, and health checks.
 
 ## Required Reading
 
@@ -114,7 +114,7 @@ These 5 specs are independent — use parallel agent teams.
   - Status per work unit (ideation, executing, reviewing, blocked, complete)
   - Resource utilization (agent count, context usage)
   - Conflict detection (overlapping file ownership across work units)
-- **Limits**: Maximum concurrent work units. How does the harness degrade gracefully when at capacity?
+- **Limits**: Maximum concurrent work units. How does Furrow degrade gracefully when at capacity?
 
 ### Spec 14: Error Recovery (`docs/architecture/error-recovery.md`)
 

@@ -2,11 +2,11 @@
 
 ## What This Is
 
-A new agentic work harness, designed from scratch. Not a refactor, not a migration — a clean-slate design informed by extensive research and operational experience with a v1 system.
+A new agentic workflow harness, designed from scratch. Not a refactor, not a migration — a clean-slate design informed by extensive research and operational experience with a v1 system.
 
 ## Who It's For
 
-A solo developer who uses Claude Code daily and is building a startup that needs autonomous agents. The harness must work in both contexts:
+A solo developer who uses Claude Code daily and is building a startup that needs autonomous agents. Furrow must work in both contexts:
 - **Local interactive**: Claude Code skills/commands for the developer's daily workflow
 - **Autonomous**: Agent SDK programs for startup operations
 
@@ -38,7 +38,7 @@ Everything. The research findings are seeds, not decisions. Including:
 - What the eval framework is
 - How review/quality gates work
 - What the file structure is
-- What language the harness is written in
+- What language Furrow is written in
 
 ## How to Start
 
