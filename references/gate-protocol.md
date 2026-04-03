@@ -20,32 +20,33 @@ and advances without executing the step.
 
 ```
 Step agent signals completion (or step is next in sequence)
-  │
-  ├─ Phase A (deterministic, shell)
-  │   rws gate-check checks structural criteria:
-  │   - Deliverable count, dependencies, specialist diversity
-  │   - Acceptance criteria presence and count
-  │   - Mode-specific exclusions (research mode blocks research pre-step)
-  │   - gate_policy and force_stop_at overrides
-  │
-  │   scripts/check-artifacts.sh checks artifact presence:
-  │   - Deliverable files exist per file_ownership
-  │   - Owned files were modified (git diff or deliverables/ check)
-  │   - Acceptance criteria from definition.yaml addressed
-  │
-  ├─ Phase B (judgment, isolated subagent)
-  │   scripts/run-gate.sh prepares evaluator inputs:
-  │   - definition.yaml content
-  │   - evals/gates/{step}.yaml content
-  │   - Phase A results
-  │   - Step output paths
-  │
-  │   In-context agent spawns isolated subagent (Agent tool):
-  │   - Subagent loads skills/shared/gate-evaluator.md
-  │   - Evaluates each dimension from gate YAML
-  │   - Returns per-dimension PASS/FAIL with evidence
-  │
-  └─ Trust gradient (scripts/evaluate-gate.sh)
+  |
+  +- Phase A (deterministic, shell)
+  |   rws gate-check checks structural criteria:
+  |   - Deliverable count, dependencies, specialist diversity
+  |   - Acceptance criteria presence and count
+  |   - Mode-specific exclusions (research mode blocks research pre-step)
+  |   - gate_policy and force_stop_at overrides
+  |
+  |   scripts/check-artifacts.sh checks artifact presence:
+  |   - Deliverable files exist per file_ownership
+  |   - Owned files were modified (git diff or deliverables/ check)
+  |   - Acceptance criteria from definition.yaml addressed
+  |   - Seed consistency (A6): seed exists and is not closed
+  |
+  +- Phase B (judgment, isolated subagent)
+  |   scripts/run-gate.sh prepares evaluator inputs:
+  |   - definition.yaml content
+  |   - evals/gates/{step}.yaml content
+  |   - Phase A results
+  |   - Step output paths
+  |
+  |   In-context agent spawns isolated subagent (Agent tool):
+  |   - Subagent loads skills/shared/gate-evaluator.md
+  |   - Evaluates each dimension from gate YAML
+  |   - Returns per-dimension PASS/FAIL with evidence
+  |
+  +- Trust gradient (scripts/evaluate-gate.sh)
       Applies gate_policy to evaluator verdict:
       - supervised: WAIT_FOR_HUMAN
       - delegated: accept most, human for implement->review and review->archive
@@ -77,7 +78,7 @@ Each gate produces a record appended to `state.json.gates[]`:
 
 ## Trust Gradient
 
-The trust gradient controls human oversight of evaluator verdicts — it does NOT
+The trust gradient controls human oversight of evaluator verdicts -- it does NOT
 control whether evaluation happens. Evaluation always runs.
 
 | `gate_policy` | Who Decides | Pre-Step Evaluation |
@@ -143,3 +144,63 @@ At every boundary:
 3. `summary.md` regenerated (latest version only; previous in git history).
 4. `state.json.step` advanced; `step_status` set to `not_started`.
 5. `state.json.updated_at` refreshed.
+
+## Seed Consistency
+
+Seeds and rows must stay synchronized throughout the lifecycle. The gate
+protocol enforces this at two levels.
+
+### Phase A: Deterministic Check (check-artifacts.sh, A6)
+
+The `check-artifacts.sh` script performs a deterministic seed-consistency check
+as part of Phase A (section A6). This check runs at every gate evaluation:
+
+1. **Seed exists**: `state.json` must contain a non-null `seed_id`.
+2. **Seed is not closed**: `sds show` confirms the seed status is not `closed`.
+3. **Seed is reachable**: The `sds` command can find and return the seed record.
+
+If any check fails, the entire Phase A verdict is `fail` and the gate blocks.
+When `sds` is not available on the system, the check passes with a warning
+(graceful degradation, not a hard block).
+
+### Phase B: Seed-Sync Dimension
+
+All 7 post-step gate evaluations include a `seed-sync` dimension in their
+gate YAML rubrics. The isolated subagent evaluator checks:
+
+- **Status alignment**: The seed status matches the expected status for the
+  current row step (see mapping table below).
+- **Metadata consistency**: The seed title and description are consistent with
+  the row's `definition.yaml` objective.
+
+| Row Step | Expected Seed Status |
+|----------|---------------------|
+| ideate | ideating |
+| research | researching |
+| plan | planning |
+| spec | speccing |
+| decompose | decomposing |
+| implement | implementing |
+| review | reviewing |
+
+### Recovery Path
+
+When seed-consistency fails, the gate blocks and requires human input to
+resolve. Automatic correction is deliberately not supported -- a mismatch
+between seed and row state is a procedural signal that something unexpected
+happened.
+
+Recovery steps:
+
+1. **Diagnose**: Run `sds show <seed-id>` and `rws status <row-name>` to
+   compare actual states.
+2. **Determine cause**: Common causes are a manual `sds` update that skipped
+   `rws`, or a crashed transition that updated the row but not the seed.
+3. **Fix seed**: Use `sds update <seed-id> --status <correct-status>` to
+   align the seed with the row's current step.
+4. **Re-run gate**: After manual correction, re-trigger the transition with
+   `rws transition <row-name>`.
+
+Human input is required because auto-correction would mask procedural errors.
+The mismatch itself is the signal that the process broke down; silently fixing
+it removes that signal.
