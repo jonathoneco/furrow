@@ -4,8 +4,8 @@
 Fix post-beans-integration drift: CLI PATH install, stale path references in scripts/commands, and stale .focused file
 
 ## Current State
-Step: decompose | Status: pending_approval
-Deliverables: 0/5 (defined)
+Step: review | Status: completed
+Deliverables: 5/5
 Mode: code
 
 ## Artifact Paths
@@ -27,6 +27,8 @@ Mode: code
 - **spec->decompose**: pass — spec complete: 5 deliverables with line-level change tables
 - **spec->decompose**: pass — spec complete: 5 per-deliverable specs in specs/
 - **decompose->implement**: pass — decompose: plan.json + team-plan.md ready, single-agent execution
+- **implement->review**: pass — all 5 deliverables implemented + bonus rationale cleanup; doctor down 27→8 (remaining are out-of-scope skill budgets)
+- **implement->review**: pass — all deliverables implemented and committed; doctor 27→8 failures (remaining are out-of-scope skill budgets)
 
 ## Context Budget
 Measurement unavailable
