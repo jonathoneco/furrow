@@ -1,0 +1,99 @@
+objective: |
+  Make supervised gating the structural default with enforcement that prevents
+  step transitions without verified human participation. Close bypass paths
+  through direct script calls and verdict file forgery.
+
+deliverables:
+  - name: two-phase-gate
+    acceptance_criteria:
+      - "step-transition.sh --request writes pending gate to state.json"
+      - "step-transition.sh --confirm validates decided_by against gate_policy"
+      - "In supervised mode, --confirm rejects decided_by != manual"
+      - "Cannot call --confirm without a preceding --request for same boundary"
+    specialist: shell-specialist
+    file_ownership:
+      - "commands/lib/step-transition.sh"
+
+  - name: verdict-file-enforcement
+    acceptance_criteria:
+      - "run-gate.sh writes nonce to prompt file"
+      - "Evaluator verdict file includes nonce from prompt"
+      - "step-transition.sh --confirm validates verdict file exists and nonce matches"
+      - "Hook blocks Write/Edit to gate-verdicts/ paths"
+    specialist: shell-specialist
+    depends_on:
+      - two-phase-gate
+    file_ownership:
+      - "scripts/run-gate.sh"
+      - ".claude/settings.json"
+
+  - name: bypass-prevention
+    acceptance_criteria:
+      - "Hook blocks Bash calls containing record-gate.sh"
+      - "Hook blocks Bash calls containing advance-step.sh"
+      - "step-transition.sh still calls them internally (not blocked)"
+    specialist: shell-specialist
+    file_ownership:
+      - ".claude/settings.json"
+
+  - name: precheck-supervised-update
+    acceptance_criteria:
+      - "gate-precheck.sh no longer exits early for supervised mode"
+      - "Pre-step evaluation runs and produces verdict"
+      - "Agent presents skip recommendation with explicit yes/no prompt"
+      - "User rejection causes step to run normally"
+    specialist: shell-specialist
+    file_ownership:
+      - "commands/lib/gate-precheck.sh"
+
+  - name: skill-transition-protocol
+    acceptance_criteria:
+      - "All 7 step skills have prescriptive transition blocks"
+      - "Blocks reference summary-protocol.md for presentation"
+      - "Blocks include explicit approval prompt language"
+    specialist: shell-specialist
+    file_ownership:
+      - "skills/*.md"
+
+  - name: summary-generation-fix
+    acceptance_criteria:
+      - "regenerate-summary.sh reads deliverable count from definition.yaml when state.json has none"
+      - "Placeholder text for agent sections is removed — empty sections left empty or marked clearly"
+      - "step-transition.sh requires agent-written sections to be populated before accepting transition"
+      - "No catch-22 between placeholder text and validation hook"
+    specialist: shell-specialist
+    file_ownership:
+      - "scripts/regenerate-summary.sh"
+      - "commands/lib/generate-summary.sh"
+
+context_pointers:
+  - path: "commands/lib/step-transition.sh"
+    note: "Primary target — split into request/confirm phases"
+  - path: "commands/lib/gate-precheck.sh"
+    note: "Remove supervised early exit"
+  - path: "scripts/run-gate.sh"
+    note: "Add nonce generation for verdict file verification"
+  - path: "scripts/evaluate-gate.sh"
+    note: "WAIT_FOR_HUMAN logic — verify no changes needed"
+  - path: "references/gate-protocol.md"
+    note: "Update docs to reflect two-phase gate and new enforcement"
+  - path: "skills/"
+    note: "All 7 step skills need prescriptive transition blocks"
+  - path: "scripts/record-gate.sh"
+    note: "Bypass target — needs hook protection"
+  - path: "scripts/advance-step.sh"
+    note: "Bypass target — needs hook protection"
+  - path: "scripts/regenerate-summary.sh"
+    note: "Fix deliverable count source and placeholder behavior"
+  - path: "commands/lib/generate-summary.sh"
+    note: "Wrapper — delegates to regenerate-summary.sh"
+
+constraints:
+  - "state.json is Furrow-exclusive write — agents read only"
+  - "The --gate-policy override must still work for auto and manual"
+  - "Enforcement must be in shell (hooks or scripts), not just prompt instructions"
+  - "step-transition.sh internal calls to record-gate.sh and advance-step.sh must not be blocked by hooks"
+  - "Verdict file write guard must allow writes from subagent evaluator context"
+  - "Existing delegated and autonomous modes must not regress"
+
+gate_policy: supervised

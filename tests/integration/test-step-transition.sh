@@ -154,3 +154,209 @@ test_fail_at_final_step() {
 
   teardown_fixture
 }
+
+# --- two-phase gate tests ---
+
+# Helper to write state with gate_policy in definition.yaml
+_write_supervised_definition() {
+  cat > "${WORK_DIR}/definition.yaml" << 'YAML'
+objective: test
+deliverables:
+  - name: api
+    acceptance_criteria:
+      - "test AC"
+    specialist: shell-specialist
+context_pointers:
+  - path: "test.sh"
+    note: "test"
+constraints:
+  - "test constraint"
+gate_policy: supervised
+YAML
+}
+
+_write_delegated_definition() {
+  cat > "${WORK_DIR}/definition.yaml" << 'YAML'
+objective: test
+deliverables:
+  - name: api
+    acceptance_criteria:
+      - "test AC"
+    specialist: shell-specialist
+context_pointers:
+  - path: "test.sh"
+    note: "test"
+constraints:
+  - "test constraint"
+gate_policy: delegated
+YAML
+}
+
+test_request_sets_pending_approval() {
+  _setup_transition_fixture
+  _write_transition_state "ideate" '{}'
+  _write_supervised_definition
+
+  # Write minimal summary with required sections
+  cat > "${WORK_DIR}/summary.md" << 'MD'
+# Test Summary
+## Task
+test
+## Current State
+test
+## Artifact Paths
+test
+## Settled Decisions
+test
+## Context Budget
+test
+## Key Findings
+- finding one
+## Open Questions
+- question one
+## Recommendations
+- rec one
+MD
+
+  # Symlink validate-summary hook
+  ln -sf "${FURROW_ROOT}/hooks/validate-summary.sh" "${FIXTURE_DIR}/hooks/validate-summary.sh"
+
+  _run_transition --request "$_unit_name" "pass" "manual" "test evidence"
+
+  assert_exit_code "request exits 0" 0 "$_exit_code"
+  assert_json_field "step_status is pending_approval" "${WORK_DIR}/state.json" \
+    '.step_status' "pending_approval"
+  assert_json_field "gate recorded" "${WORK_DIR}/state.json" \
+    '.gates | length' "1"
+  assert_json_field "step still ideate" "${WORK_DIR}/state.json" \
+    '.step' "ideate"
+
+  teardown_fixture
+}
+
+test_confirm_advances_after_request() {
+  _setup_transition_fixture
+  _write_supervised_definition
+
+  # Set up state as if --request already ran
+  cat > "${WORK_DIR}/state.json" << JSON
+{
+  "name": "${_unit_name}",
+  "title": "test",
+  "description": "test",
+  "step": "ideate",
+  "step_status": "pending_approval",
+  "steps_sequence": ["ideate","research","plan","spec","decompose","implement","review"],
+  "deliverables": {},
+  "gates": [{"boundary": "ideate->research", "outcome": "pass", "decided_by": "manual", "evidence": "test", "timestamp": "2026-01-01T00:00:00Z"}],
+  "force_stop_at": null,
+  "branch": "test-branch",
+  "mode": "code",
+  "base_commit": "abc123",
+  "epic_id": null,
+  "issue_id": null,
+  "created_at": "2026-01-01T00:00:00Z",
+  "updated_at": "2026-01-01T00:00:00Z",
+  "archived_at": null
+}
+JSON
+
+  _run_transition --confirm "$_unit_name"
+
+  assert_exit_code "confirm exits 0" 0 "$_exit_code"
+  assert_json_field "step advanced to research" "${WORK_DIR}/state.json" \
+    '.step' "research"
+  assert_json_field "step_status is not_started" "${WORK_DIR}/state.json" \
+    '.step_status' "not_started"
+
+  teardown_fixture
+}
+
+test_confirm_rejects_without_request() {
+  _setup_transition_fixture
+  _write_supervised_definition
+  _write_transition_state "ideate" '{}'
+
+  _run_transition --confirm "$_unit_name"
+
+  assert_exit_code "confirm without request exits 5" 5 "$_exit_code"
+  assert_file_contains "stderr mentions pending_approval" "$_stderr_file" \
+    "expected 'pending_approval'"
+
+  teardown_fixture
+}
+
+test_confirm_rejects_policy_violation() {
+  _setup_transition_fixture
+  _write_supervised_definition
+
+  # State with pending_approval but decided_by=evaluated (violates supervised policy)
+  cat > "${WORK_DIR}/state.json" << JSON
+{
+  "name": "${_unit_name}",
+  "title": "test",
+  "description": "test",
+  "step": "ideate",
+  "step_status": "pending_approval",
+  "steps_sequence": ["ideate","research","plan","spec","decompose","implement","review"],
+  "deliverables": {},
+  "gates": [{"boundary": "ideate->research", "outcome": "pass", "decided_by": "evaluated", "evidence": "test", "timestamp": "2026-01-01T00:00:00Z"}],
+  "force_stop_at": null,
+  "branch": "test-branch",
+  "mode": "code",
+  "base_commit": "abc123",
+  "epic_id": null,
+  "issue_id": null,
+  "created_at": "2026-01-01T00:00:00Z",
+  "updated_at": "2026-01-01T00:00:00Z",
+  "archived_at": null
+}
+JSON
+
+  _run_transition --confirm "$_unit_name"
+
+  assert_exit_code "policy violation exits 6" 6 "$_exit_code"
+  assert_file_contains "stderr mentions policy violation" "$_stderr_file" \
+    "Policy violation"
+
+  teardown_fixture
+}
+
+test_request_delegated_completes_inline() {
+  _setup_transition_fixture
+  _write_transition_state "ideate" '{}'
+  _write_delegated_definition
+
+  cat > "${WORK_DIR}/summary.md" << 'MD'
+# Test Summary
+## Task
+test
+## Current State
+test
+## Artifact Paths
+test
+## Settled Decisions
+test
+## Context Budget
+test
+## Key Findings
+- finding one
+## Open Questions
+- question one
+## Recommendations
+- rec one
+MD
+
+  ln -sf "${FURROW_ROOT}/hooks/validate-summary.sh" "${FIXTURE_DIR}/hooks/validate-summary.sh"
+
+  _run_transition --request "$_unit_name" "pass" "manual" "test evidence"
+
+  assert_exit_code "delegated request exits 0" 0 "$_exit_code"
+  # Delegated mode should complete inline (no pending_approval)
+  assert_json_field "step advanced to research" "${WORK_DIR}/state.json" \
+    '.step' "research"
+  assert_json_field "step_status is not_started" "${WORK_DIR}/state.json" \
+    '.step_status' "not_started"
+
+  teardown_fixture
+}

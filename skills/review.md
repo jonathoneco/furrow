@@ -30,6 +30,15 @@ Post-step gate evaluates Phase A and Phase B results across all deliverables.
 Reference: `evals/gates/review.yaml` post_step, per `skills/shared/gate-evaluator.md`.
 On pass: work unit ready for archive. On fail: returns to implement step.
 
+## Supervised Transition Protocol
+Before completing review:
+1. Update `summary.md` — write Key Findings, Open Questions, and Recommendations sections.
+2. Present review findings to user per `skills/shared/summary-protocol.md`.
+3. Ask explicitly: "**Ready to archive?** Yes / No"
+4. Wait for user response. Do NOT proceed without explicit approval.
+5. On "yes": proceed with archive per `/furrow:archive` command.
+6. On "no": ask what needs to change, address feedback, return to step 2.
+
 ## Learnings
 Append reusable insights to `.work/{name}/learnings.jsonl`.
 Read `skills/shared/learnings-protocol.md` for schema and categories.

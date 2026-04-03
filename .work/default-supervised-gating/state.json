@@ -1,0 +1,124 @@
+{
+  "name": "default-supervised-gating",
+  "title": "Default gate policy should be supervised, not auto-advance",
+  "description": "Default gate policy should be supervised, not auto-advance",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "two-phase-gate": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "summary-generation-fix": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "bypass-prevention": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "precheck-supervised-update": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "verdict-file-enforcement": {
+      "status": "completed",
+      "wave": 2,
+      "corrections": 0
+    },
+    "skill-transition-protocol": {
+      "status": "completed",
+      "wave": 2,
+      "corrections": 0
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Definition validated with 6 deliverables. User approved objective, deliverables, context pointers, constraints, and gate policy section by section. Cross-model review incorporated two-phase gate recommendation and bypass prevention. Summary generation fix added per user request.",
+      "timestamp": "2026-04-03T03:27:20Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Research complete: two-phase gate split validated, schema changes identified, hook architecture confirmed (subprocess calls bypass hooks), evaluate-gate.sh already handles supervised pre-step, summary fix isolated to placeholder removal.",
+      "timestamp": "2026-04-03T03:31:12Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Plan complete: single-wave sequential execution, 16 files modified + 2 created, no team plan needed. Implementation order: schema → two-phase gate → summary fix → verdict files → bypass hooks → precheck update → skill protocols.",
+      "timestamp": "2026-04-03T03:31:44Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Plan complete: 2 waves — wave 1 has 4 independent deliverables, wave 2 has verdict-file-enforcement (depends on two-phase-gate) and skill-transition-protocol. plan.json validated.",
+      "timestamp": "2026-04-03T03:32:47Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Specs complete for all 6 deliverables. Implementation-ready with file lists, code patterns, and AC verification methods. Validation hook threshold changed from 2 to 1 line.",
+      "timestamp": "2026-04-03T03:37:52Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Decompose complete: 6 deliverables populated in state.json, 2 waves defined in plan.json, team-plan.md written. Single shell-specialist, sequential execution.",
+      "timestamp": "2026-04-03T03:41:16Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Decompose complete: 6 deliverables populated, 2 waves, team-plan written. Work branch created.",
+      "timestamp": "2026-04-03T03:41:25Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 6 deliverables implemented: two-phase gate, verdict file enforcement, bypass prevention, precheck update, skill transition protocols, summary generation fix. All 5 integration tests pass.",
+      "timestamp": "2026-04-03T04:01:44Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 6 deliverables implemented and committed (c2bfb70). 18 files changed, 362 insertions, 71 deletions. All 5 integration tests pass.",
+      "timestamp": "2026-04-03T04:02:17Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/default-supervised-gating",
+  "mode": "code",
+  "base_commit": "4500babbaa80dedcef613399c9ed8e3c25b83376",
+  "epic_id": null,
+  "issue_id": null,
+  "created_at": "2026-04-03T02:25:06Z",
+  "updated_at": "2026-04-03T04:06:54Z",
+  "archived_at": "2026-04-03T04:06:54Z",
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}

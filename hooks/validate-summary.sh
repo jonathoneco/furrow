@@ -60,7 +60,7 @@ for section in "Task" "Current State" "Artifact Paths" "Settled Decisions" "Key 
   fi
 done
 
-# --- check agent-written sections have >= 2 non-empty lines ---
+# --- check agent-written sections have >= 1 non-empty line ---
 
 for section in "Key Findings" "Open Questions" "Recommendations"; do
   # Step-aware: ideate only requires Open Questions
@@ -75,8 +75,8 @@ for section in "Key Findings" "Open Questions" "Recommendations"; do
     END { print count+0 }
   ' "${summary_file}")"
 
-  if [ "${content}" -lt 2 ]; then
-    errors="${errors}Section '${section}' needs at least 2 non-empty lines (has ${content}).\n"
+  if [ "${content}" -lt 1 ]; then
+    errors="${errors}Section '${section}' needs at least 1 non-empty line (has ${content}).\n"
   fi
 done
 

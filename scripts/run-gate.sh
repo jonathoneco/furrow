@@ -127,10 +127,15 @@ if [ "$gate_type" = "post_step" ]; then
   esac
 fi
 
+# --- generate nonce for verdict verification ---
+
+nonce="$(openssl rand -hex 16 2>/dev/null)" || nonce="$(date +%s%N | sha256sum | head -c 32)"
+
 # --- write prompt file ---
 
 prompt_dir="${work_dir}/gate-prompts"
 mkdir -p "$prompt_dir"
+mkdir -p "${work_dir}/gate-verdicts"
 prompt_file="${prompt_dir}/${gate_type}-${current_step}.yaml"
 
 # Build the prompt YAML that the subagent evaluator will consume
@@ -143,6 +148,7 @@ gate_type: ${gate_type}
 step: ${current_step}
 mode: ${mode}
 work_unit: ${name}
+nonce: ${nonce}
 
 # Paths for the evaluator to read
 definition_path: ${def_file}
@@ -156,6 +162,9 @@ $(echo "$phase_a_json" | sed 's/^/  /')
 # Step output paths for evaluator to inspect
 step_outputs: |
 $(echo "$step_outputs" | sed 's/^/  /')
+
+# Verdict output path (evaluator must write verdict here)
+verdict_path: ${work_dir}/gate-verdicts/${gate_type}-${current_step}.json
 
 # Evaluator contract
 evaluator_skill: ${FURROW_ROOT}/skills/shared/gate-evaluator.md
