@@ -452,10 +452,9 @@ validate_step_artifacts() {
         echo "ideate->research: $_va_def_file is empty" >&2
         return 3
       fi
-      # Validate against schema if validation script available
-      _va_validate_script="${FURROW_ROOT}/scripts/validate-definition.sh"
-      if [ -x "$_va_validate_script" ]; then
-        if ! "$_va_validate_script" "$_va_def_file" > /dev/null 2>&1; then
+      # Validate against schema if validation available
+      if command -v frw > /dev/null 2>&1; then
+        if ! frw validate-definition "$_va_def_file" > /dev/null 2>&1; then
           echo "ideate->research: $_va_def_file failed schema validation" >&2
           return 3
         fi
@@ -900,9 +899,8 @@ regenerate_summary() {
 
   # Context budget
   _rs_budget="Not measured"
-  _rs_measure="${FURROW_ROOT}/scripts/measure-context.sh"
-  if [ -x "$_rs_measure" ]; then
-    _rs_budget="$("$_rs_measure" 2>/dev/null)" || _rs_budget="Measurement unavailable"
+  if command -v frw > /dev/null 2>&1; then
+    _rs_budget="$(frw measure-context 2>/dev/null)" || _rs_budget="Measurement unavailable"
   fi
 
   # Artifact paths

@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/specialists/test-engineer.md
+../../specialists/test-engineer.md

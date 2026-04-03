@@ -70,10 +70,10 @@ def advance_step(
 def validate_step_boundary(from_step: str, to_step: str) -> None:
     """Validate gate record exists for the step boundary.
 
-    Calls hooks/lib/validate.sh via subprocess (AC-6.2a).
+    Calls bin/frw.d/lib/validate.sh via subprocess (AC-6.2a).
     """
     result = subprocess.run(
-        [str(_ROOT / "hooks" / "lib" / "validate.sh"), "validate_step_boundary", from_step, to_step],
+        [str(_ROOT / "bin" / "frw.d" / "lib" / "validate.sh"), "validate_step_boundary", from_step, to_step],
         capture_output=True, text=True,
     )
     if result.returncode != 0:

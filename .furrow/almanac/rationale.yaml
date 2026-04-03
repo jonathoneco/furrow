@@ -54,60 +54,60 @@ components:
     exists_because: "Agent teams need shared rules for context boundary enforcement"
     delete_when: "Claude Code enforces context isolation natively for agent teams"
   # --- Hooks ---
-  - path: hooks/lib/common.sh
+  - path: bin/frw.d/lib/common.sh
     # --- Commands (W-01, superseded by W-11) ---
     # commands/work.md entry moved to W-11 section below
 
     exists_because: "Claude Code hooks need shared state access and utility functions"
     delete_when: "Claude Code provides native row state access API"
-  - path: hooks/lib/validate.sh
+  - path: bin/frw.d/lib/validate.sh
     exists_because: "Claude Code does not natively validate row schemas"
     delete_when: "Claude Code provides built-in schema validation for row files"
-  - path: hooks/state-guard.sh
+  - path: bin/frw.d/hooks/state-guard.sh
     exists_because: "Claude Code does not natively enforce state.json write protection"
     delete_when: "Claude Code provides built-in row state protection"
-  - path: hooks/gate-check.sh
+  - path: bin/frw.d/hooks/gate-check.sh
     exists_because: "Claude Code does not natively enforce gate requirements at step boundaries"
     delete_when: "Claude Code provides built-in gate enforcement"
-  - path: hooks/ownership-warn.sh
+  - path: bin/frw.d/hooks/ownership-warn.sh
     exists_because: "Claude Code does not natively enforce file ownership boundaries"
     delete_when: "Claude Code provides built-in file ownership enforcement for specialists"
-  - path: hooks/work-check.sh
+  - path: bin/frw.d/hooks/work-check.sh
     exists_because: "Claude Code does not natively detect active rows at session start"
     delete_when: "Claude Code provides built-in active row detection"
-  - path: hooks/post-compact.sh
+  - path: bin/frw.d/hooks/post-compact.sh
     exists_because: "Claude Code compaction loses injected context; re-injection is needed"
     delete_when: "Claude Code preserves skill/work context across compaction events"
   # --- Scripts ---
-  - path: scripts/measure-context.sh
+  - path: bin/frw.d/scripts/measure-context.sh
     exists_because: "No platform-native context budget enforcement"
     delete_when: "Claude Code enforces context budgets natively"
-  - path: scripts/furrow-doctor.sh
+  - path: bin/frw.d/scripts/doctor.sh
     exists_because: "No platform-native structural health verification for Furrow integrity"
     delete_when: "Claude Code provides built-in Furrow self-diagnosis and structural validation"
   # commands/furrow-doctor.md — removed, absorbed into commands/furrow.md (W-11)
   - path: install.sh
     exists_because: "No platform-native Furrow installation; bridges Furrow into .claude/ with namespaced commands"
     delete_when: "Claude Code provides built-in Furrow package management and installation"
-  - path: scripts/run-gate.sh
+  - path: bin/frw.d/scripts/run-gate.sh
     exists_because: "Claude Code has no built-in gate orchestration (Phase A shell + Phase B subagent)"
     delete_when: "Claude Code supports workflow primitives with gate evaluation"
-  - path: scripts/check-artifacts.sh
+  - path: bin/frw.d/scripts/check-artifacts.sh
     exists_because: "Claude Code has no built-in Phase A artifact validation for gate checks"
     delete_when: "Claude Code supports workflow primitives with artifact validation"
-  - path: scripts/select-gate.sh
+  - path: bin/frw.d/scripts/select-gate.sh
     exists_because: "Claude Code has no built-in gate YAML selection for step transitions"
     delete_when: "Claude Code supports workflow primitives with gate configuration"
-  - path: scripts/update-deliverable.sh
+  - path: bin/frw.d/scripts/update-deliverable.sh
     exists_because: "Claude Code has no built-in deliverable lifecycle tracking"
     delete_when: "Claude Code provides native deliverable status management"
-  - path: scripts/update-state.sh
+  - path: bin/frw.d/scripts/update-state.sh
     exists_because: "Claude Code has no Furrow-exclusive state mutation with schema validation"
     delete_when: "Claude Code provides built-in task state management with validated writes"
-  - path: scripts/validate-definition.sh
+  - path: bin/frw.d/scripts/validate-definition.sh
     exists_because: "Claude Code has no native YAML schema validation for work definitions"
     delete_when: "Claude Code validates definition.yaml natively"
-  - path: scripts/validate-naming.sh
+  - path: bin/frw.d/scripts/validate-naming.sh
     exists_because: "Claude Code has no built-in naming convention enforcement for work artifacts"
     delete_when: "Claude Code provides native kebab-case and naming pattern validation"
   # --- Schemas ---
@@ -264,14 +264,14 @@ components:
   - path: evals/gates/ideate.yaml
     exists_because: "Claude Code has no native ideation gate evaluation with dimension rubrics"
     delete_when: "Claude Code provides built-in ideation quality assessment"
-  - path: hooks/validate-definition.sh
+  - path: bin/frw.d/hooks/validate-definition.sh
     exists_because: "Claude Code has no native definition.yaml schema validation hook"
     delete_when: "Claude Code validates work definitions natively at write time"
-  - path: hooks/stop-ideation.sh
+  - path: bin/frw.d/hooks/stop-ideation.sh
     exists_because: "Claude Code has no native section-by-section interaction enforcement"
     delete_when: "Claude Code provides built-in ideation ceremony with interaction tracking"
   # --- W-10: Step Sequence & Auto-Advance ---
-  - path: hooks/validate-summary.sh
+  - path: bin/frw.d/hooks/validate-summary.sh
     exists_because: "Claude Code has no native summary.md validation at step boundaries"
     delete_when: "Claude Code provides built-in summary quality enforcement"
   # --- W-12: Knowledge & Learnings ---
@@ -291,10 +291,10 @@ components:
     exists_because: "Steps need a shared protocol for capturing and routing learnings"
     delete_when: "Claude Code provides built-in learning capture across workflow steps"
   # --- W-13: Git Workflow ---
-  - path: scripts/run-ci-checks.sh
+  - path: bin/frw.d/scripts/run-ci-checks.sh
     exists_because: "Claude Code has no native CI integration with structured gate evidence"
     delete_when: "Claude Code provides built-in CI test execution and evidence capture"
-  - path: scripts/merge-to-main.sh
+  - path: bin/frw.d/scripts/merge-to-main.sh
     exists_because: "Claude Code has no native --no-ff merge workflow for archived rows"
     delete_when: "Claude Code provides built-in merge workflow with archive verification"
   - path: skills/shared/git-conventions.md
@@ -357,29 +357,29 @@ components:
     exists_because: "Step agents need on-demand reference for research mode conventions and dimension selection"
     delete_when: "Claude Code provides built-in research mode documentation"
   # --- Scripts (beans-integration row) ---
-  - path: scripts/cross-model-review.sh
+  - path: bin/frw.d/scripts/cross-model-review.sh
     exists_because: "Claude Code has no built-in cross-model evaluation capability for specialist review"
     delete_when: "Claude Code supports multi-model review with configurable provider integration"
-  - path: scripts/evaluate-gate.sh
+  - path: bin/frw.d/scripts/evaluate-gate.sh
     exists_because: "Claude Code has no built-in gate policy enforcement with verdict interpretation"
     delete_when: "Claude Code provides built-in gate policy evaluation with verdict translation"
-  - path: scripts/generate-plan.sh
+  - path: bin/frw.d/scripts/generate-plan.sh
     exists_because: "Claude Code has no built-in execution planning with dependency analysis and concurrent wave scheduling"
     delete_when: "Claude Code provides native plan generation with topological sorting and wave assignment"
-  - path: scripts/migrate-to-furrow.sh
+  - path: bin/frw.d/scripts/migrate-to-furrow.sh
     exists_because: "One-time migration utility for transitioning from legacy harness structure to Furrow format"
     delete_when: "Migration to Furrow is complete and no legacy state remains"
-  - path: scripts/run-integration-tests.sh
+  - path: bin/frw.d/scripts/run-integration-tests.sh
     exists_because: "Claude Code has no native test orchestration with discovery and structured reporting"
     delete_when: "Claude Code provides built-in test execution with discovery and reporting"
-  - path: scripts/select-dimensions.sh
+  - path: bin/frw.d/scripts/select-dimensions.sh
     exists_because: "Claude Code has no built-in dimension file selection with research mode awareness"
     delete_when: "Claude Code provides built-in dimension routing with workflow mode detection"
   # --- Hooks (beans-integration row) ---
-  - path: hooks/correction-limit.sh
+  - path: bin/frw.d/hooks/correction-limit.sh
     exists_because: "Claude Code has no native correction limit enforcement with file ownership tracking"
     delete_when: "Claude Code enforces correction limits natively per deliverable"
-  - path: hooks/verdict-guard.sh
+  - path: bin/frw.d/hooks/verdict-guard.sh
     exists_because: "Claude Code has no built-in gate verdict write protection with role-based enforcement"
     delete_when: "Claude Code provides built-in role-based write protection for gate artifacts"
   # --- Evals (beans-integration row) ---

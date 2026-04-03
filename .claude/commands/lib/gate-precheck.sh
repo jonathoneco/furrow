@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/lib/gate-precheck.sh
+../../../commands/lib/gate-precheck.sh

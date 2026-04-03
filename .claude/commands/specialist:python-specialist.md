@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/specialists/python-specialist.md
+../../specialists/python-specialist.md

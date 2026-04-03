@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/checkpoint.md
+../../commands/checkpoint.md

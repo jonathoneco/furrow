@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/work.md
+../../commands/work.md

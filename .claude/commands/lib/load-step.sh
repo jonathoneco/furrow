@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/lib/load-step.sh
+../../../commands/lib/load-step.sh

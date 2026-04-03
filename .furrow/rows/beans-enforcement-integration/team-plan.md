@@ -23,7 +23,7 @@ Policy hooks (prescriptive rules ON TOP of lifecycle) stay separate but call CLI
 ### sds-cli (cli-designer)
 **Scope**: Fork bn → sds with extended statuses, .furrow/seeds/ paths.
 **Sequence**:
-1. Copy /home/jonco/src/work-harness/bin/bn → bin/sds
+1. Copy <work-harness>/bin/bn → bin/sds
 2. Rename variables: BEANS_DIR → SDS_DIR, BEANS_ISSUES → SDS_ISSUES
 3. Update all user-facing strings (bn → sds, beans → seeds)
 4. Extend status enum: open, claimed, ideating, researching, planning, speccing, decomposing, implementing, reviewing, closed

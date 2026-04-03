@@ -2,7 +2,7 @@
 
 Provides safe state.json mutation with:
 - Read-modify-write with file locking (prevents concurrent corruption)
-- Post-mutation validation via hooks/lib/validate.sh
+- Post-mutation validation via bin/frw.d/lib/validate.sh
 - Append-only gate records (never modifies existing records)
 - Automatic updated_at timestamp on every write
 """
@@ -122,7 +122,7 @@ class StateMutator:
                 fcntl.flock(f, fcntl.LOCK_UN)
 
     def _validate_state(self) -> None:
-        """Validate state.json after mutation via hooks/lib/validate.sh.
+        """Validate state.json after mutation via bin/frw.d/lib/validate.sh.
 
         Calls the shared validation script via subprocess (AC-6.2a).
 
@@ -130,7 +130,7 @@ class StateMutator:
             StateMutationError: If validation fails.
         """
         result = subprocess.run(
-            [str(self.root / "hooks" / "lib" / "validate.sh"), "validate_state_json", str(self.state_path)],
+            [str(self.root / "bin" / "frw.d" / "lib" / "validate.sh"), "validate_state_json", str(self.state_path)],
             capture_output=True, text=True,
         )
         if result.returncode != 0:

@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/lib/rewind.sh
+../../../commands/lib/rewind.sh

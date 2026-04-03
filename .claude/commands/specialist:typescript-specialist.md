@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/specialists/typescript-specialist.md
+../../specialists/typescript-specialist.md

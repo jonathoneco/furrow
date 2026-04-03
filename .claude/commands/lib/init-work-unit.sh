@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/lib/init-work-unit.sh
+../../../commands/lib/init-work-unit.sh

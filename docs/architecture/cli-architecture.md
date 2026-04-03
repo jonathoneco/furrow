@@ -68,14 +68,14 @@ Gate evaluation follows a shell-then-subagent pattern:
 ```
 rws transition
   |
-  +--> scripts/run-gate.sh (Phase A: check-artifacts.sh, deterministic)
+  +--> frw run-gate (Phase A: check-artifacts, deterministic)
   |      exit 0  --> gate resolved, no subagent needed
   |      exit 1  --> Phase A failed deterministically
   |      exit 10 --> needs subagent evaluation (prompt path on stdout)
   |
   +--> Agent tool spawns isolated subagent (Phase B: judgment)
   |
-  +--> scripts/evaluate-gate.sh (applies gate_policy trust gradient)
+  +--> frw evaluate-gate (applies gate_policy trust gradient)
          stdout: PASS | FAIL | CONDITIONAL | WAIT_FOR_HUMAN
 ```
 
@@ -167,8 +167,8 @@ For existing `.work/` projects migrating to the `.furrow/` structure:
 
 ```sh
 # 1. Run the migration script (supports --dry-run for preview)
-scripts/migrate-to-furrow.sh --dry-run   # preview changes
-scripts/migrate-to-furrow.sh             # execute migration
+frw migrate-to-furrow --dry-run   # preview changes
+frw migrate-to-furrow             # execute migration
 
 # 2. Initialize seeds (if the project did not already use beans/seeds)
 sds init --prefix my-project

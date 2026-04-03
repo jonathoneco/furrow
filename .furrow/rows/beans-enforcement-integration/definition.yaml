@@ -142,7 +142,7 @@ context_pointers:
   # --- CLIs to create ---
   - path: bin/
     note: Target location for sds, rws, and alm CLIs
-  - path: /home/jonco/src/work-harness/bin/bn
+  - path: <work-harness>/bin/bn
     note: Source for sds fork — ~450 line POSIX shell + jq issue tracker
 
   # --- Scripts absorbed into rws ---

@@ -34,7 +34,7 @@ Before adding any instruction to any layer:
 2. If covered elsewhere, do NOT add — reference the existing location.
 3. If the instruction exists but in the wrong layer, MOVE it (do not duplicate).
 4. Choose the layer using the priority order above.
-5. Run `scripts/measure-context.sh` to verify budgets after the change.
+5. Run `frw measure-context` to verify budgets after the change.
 
 ## Common Duplication Sources (from V1)
 
@@ -49,7 +49,7 @@ Before adding any instruction to any layer:
 
 ## Verification
 
-`scripts/measure-context.sh` reports per-layer line counts. If a layer exceeds its
+`frw measure-context` reports per-layer line counts. If a layer exceeds its
 budget, the likely cause is duplicated content that should be in a lower-priority layer.
 
 Cross-layer grep for identical instruction text:

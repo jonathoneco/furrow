@@ -4,17 +4,17 @@
       {
         "matcher": "Write|Edit",
         "hooks": [
-          { "type": "command", "command": "hooks/state-guard.sh" },
-          { "type": "command", "command": "hooks/ownership-warn.sh" },
-          { "type": "command", "command": "hooks/validate-definition.sh" },
-          { "type": "command", "command": "hooks/correction-limit.sh" },
-          { "type": "command", "command": "hooks/verdict-guard.sh" }
+          { "type": "command", "command": "frw hook state-guard" },
+          { "type": "command", "command": "frw hook ownership-warn" },
+          { "type": "command", "command": "frw hook validate-definition" },
+          { "type": "command", "command": "frw hook correction-limit" },
+          { "type": "command", "command": "frw hook verdict-guard" }
         ]
       },
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "hooks/gate-check.sh" }
+          { "type": "command", "command": "frw hook gate-check" }
         ]
       }
     ],
@@ -23,9 +23,9 @@
       {
         "matcher": "",
         "hooks": [
-          { "type": "command", "command": "hooks/work-check.sh" },
-          { "type": "command", "command": "hooks/stop-ideation.sh" },
-          { "type": "command", "command": "hooks/validate-summary.sh" }
+          { "type": "command", "command": "frw hook work-check" },
+          { "type": "command", "command": "frw hook stop-ideation" },
+          { "type": "command", "command": "frw hook validate-summary" }
         ]
       }
     ],
@@ -33,7 +33,7 @@
       {
         "matcher": "",
         "hooks": [
-          { "type": "command", "command": "hooks/post-compact.sh" }
+          { "type": "command", "command": "frw hook post-compact" }
         ]
       }
     ]

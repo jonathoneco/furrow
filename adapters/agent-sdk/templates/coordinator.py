@@ -120,9 +120,9 @@ class CoordinatorAgent:
         logger.info(f"  Gate {boundary}: {gate_record['outcome']}")
 
     def _validate_step_boundary(self, from_step: str, to_step: str) -> None:
-        """Call hooks/lib/validate.sh for step boundary validation."""
+        """Call bin/frw.d/lib/validate.sh for step boundary validation."""
         result = subprocess.run(
-            [str(self.config.root / "hooks" / "lib" / "validate.sh"), "validate_step_boundary", from_step, to_step],
+            [str(self.config.root / "bin" / "frw.d" / "lib" / "validate.sh"), "validate_step_boundary", from_step, to_step],
             capture_output=True, text=True
         )
         if result.returncode != 0:

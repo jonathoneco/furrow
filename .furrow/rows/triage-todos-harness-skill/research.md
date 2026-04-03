@@ -26,7 +26,7 @@ The existing spec's step 5 (AI assessment) describes the exact behavior needed �
 
 ### Symlink mechanism
 
-Current `.claude/commands/` has symlinks to `/home/jonco/src/work-harness-v2/commands/`. Project-local commands (`work-roadmap.md`, `work-todos.md`) live in `commands/` without `.claude/commands/` symlinks — they're discovered via a different path.
+Current `.claude/commands/` has symlinks to `<work-harness-v2>/commands/`. Project-local commands (`work-roadmap.md`, `work-todos.md`) live in `commands/` without `.claude/commands/` symlinks — they're discovered via a different path.
 
 For `/harness:triage` with the `harness:` prefix, create a symlink:
 ```

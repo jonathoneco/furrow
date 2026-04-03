@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/review.md
+../../commands/review.md

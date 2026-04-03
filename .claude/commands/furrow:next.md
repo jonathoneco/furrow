@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/next.md
+../../commands/next.md

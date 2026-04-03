@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/triage.md
+../../commands/triage.md

@@ -68,8 +68,8 @@
     - Consider a hook response mechanism: agent can declare "N/A because X" and the hook accepts it
     - Document which hooks are hard blockers vs advisory warnings
   references:
-    - "hooks/validate-summary.sh"
-    - "hooks/stop-ideation.sh"
+    - "bin/frw.d/hooks/validate-summary.sh"
+    - "bin/frw.d/hooks/stop-ideation.sh"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -77,9 +77,9 @@
   impact: "medium"
   effort: "small"
   files_touched:
-    - "hooks/validate-summary.sh"
-    - "hooks/stop-ideation.sh"
-    - "hooks/lib/validate.sh"
+    - "bin/frw.d/hooks/validate-summary.sh"
+    - "bin/frw.d/hooks/stop-ideation.sh"
+    - "bin/frw.d/lib/validate.sh"
   status: active
 - id: user-action-integration
   title: "Integration points for actions the user must take"
@@ -462,8 +462,8 @@
   impact: "medium"
   effort: "medium"
   files_touched:
-    - "scripts/"
-    - "hooks/"
+    - "bin/frw.d/scripts/"
+    - "bin/frw.d/hooks/"
     - "commands/lib/"
   # Cluster: Work Artifact Lifecycle
   status: done
@@ -526,7 +526,7 @@
   impact: "medium"
   effort: "medium"
   files_touched:
-    - "hooks/gate-check.sh"
+    - "bin/frw.d/hooks/gate-check.sh"
     - "commands/lib/step-transition.sh"
     - "commands/lib/init-row.sh"
   status: done
@@ -588,7 +588,7 @@
   references:
     - "specialists/"
     - "references/specialist-template.md"
-    - "scripts/merge-to-main.sh"
+    - "bin/frw.d/scripts/merge-to-main.sh"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -632,8 +632,8 @@
     - "skills/implement.md"
     - "skills/decompose.md"
     - "skills/shared/context-isolation.md"
-    - "scripts/generate-plan.sh"
-    - "scripts/check-wave-conflicts.sh"
+    - "bin/frw.d/scripts/generate-plan.sh"
+    - "bin/frw.d/scripts/check-wave-conflicts.sh"
     - "references/specialist-template.md"
     - "specialists/"
   source_type: "brain-dump"
@@ -745,15 +745,15 @@
     should be marked off-limits or protected.
   work_needed: |
     - Inventory scripts that are procedural wrappers vs directly callable
-    - Mark internal scripts (e.g., move to scripts/internal/ or add a naming convention like _update-state.sh)
+    - Mark internal scripts (e.g., add a naming convention like _update-state.sh)
     - Add hook-level protection (PreToolUse on Bash) that warns/blocks direct calls to internal scripts
     - Document which scripts are user/agent-callable vs internal-only
     - Consider whether the state-guard.sh hook already covers some of this
   references:
-    - "scripts/update-state.sh"
-    - "scripts/advance-step.sh"
-    - "scripts/record-gate.sh"
-    - "hooks/state-guard.sh"
+    - "bin/frw.d/scripts/update-state.sh"
+    - "bin/frw.d/scripts/advance-step.sh"
+    - "bin/frw.d/scripts/record-gate.sh"
+    - "bin/frw.d/hooks/state-guard.sh"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -761,8 +761,8 @@
   impact: "high"
   effort: "medium"
   files_touched:
-    - "scripts/"
-    - "hooks/"
+    - "bin/frw.d/scripts/"
+    - "bin/frw.d/hooks/"
   status: active
 - id: guard-against-horizontal-slices
   title: "Guard against horizontal slices in decomposition"

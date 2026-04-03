@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/specialists/security-engineer.md
+../../specialists/security-engineer.md

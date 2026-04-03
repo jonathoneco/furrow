@@ -28,7 +28,7 @@ A merge specialist assumes that any integration can surface latent conflicts and
 
 - **Escalation paths** — Lead agent resolves shared imports and config conflicts. Domain specialist handles domain-specific conflicts. User handles ambiguous ownership disputes. Conflict resolution commits use the `fix` type in conventional commit format.
 
-- **Bootstrap acknowledgment** — This specialist cannot guide its own inaugural merge. The first merge of this branch uses `scripts/merge-to-main.sh` directly with manual verification, since the merge specialist template does not yet exist on main.
+- **Bootstrap acknowledgment** — This specialist cannot guide its own inaugural merge. The first merge of this branch uses `frw merge-to-main` directly with manual verification, since the merge specialist template does not yet exist on main.
 
 ## Quality Criteria
 
@@ -46,7 +46,7 @@ Every merge preserves individual commit history via `--no-ff`. Merge commits car
 
 ## Context Requirements
 
-- Required: `scripts/merge-to-main.sh` — merge execution mechanics and validation
+- Required: `frw merge-to-main` — merge execution mechanics and validation
 - Required: `docs/git-conventions.md` — branch lifecycle and commit format
 - Required: `state.json` schema — `archived_at`, `gates[]`, `deliverables` fields
 - Required: `bin/rws` `check_wave_conflicts` function — wave conflict detection

@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/lib/step-transition.sh
+../../../commands/lib/step-transition.sh

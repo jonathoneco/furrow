@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/specialists/complexity-skeptic.md
+../../specialists/complexity-skeptic.md

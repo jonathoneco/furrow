@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/archive.md
+../../commands/archive.md

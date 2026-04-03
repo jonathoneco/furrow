@@ -1,0 +1,166 @@
+#!/bin/sh
+# frw — Furrow harness CLI.
+# Centralizes hooks, scripts, init, install, and doctor behind a single
+# PATH-resolved entry point. Modules live in bin/frw.d/ and are sourced
+# on demand to preserve blast-radius isolation.
+set -eu
+
+SCRIPT_PATH="$(readlink -f "$0")"
+FURROW_ROOT="$(cd "$(dirname "$SCRIPT_PATH")" && cd .. && pwd)"
+export FURROW_ROOT
+
+die() { printf 'frw: %s\n' "$1" >&2; exit 1; }
+
+frw_usage() {
+  cat <<'EOF'
+frw — Furrow harness CLI
+
+Usage: frw <command> [args...]
+
+Hooks (Claude Code lifecycle):
+  hook <name> [args]          Run a harness hook by name
+
+Project setup:
+  init [--prefix <name>]      Initialize Furrow in current project
+  install <--global|--project <path>|--check [path]>
+
+Health & diagnostics:
+  doctor [--research] [root]  Run harness health checks
+  measure-context [root]      Report context budget usage
+
+State management:
+  update-state <name> <jq>    Atomic state.json mutation
+  update-deliverable <name> <deliverable> <status> [opts]
+
+Gate pipeline:
+  check-artifacts <name> <deliverable>
+  run-gate <name> <pre_step|post_step>
+  evaluate-gate <name> <boundary> <verdict>
+  select-gate <name>
+  select-dimensions <name>
+  run-ci-checks <name>
+  cross-model-review <name> <deliverable>
+
+Code generation:
+  generate-plan <name>        Build plan.json from definition.yaml
+  validate-definition <path>  Validate definition.yaml schema
+  validate-naming <type> <name>
+
+Lifecycle:
+  merge-to-main <name>        Merge archived row branch to main
+  migrate-to-furrow [--dry-run]
+  run-integration-tests [pattern]
+
+Info:
+  root                        Print FURROW_ROOT path
+  help                        Show this help
+EOF
+}
+
+cmd="${1:-}"
+[ $# -gt 0 ] && shift
+
+case "$cmd" in
+  hook)
+    [ $# -ge 1 ] || die "hook: name required"
+    _name="$1"; shift
+    _hook="$FURROW_ROOT/bin/frw.d/hooks/${_name}.sh"
+    [ -f "$_hook" ] || die "hook not found: $_name"
+    . "$FURROW_ROOT/bin/frw.d/lib/common.sh"
+    . "$_hook"
+    _fn="hook_$(echo "$_name" | tr '-' '_')"
+    "$_fn" "$@"
+    ;;
+  init)
+    . "$FURROW_ROOT/bin/frw.d/init.sh"
+    frw_init "$@"
+    ;;
+  install)
+    . "$FURROW_ROOT/bin/frw.d/install.sh"
+    frw_install "$@"
+    ;;
+  doctor)
+    . "$FURROW_ROOT/bin/frw.d/lib/common.sh"
+    . "$FURROW_ROOT/bin/frw.d/scripts/doctor.sh"
+    frw_doctor "$@"
+    ;;
+  update-state)
+    . "$FURROW_ROOT/bin/frw.d/scripts/update-state.sh"
+    frw_update_state "$@"
+    ;;
+  update-deliverable)
+    . "$FURROW_ROOT/bin/frw.d/scripts/update-deliverable.sh"
+    frw_update_deliverable "$@"
+    ;;
+  check-artifacts)
+    . "$FURROW_ROOT/bin/frw.d/lib/common.sh"
+    . "$FURROW_ROOT/bin/frw.d/lib/validate.sh"
+    . "$FURROW_ROOT/bin/frw.d/scripts/check-artifacts.sh"
+    frw_check_artifacts "$@"
+    ;;
+  run-gate)
+    . "$FURROW_ROOT/bin/frw.d/lib/common.sh"
+    . "$FURROW_ROOT/bin/frw.d/scripts/run-gate.sh"
+    frw_run_gate "$@"
+    ;;
+  evaluate-gate)
+    . "$FURROW_ROOT/bin/frw.d/scripts/evaluate-gate.sh"
+    frw_evaluate_gate "$@"
+    ;;
+  select-gate)
+    . "$FURROW_ROOT/bin/frw.d/scripts/select-gate.sh"
+    frw_select_gate "$@"
+    ;;
+  select-dimensions)
+    . "$FURROW_ROOT/bin/frw.d/scripts/select-dimensions.sh"
+    frw_select_dimensions "$@"
+    ;;
+  generate-plan)
+    . "$FURROW_ROOT/bin/frw.d/lib/validate.sh"
+    . "$FURROW_ROOT/bin/frw.d/scripts/generate-plan.sh"
+    frw_generate_plan "$@"
+    ;;
+  validate-definition)
+    . "$FURROW_ROOT/bin/frw.d/scripts/validate-definition.sh"
+    frw_validate_definition "$@"
+    ;;
+  validate-naming)
+    . "$FURROW_ROOT/bin/frw.d/scripts/validate-naming.sh"
+    frw_validate_naming "$@"
+    ;;
+  measure-context)
+    . "$FURROW_ROOT/bin/frw.d/scripts/measure-context.sh"
+    frw_measure_context "$@"
+    ;;
+  run-ci-checks)
+    . "$FURROW_ROOT/bin/frw.d/scripts/run-ci-checks.sh"
+    frw_run_ci_checks "$@"
+    ;;
+  cross-model-review)
+    . "$FURROW_ROOT/bin/frw.d/scripts/cross-model-review.sh"
+    frw_cross_model_review "$@"
+    ;;
+  merge-to-main)
+    . "$FURROW_ROOT/bin/frw.d/scripts/merge-to-main.sh"
+    frw_merge_to_main "$@"
+    ;;
+  migrate-to-furrow)
+    . "$FURROW_ROOT/bin/frw.d/scripts/migrate-to-furrow.sh"
+    frw_migrate_to_furrow "$@"
+    ;;
+  run-integration-tests)
+    exec /bin/bash -c '. "$1/bin/frw.d/scripts/run-integration-tests.sh" && frw_run_integration_tests "${@:2}"' _ "$FURROW_ROOT" "$@"
+    ;;
+  root)
+    printf '%s\n' "$FURROW_ROOT"
+    ;;
+  -h|--help|help)
+    frw_usage
+    ;;
+  "")
+    die "no command (try 'frw help')"
+    ;;
+  *)
+    die "unknown command '$cmd' (try 'frw help')"
+    ;;
+esac

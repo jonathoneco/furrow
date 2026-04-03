@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/lib/append-learning.sh
+../../../commands/lib/append-learning.sh

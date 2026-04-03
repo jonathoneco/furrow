@@ -30,21 +30,21 @@ Designs and evolves Furrow components — the layer between platform primitives 
 
 ## Quality Criteria
 
-Scripts use `set -eu` and follow exit code conventions (0=success, 1=usage, 2=not-found, 3=validation, 4=sub-command-failed). File writes are atomic (temp file + mv). JSON via jq, YAML via yq — never use jq-isms in yq expressions (`// empty` is jq, not yq). Errors to stderr, results to stdout. Source `hooks/lib/common.sh` and `hooks/lib/validate.sh` for shared utilities.
+Scripts use `set -eu` and follow exit code conventions (0=success, 1=usage, 2=not-found, 3=validation, 4=sub-command-failed). File writes are atomic (temp file + mv). JSON via jq, YAML via yq — never use jq-isms in yq expressions (`// empty` is jq, not yq). Errors to stderr, results to stdout. Source `bin/frw.d/lib/common.sh` and `bin/frw.d/lib/validate.sh` for shared utilities.
 
 ## Anti-Patterns
 
 | Pattern | Why It's Wrong | Do This Instead |
 |---------|---------------|-----------------|
 | Using `// empty` in yq expressions | Invalid yq v4 syntax (jq-ism) | Use `[]?` operator or `\|\| var=""` fallback |
-| Writing state.json directly | Bypasses validation in update-state.sh | Use `scripts/update-state.sh` with jq expression |
+| Writing state.json directly | Bypasses validation in update-state.sh | Use `frw update-state` with jq expression |
 | Hardcoding file paths in validators | Breaks when schemas move | Use $FURROW_ROOT-relative paths |
 | Advisory enforcement for critical behaviors | Model may ignore prose instructions | Use hooks with non-zero exit codes |
 | CC plan mode replacing Furrow steps | Bypasses gated artifact pipeline | Use plan mode within current step only |
 
 ## Context Requirements
 
-- Required: `hooks/lib/common.sh`, `hooks/lib/validate.sh`, `scripts/update-state.sh` patterns
+- Required: `bin/frw.d/lib/common.sh`, `bin/frw.d/lib/validate.sh`, `frw update-state` patterns
 - Required: `schemas/` directory for JSON schema patterns
 - Required: `references/gate-protocol.md` — gate evaluation lifecycle and trust gradients
 - Required: `references/row-layout.md` — .furrow/ directory structure and ownership rules

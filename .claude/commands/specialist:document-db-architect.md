@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/specialists/document-db-architect.md
+../../specialists/document-db-architect.md

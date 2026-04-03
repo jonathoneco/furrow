@@ -1,0 +1,134 @@
+objective: >-
+  Create frw, a modularized POSIX sh CLI that centralizes all harness-level
+  concerns (hooks, scripts, init, install, doctor) behind a single
+  PATH-resolved entry point, eliminating relative path fragility and
+  consolidating scattered shell scripts into a coherent tool.
+
+deliverables:
+  - name: frw-dispatcher-and-modules
+    acceptance_criteria:
+      - bin/frw exists with path resolution via readlink -f and case dispatch
+      - bin/frw.d/ directory structure created with lib/, hooks/, scripts/ subdirs
+      - lib/common.sh migrated from hooks/lib/common.sh
+      - lib/validate.sh migrated from hooks/lib/validate.sh
+      - frw help prints subcommand summary
+      - frw root prints FURROW_ROOT
+    specialist: shell-specialist
+    file_ownership:
+      - "bin/frw"
+      - "bin/frw.d/lib/*"
+
+  - name: hook-migration
+    acceptance_criteria:
+      - All 10 hooks migrated to bin/frw.d/hooks/ as sourced modules
+      - frw hook <name> preserves exact stdin JSON contract per hook
+      - frw hook <name> preserves exact exit code semantics (0=allow, 2=block, etc.)
+      - .claude/settings.json updated to use frw hook <name> for all hooks
+      - Each hook tested with representative stdin input
+    depends_on:
+      - frw-dispatcher-and-modules
+    specialist: shell-specialist
+    file_ownership:
+      - "bin/frw.d/hooks/*"
+      - ".claude/settings.json"
+
+  - name: script-migration
+    acceptance_criteria:
+      - All 17 scripts migrated to bin/frw.d/scripts/ as sourced modules
+      - frw <subcommand> interface for each (update-state, doctor, etc.)
+      - Internal cross-references updated (scripts calling other scripts)
+      - bin/rws updated to call frw instead of scripts/ paths
+      - bin/alm updated if it references scripts/ paths
+    depends_on:
+      - frw-dispatcher-and-modules
+    specialist: shell-specialist
+    file_ownership:
+      - "bin/frw.d/scripts/*"
+
+  - name: frw-init
+    acceptance_criteria:
+      - frw init runs sds init with auto-detected or provided prefix
+      - frw init creates .furrow/rows, .furrow/almanac, .furrow/seeds
+      - frw init copies furrow.yaml template with detected stack/repo values
+      - /furrow:work pre-flight calls frw init when needed
+    depends_on:
+      - frw-dispatcher-and-modules
+    specialist: shell-specialist
+    file_ownership:
+      - "bin/frw.d/init.sh"
+      - "commands/init.md"
+
+  - name: frw-install
+    acceptance_criteria:
+      - frw install --global and --project <path> implement full install logic
+      - frw install --check verifies installation
+      - install.sh slimmed to bootstrap (symlink frw, delegate to frw install)
+      - hooks/ and scripts/ removed from project root symlink list
+    depends_on:
+      - frw-dispatcher-and-modules
+      - hook-migration
+      - script-migration
+    specialist: shell-specialist
+    file_ownership:
+      - "bin/frw.d/install.sh"
+      - "install.sh"
+
+  - name: reference-cleanup
+    acceptance_criteria:
+      - Old hooks/*.sh, scripts/*.sh, hooks/lib/ deleted
+      - All commands/*.md references to hooks/ and scripts/ updated
+      - All skills/*.md and skills/shared/*.md references updated
+      - All evals/**/*.yaml references updated
+      - .furrow/almanac/rationale.yaml entries updated
+      - .claude/CLAUDE.md command table updated
+      - tests/integration/ updated for new paths
+      - frw doctor health checks validate new structure
+    depends_on:
+      - hook-migration
+      - script-migration
+      - frw-install
+    specialist: shell-specialist
+    file_ownership:
+      - "hooks/*"
+      - "scripts/*"
+      - "commands/*"
+      - "skills/**/*"
+
+context_pointers:
+  - path: bin/rws
+    note: >-
+      ~2000 LOC, calls 9+ scripts directly — largest reference surface
+  - path: .claude/settings.json
+    note: >-
+      All 10 hook paths must change to frw hook <name>
+  - path: install.sh
+    note: >-
+      Becomes thin bootstrap; logic moves to frw install
+  - path: hooks/lib/common.sh
+    note: >-
+      200 LOC shared library — migrates to bin/frw.d/lib/common.sh
+  - path: hooks/lib/validate.sh
+    note: >-
+      284 LOC validation library — migrates to bin/frw.d/lib/validate.sh
+  - path: scripts/update-state.sh
+    note: >-
+      Core state mutation — called by rws, work-check hook, update-deliverable
+  - path: scripts/furrow-doctor.sh
+    note: >-
+      406 LOC health checks — must be rewritten for new paths, becomes frw doctor
+  - path: skills/
+    note: >-
+      Step skills reference scripts/ paths for gates, validation, CI
+  - path: evals/
+    note: >-
+      Gate evaluator configs may reference script paths
+
+constraints:
+  - No behavior changes — exact stdin contracts, exit codes, and decision logic preserved
+  - sds, rws, alm stay independent — frw does not subsume them
+  - POSIX sh — consistent with existing CLIs
+  - Atomic cutover — old files deleted in same commit as new frw modules
+  - install.sh persists as bootstrap entry point
+  - All external tool deps preserved (jq, yq, python3, git, openssl)
+
+gate_policy: supervised

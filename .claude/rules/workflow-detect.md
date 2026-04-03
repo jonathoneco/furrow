@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/.claude/rules/workflow-detect.md
+workflow-detect.md

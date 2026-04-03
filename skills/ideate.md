@@ -24,7 +24,7 @@ Run the 6-part ceremony in order:
    If `state.json` has a non-null `source_todo`, include it in `definition.yaml`.
    If `state.json` has a non-null `gate_policy_init`, use it as the default for
    `gate_policy` in `definition.yaml` (user can override during approval).
-6. **Hard gate** — validate definition with `scripts/validate-definition.sh`.
+6. **Hard gate** — validate definition with `frw validate-definition`.
    Gate record required in `state.json` before advancing.
 
 Mode adaptations:

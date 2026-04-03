@@ -3,7 +3,7 @@
 ## Overview
 
 `sds` (seeds) is a POSIX shell + jq seed tracker forked from `bn` (beans) at
-`/home/jonco/src/work-harness/bin/bn`. It tracks seeds (lightweight issue records)
+`<work-harness>/bin/bn`. It tracks seeds (lightweight issue records)
 that integrate with the Furrow harness row lifecycle via `rws`.
 
 Source: ~450 lines of POSIX shell + jq. Target: `bin/sds` in the furrow repo.

@@ -24,7 +24,7 @@ Gate commits: `chore({name}): gate pass {from}->{to}`.
 
 ## Merge Policy
 - Within work branch: rebase onto main periodically.
-- Back to main: `git merge --no-ff` via `scripts/merge-to-main.sh`.
+- Back to main: `git merge --no-ff` via `frw merge-to-main`.
   No squash — individual commits preserve deliverable traceability.
 - Merge requires archived row.
 

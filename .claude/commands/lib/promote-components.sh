@@ -1,1 +1,1 @@
-/home/jonco/src/furrow/commands/lib/promote-components.sh
+../../../commands/lib/promote-components.sh
