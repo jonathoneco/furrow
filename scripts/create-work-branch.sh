@@ -31,9 +31,15 @@ if [ ! -f "${state_file}" ]; then
   exit 2
 fi
 
-# --- create or checkout branch ---
+# --- detect if already on a work branch ---
 
-if git rev-parse --verify "${branch_name}" > /dev/null 2>&1; then
+current_branch="$(git branch --show-current 2>/dev/null || true)"
+
+if [ -n "${current_branch}" ] && echo "${current_branch}" | grep -q '^work/'; then
+  # Already on a work/* branch (e.g., inside a worktree) — use it
+  branch_name="${current_branch}"
+  echo "Already on work branch: ${branch_name}"
+elif git rev-parse --verify "${branch_name}" > /dev/null 2>&1; then
   # Branch exists — check it out
   git checkout "${branch_name}"
   echo "Checked out existing branch: ${branch_name}"
