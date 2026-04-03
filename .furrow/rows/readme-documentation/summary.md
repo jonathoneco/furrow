@@ -4,8 +4,8 @@
 Add a README.md that orients first-time readers on what Furrow is, what using it feels like, how to install it, and where to go deeper.
 
 ## Current State
-Step: decompose | Status: pending_approval
-Deliverables: 0/1 (defined)
+Step: review | Status: completed
+Deliverables: 1/1
 Mode: code
 
 ## Artifact Paths
@@ -22,6 +22,8 @@ Mode: code
 - **spec->decompose**: pass — Spec covers all 8 ACs across 7 sections, ~143 lines estimated
 - **decompose->implement**: pass — Single deliverable, single file — no decomposition needed
 - **decompose->implement**: pass — plan.json created, single wave single deliverable
+- **implement->review**: pass — README.md written, 110 lines, all 8 ACs met, deliverable marked complete
+- **implement->review**: pass — README.md committed, all ACs met
 
 ## Context Budget
 Measurement unavailable

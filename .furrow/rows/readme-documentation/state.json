@@ -2,7 +2,7 @@
   "name": "readme-documentation",
   "title": "Add README with general info and guidance about the harness",
   "description": "Add README with general info and guidance about the harness",
-  "step": "implement",
+  "step": "review",
   "step_status": "completed",
   "steps_sequence": [
     "ideate",
@@ -69,6 +69,13 @@
       "decided_by": "manual",
       "evidence": "README.md written, 110 lines, all 8 ACs met, deliverable marked complete",
       "timestamp": "2026-04-03T20:32:52Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "README.md committed, all ACs met",
+      "timestamp": "2026-04-03T20:33:03Z"
     }
   ],
   "force_stop_at": null,
@@ -78,8 +85,8 @@
   "seed_id": "furrow-be4a",
   "epic_seed_id": null,
   "created_at": "2026-04-03T20:00:36Z",
-  "updated_at": "2026-04-03T20:32:52Z",
-  "archived_at": null,
+  "updated_at": "2026-04-03T20:35:08Z",
+  "archived_at": "2026-04-03T20:35:08Z",
   "source_todo": null,
   "gate_policy_init": "supervised"
 }
