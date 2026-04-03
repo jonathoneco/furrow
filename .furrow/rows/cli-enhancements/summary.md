@@ -4,8 +4,8 @@
 Add knowledge management subcommands to alm (learn with full lifecycle, rationale, plus stubs for docs/specialists/history) and fix the rws review-archive flow with explicit deliverable tracking subcommands.
 
 ## Current State
-Step: decompose | Status: pending_approval
-Deliverables: 0/2 (defined)
+Step: review | Status: completed
+Deliverables: 2/2
 Mode: code
 
 ## Artifact Paths
@@ -24,6 +24,7 @@ Mode: code
 - **spec->decompose**: pass — specs directory created
 - **decompose->implement**: pass — single wave, two parallel deliverables, plan.json valid
 - **decompose->implement**: pass — branch set, plan.json valid
+- **implement->review**: pass — both deliverables implemented, 85 tests passing
 
 ## Context Budget
 Measurement unavailable

@@ -2,8 +2,8 @@
   "name": "cli-enhancements",
   "title": "Almanac knowledge subcommands and rws review-archive flow",
   "description": "Almanac knowledge subcommands and rws review-archive flow",
-  "step": "implement",
-  "step_status": "not_started",
+  "step": "review",
+  "step_status": "completed",
   "steps_sequence": [
     "ideate",
     "research",
@@ -13,7 +13,18 @@
     "implement",
     "review"
   ],
-  "deliverables": {},
+  "deliverables": {
+    "alm-knowledge-subcommands": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "rws-deliverable-tracking": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    }
+  },
   "gates": [
     {
       "boundary": "ideate->research",
@@ -63,6 +74,13 @@
       "decided_by": "manual",
       "evidence": "branch set, plan.json valid",
       "timestamp": "2026-04-03T07:42:08Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "both deliverables implemented, 85 tests passing",
+      "timestamp": "2026-04-03T07:48:25Z"
     }
   ],
   "force_stop_at": null,
@@ -72,8 +90,8 @@
   "seed_id": "furrow-4273",
   "epic_seed_id": null,
   "created_at": "2026-04-03T07:36:03Z",
-  "updated_at": "2026-04-03T07:42:51Z",
-  "archived_at": null,
+  "updated_at": "2026-04-03T07:48:25Z",
+  "archived_at": "2026-04-03T07:48:25Z",
   "source_todo": null,
   "gate_policy_init": "supervised"
 }
