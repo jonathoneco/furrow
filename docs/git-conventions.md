@@ -6,7 +6,7 @@ Detailed git workflow conventions for Furrow.
 
 ### Creation
 - Branch name: `work/{row-name}` (kebab-case, matches `.furrow/rows/` directory)
-- Created at the `decompose->implement` gate boundary by `scripts/create-work-branch.sh`
+- Created at the `decompose->implement` gate boundary by `rws init` (with branch creation)
 - Branch starts from current HEAD at creation time
 - Recorded in `state.json.branch`
 
@@ -21,7 +21,7 @@ Detailed git workflow conventions for Furrow.
 - Branch deletion is manual (not automated by Furrow)
 
 ### Idempotent Checkout
-- If the branch already exists (e.g., correction cycle), `create-work-branch.sh`
+- If the branch already exists (e.g., correction cycle), `rws init`
   checks it out without recreating
 
 ## 2. Commit Message Format
@@ -83,7 +83,7 @@ File ownership enforcement (at decompose time and via write hooks) is the
 primary conflict prevention mechanism.
 
 ### Detection
-`scripts/check-wave-conflicts.sh` runs at wave boundaries to detect files
+`rws diff` runs at wave boundaries to detect files
 modified outside a specialist's ownership that overlap with another specialist.
 
 ### Resolution Escalation
@@ -119,6 +119,6 @@ at `gates/implement-to-review-ci.json`.
 
 ## 7. Row Diff
 
-`scripts/row-diff.sh` produces a `git diff --stat` from `state.json.base_commit`
+`rws diff` produces a `git diff --stat` from `state.json.base_commit`
 to HEAD. Used by the review step (Phase A) for plan completion audit — cross-referencing
 changed files against deliverable file_ownership globs.

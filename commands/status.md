@@ -29,7 +29,7 @@ Used when no `name` argument and no `--all` flag:
 
 ## Default Behavior (bare `/status` or `/status <name>`)
 
-1. Find task via focused unit resolution (above) or by `name` argument.
+1. Find task via `rws status [name]` or focused unit resolution (above).
 2. Read `state.json` and `definition.yaml`.
 3. Display:
    - Task name and title
@@ -46,7 +46,7 @@ Used when no `name` argument and no `--all` flag:
 
 ## With --all
 
-List every active (non-archived) row in a compact table. The focused row is marked with `*`.
+Run `rws list` to get every active (non-archived) row in a compact table. The focused row is marked with `*`.
 
 ```
   NAME                        STEP        STATUS        FOCUSED

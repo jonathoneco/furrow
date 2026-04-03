@@ -14,20 +14,11 @@
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "hooks/gate-check.sh" },
-          { "type": "command", "command": "hooks/transition-guard.sh" }
+          { "type": "command", "command": "hooks/gate-check.sh" }
         ]
       }
     ],
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          { "type": "command", "command": "hooks/timestamp-update.sh" },
-          { "type": "command", "command": "hooks/summary-regen.sh" }
-        ]
-      }
-    ],
+    "PostToolUse": [],
     "Stop": [
       {
         "matcher": "",

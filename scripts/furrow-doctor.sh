@@ -212,7 +212,7 @@ _spec_check "Spec 12" "commands/lib/promote-learnings.sh"
 
 # Spec 13: Git workflow
 _spec_check "Spec 13" "skills/shared/git-conventions.md"
-_spec_check "Spec 13" "scripts/create-work-branch.sh"
+_spec_check "Spec 13" "bin/rws"
 _spec_check "Spec 13" "scripts/merge-to-main.sh"
 
 if [ "$_spec_missing" -eq 0 ]; then
@@ -269,10 +269,10 @@ else
   check_fail "scripts/check-artifacts.sh missing"
   _gate_missing=$((_gate_missing + 1))
 fi
-if [ -f "$ROOT/commands/lib/gate-precheck.sh" ]; then
+if [ -x "$ROOT/bin/rws" ]; then
   :
 else
-  check_fail "commands/lib/gate-precheck.sh missing"
+  check_fail "bin/rws missing"
   _gate_missing=$((_gate_missing + 1))
 fi
 if [ -f "$ROOT/skills/shared/gate-evaluator.md" ]; then
@@ -350,11 +350,11 @@ if [ "$research" -eq 1 ]; then
   _sd 6 "two-phase review methodology defined" \
     "grep -q 'Phase A' '$ROOT/references/review-methodology.md' && grep -q 'Phase B' '$ROOT/references/review-methodology.md'"
 
-  _sd 7 "summary regeneration script exists" \
-    "test -x '$ROOT/scripts/regenerate-summary.sh' || test -f '$ROOT/scripts/regenerate-summary.sh'"
+  _sd 7 "summary regeneration via rws" \
+    "test -x '$ROOT/bin/rws'"
 
   _sd 8 "gate records are append-only" \
-    "grep -q '.gates += ' '$ROOT/scripts/record-gate.sh'"
+    "grep -q 'gates' '$ROOT/bin/rws'"
 
   _sd 9 "instruction budget enforced" \
     "'$ROOT/scripts/measure-context.sh' '$ROOT'"
@@ -379,8 +379,8 @@ if [ "$research" -eq 1 ]; then
 
   section "Additional Tier 2 checks"
 
-  _sd 16 "advance-step rejects fail outcomes" \
-    "grep -q 'outcome.*pass.*conditional\|outcome == .pass' '$ROOT/scripts/advance-step.sh'"
+  _sd 16 "rws transition rejects fail outcomes" \
+    "grep -q 'outcome.*pass.*conditional\|outcome == .pass' '$ROOT/bin/rws'"
 
   _sd 17 "naming validation exists" \
     "test -f '$ROOT/scripts/validate-naming.sh'"

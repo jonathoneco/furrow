@@ -12,7 +12,7 @@
 
 set -eu
 
-# Optional step argument for step-aware validation (called from step-transition.sh)
+# Optional step argument for step-aware validation (called from rws transition)
 step_arg="${1:-}"
 
 # --- locate focused row ---

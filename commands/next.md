@@ -35,7 +35,7 @@ For each TODO ID in the row(s):
 
 ### 4. Check for Active Rows
 
-Run `commands/lib/detect-context.sh` to find any active `.furrow/rows/*/state.json`.
+Run `rws list` to find any active `.furrow/rows/*/state.json`.
 If active rows exist that match a row in this phase, note them as "in progress".
 
 ### 5. Generate Handoff Prompt(s)

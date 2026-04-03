@@ -4,7 +4,7 @@ Shared git workflow conventions for implementation and review steps.
 
 ## Branch Naming
 Branch format: `work/{row-name}`. One branch per row.
-Created at decompose->implement boundary via `scripts/create-work-branch.sh`.
+Created at decompose->implement boundary via `rws init` (with branch creation).
 Parallel specialists share the branch — file ownership prevents conflicts.
 
 ## Commit Format
@@ -29,5 +29,5 @@ Gate commits: `chore({name}): gate pass {from}->{to}`.
 - Merge requires archived row.
 
 ## Wave Boundaries
-Run `scripts/check-wave-conflicts.sh` before launching the next wave.
+Run `rws diff` before launching the next wave to check for conflicts.
 See `docs/git-conventions.md` for the full reference.

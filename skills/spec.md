@@ -26,7 +26,7 @@ For multi-deliverable work, dispatch spec sub-agents per component. Read `skills
 
 ## Step Mechanics
 Transition out: gate record `spec->decompose` with outcome `pass` required.
-Pre-step shell check (`gate-precheck.sh`): 1 deliverable, >=2 ACs, not supervised,
+Pre-step shell check (`rws gate-check`): 1 deliverable, >=2 ACs, not supervised,
 not force-stopped.
 Pre-step evaluator (`evals/gates/spec.yaml`): testability — are ACs specific enough
 to implement without refinement? Per `skills/shared/gate-evaluator.md`.
@@ -39,8 +39,8 @@ Before requesting a step transition:
 2. Present work to user per `skills/shared/summary-protocol.md`.
 3. Ask explicitly: "**Ready to advance to decompose?** Yes / No"
 4. Wait for user response. Do NOT proceed without explicit approval.
-5. On "yes": call `step-transition.sh --request` with `decided_by=manual`.
-6. After --request succeeds: call `step-transition.sh --confirm`.
+5. On "yes": call `rws transition --request` with `decided_by=manual`.
+6. After --request succeeds: call `rws transition --confirm`.
 7. On "no": ask what needs to change, address feedback, return to step 2.
 
 ## Learnings

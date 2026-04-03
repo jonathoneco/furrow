@@ -20,12 +20,12 @@ Flags are mutually exclusive. Error if both provided.
 ### 1. Resolve Row
 
 - If `name` provided: verify `.furrow/rows/{name}/` exists. Error if not.
-- If no `name`: run `commands/lib/detect-context.sh`. Error if no active task.
+- If no `name`: run `rws status`. Error if no active task.
 
 ### 2. Run Extraction
 
 ```sh
-scripts/extract-todo-candidates.sh "{name}"
+alm extract "{name}"
 ```
 
 Outputs JSON array of candidates with `source`, `title`, `context`, `raw_content`, `source_file`.
@@ -102,7 +102,7 @@ Re-display changed proposals before writing.
 
 ### 8. Validate
 
-Run `scripts/validate-todos.sh`. If fails, report error, do not commit, ask user to review.
+Run `alm validate`. If fails, report error, do not commit, ask user to review.
 
 ### 9. Commit
 
@@ -162,7 +162,7 @@ Options:
 
 ### 5. Validate
 
-Run `scripts/validate-todos.sh`.
+Run `alm validate`.
 
 ### 6. Commit
 

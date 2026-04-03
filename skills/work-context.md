@@ -116,7 +116,7 @@ Vocabulary:
 - `prechecked`: pre-step evaluation determined step not needed
 
 Gate evaluation flow:
-1. Phase A (deterministic, shell): `commands/lib/gate-precheck.sh` checks structural criteria
+1. Phase A (deterministic, shell): `rws gate-check` checks structural criteria
 2. Phase B (judgment, isolated subagent): evaluator assesses quality dimensions from `evals/gates/{step}.yaml`
 3. Trust gradient (`scripts/evaluate-gate.sh`) applies `gate_policy` to the evaluator's verdict
 

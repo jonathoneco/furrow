@@ -26,7 +26,7 @@ parallel sub-agents per topic. Read `skills/shared/context-isolation.md`.
 
 ## Step Mechanics
 Transition out: gate record `research->plan` with outcome `pass` required.
-Pre-step shell check (`gate-precheck.sh`): 1 deliverable, code mode, path-referencing
+Pre-step shell check (`rws gate-check`): 1 deliverable, code mode, path-referencing
 ACs, no directory context pointers, not supervised, not force-stopped.
 Pre-step evaluator (`evals/gates/research.yaml`): path-relevance — are referenced
 paths sufficient without broader investigation? Per `skills/shared/gate-evaluator.md`.
@@ -39,8 +39,8 @@ Before requesting a step transition:
 2. Present work to user per `skills/shared/summary-protocol.md`.
 3. Ask explicitly: "**Ready to advance to plan?** Yes / No"
 4. Wait for user response. Do NOT proceed without explicit approval.
-5. On "yes": call `step-transition.sh --request` with `decided_by=manual`.
-6. After --request succeeds: call `step-transition.sh --confirm`.
+5. On "yes": call `rws transition --request` with `decided_by=manual`.
+6. After --request succeeds: call `rws transition --confirm`.
 7. On "no": ask what needs to change, address feedback, return to step 2.
 
 ## Learnings

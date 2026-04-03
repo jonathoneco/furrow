@@ -14,7 +14,7 @@ If not found: error with message indicating what is blocking archive.
 
 ## Behavior
 
-1. Find task via `commands/lib/detect-context.sh` or by `name` argument.
+1. Find task via `rws status` or by `name` argument.
 2. Read `state.json`. Verify review gate passed.
 3. If review not passed:
    - Error: "Cannot archive: review step has not passed."
@@ -29,7 +29,7 @@ If not found: error with message indicating what is blocking archive.
    - Ask user which to promote.
 
 6. **TODO extraction**: Run the extract mode of `/work-todos --extract {name}`.
-   - Runs `scripts/extract-todo-candidates.sh "{name}"` to harvest candidates
+   - Runs `alm extract "{name}"` to harvest candidates
      from summary.md open questions, learnings.jsonl unpromoted pitfalls,
      and reviews/*.json failed dimensions.
    - Agent deduplicates candidates against existing `todos.yaml` entries.
@@ -47,8 +47,8 @@ If not found: error with message indicating what is blocking archive.
    - If `source_todo` is not set or `todos.yaml` has no matching entry, skip.
    - Validate `todos.yaml` after any changes.
 
-8. Set `state.json.archived_at` to current ISO 8601 timestamp.
-9. Regenerate final `summary.md` via `commands/lib/generate-summary.sh "{name}"`.
+8. Run `rws archive "{name}"` to set `state.json.archived_at` to current ISO 8601 timestamp.
+9. Regenerate final `summary.md` via `rws regenerate-summary "{name}"`.
 10. Git commit with message: `chore: archive {name}`.
 
 ## Output

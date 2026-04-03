@@ -1,7 +1,7 @@
 #!/bin/sh
 # Called by the in-context agent after subagent evaluation returns a verdict.
 # The agent calls: evaluate-gate.sh <name> <boundary> <evaluator_verdict>
-# Then uses the output decision to call record-gate.sh or present to human.
+# Then uses the output decision to call rws transition or present to human.
 # Step-transition accepts explicit verdicts from the human or evaluator;
 # this script applies gate_policy to an evaluator's raw verdict
 # to produce the final gate decision.
