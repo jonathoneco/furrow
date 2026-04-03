@@ -16,8 +16,6 @@
 
 set -eu
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-
 # --- argument handling ---
 
 todos_file="${1:-./todos.yaml}"

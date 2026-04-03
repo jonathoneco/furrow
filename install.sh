@@ -54,13 +54,29 @@ ensure_dir() {
   fi
 }
 
+# Portable readlink -f: resolve symlink chain and canonicalize path.
+# Works on GNU (Linux) and BSD (macOS) without requiring GNU coreutils.
+_canonicalize() {
+  _cl_path="$1"
+  while [ -L "$_cl_path" ]; do
+    _cl_dir="$(cd "$(dirname "$_cl_path")" && pwd)"
+    _cl_path="$(readlink "$_cl_path")"
+    case "$_cl_path" in
+      /*) ;;
+      *) _cl_path="$_cl_dir/$_cl_path" ;;
+    esac
+  done
+  _cl_dir="$(cd "$(dirname "$_cl_path")" 2>/dev/null && pwd)"
+  echo "$_cl_dir/$(basename "$_cl_path")"
+}
+
 # Create a symlink, skipping if target already points to the right place
 symlink() {
   _src="$1"
   _dst="$2"
   if [ -L "$_dst" ]; then
-    _existing="$(readlink -f "$_dst" 2>/dev/null || readlink "$_dst")"
-    _expected="$(readlink -f "$_src" 2>/dev/null || echo "$_src")"
+    _existing="$(_canonicalize "$_dst")"
+    _expected="$(_canonicalize "$_src")"
     if [ "$_existing" = "$_expected" ]; then
       _skip "$_dst (already linked)"
       return 0
@@ -324,8 +340,8 @@ for _dir in skills hooks scripts schemas evals specialists references adapters t
   _dst="$_proj_root/$_dir"
   if [ -e "$_src" ]; then
     if [ -L "$_dst" ]; then
-      _existing="$(readlink -f "$_dst" 2>/dev/null || readlink "$_dst")"
-      _expected="$(readlink -f "$_src" 2>/dev/null || echo "$_src")"
+      _existing="$(_canonicalize "$_dst")"
+      _expected="$(_canonicalize "$_src")"
       if [ "$_existing" = "$_expected" ]; then
         _skip "$_dir (already linked)"
       else

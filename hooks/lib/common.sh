@@ -31,7 +31,7 @@ find_active_work_unit() {
     if [ "$_archived" = "null" ]; then
       _dir="$(dirname "$_state_file")"
       _updated="$(jq -r '.updated_at // ""' "$_state_file" 2>/dev/null)" || _updated=""
-      if [ -z "$_best_dir" ] || expr "$_updated" \> "$_best_ts" > /dev/null 2>&1; then
+      if [ -z "$_best_dir" ] || { LC_ALL=C expr "$_updated" \> "$_best_ts" > /dev/null 2>&1; }; then
         _best_dir="$_dir"
         _best_ts="$_updated"
       fi
