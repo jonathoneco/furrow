@@ -1,10 +1,10 @@
 # Merge specialist template and legacy TODO migration -- Summary
 
 ## Task
-Create the merge-specialist reasoning template, update the harness-engineer specialist to reflect V2 Furrow architecture, bring rationale.yaml up to date, and refresh todos/roadmap — completing pre-merge hygiene for the work/beans-integration branch.
+Create the merge-specialist reasoning template, update the harness-engineer specialist to reflect V2 Furrow architecture, and bring rationale.yaml up to date with all current harness components — completing pre-merge hygiene for the work/beans-integration branch.
 
 ## Current State
-Step: implement | Status: in_progress
+Step: review | Status: completed
 Deliverables: 4/4
 Mode: code
 
@@ -17,24 +17,26 @@ Mode: code
 - team-plan.md: .furrow/rows/merge-specialist-and-legacy-todos/team-plan.md
 
 ## Settled Decisions
-- **ideate->research**: pass — definition validated, supervised gate policy, cross-model review completed
-- **research->plan**: pass — 4 deliverables researched, all approaches clear, single wave feasible
-- **plan->spec**: pass — single wave, 4 parallel deliverables, no agent team needed
-- **spec->decompose**: pass — 4 implementation-ready specs, all ACs addressable
-- **decompose->implement**: pass — plan.json single wave, team-plan.md 2-agent split, no ownership overlaps
+- **ideate->research**: pass — definition validated: 3 deliverables, supervised gate policy, cross-model review completed
+- **research->plan**: pass — research complete: 4 deliverables researched, all implementation approaches clear, single wave feasible
+- **plan->spec**: pass — plan complete: single wave, 4 parallel deliverables, plan.json created, no agent team needed
+- **spec->decompose**: pass — specs complete: 4 implementation-ready specs in specs/, all ACs addressable
+- **decompose->implement**: pass — decompose complete: plan.json single wave, team-plan.md 2-agent split, no ownership overlaps
+- **implement->review**: pass — implement complete: 4/4 deliverables done, 85 tests passing, todos validated, roadmap regenerated
+- **implement->review**: pass — implement complete: 4/4 deliverables done, 85 tests passing, committed 13a1188
 
 ## Context Budget
 Measurement unavailable
 
 ## Key Findings
-- **All 4 deliverables implemented**: merge-specialist.md created, harness-engineer.md updated, rationale.yaml extended (25 entries), todos.yaml refreshed (7 done, 1 new TODO added)
-- **85 tests passing**: 14 alm + 12 lifecycle + 35 rws + 24 sds — no regressions
-- **Staleness audit**: seeds-concept kept active (different scope than implemented seeds), work-folder-structure kept active (not addressed by namespace-rename), duplication-cleanup already done
-- **New TODO added**: specialist-templates-from-team-plan-not-enforced — specialist templates assigned in plan.json are not loaded during agent dispatch
+- **Review passed all 4 deliverables**: merge-specialist (7/7 AC), harness-engineer-grounding (4/4 AC), rationale-update (6/6 AC after correction), todos-roadmap-refresh (5/5 AC)
+- **1 review correction**: merge-specialist.md was missing its own rationale entry — fixed in commit 5e33adf
+- **85 tests still passing**: no regressions from any changes
+- **New TODO captured**: specialist-templates-from-team-plan-not-enforced — real architectural gap discovered during this row's implementation
 
 ## Open Questions
-- None — all deliverables complete and validated.
+- None — review complete, all criteria met.
 
 ## Recommendations
-- Commit all changes before advancing to review.
-- Bootstrap gap is documented — first merge of this branch uses scripts/merge-to-main.sh directly.
+- Archive this row and proceed to merge work/beans-integration → main via scripts/merge-to-main.sh.
+- Bootstrap gap: merge-specialist cannot guide this merge — use merge-to-main.sh directly.
