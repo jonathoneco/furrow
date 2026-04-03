@@ -21,7 +21,7 @@ deliverables:
 ```
 
 **Why YAML**:
-- Comments — component rationale annotations live in `_rationale.yaml`, not inline
+- Comments — component rationale annotations live in `.furrow/almanac/rationale.yaml`, not inline
 - Multi-line strings — eval criteria are 2-5 lines of prose; `|` blocks handle this cleanly
 - Indentation-based nesting — deeply nested structures (deliverables → criteria → calibration) are scannable
 - Git diffs are clean — no trailing commas, no brace lines

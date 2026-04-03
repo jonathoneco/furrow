@@ -1,7 +1,7 @@
 # row-meta.yaml — Template for row directory structure documentation.
-# See _rationale.yaml for exists_because/delete_when annotations.
+# See .furrow/almanac/rationale.yaml for exists_because/delete_when annotations.
 
-# Row file descriptions (rationale in _rationale.yaml)
+# Row file descriptions (rationale in .furrow/almanac/rationale.yaml)
 components:
   definition.yaml: "Structured work contract: objective, deliverables, constraints"
   state.json: "Lifecycle state: step, progress, gate audit trail"

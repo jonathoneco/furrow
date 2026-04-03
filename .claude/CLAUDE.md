@@ -37,7 +37,7 @@ Each instruction appears in exactly one layer. Run `scripts/measure-context.sh` 
 
 ## Component Rationale
 
-Component rationale is centralized in `_rationale.yaml` (not injected into context).
+Component rationale is centralized in `.furrow/almanac/rationale.yaml` (not injected into context).
 
 ## Commit Conventions
 

@@ -1,5 +1,5 @@
 # .work/_meta.yaml — Work unit directory structure documentation.
-# See _rationale.yaml for component rationale.
+# See .furrow/almanac/rationale.yaml for component rationale.
 
 # Work unit files
 components:

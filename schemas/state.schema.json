@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "state.schema.json",
-  "$comment": "See _rationale.yaml for component rationale",
+  "$comment": "See .furrow/almanac/rationale.yaml for component rationale",
   "title": "Row State",
   "description": "Lifecycle and progress tracking for a Furrow row. Furrow-exclusive write — agents never write this file directly.",
   "type": "object",
