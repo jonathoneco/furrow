@@ -14,11 +14,11 @@
   source_work_unit: "harness-ux-fixes"
   source_type: "open-question"
   created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-03T17:00:00Z"
   urgency: "low"
   impact: "low"
   effort: "small"
-  status: active
+  status: done
 - id: interactive-ideation-checkpoints
   title: "Collaborative check-ins at pre-implementation steps"
   context: |
@@ -89,19 +89,20 @@
     There's no harness pattern for declaring "this requires user action" and
     tracking completion. The agent either blocks or skips with no audit trail.
   work_needed: |
+    - step-transition is now a function inside bin/rws, not a standalone script
     - Define a "user action" artifact type or state field
     - Add a mechanism for the agent to declare a pending user action with instructions
     - Track whether the action was completed before proceeding
     - Consider notify-send integration for desktop notifications
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-03T17:00:00Z"
   urgency: "low"
   impact: "medium"
   effort: "medium"
   files_touched:
     - "skills/shared/"
-    - "commands/lib/step-transition.sh"
+    - "bin/rws"
   # Cluster: Seeds & Knowledge Flow
   status: active
 - id: seeds-concept
@@ -264,6 +265,7 @@
     (roadmap), one decentralized (pick-off). TODOs can be picked off ad-hoc
     or incorporated into a phased roadmap.
   work_needed: |
+    - Triage is now `alm triage`, not scripts/triage-todos.sh
     - Add source_context field to TODO schema (dump session, active session, review finding, etc.)
     - Support a "futures" source type for TODOs discovered during implementation
     - Design the two-queue model: discovery backlog vs execution roadmap
@@ -274,13 +276,13 @@
     - "commands/work-todos.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-03T17:00:00Z"
   urgency: "low"
   impact: "medium"
   effort: "medium"
   files_touched:
     - "commands/work-todos.md"
-    - "scripts/triage-todos.sh"
+    - "bin/alm"
     - "todos.yaml"
   status: active
 - id: roadmap-todo-integration
@@ -291,24 +293,24 @@
     TODOs should be mergeable as part of roadmap handling when multiple
     TODOs converge on the same work.
   work_needed: |
-    - Add a "prompt" or "bootstrap" field to roadmap entries generated from TODOs
-    - Implement TODO merging logic in the triage/roadmap pipeline
-    - Generate /work-ready prompts that include context, scope, and references
-    - Consider auto-detecting TODO overlap for merge suggestions
+    - Handoff prompts (commands/next.md) and TODO consolidation (commands/triage.md section 6a) already cover the core functionality
+    - Remaining: persist formal "bootstrap" fields in ROADMAP.md entries
+    - Remaining: auto-detection of TODO overlap for merge suggestions
   references:
     - "ROADMAP.md"
     - "templates/roadmap.md.tmpl"
-    - "commands/work-roadmap.md"
+    - "commands/triage.md"
+    - "commands/next.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-03T17:00:00Z"
   urgency: "low"
   impact: "medium"
   effort: "medium"
   files_touched:
     - "templates/roadmap.md.tmpl"
-    - "commands/work-roadmap.md"
-    - "scripts/triage-todos.sh"
+    - "commands/triage.md"
+    - "commands/next.md"
   # Cluster: Context & Design Patterns
   status: active
 - id: design-pattern-context-construction
@@ -485,25 +487,24 @@
       - Keep: definition.yaml, state.json, summary.md, final deliverables
       - Prune candidates: research/, specs/, reviews/, plan.json, team-plan.md
     - Consider a retention policy (e.g., prune after N days, keep last N archived units)
-    - Update scripts/archive-work.sh to implement the chosen strategy
-    - Ensure /work-reground and detect-context.sh still work with the new structure
+    - Archive is now `rws archive` and detect-context was absorbed into bin/rws
+    - Update rws archive to implement the chosen strategy
+    - Ensure /work-reground still works with the new structure
     - Consider .gitignore patterns for intermediate artifacts that shouldn't be committed
   references:
-    - "scripts/archive-work.sh"
+    - "bin/rws"
     - "commands/archive.md"
     - "references/row-layout.md"
     - "references/row-meta.yaml"
-    - "commands/lib/detect-context.sh"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-03T17:00:00Z"
   urgency: "medium"
   impact: "medium"
   effort: "medium"
   files_touched:
-    - "scripts/archive-work.sh"
+    - "bin/rws"
     - "commands/archive.md"
-    - "commands/lib/detect-context.sh"
     - "references/row-layout.md"
   # Cluster: Integrations & Extensions
   status: active
@@ -677,23 +678,22 @@
     The agent should load the skill and proceed without narrating the
     infrastructure.
   work_needed: |
+    - load-step and gate-precheck are now functions inside bin/rws, not standalone scripts
     - Audit step skill loading for unnecessary user-facing output
     - Determine whether the verbosity comes from the skill instructions or the agent's interpretation
     - Add guidance to skills/shared/ or step skills: "load context silently, do not narrate infrastructure"
-    - Consider whether gate-precheck.sh output formatting contributes to the problem
+    - Consider whether gate-precheck output formatting contributes to the problem
   references:
-    - "commands/lib/gate-precheck.sh"
-    - "commands/lib/load-step.sh"
+    - "bin/rws"
     - "skills/"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-03T17:00:00Z"
   urgency: "medium"
   impact: "medium"
   effort: "small"
   files_touched:
-    - "commands/lib/load-step.sh"
-    - "commands/lib/gate-precheck.sh"
+    - "bin/rws"
     - "skills/"
   status: active
 - id: default-supervised-gating
@@ -861,7 +861,10 @@
   source_type: brain-dump
   status: active
   created_at: "2026-04-03T04:37:52-04:00"
-  updated_at: "2026-04-03T04:37:52-04:00"
+  updated_at: "2026-04-03T17:00:00Z"
+  urgency: "medium"
+  impact: "high"
+  effort: "small"
   references:
     - skills/implement.md
     - specialists/
