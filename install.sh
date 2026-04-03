@@ -286,6 +286,7 @@ Installed from: $HARNESS_ROOT
 | /harness:reground | Recover context after break |
 | /harness:redirect | Record dead end and pivot |
 | /harness:triage | Generate ROADMAP.md from todos.yaml |
+| /harness:next | Generate handoff prompt(s) for next roadmap work |
 | /harness:work-todos | Extract and manage TODOs |
 | /harness:doctor | Check harness health |
 | /harness:update | Check configuration drift |
