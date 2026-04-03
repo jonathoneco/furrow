@@ -1,0 +1,103 @@
+{
+  "name": "frw-cli-dispatcher",
+  "title": "Add frw CLI dispatcher — centralize path resolution for hooks, scripts, and sub-CLIs",
+  "description": "Add frw CLI dispatcher — centralize path resolution for hooks, scripts, and sub-CLIs",
+  "step": "implement",
+  "step_status": "not_started",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "frw-dispatcher-and-modules": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "hook-migration": {
+      "status": "completed",
+      "wave": 2,
+      "corrections": 0
+    },
+    "script-migration": {
+      "status": "completed",
+      "wave": 2,
+      "corrections": 0
+    },
+    "frw-init": {
+      "status": "completed",
+      "wave": 2,
+      "corrections": 0
+    },
+    "frw-install": {
+      "status": "completed",
+      "wave": 3,
+      "corrections": 0
+    },
+    "reference-cleanup": {
+      "status": "completed",
+      "wave": 4,
+      "corrections": 0
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Definition approved with 6 deliverables, modularized architecture, supervised gate policy",
+      "timestamp": "2026-04-03T18:01:41Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Research complete — 90+ refs mapped, 3 open questions resolved, agent-sdk adapter migration included in D6",
+      "timestamp": "2026-04-03T18:05:43Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Plan complete — 4 waves, 6 deliverables, architecture decisions recorded, plan.json validated",
+      "timestamp": "2026-04-03T18:07:55Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Specs complete — 6 implementation-ready specs with interface contracts, refined ACs, and dependency maps",
+      "timestamp": "2026-04-03T18:18:48Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Decompose complete — 4 waves, team plan with 3 parallel wave-2 agents, plan.json validated",
+      "timestamp": "2026-04-03T18:20:04Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Implementation complete — 6/6 deliverables, frw CLI operational, 90+ refs updated, old dirs deleted, install check passes",
+      "timestamp": "2026-04-03T18:41:52Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/frw-cli-dispatcher",
+  "mode": "code",
+  "base_commit": "3dd5b2ff519d185025d02ecf64cbbe430a0a6667",
+  "seed_id": "furrow-0d27",
+  "epic_seed_id": null,
+  "created_at": "2026-04-03T17:38:46Z",
+  "updated_at": "2026-04-03T18:41:52Z",
+  "archived_at": null,
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}
