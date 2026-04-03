@@ -51,6 +51,7 @@ items:
         - open-question
         - unpromoted-learning
         - review-finding
+        - brain-dump
         - manual
       description: "How this TODO was extracted"
     depends_on:

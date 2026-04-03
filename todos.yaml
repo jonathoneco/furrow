@@ -18,12 +18,13 @@
   urgency: "low"
   impact: "low"
   effort: "small"
-  phase: 4
+  phase: 7
 
 # --- Brain dump: 2026-04-02 ---
 
 # Cluster: Interactive Collaboration / Human-in-the-Loop
 
+  status: active
 - id: interactive-ideation-checkpoints
   title: "Collaborative check-ins at pre-implementation steps"
   context: |
@@ -43,10 +44,10 @@
     - Consider a shared skill fragment for the interaction pattern
     - Ensure stop hooks don't penalize the agent for iterating mid-step
   references:
-    - "skills/ideate.md"
-    - "skills/research.md"
-    - "skills/plan.md"
-    - "skills/spec.md"
+  - "skills/ideate.md"
+  - "skills/research.md"
+  - "skills/plan.md"
+  - "skills/spec.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -54,12 +55,14 @@
   impact: "high"
   effort: "medium"
   files_touched:
-    - "skills/ideate.md"
-    - "skills/research.md"
-    - "skills/plan.md"
-    - "skills/spec.md"
-    - "skills/shared/"
+  - "skills/ideate.md"
+  - "skills/research.md"
+  - "skills/plan.md"
+  - "skills/spec.md"
+  - "skills/shared/"
 
+  phase: 6
+  status: active
 - id: stop-hook-false-positives
   title: "Handle stop hooks enforcing fluff requirements"
   context: |
@@ -73,8 +76,8 @@
     - Consider a hook response mechanism: agent can declare "N/A because X" and the hook accepts it
     - Document which hooks are hard blockers vs advisory warnings
   references:
-    - "hooks/validate-summary.sh"
-    - "hooks/stop-ideation.sh"
+  - "hooks/validate-summary.sh"
+  - "hooks/stop-ideation.sh"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -82,10 +85,12 @@
   impact: "medium"
   effort: "small"
   files_touched:
-    - "hooks/validate-summary.sh"
-    - "hooks/stop-ideation.sh"
-    - "hooks/lib/validate.sh"
+  - "hooks/validate-summary.sh"
+  - "hooks/stop-ideation.sh"
+  - "hooks/lib/validate.sh"
 
+  phase: 5
+  status: active
 - id: user-action-integration
   title: "Integration points for actions the user must take"
   context: |
@@ -105,11 +110,13 @@
   impact: "medium"
   effort: "medium"
   files_touched:
-    - "skills/shared/"
-    - "commands/lib/step-transition.sh"
+  - "skills/shared/"
+  - "commands/lib/step-transition.sh"
 
 # Cluster: Seeds & Knowledge Flow
 
+  phase: 7
+  status: active
 - id: seeds-concept
   title: "Seeds as a structured knowledge reduction stage"
   context: |
@@ -131,10 +138,12 @@
   impact: "high"
   effort: "large"
   files_touched:
-    - "skills/"
-    - "references/"
-    - "templates/"
+  - "skills/"
+  - "references/"
+  - "templates/"
 
+  phase: 7
+  status: active
 - id: specialist-encoded-reasoning
   title: "Specialists need encoded reasoning, not just role descriptions"
   context: |
@@ -148,8 +157,8 @@
     - Document the template convention: role + reasoning + anti-patterns
     - Update specialist-template.md reference
   references:
-    - "specialists/"
-    - "references/specialist-template.md"
+  - "specialists/"
+  - "references/specialist-template.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -157,9 +166,11 @@
   impact: "high"
   effort: "medium"
   files_touched:
-    - "specialists/"
-    - "references/specialist-template.md"
+  - "specialists/"
+  - "references/specialist-template.md"
 
+  phase: 6
+  status: active
 - id: research-documentation-detection
   title: "Detect when research output should be documentation instead"
   context: |
@@ -173,8 +184,8 @@
     - Consider a deliverable type annotation: research-report vs reference-doc
     - Wire into the existing promote-components.sh flow
   references:
-    - "commands/lib/promote-components.sh"
-    - "commands/archive.md"
+  - "commands/lib/promote-components.sh"
+  - "commands/archive.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -182,11 +193,13 @@
   impact: "medium"
   effort: "small"
   files_touched:
-    - "commands/lib/promote-components.sh"
-    - "skills/review.md"
+  - "commands/lib/promote-components.sh"
+  - "skills/review.md"
 
 # Cluster: Research Process
 
+  phase: 7
+  status: active
 - id: research-source-guidance
   title: "Structured guidance for primary vs secondary source research"
   context: |
@@ -201,8 +214,8 @@
     - Add a "source inventory" section to research deliverables (what was checked, what was stale)
     - Consider making the research-sources.md template mandatory rather than optional
   references:
-    - "skills/research.md"
-    - "templates/research-sources.md"
+  - "skills/research.md"
+  - "templates/research-sources.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -210,9 +223,11 @@
   impact: "high"
   effort: "small"
   files_touched:
-    - "skills/research.md"
-    - "templates/research-sources.md"
+  - "skills/research.md"
+  - "templates/research-sources.md"
 
+  phase: 5
+  status: active
 - id: fresh-session-review
   title: "Run review in a truly fresh session (no shared context)"
   context: |
@@ -226,9 +241,9 @@
     - Evaluate if worktree isolation (already supported) provides sufficient context separation
     - Document the recommended pattern for independent review
   references:
-    - "skills/review.md"
-    - "skills/shared/eval-protocol.md"
-    - "skills/shared/gate-evaluator.md"
+  - "skills/review.md"
+  - "skills/shared/eval-protocol.md"
+  - "skills/shared/gate-evaluator.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -236,10 +251,12 @@
   impact: "high"
   effort: "medium"
   files_touched:
-    - "skills/review.md"
-    - "skills/shared/eval-protocol.md"
-    - "commands/review.md"
+  - "skills/review.md"
+  - "skills/shared/eval-protocol.md"
+  - "commands/review.md"
 
+  phase: 6
+  status: active
 - id: worktree-reintegration-summary
   title: "Produce summary for worktree reintegration"
   context: |
@@ -258,11 +275,13 @@
   impact: "medium"
   effort: "small"
   files_touched:
-    - "skills/implement.md"
-    - "skills/shared/context-isolation.md"
+  - "skills/implement.md"
+  - "skills/shared/context-isolation.md"
 
 # Cluster: TODO / Roadmap System
 
+  phase: 6
+  status: active
 - id: todo-context-references
   title: "TODOs with context references from dump and active sessions"
   context: |
@@ -277,9 +296,9 @@
     - Design the two-queue model: discovery backlog vs execution roadmap
     - Ensure todos.yaml supports both linear and decentralized consumption patterns
   references:
-    - "todos.yaml"
-    - "ROADMAP.md"
-    - "commands/work-todos.md"
+  - "todos.yaml"
+  - "ROADMAP.md"
+  - "commands/work-todos.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -287,10 +306,12 @@
   impact: "medium"
   effort: "medium"
   files_touched:
-    - "commands/work-todos.md"
-    - "scripts/triage-todos.sh"
-    - "todos.yaml"
+  - "commands/work-todos.md"
+  - "scripts/triage-todos.sh"
+  - "todos.yaml"
 
+  phase: 7
+  status: active
 - id: roadmap-todo-integration
   title: "Roadmap provides tackling prompts and merges TODOs"
   context: |
@@ -304,9 +325,9 @@
     - Generate /work-ready prompts that include context, scope, and references
     - Consider auto-detecting TODO overlap for merge suggestions
   references:
-    - "ROADMAP.md"
-    - "templates/roadmap.md.tmpl"
-    - "commands/work-roadmap.md"
+  - "ROADMAP.md"
+  - "templates/roadmap.md.tmpl"
+  - "commands/work-roadmap.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -314,12 +335,14 @@
   impact: "medium"
   effort: "medium"
   files_touched:
-    - "templates/roadmap.md.tmpl"
-    - "commands/work-roadmap.md"
-    - "scripts/triage-todos.sh"
+  - "templates/roadmap.md.tmpl"
+  - "commands/work-roadmap.md"
+  - "scripts/triage-todos.sh"
 
 # Cluster: Context & Design Patterns
 
+  phase: 7
+  status: active
 - id: design-pattern-context-construction
   title: "Context construction driven by design pattern thinking"
   context: |
@@ -334,9 +357,9 @@
     - Identify where design patterns could improve context quality (e.g., strategy pattern for model-specific context)
     - Add design pattern vocabulary to harness documentation
   references:
-    - "references/deduplication-strategy.md"
-    - "adapters/claude-code/progressive-loading.yaml"
-    - "docs/skill-injection-order.md"
+  - "references/deduplication-strategy.md"
+  - "adapters/claude-code/progressive-loading.yaml"
+  - "docs/skill-injection-order.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -344,9 +367,11 @@
   impact: "medium"
   effort: "medium"
   files_touched:
-    - "references/"
-    - "docs/"
+  - "references/"
+  - "docs/"
 
+  phase: 7
+  status: active
 - id: claude-md-docs-routing
   title: "CLAUDE.md should reference docs routing"
   context: |
@@ -358,8 +383,8 @@
     - Map topics to reference files (gates → gate-protocol.md, reviews → review-methodology.md, etc.)
     - Keep it within the ambient layer budget (<=100 lines total)
   references:
-    - ".claude/CLAUDE.md"
-    - "references/index.md"
+  - ".claude/CLAUDE.md"
+  - "references/index.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -367,10 +392,12 @@
   impact: "medium"
   effort: "small"
   files_touched:
-    - ".claude/CLAUDE.md"
+  - ".claude/CLAUDE.md"
 
 # Cluster: Model Selection & Cost
 
+  phase: 5
+  status: active
 - id: sonnet-model-routing
   title: "Use Sonnet for on-rails tasks, reserve Opus for reasoning"
   context: |
@@ -384,8 +411,8 @@
     - Add model routing hints to specialist templates or step skills
     - Consider a model field in the specialist template format
   references:
-    - "specialists/"
-    - "skills/shared/context-isolation.md"
+  - "specialists/"
+  - "skills/shared/context-isolation.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -393,12 +420,14 @@
   impact: "high"
   effort: "small"
   files_touched:
-    - "specialists/"
-    - "skills/implement.md"
-    - "skills/shared/context-isolation.md"
+  - "specialists/"
+  - "skills/implement.md"
+  - "skills/shared/context-isolation.md"
 
 # Cluster: Infrastructure / Cleanup
 
+  phase: 5
+  status: active
 - id: rename-to-furrow
   title: "Rename project from 'harness' to 'furrow'"
   context: |
@@ -419,8 +448,12 @@
   impact: "low"
   effort: "large"
   files_touched:
-    - "*"
+  - "*"
 
+  phase: 4
+  status: active
+  depends_on:
+  - duplication-cleanup
 - id: duplication-cleanup
   title: "Clean up file duplication and align command namespace"
   context: |
@@ -440,7 +473,7 @@
     - Update install.sh to enforce the namespace during installation
     - Update CLAUDE.md command table, rules, and any docs referencing old names
   references:
-    - "install.sh"
+  - "install.sh"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -448,8 +481,10 @@
   impact: "medium"
   effort: "medium"
   files_touched:
-    - "install.sh"
+  - "install.sh"
 
+  phase: 4
+  status: active
 - id: cross-platform-compatibility
   title: "Cross-platform compatibility check"
   context: |
@@ -468,12 +503,16 @@
   impact: "medium"
   effort: "medium"
   files_touched:
-    - "scripts/"
-    - "hooks/"
-    - "commands/lib/"
+  - "scripts/"
+  - "hooks/"
+  - "commands/lib/"
 
 # Cluster: Work Artifact Lifecycle
 
+  phase: 4
+  status: active
+  depends_on:
+  - rename-to-furrow
 - id: work-folder-structure-and-cleanup
   title: "Structure .work/ to prevent unbounded growth"
   context: |
@@ -496,11 +535,11 @@
     - Ensure /work-reground and detect-context.sh still work with the new structure
     - Consider .gitignore patterns for intermediate artifacts that shouldn't be committed
   references:
-    - "scripts/archive-work.sh"
-    - "commands/archive.md"
-    - "references/work-unit-layout.md"
-    - "references/work-unit-meta.yaml"
-    - "commands/lib/detect-context.sh"
+  - "scripts/archive-work.sh"
+  - "commands/archive.md"
+  - "references/work-unit-layout.md"
+  - "references/work-unit-meta.yaml"
+  - "commands/lib/detect-context.sh"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -508,13 +547,15 @@
   impact: "medium"
   effort: "medium"
   files_touched:
-    - "scripts/archive-work.sh"
-    - "commands/archive.md"
-    - "commands/lib/detect-context.sh"
-    - "references/work-unit-layout.md"
+  - "scripts/archive-work.sh"
+  - "commands/archive.md"
+  - "commands/lib/detect-context.sh"
+  - "references/work-unit-layout.md"
 
 # Cluster: Integrations & Extensions
 
+  phase: 7
+  status: active
 - id: beans-enforcement-integration
   title: "Beans task management for enforcement layer and programmatic checks"
   context: |
@@ -533,10 +574,12 @@
   impact: "medium"
   effort: "medium"
   files_touched:
-    - "hooks/gate-check.sh"
-    - "commands/lib/step-transition.sh"
-    - "commands/lib/init-work-unit.sh"
+  - "hooks/gate-check.sh"
+  - "commands/lib/step-transition.sh"
+  - "commands/lib/init-work-unit.sh"
 
+  phase: 4
+  status: active
 - id: legacy-todos-migration
   title: "Incorporate legacy TODOs into the system after beans integration"
   context: |
@@ -549,7 +592,7 @@
     - Import surviving items into todos.yaml with source_type: "legacy"
     - Link to beans issues where applicable
   depends_on:
-    - beans-enforcement-integration
+  - beans-enforcement-integration
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -557,8 +600,10 @@
   impact: "low"
   effort: "small"
   files_touched:
-    - "todos.yaml"
+  - "todos.yaml"
 
+  phase: 4
+  status: active
 - id: mine-claude-code
   title: "Mine Claude Code for reusable patterns and capabilities"
   context: |
@@ -578,6 +623,8 @@
   impact: "medium"
   effort: "small"
   files_touched: []
+  phase: 7
+  status: active
 
 - id: merge-specialist
   title: "Add a merge specialist template"
@@ -591,9 +638,9 @@
     - Wire into the implementation step's wave merge phase
     - Add _rationale.yaml entry
   references:
-    - "specialists/"
-    - "references/specialist-template.md"
-    - "scripts/merge-to-main.sh"
+  - "specialists/"
+  - "references/specialist-template.md"
+  - "scripts/merge-to-main.sh"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -601,11 +648,13 @@
   impact: "low"
   effort: "small"
   files_touched:
-    - "specialists/merge-specialist.md"
-    - "_rationale.yaml"
+  - "specialists/merge-specialist.md"
+  - "_rationale.yaml"
 
 # Cluster: Agent Orchestration Adoption
 
+  phase: 4
+  status: active
 - id: parallel-agent-orchestration-adoption
   title: "Built-in team orchestration isn't being used — diagnose and fix"
   context: |
@@ -634,13 +683,13 @@
     - Evaluate whether a shell-level orchestrator (like run-gate.sh for gates) would be more reliable than agent-level orchestration
     - Test with a 2-wave, 3-deliverable work unit as a validation case
   references:
-    - "skills/implement.md"
-    - "skills/decompose.md"
-    - "skills/shared/context-isolation.md"
-    - "scripts/generate-plan.sh"
-    - "scripts/check-wave-conflicts.sh"
-    - "references/specialist-template.md"
-    - "specialists/"
+  - "skills/implement.md"
+  - "skills/decompose.md"
+  - "skills/shared/context-isolation.md"
+  - "scripts/generate-plan.sh"
+  - "scripts/check-wave-conflicts.sh"
+  - "references/specialist-template.md"
+  - "specialists/"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -648,11 +697,13 @@
   impact: "high"
   effort: "medium"
   files_touched:
-    - "skills/implement.md"
-    - "skills/shared/context-isolation.md"
+  - "skills/implement.md"
+  - "skills/shared/context-isolation.md"
 
 # Cluster: Advanced / Exploratory
 
+  phase: 6
+  status: active
 - id: memetic-algorithms-research
   title: "Research memetic algorithms for LLM orchestration"
   context: |
@@ -672,6 +723,8 @@
   impact: "low"
   effort: "large"
   files_touched: []
+  phase: 8
+  status: active
 
 # Cluster: Harness UX / Ergonomics
 
@@ -690,9 +743,9 @@
     - Add guidance to skills/shared/ or step skills: "load context silently, do not narrate infrastructure"
     - Consider whether gate-precheck.sh output formatting contributes to the problem
   references:
-    - "commands/lib/gate-precheck.sh"
-    - "commands/lib/load-step.sh"
-    - "skills/"
+  - "commands/lib/gate-precheck.sh"
+  - "commands/lib/load-step.sh"
+  - "skills/"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -700,10 +753,12 @@
   impact: "medium"
   effort: "small"
   files_touched:
-    - "commands/lib/load-step.sh"
-    - "commands/lib/gate-precheck.sh"
-    - "skills/"
+  - "commands/lib/load-step.sh"
+  - "commands/lib/gate-precheck.sh"
+  - "skills/"
 
+  phase: 5
+  status: active
 - id: default-supervised-gating
   title: "Default gate policy should be supervised, not auto-advance"
   context: |
@@ -717,9 +772,9 @@
     - Update documentation and CLAUDE.md to reflect the new default
     - Audit existing step-transition.sh for supervised flow (pause, present evidence, ask)
   references:
-    - "commands/lib/step-transition.sh"
-    - "commands/lib/init-work-unit.sh"
-    - "references/gate-protocol.md"
+  - "commands/lib/step-transition.sh"
+  - "commands/lib/init-work-unit.sh"
+  - "references/gate-protocol.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -727,10 +782,12 @@
   impact: "high"
   effort: "small"
   files_touched:
-    - "commands/lib/step-transition.sh"
-    - "commands/lib/init-work-unit.sh"
-    - ".claude/harness.yaml"
+  - "commands/lib/step-transition.sh"
+  - "commands/lib/init-work-unit.sh"
+  - ".claude/harness.yaml"
 
+  phase: 5
+  status: active
 - id: script-access-restrictions
   title: "Restrict direct access to internal/dependency scripts"
   context: |
@@ -746,10 +803,10 @@
     - Document which scripts are user/agent-callable vs internal-only
     - Consider whether the state-guard.sh hook already covers some of this
   references:
-    - "scripts/update-state.sh"
-    - "scripts/advance-step.sh"
-    - "scripts/record-gate.sh"
-    - "hooks/state-guard.sh"
+  - "scripts/update-state.sh"
+  - "scripts/advance-step.sh"
+  - "scripts/record-gate.sh"
+  - "hooks/state-guard.sh"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -757,9 +814,11 @@
   impact: "high"
   effort: "medium"
   files_touched:
-    - "scripts/"
-    - "hooks/"
+  - "scripts/"
+  - "hooks/"
 
+  phase: 7
+  status: active
 - id: guard-against-horizontal-slices
   title: "Guard against horizontal slices in decomposition"
   context: |
@@ -776,9 +835,9 @@
     - Consider adding this to the interactive ideation checkpoints (challenge the user's decomposition if it looks horizontal)
     - Document the vertical vs horizontal slice distinction in a reference
   references:
-    - "skills/decompose.md"
-    - "skills/shared/red-flags.md"
-    - "evals/dimensions/decompose.yaml"
+  - "skills/decompose.md"
+  - "skills/shared/red-flags.md"
+  - "evals/dimensions/decompose.yaml"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -786,12 +845,14 @@
   impact: "high"
   effort: "small"
   files_touched:
-    - "skills/decompose.md"
-    - "skills/shared/red-flags.md"
-    - "evals/dimensions/decompose.yaml"
+  - "skills/decompose.md"
+  - "skills/shared/red-flags.md"
+  - "evals/dimensions/decompose.yaml"
 
 # Cluster: Meta-Process
 
+  phase: 5
+  status: active
 - id: brain-dump-triage-command
   title: "Brain dump triage command to turn notes into actionable TODOs"
   context: |
@@ -807,9 +868,9 @@
     - Step 4: Assign triage metadata (urgency, impact, effort)
     - Optionally trigger /work-roadmap to regenerate the roadmap
   references:
-    - "todos.yaml"
-    - "commands/work-todos.md"
-    - "commands/work-roadmap.md"
+  - "todos.yaml"
+  - "commands/work-todos.md"
+  - "commands/work-roadmap.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -817,5 +878,7 @@
   impact: "high"
   effort: "medium"
   files_touched:
-    - "commands/"
-    - "commands/work-todos.md"
+  - "commands/"
+  - "commands/work-todos.md"
+  phase: 6
+  status: active
