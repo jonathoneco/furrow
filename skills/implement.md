@@ -39,6 +39,16 @@ artifact presence, acceptance criteria, and quality dimensions.
 Reference: `evals/gates/implement.yaml` post_step, per `skills/shared/gate-evaluator.md`.
 Next step expects: all deliverables implemented, status updated in state.json.
 
+## Supervised Transition Protocol
+Before requesting a step transition:
+1. Update `summary.md` — write Key Findings, Open Questions, and Recommendations sections.
+2. Present work to user per `skills/shared/summary-protocol.md`.
+3. Ask explicitly: "**Ready to advance to review?** Yes / No"
+4. Wait for user response. Do NOT proceed without explicit approval.
+5. On "yes": call `step-transition.sh --request` with `decided_by=manual`.
+6. After --request succeeds: call `step-transition.sh --confirm`.
+7. On "no": ask what needs to change, address feedback, return to step 2.
+
 ## Learnings
 Append reusable insights to `.work/{name}/learnings.jsonl`.
 Read `skills/shared/learnings-protocol.md` for schema and categories.

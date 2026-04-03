@@ -45,7 +45,7 @@
     },
     "step_status": {
       "type": "string",
-      "enum": ["not_started", "in_progress", "completed", "blocked"],
+      "enum": ["not_started", "in_progress", "completed", "blocked", "pending_approval"],
       "description": "Status of the current step"
     },
     "steps_sequence": {

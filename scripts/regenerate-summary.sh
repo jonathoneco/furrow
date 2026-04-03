@@ -7,7 +7,7 @@
 #
 # Generates auto-generated skeleton sections from state.json and definition.yaml.
 # Preserves agent-written sections (Key Findings, Open Questions, Recommendations)
-# if they already exist; inserts placeholders otherwise.
+# if they already exist; leaves them empty otherwise.
 #
 # Triggered at every step boundary (after gate record, before step advance).
 #
@@ -48,7 +48,14 @@ mode="$(jq -r '.mode' "${state_file}")"
 
 # Deliverable counts
 total_deliverables="$(jq -r '.deliverables | length' "${state_file}")"
-completed_deliverables="$(jq -r '[.deliverables | to_entries[] | select(.value.status == "completed")] | length' "${state_file}")"
+if [ "${total_deliverables}" -eq 0 ] && [ -f "${definition_file}" ] && command -v yq > /dev/null 2>&1; then
+  total_deliverables="$(yq -r '.deliverables | length' "${definition_file}" 2>/dev/null)" || total_deliverables="0"
+  completed_deliverables="0"
+  deliverable_label="${completed_deliverables}/${total_deliverables} (defined)"
+else
+  completed_deliverables="$(jq -r '[.deliverables | to_entries[] | select(.value.status == "completed")] | length' "${state_file}")"
+  deliverable_label="${completed_deliverables}/${total_deliverables}"
+fi
 
 # --- read objective from definition.yaml if available ---
 
@@ -126,7 +133,7 @@ if [ -f "${summary_file}" ]; then
   recommendations="$(awk '/^## Recommendations/{found=1; next} /^## /{if(found) exit} found{print}' "${summary_file}")"
 fi
 
-# Trim whitespace and check minimum length (2 lines)
+# Trim whitespace from preserved sections
 trim_section() {
   echo "$1" | sed '/^$/d' | sed 's/^[[:space:]]*//'
 }
@@ -135,22 +142,6 @@ key_findings="$(trim_section "${key_findings}")"
 open_questions="$(trim_section "${open_questions}")"
 recommendations="$(trim_section "${recommendations}")"
 
-# Use placeholder if section is missing or too short
-kf_lines="$(echo "${key_findings}" | wc -l)"
-oq_lines="$(echo "${open_questions}" | wc -l)"
-rec_lines="$(echo "${recommendations}" | wc -l)"
-
-if [ -z "${key_findings}" ] || [ "${kf_lines}" -lt 2 ]; then
-  key_findings="Key Findings: To be written by step agent"
-fi
-
-if [ -z "${open_questions}" ] || [ "${oq_lines}" -lt 2 ]; then
-  open_questions="Open Questions: To be written by step agent"
-fi
-
-if [ -z "${recommendations}" ] || [ "${rec_lines}" -lt 2 ]; then
-  recommendations="Recommendations: To be written by step agent"
-fi
 
 # --- generate summary.md ---
 
@@ -164,7 +155,7 @@ ${objective}
 
 ## Current State
 Step: ${step} | Status: ${step_status}
-Deliverables: ${completed_deliverables}/${total_deliverables}
+Deliverables: ${deliverable_label}
 Mode: ${mode}
 
 ## Artifact Paths

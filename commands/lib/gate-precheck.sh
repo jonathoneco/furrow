@@ -32,12 +32,6 @@ case "${step}" in
   ideate|implement|review) exit 1 ;;
 esac
 
-# Supervised mode disables pre-step evaluation
-gate_policy="$(yq -r '.gate_policy // "supervised"' "${def_path}" 2>/dev/null)" || gate_policy="supervised"
-if [ "${gate_policy}" = "supervised" ]; then
-  exit 1
-fi
-
 # force_stop_at blocks pre-step evaluation at this step
 force_stop="$(jq -r '.force_stop_at // ""' "${state_path}" 2>/dev/null)" || force_stop=""
 if [ "${force_stop}" = "${step}" ]; then

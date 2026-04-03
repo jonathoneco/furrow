@@ -33,6 +33,16 @@ paths sufficient without broader investigation? Per `skills/shared/gate-evaluato
 Next step expects: research findings addressing all ideation questions, recorded
 in `research.md` or `research/` directory with `synthesis.md`.
 
+## Supervised Transition Protocol
+Before requesting a step transition:
+1. Update `summary.md` — write Key Findings, Open Questions, and Recommendations sections.
+2. Present work to user per `skills/shared/summary-protocol.md`.
+3. Ask explicitly: "**Ready to advance to plan?** Yes / No"
+4. Wait for user response. Do NOT proceed without explicit approval.
+5. On "yes": call `step-transition.sh --request` with `decided_by=manual`.
+6. After --request succeeds: call `step-transition.sh --confirm`.
+7. On "no": ask what needs to change, address feedback, return to step 2.
+
 ## Learnings
 When you discover a reusable insight (pattern, pitfall, preference, convention,
 or dependency quirk), append it to `.work/{name}/learnings.jsonl` using the

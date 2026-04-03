@@ -36,6 +36,16 @@ deliverables execute in a single wave without coordination? Per `skills/shared/g
 At this boundary, `scripts/create-work-branch.sh` creates the work branch.
 Next step expects: `plan.json` with waves, `team-plan.md` with coordination.
 
+## Supervised Transition Protocol
+Before requesting a step transition:
+1. Update `summary.md` — write Key Findings, Open Questions, and Recommendations sections.
+2. Present work to user per `skills/shared/summary-protocol.md`.
+3. Ask explicitly: "**Ready to advance to implement?** Yes / No"
+4. Wait for user response. Do NOT proceed without explicit approval.
+5. On "yes": call `step-transition.sh --request` with `decided_by=manual`.
+6. After --request succeeds: call `step-transition.sh --confirm`.
+7. On "no": ask what needs to change, address feedback, return to step 2.
+
 ## Learnings
 Append reusable insights to `.work/{name}/learnings.jsonl`.
 Read `skills/shared/learnings-protocol.md` for schema and categories.
