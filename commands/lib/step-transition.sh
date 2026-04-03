@@ -6,8 +6,9 @@
 #   step-transition.sh --confirm <name>
 #   step-transition.sh <name> <outcome> <decided_by> <evidence> [conditions_json]   # legacy
 #
-# --request: Record gate, validate artifacts and summary, set pending_approval.
-# --confirm: Validate policy, regenerate summary, advance step.
+# --request: Record gate, validate artifacts and summary, set pending_approval (supervised)
+#            or fall through to complete inline (delegated/autonomous — no --confirm needed).
+# --confirm: Validate policy, regenerate summary, advance step. Only needed in supervised mode.
 # Legacy (no flag): Single-phase transition (backward compat for delegated/autonomous).
 #
 # Exit codes:
@@ -149,14 +150,17 @@ if [ "${phase}" = "confirm" ]; then
       fi
     done
 
-    if [ -n "${prompt_file}" ]; then
-      prompt_nonce="$(grep '^nonce:' "${prompt_file}" | sed 's/^nonce: *//' | tr -d '[:space:]')" || prompt_nonce=""
-      verdict_nonce="$(jq -r '.nonce // ""' "${verdict_file}" 2>/dev/null)" || verdict_nonce=""
+    if [ -z "${prompt_file}" ]; then
+      echo "Prompt file not found in ${work_dir}/gate-prompts/. Cannot validate verdict nonce." >&2
+      exit 4
+    fi
 
-      if [ -n "${prompt_nonce}" ] && [ "${prompt_nonce}" != "${verdict_nonce}" ]; then
-        echo "Nonce mismatch: prompt='${prompt_nonce}' verdict='${verdict_nonce}'. Verdict may be stale or forged." >&2
-        exit 4
-      fi
+    prompt_nonce="$(grep '^nonce:' "${prompt_file}" | sed 's/^nonce: *//' | tr -d '[:space:]')" || prompt_nonce=""
+    verdict_nonce="$(jq -r '.nonce // ""' "${verdict_file}" 2>/dev/null)" || verdict_nonce=""
+
+    if [ -n "${prompt_nonce}" ] && [ "${prompt_nonce}" != "${verdict_nonce}" ]; then
+      echo "Nonce mismatch: prompt='${prompt_nonce}' verdict='${verdict_nonce}'. Verdict may be stale or forged." >&2
+      exit 4
     fi
   fi
 
