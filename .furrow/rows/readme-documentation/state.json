@@ -1,0 +1,85 @@
+{
+  "name": "readme-documentation",
+  "title": "Add README with general info and guidance about the harness",
+  "description": "Add README with general info and guidance about the harness",
+  "step": "implement",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "readme": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "definition.yaml validated, cross-model review completed, all sections approved by user",
+      "timestamp": "2026-04-03T20:20:47Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All open questions resolved, source material gathered, walkthrough format and Agent SDK scope decided",
+      "timestamp": "2026-04-03T20:24:17Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Architecture decisions recorded: section order, command table split, walkthrough format, no parallelism needed",
+      "timestamp": "2026-04-03T20:25:44Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Spec covers all 8 ACs across 7 sections, ~143 lines estimated",
+      "timestamp": "2026-04-03T20:30:33Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Single deliverable, single file — no decomposition needed",
+      "timestamp": "2026-04-03T20:31:35Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "plan.json created, single wave single deliverable",
+      "timestamp": "2026-04-03T20:31:46Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "README.md written, 110 lines, all 8 ACs met, deliverable marked complete",
+      "timestamp": "2026-04-03T20:32:52Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/readme-documentation",
+  "mode": "code",
+  "base_commit": "93ca3f3871594cc775fadc5168979b8059cee521",
+  "seed_id": "furrow-be4a",
+  "epic_seed_id": null,
+  "created_at": "2026-04-03T20:00:36Z",
+  "updated_at": "2026-04-03T20:32:52Z",
+  "archived_at": null,
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}

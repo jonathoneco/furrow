@@ -1,0 +1,35 @@
+objective: "Add a README.md that orients first-time readers on what Furrow is, what using it feels like, how to install it, and where to go deeper."
+
+deliverables:
+  - name: readme
+    acceptance_criteria:
+      - "One-liner + paragraph explanation of what Furrow is"
+      - "Session walkthrough showing what working with Furrow feels like"
+      - "Prerequisites and install instructions (clone + install.sh)"
+      - "Command overview table covering all slash commands"
+      - "Core concepts section (rows, steps, gates, seeds) in ~30 lines"
+      - "Going deeper section pointing to references/, docs/, rationale.yaml"
+      - "Total length stays under ~200 lines"
+      - "Does not duplicate frequently-changing content — points to source of truth"
+    file_ownership:
+      - "README.md"
+
+context_pointers:
+  - path: install.sh
+    note: "Source of truth for install steps and --check flag"
+  - path: commands/
+    note: "Source of truth for command definitions and names"
+  - path: skills/
+    note: "Step skills — reference for step sequence description"
+  - path: references/
+    note: "Deep docs on gates, review methodology, row layout"
+  - path: .furrow/almanac/rationale.yaml
+    note: "Component inventory and deletion criteria"
+
+constraints:
+  - "Must not duplicate content that changes frequently — point to source of truth"
+  - "No badges, CI status, or package manager metadata"
+  - "Keep under ~200 lines"
+  - "Assume reader has or will install Claude Code — don't explain what it is"
+
+gate_policy: supervised
