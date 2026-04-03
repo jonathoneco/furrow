@@ -1,0 +1,79 @@
+{
+  "name": "cli-enhancements",
+  "title": "Almanac knowledge subcommands and rws review-archive flow",
+  "description": "Almanac knowledge subcommands and rws review-archive flow",
+  "step": "implement",
+  "step_status": "not_started",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {},
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "definition validated, well-scoped additive work",
+      "timestamp": "2026-04-03T07:41:05Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "existing protocol and data formats documented",
+      "timestamp": "2026-04-03T07:41:18Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "single wave, two parallel deliverables, no file ownership conflicts",
+      "timestamp": "2026-04-03T07:41:31Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "implementation-ready spec with exact interfaces",
+      "timestamp": "2026-04-03T07:41:49Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "specs directory created",
+      "timestamp": "2026-04-03T07:41:55Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "single wave, two parallel deliverables, plan.json valid",
+      "timestamp": "2026-04-03T07:42:02Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "branch set, plan.json valid",
+      "timestamp": "2026-04-03T07:42:08Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/beans-integration",
+  "mode": "code",
+  "base_commit": "6e4c0bd4b541ec35e8042942f7d61b37ce107dc0",
+  "seed_id": "furrow-4273",
+  "epic_seed_id": null,
+  "created_at": "2026-04-03T07:36:03Z",
+  "updated_at": "2026-04-03T07:42:51Z",
+  "archived_at": null,
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}

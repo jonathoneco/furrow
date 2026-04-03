@@ -552,8 +552,11 @@ validate_step_artifacts() {
 
       _va_branch="$(jq -r '.branch // ""' "$_va_state_file" 2>/dev/null)" || _va_branch=""
       if [ -z "$_va_branch" ] || [ "$_va_branch" = "null" ]; then
-        echo "decompose->implement: state.json 'branch' field is not set" >&2
-        return 3
+        # Auto-detect or create branch
+        create_work_branch "$_va_name" || {
+          echo "decompose->implement: failed to create or detect work branch" >&2
+          return 3
+        }
       fi
       ;;
 
@@ -1135,6 +1138,13 @@ rws_init() {
   _init_base_commit="$(git rev-parse HEAD 2>/dev/null)" || _init_base_commit="unknown"
   _init_now="$(now_iso)"
 
+  # Auto-detect branch if on a work/* branch
+  _init_branch=""
+  _init_current_branch="$(git branch --show-current 2>/dev/null || true)"
+  if [ -n "$_init_current_branch" ] && echo "$_init_current_branch" | grep -q '^work/'; then
+    _init_branch="$_init_current_branch"
+  fi
+
   # Create directory
   mkdir -p "${_init_work_dir}/reviews"
 
@@ -1152,6 +1162,7 @@ rws_init() {
     --arg source_todo "$_init_source_todo" \
     --arg gate_policy_init "$_init_gate_policy" \
     --arg seed_id "$_init_seed_id" \
+    --arg branch "$_init_branch" \
     '{
       name: $name,
       title: $title,
@@ -1162,7 +1173,7 @@ rws_init() {
       deliverables: {},
       gates: [],
       force_stop_at: null,
-      branch: null,
+      branch: (if $branch == "" then null else $branch end),
       mode: $mode,
       base_commit: $base_commit,
       seed_id: (if $seed_id == "" then null else $seed_id end),
@@ -1590,6 +1601,102 @@ rws_list() {
 }
 
 # ============================================================
+#  Subcommand: complete-deliverable
+# ============================================================
+
+rws_complete_deliverable() {
+  if [ "$#" -lt 1 ]; then
+    die "Usage: rws complete-deliverable <name> <deliverable>"
+  fi
+
+  # If only one arg, treat it as deliverable and resolve name
+  if [ "$#" -eq 1 ]; then
+    _cd_name="$(resolve_name "")"
+    _cd_deliv="$1"
+  else
+    _cd_name="$1"
+    _cd_deliv="$2"
+  fi
+
+  _cd_state_file="$(require_state "$_cd_name")"
+  _cd_def_file="${ROWS_DIR}/${_cd_name}/definition.yaml"
+  _cd_plan_file="${ROWS_DIR}/${_cd_name}/plan.json"
+
+  # Validate deliverable exists in definition.yaml
+  if [ ! -f "$_cd_def_file" ]; then
+    echo "Definition file not found: $_cd_def_file" >&2
+    exit "$EXIT_VALIDATION"
+  fi
+
+  if ! command -v yq > /dev/null 2>&1; then
+    echo "yq is required for deliverable validation" >&2
+    exit "$EXIT_SUB_FAILED"
+  fi
+
+  _cd_found="$(yq -r ".deliverables[] | select(.name == \"$_cd_deliv\") | .name" "$_cd_def_file" 2>/dev/null)" || _cd_found=""
+  if [ -z "$_cd_found" ]; then
+    echo "Deliverable '$_cd_deliv' not found in $_cd_def_file" >&2
+    exit "$EXIT_VALIDATION"
+  fi
+
+  # Read wave from plan.json (default wave=1 if no plan or deliverable not in plan)
+  _cd_wave=1
+  if [ -f "$_cd_plan_file" ]; then
+    _cd_plan_wave="$(jq -r --arg d "$_cd_deliv" '
+      [.waves[] | .wave as $w | .deliverables[] | select(. == $d) | $w] | first // empty
+    ' "$_cd_plan_file" 2>/dev/null)" || _cd_plan_wave=""
+    if [ -n "$_cd_plan_wave" ]; then
+      _cd_wave="$_cd_plan_wave"
+    fi
+  fi
+
+  # Update state
+  _cd_jq=".deliverables[\"${_cd_deliv}\"] = {\"status\":\"completed\",\"wave\":${_cd_wave},\"corrections\":0}"
+  update_state "$_cd_name" "$_cd_jq"
+
+  echo "Deliverable completed: $_cd_deliv (wave $_cd_wave)"
+}
+
+# ============================================================
+#  Subcommand: complete-step
+# ============================================================
+
+rws_complete_step() {
+  _cs_name="$(resolve_name "${1:-}")"
+  _cs_state_file="$(require_state "$_cs_name")"
+
+  _cs_step="$(jq -r '.step' "$_cs_state_file")"
+
+  # At review step: validate all deliverables are completed
+  if [ "$_cs_step" = "review" ]; then
+    _cs_def_file="${ROWS_DIR}/${_cs_name}/definition.yaml"
+
+    if [ -f "$_cs_def_file" ] && command -v yq > /dev/null 2>&1; then
+      _cs_missing=""
+      _cs_del_tmp="$(mktemp)"
+      yq -r '.deliverables[].name' "$_cs_def_file" 2>/dev/null > "$_cs_del_tmp" || true
+      while IFS= read -r _cs_del_name; do
+        _cs_del_status="$(jq -r --arg d "$_cs_del_name" '.deliverables[$d].status // "missing"' "$_cs_state_file" 2>/dev/null)" || _cs_del_status="missing"
+        if [ "$_cs_del_status" != "completed" ]; then
+          _cs_missing="${_cs_missing}  deliverable '${_cs_del_name}' is ${_cs_del_status}\n"
+        fi
+      done < "$_cs_del_tmp"
+      rm -f "$_cs_del_tmp"
+
+      if [ -n "$_cs_missing" ]; then
+        printf "Cannot complete review step: not all deliverables are completed\n" >&2
+        printf "%b" "$_cs_missing" >&2
+        exit "$EXIT_VALIDATION"
+      fi
+    fi
+  fi
+
+  update_state "$_cs_name" '.step_status = "completed"'
+
+  echo "Step completed: $_cs_step"
+}
+
+# ============================================================
 #  Subcommand: archive
 # ============================================================
 
@@ -1600,33 +1707,28 @@ rws_archive() {
 
   _ar_name="$1"
   _ar_state_file="$(require_state "$_ar_name")"
+  _ar_errors=""
 
   # Pre-condition: step must be review
   _ar_step="$(jq -r '.step' "$_ar_state_file")"
   if [ "$_ar_step" != "review" ]; then
-    echo "Cannot archive: current step is '$_ar_step', must be 'review'" >&2
-    exit "$EXIT_VALIDATION"
+    _ar_errors="${_ar_errors}  step is '${_ar_step}' (expected 'review')\n"
   fi
 
   # Pre-condition: step_status must be completed
   _ar_status="$(jq -r '.step_status' "$_ar_state_file")"
   if [ "$_ar_status" != "completed" ]; then
-    echo "Cannot archive: review step is not completed (status: '$_ar_status')" >&2
-    exit "$EXIT_VALIDATION"
+    _ar_errors="${_ar_errors}  step_status is '${_ar_status}' (expected 'completed')\n"
   fi
 
   # Pre-condition: all deliverables completed
-  _ar_incomplete="$(jq -r '
-    [.deliverables | to_entries[] | select(.value.status != "completed") |
-      "\(.key):\(.value.status)"] | first // empty
-  ' "$_ar_state_file")"
+  _ar_inc_list="$(jq -r '
+    [.deliverables | to_entries[] | select(.value.status != "completed") | .key] | .[]
+  ' "$_ar_state_file" 2>/dev/null)" || _ar_inc_list=""
 
-  if [ -n "$_ar_incomplete" ]; then
-    _ar_inc_name="$(echo "$_ar_incomplete" | cut -d: -f1)"
-    _ar_inc_status="$(echo "$_ar_incomplete" | cut -d: -f2)"
-    echo "Cannot archive: deliverable '$_ar_inc_name' is not completed (status: '$_ar_inc_status')" >&2
-    exit "$EXIT_VALIDATION"
-  fi
+  for _ar_inc_name in $_ar_inc_list; do
+    _ar_errors="${_ar_errors}  deliverable '${_ar_inc_name}' is not completed\n"
+  done
 
   # Pre-condition: passing gate for implement->review
   _ar_final_gate="$(jq -r '
@@ -1634,7 +1736,12 @@ rws_archive() {
   ' "$_ar_state_file")"
 
   if [ "$_ar_final_gate" -eq 0 ]; then
-    echo "Cannot archive: no passing gate record for final review" >&2
+    _ar_errors="${_ar_errors}  no passing gate for implement->review\n"
+  fi
+
+  if [ -n "$_ar_errors" ]; then
+    printf "Cannot archive '%s': preconditions not met\n" "$_ar_name" >&2
+    printf "%b" "$_ar_errors" >&2
     exit "$EXIT_VALIDATION"
   fi
 
@@ -1961,6 +2068,9 @@ Commands:
 
   status [name]                          Show row status (default: focused row)
   list [--active|--archived|--all]       List rows (default: --active)
+  complete-deliverable [name] <deliverable>
+                                         Mark a deliverable as completed
+  complete-step [name]                   Mark the current step as completed
   archive <name>                         Archive a completed row
 
   gate-check <step> <def_path> <state_path>
@@ -1998,6 +2108,8 @@ case "$cmd" in
   transition)         rws_transition "$@" ;;
   status)             rws_status "$@" ;;
   list)               rws_list "$@" ;;
+  complete-deliverable) rws_complete_deliverable "$@" ;;
+  complete-step)      rws_complete_step "$@" ;;
   archive)            rws_archive "$@" ;;
   gate-check)         rws_gate_check "$@" ;;
   load-step)          rws_load_step "$@" ;;

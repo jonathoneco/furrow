@@ -185,6 +185,85 @@ test_regenerate_summary() {
   assert_file_contains "summary has Current State" ".furrow/rows/test-row/summary.md" "## Current State"
 }
 
+test_complete_deliverable() {
+  echo "  --- test_complete_deliverable ---"
+
+  # Set up a row at implement step with definition
+  rws init deliv-row --title "Deliverable Test"
+  _write_definition ".furrow/rows/deliv-row"
+
+  # Fast-forward to implement step
+  _deliv_state=".furrow/rows/deliv-row/state.json"
+  jq '.step = "implement" | .step_status = "in_progress"' \
+    "$_deliv_state" > "$_deliv_state.tmp" && mv "$_deliv_state.tmp" "$_deliv_state"
+
+  # Complete deliverable (no plan.json, should default to wave=1)
+  _cd_rc=0
+  _cd_output=$(rws complete-deliverable deliv-row test-deliverable 2>&1) || _cd_rc=$?
+  assert_exit_code "complete-deliverable succeeds" 0 "$_cd_rc"
+  assert_output_contains "output mentions deliverable name" "$_cd_output" "test-deliverable"
+  assert_output_contains "output mentions wave 1" "$_cd_output" "wave 1"
+
+  # Verify state was updated
+  assert_json_field "deliverable status is completed" "$_deliv_state" '.deliverables["test-deliverable"].status' "completed"
+
+  # Invalid deliverable should fail with exit 3
+  _cd_bad_rc=0
+  rws complete-deliverable deliv-row nonexistent 2>/dev/null || _cd_bad_rc=$?
+  assert_exit_code "invalid deliverable exits 3" 3 "$_cd_bad_rc"
+
+  # Test with plan.json for wave assignment
+  cat > ".furrow/rows/deliv-row/plan.json" << 'JSON'
+{"waves":[{"wave":2,"deliverables":["test-deliverable"]}]}
+JSON
+
+  rws complete-deliverable deliv-row test-deliverable > /dev/null 2>&1
+  _cd_wave="$(jq -r '.deliverables["test-deliverable"].wave' "$_deliv_state")"
+  TESTS_RUN=$((TESTS_RUN + 1))
+  if [ "$_cd_wave" = "2" ]; then
+    printf "  PASS: wave read from plan.json (wave=2)\n"
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    printf "  FAIL: expected wave 2 from plan.json, got '%s'\n" "$_cd_wave" >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+}
+
+test_complete_step() {
+  echo "  --- test_complete_step ---"
+
+  # Use the deliv-row from previous test (at implement step)
+  _cs_state=".furrow/rows/deliv-row/state.json"
+
+  # Complete the implement step (no review precondition check)
+  _cs_rc=0
+  _cs_output=$(rws complete-step deliv-row 2>&1) || _cs_rc=$?
+  assert_exit_code "complete-step succeeds for implement" 0 "$_cs_rc"
+  assert_output_contains "output mentions step name" "$_cs_output" "implement"
+  assert_json_field "step_status is completed" "$_cs_state" '.step_status' "completed"
+
+  # Advance to review step, reset step_status
+  jq '.step = "review" | .step_status = "in_progress"' \
+    "$_cs_state" > "$_cs_state.tmp" && mv "$_cs_state.tmp" "$_cs_state"
+
+  # Complete review step — deliverable is already completed, should succeed
+  _cs_rc2=0
+  _cs_output2=$(rws complete-step deliv-row 2>&1) || _cs_rc2=$?
+  assert_exit_code "complete-step succeeds at review with all deliverables done" 0 "$_cs_rc2"
+  assert_output_contains "output mentions review" "$_cs_output2" "review"
+
+  # Set up a row with incomplete deliverable to test precondition failure
+  rws init cs-fail-row --title "Complete Step Fail Test"
+  _write_definition ".furrow/rows/cs-fail-row"
+  _cs_fail_state=".furrow/rows/cs-fail-row/state.json"
+  jq '.step = "review" | .step_status = "in_progress"' \
+    "$_cs_fail_state" > "$_cs_fail_state.tmp" && mv "$_cs_fail_state.tmp" "$_cs_fail_state"
+
+  _cs_fail_rc=0
+  rws complete-step cs-fail-row 2>/dev/null || _cs_fail_rc=$?
+  assert_exit_code "complete-step fails at review with missing deliverables" 3 "$_cs_fail_rc"
+}
+
 test_archive() {
   echo "--- test_archive ---"
   # Set up a row that can be archived:
@@ -229,6 +308,8 @@ test_transition
 test_rewind
 test_diff
 test_regenerate_summary
+test_complete_deliverable
+test_complete_step
 test_archive
 
 # --- Summary ---

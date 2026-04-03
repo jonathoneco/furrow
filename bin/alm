@@ -1033,6 +1033,430 @@ cmd_render() {
 }
 
 # ============================================================
+# alm learn — knowledge management lifecycle
+# ============================================================
+cmd_learn() {
+  subcmd="${1:-}"
+  [ -n "$subcmd" ] || die "learn: subcommand required (list|search|show|promote|add)"
+  shift
+
+  case "$subcmd" in
+    list)    _learn_list "$@" ;;
+    search)  _learn_search "$@" ;;
+    show)    _learn_show "$@" ;;
+    promote) _learn_promote "$@" ;;
+    add)     _learn_add "$@" ;;
+    --help|-h)
+      printf 'Usage: alm learn <subcommand> [options]\n\n'
+      printf 'Subcommands:\n'
+      printf '  list    [--row NAME]                              List all learnings\n'
+      printf '  search  <query>                                   Search across all learnings\n'
+      printf '  show    <row> <index>                             Show full learning detail\n'
+      printf '  promote <row> [--all|--id INDEX]                  Promote to almanac\n'
+      printf '  add     <row> --category C --content C --context C  Add a learning\n'
+      return 0
+      ;;
+    *) die "learn: unknown subcommand: $subcmd" ;;
+  esac
+}
+
+_learn_list() {
+  row_filter=""
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --row) shift; row_filter="${1:-}"; shift ;;
+      --help|-h)
+        printf 'Usage: alm learn list [--row NAME]\n'
+        return 0
+        ;;
+      *) die "learn list: unknown flag: $1" ;;
+    esac
+  done
+
+  printf '%-24s %-12s %-8s %s\n' "ROW" "CATEGORY" "PROMOTED" "CONTENT"
+
+  # Scan per-row learnings
+  if [ -d "$ROWS_DIR" ]; then
+    for row_dir in "$ROWS_DIR"/*/; do
+      [ -d "$row_dir" ] || continue
+      name=$(basename "$row_dir")
+      [ -n "$row_filter" ] && [ "$name" != "$row_filter" ] && continue
+      lfile="$row_dir/learnings.jsonl"
+      [ -f "$lfile" ] || continue
+      while IFS= read -r line; do
+        [ -z "$line" ] && continue
+        _category=$(printf '%s' "$line" | jq -r '.category // "-"')
+        _promoted=$(printf '%s' "$line" | jq -r 'if .promoted == true then "yes" else "no" end')
+        _content=$(printf '%s' "$line" | jq -r '.content // "-"')
+        _trunc=$(printf '%.60s' "$_content")
+        [ ${#_content} -gt 60 ] && _trunc="${_trunc}..."
+        printf '%-24s %-12s %-8s %s\n' "$name" "$_category" "$_promoted" "$_trunc"
+      done < "$lfile"
+    done
+  fi
+
+  # Scan promoted learnings
+  promoted_dir="$ALM_DIR/learnings"
+  if [ -d "$promoted_dir" ]; then
+    for pfile in "$promoted_dir"/*.jsonl; do
+      [ -f "$pfile" ] || continue
+      pname=$(basename "$pfile" .jsonl)
+      [ -n "$row_filter" ] && [ "$pname" != "$row_filter" ] && continue
+      while IFS= read -r line; do
+        [ -z "$line" ] && continue
+        # Skip if already shown from row source
+        _promoted=$(printf '%s' "$line" | jq -r 'if .promoted == true then "yes" else "no" end')
+        _category=$(printf '%s' "$line" | jq -r '.category // "-"')
+        _content=$(printf '%s' "$line" | jq -r '.content // "-"')
+        _trunc=$(printf '%.60s' "$_content")
+        [ ${#_content} -gt 60 ] && _trunc="${_trunc}..."
+        printf '%-24s %-12s %-8s %s\n' "$pname(promoted)" "$_category" "$_promoted" "$_trunc"
+      done < "$pfile"
+    done
+  fi
+}
+
+_learn_search() {
+  [ -n "${1:-}" ] || die "learn search: <query> argument required"
+  query="$1"
+
+  # Search per-row learnings
+  if [ -d "$ROWS_DIR" ]; then
+    for row_dir in "$ROWS_DIR"/*/; do
+      [ -d "$row_dir" ] || continue
+      name=$(basename "$row_dir")
+      lfile="$row_dir/learnings.jsonl"
+      [ -f "$lfile" ] || continue
+      matches=$(grep -inF "$query" "$lfile" 2>/dev/null) || true
+      if [ -n "$matches" ]; then
+        printf '%s\n' "$matches" | while IFS= read -r match; do
+          printf '[row:%s] %s\n' "$name" "$match"
+        done
+      fi
+    done
+  fi
+
+  # Search promoted learnings
+  promoted_dir="$ALM_DIR/learnings"
+  if [ -d "$promoted_dir" ]; then
+    for pfile in "$promoted_dir"/*.jsonl; do
+      [ -f "$pfile" ] || continue
+      pname=$(basename "$pfile" .jsonl)
+      matches=$(grep -inF "$query" "$pfile" 2>/dev/null) || true
+      if [ -n "$matches" ]; then
+        printf '%s\n' "$matches" | while IFS= read -r match; do
+          printf '[promoted:%s] %s\n' "$pname" "$match"
+        done
+      fi
+    done
+  fi
+}
+
+_learn_show() {
+  [ -n "${1:-}" ] || die "learn show: <row> argument required"
+  [ -n "${2:-}" ] || die "learn show: <index> argument required (1-based)"
+  row="$1"
+  idx="$2"
+
+  # Check row learnings
+  lfile="$ROWS_DIR/$row/learnings.jsonl"
+  if [ -f "$lfile" ]; then
+    line=$(sed -n "${idx}p" "$lfile")
+    if [ -n "$line" ]; then
+      printf 'Source: row/%s (line %s)\n\n' "$row" "$idx"
+      printf '%s\n' "$line" | jq '.'
+      return 0
+    fi
+  fi
+
+  # Check promoted learnings
+  pfile="$ALM_DIR/learnings/$row.jsonl"
+  if [ -f "$pfile" ]; then
+    line=$(sed -n "${idx}p" "$pfile")
+    if [ -n "$line" ]; then
+      printf 'Source: promoted/%s (line %s)\n\n' "$row" "$idx"
+      printf '%s\n' "$line" | jq '.'
+      return 0
+    fi
+  fi
+
+  die "learn show: no learning found at index $idx for row '$row'"
+}
+
+_learn_promote() {
+  [ -n "${1:-}" ] || die "learn promote: <row> argument required"
+  row="$1"
+  shift
+
+  promote_all=false
+  promote_id=""
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --all) promote_all=true; shift ;;
+      --id)  shift; promote_id="${1:-}"; shift ;;
+      --help|-h)
+        printf 'Usage: alm learn promote <row> [--all|--id INDEX]\n'
+        return 0
+        ;;
+      *) die "learn promote: unknown flag: $1" ;;
+    esac
+  done
+
+  lfile="$ROWS_DIR/$row/learnings.jsonl"
+  [ -f "$lfile" ] || die "learn promote: no learnings found at $lfile"
+
+  promoted_dir="$ALM_DIR/learnings"
+  mkdir -p "$promoted_dir"
+  pfile="$promoted_dir/$row.jsonl"
+
+  if [ "$promote_all" = true ]; then
+    count=0
+    line_num=0
+    tmp_source=$(mktemp)
+    cp "$lfile" "$tmp_source"
+    : > "${lfile}.tmp"
+
+    while IFS= read -r line; do
+      line_num=$((line_num + 1))
+      [ -z "$line" ] && printf '\n' >> "${lfile}.tmp" && continue
+      already=$(printf '%s' "$line" | jq -r '.promoted')
+      if [ "$already" = "true" ]; then
+        printf '%s\n' "$line" >> "${lfile}.tmp"
+        continue
+      fi
+      promoted_line=$(printf '%s' "$line" | jq -c '.promoted = true')
+      printf '%s\n' "$promoted_line" >> "$pfile"
+      printf '%s\n' "$promoted_line" >> "${lfile}.tmp"
+      count=$((count + 1))
+    done < "$tmp_source"
+
+    mv "${lfile}.tmp" "$lfile"
+    rm -f "$tmp_source"
+    printf 'Promoted %d learning(s) from %s\n' "$count" "$row"
+
+  elif [ -n "$promote_id" ]; then
+    line=$(sed -n "${promote_id}p" "$lfile")
+    [ -n "$line" ] || die "learn promote: no learning at index $promote_id"
+
+    already=$(printf '%s' "$line" | jq -r '.promoted')
+    [ "$already" != "true" ] || die "learn promote: learning at index $promote_id is already promoted"
+
+    promoted_line=$(printf '%s' "$line" | jq -c '.promoted = true')
+    printf '%s\n' "$promoted_line" >> "$pfile"
+
+    # Update source entry in-place
+    tmp_source=$(mktemp)
+    awk -v idx="$promote_id" -v replacement="$promoted_line" \
+      'NR == idx { print replacement; next } { print }' "$lfile" > "$tmp_source"
+    mv "$tmp_source" "$lfile"
+
+    printf 'Promoted learning %s from %s\n' "$promote_id" "$row"
+
+  else
+    die "learn promote: specify --all or --id INDEX"
+  fi
+}
+
+_learn_add() {
+  [ -n "${1:-}" ] || die "learn add: <row> argument required"
+  row="$1"
+  shift
+
+  category="" content="" context=""
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --category) shift; category="${1:-}"; shift ;;
+      --content)  shift; content="${1:-}"; shift ;;
+      --context)  shift; context="${1:-}"; shift ;;
+      --help|-h)
+        printf 'Usage: alm learn add <row> --category CAT --content C --context CTX\n'
+        return 0
+        ;;
+      *) die "learn add: unknown flag: $1" ;;
+    esac
+  done
+
+  [ -n "$category" ] || die "learn add: --category is required"
+  [ -n "$content" ]  || die "learn add: --content is required"
+  [ -n "$context" ]  || die "learn add: --context is required"
+
+  # Validate category
+  case "$category" in
+    pattern|pitfall|preference|convention|dependency) ;;
+    *) die "learn add: invalid category '$category' (must be: pattern, pitfall, preference, convention, dependency)" ;;
+  esac
+
+  # Validate row exists
+  row_dir="$ROWS_DIR/$row"
+  [ -d "$row_dir" ] || die "learn add: row '$row' not found at $row_dir/"
+
+  lfile="$row_dir/learnings.jsonl"
+
+  # Generate ID: {row}-{NNN}
+  if [ -f "$lfile" ]; then
+    line_count=$(wc -l < "$lfile" | tr -d ' ')
+  else
+    line_count=0
+  fi
+  seq_num=$((line_count + 1))
+  learning_id=$(printf '%s-%03d' "$row" "$seq_num")
+
+  ts=$(now_iso)
+
+  entry=$(jq -n \
+    --arg id "$learning_id" \
+    --arg ts "$ts" \
+    --arg category "$category" \
+    --arg content "$content" \
+    --arg context "$context" \
+    --arg source_task "$row" \
+    '{
+      id: $id,
+      timestamp: $ts,
+      category: $category,
+      content: $content,
+      context: $context,
+      source_task: $source_task,
+      source_step: "manual",
+      promoted: false
+    }')
+
+  printf '%s\n' "$entry" | jq -c '.' >> "$lfile"
+  printf '%s\n' "$learning_id"
+}
+
+# ============================================================
+# alm rationale — component rationale management
+# ============================================================
+cmd_rationale() {
+  subcmd="${1:-}"
+  [ -n "$subcmd" ] || die "rationale: subcommand required (list|show|add)"
+  shift
+
+  case "$subcmd" in
+    list)   _rationale_list "$@" ;;
+    show)   _rationale_show "$@" ;;
+    add)    _rationale_add "$@" ;;
+    --help|-h)
+      printf 'Usage: alm rationale <subcommand> [options]\n\n'
+      printf 'Subcommands:\n'
+      printf '  list                           List all components with rationale\n'
+      printf '  show  <component>              Show full rationale for a component\n'
+      printf '  add   <component> --reason R   Add or update component rationale\n'
+      return 0
+      ;;
+    *) die "rationale: unknown subcommand: $subcmd" ;;
+  esac
+}
+
+_rationale_list() {
+  rationale_file="$ALM_DIR/rationale.yaml"
+  [ -f "$rationale_file" ] || die "rationale list: rationale.yaml not found at $rationale_file"
+
+  printf '%-50s %s\n' "COMPONENT" "EXISTS BECAUSE"
+  yq -r '.components[] | [.path, .exists_because] | @tsv' "$rationale_file" | \
+  while IFS="$(printf '\t')" read -r path reason; do
+    _trunc=$(printf '%.60s' "$reason")
+    [ ${#reason} -gt 60 ] && _trunc="${_trunc}..."
+    printf '%-50s %s\n' "$path" "$_trunc"
+  done
+}
+
+_rationale_show() {
+  [ -n "${1:-}" ] || die "rationale show: <component> argument required"
+  component="$1"
+
+  rationale_file="$ALM_DIR/rationale.yaml"
+  [ -f "$rationale_file" ] || die "rationale show: rationale.yaml not found at $rationale_file"
+
+  entry=$(yq -o=json ".components[] | select(.path == \"$component\")" "$rationale_file" 2>/dev/null)
+  [ -n "$entry" ] || die "rationale show: component not found: $component"
+
+  printf 'Component: %s\n' "$(printf '%s' "$entry" | jq -r '.path')"
+  printf 'Exists Because: %s\n' "$(printf '%s' "$entry" | jq -r '.exists_because')"
+
+  _dw=$(printf '%s' "$entry" | jq -r '.delete_when // empty')
+  if [ -n "$_dw" ]; then
+    printf 'Delete When: %s\n' "$_dw"
+  fi
+}
+
+_rationale_add() {
+  [ -n "${1:-}" ] || die "rationale add: <component> argument required"
+  component="$1"
+  shift
+
+  reason=""
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --reason) shift; reason="${1:-}"; shift ;;
+      --help|-h)
+        printf 'Usage: alm rationale add <component> --reason "why it exists"\n'
+        return 0
+        ;;
+      *) die "rationale add: unknown flag: $1" ;;
+    esac
+  done
+
+  [ -n "$reason" ] || die "rationale add: --reason is required"
+
+  rationale_file="$ALM_DIR/rationale.yaml"
+  ensure_almanac_dir
+
+  # Create file with empty components array if it doesn't exist
+  if [ ! -f "$rationale_file" ]; then
+    printf 'components: []\n' > "$rationale_file"
+  fi
+
+  # Check if component already exists
+  existing=$(yq -o=json ".components[] | select(.path == \"$component\")" "$rationale_file" 2>/dev/null)
+
+  if [ -n "$existing" ]; then
+    # Update exists_because for existing component
+    yq -i "(.components[] | select(.path == \"$component\")).exists_because = \"$reason\"" "$rationale_file"
+    printf 'Updated rationale for %s\n' "$component"
+  else
+    # Append new entry
+    yq -i ".components += [{\"path\": \"$component\", \"exists_because\": \"$reason\"}]" "$rationale_file"
+    printf 'Added rationale for %s\n' "$component"
+  fi
+}
+
+# ============================================================
+# alm docs / specialists / history — stubs
+# ============================================================
+cmd_docs() {
+  printf 'alm docs — documentation management\n\n'
+  printf 'Planned features:\n'
+  printf '  - Generate and maintain project documentation\n'
+  printf '  - Cross-reference docs with implementation\n'
+  printf '  - Track documentation coverage\n\n'
+  die "not yet implemented"
+}
+
+cmd_specialists() {
+  printf 'alm specialists — specialist agent management\n\n'
+  printf 'Planned features:\n'
+  printf '  - List available specialist templates\n'
+  printf '  - Show specialist capabilities and file ownership\n'
+  printf '  - Manage specialist registry\n\n'
+  die "not yet implemented"
+}
+
+cmd_history() {
+  printf 'alm history — work history and analytics\n\n'
+  printf 'Planned features:\n'
+  printf '  - Browse archived row history\n'
+  printf '  - Track velocity and patterns\n'
+  printf '  - Analyze learning trends\n\n'
+  die "not yet implemented"
+}
+
+# ============================================================
 # alm help — usage information
 # ============================================================
 cmd_help() {
@@ -1050,6 +1474,11 @@ Commands:
   next        Generate handoff prompts from roadmap
   validate    Validate todos.yaml against schema
   render      Generate Markdown from roadmap.yaml
+  learn       Knowledge management (list, search, show, promote, add)
+  rationale   Component rationale management (list, show, add)
+  docs        Documentation management (stub)
+  specialists Specialist agent management (stub)
+  history     Work history and analytics (stub)
 
 Run 'alm <command> --help' for command-specific usage.
 USAGE
@@ -1066,14 +1495,19 @@ cmd="${1:-help}"
 shift 2>/dev/null || true
 
 case "$cmd" in
-  add)      cmd_add "$@" ;;
-  extract)  cmd_extract "$@" ;;
-  list)     cmd_list "$@" ;;
-  show)     cmd_show "$@" ;;
-  triage)   cmd_triage "$@" ;;
-  next)     cmd_next "$@" ;;
-  validate) cmd_validate "$@" ;;
-  render)   cmd_render "$@" ;;
+  add)         cmd_add "$@" ;;
+  extract)     cmd_extract "$@" ;;
+  list)        cmd_list "$@" ;;
+  show)        cmd_show "$@" ;;
+  triage)      cmd_triage "$@" ;;
+  next)        cmd_next "$@" ;;
+  validate)    cmd_validate "$@" ;;
+  render)      cmd_render "$@" ;;
+  learn)       cmd_learn "$@" ;;
+  rationale)   cmd_rationale "$@" ;;
+  docs)        cmd_docs ;;
+  specialists) cmd_specialists ;;
+  history)     cmd_history ;;
   help|--help|-h) cmd_help ;;
   *)        die "unknown command: $cmd" ;;
 esac
