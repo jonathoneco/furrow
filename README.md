@@ -102,7 +102,7 @@ into roadmap planning via `/furrow:triage`.
 |----------|-------------|
 | `references/` | Gate protocol, review methodology, row layout, eval dimensions |
 | `docs/KICKOFF.md` | Design philosophy and constraints |
-| `specialists/` | Domain expert agent templates (16 available) |
+| `specialists/` | Domain expert agent templates (15 available) |
 | `evals/` | Gate and review evaluation rubrics |
 | `.furrow/almanac/rationale.yaml` | Component inventory with deletion criteria |
 
