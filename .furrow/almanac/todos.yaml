@@ -410,6 +410,7 @@
   files_touched:
     - "*"
   status: done
+  updated_at: "2026-04-03T08:30:00Z"
   depends_on:
     - duplication-cleanup
 - id: duplication-cleanup
@@ -527,7 +528,8 @@
     - "hooks/gate-check.sh"
     - "commands/lib/step-transition.sh"
     - "commands/lib/init-row.sh"
-  status: active
+  status: done
+  updated_at: "2026-04-03T08:30:00Z"
 - id: legacy-todos-migration
   title: "Incorporate legacy TODOs into the system after beans integration"
   context: |
@@ -549,7 +551,8 @@
   effort: "small"
   files_touched:
     - "todos.yaml"
-  status: active
+  status: done
+  updated_at: "2026-04-03T08:30:00Z"
 - id: mine-claude-code
   title: "Mine Claude Code for reusable patterns and capabilities"
   context: |
@@ -595,7 +598,8 @@
     - "specialists/merge-specialist.md"
     - "_rationale.yaml"
   # Cluster: Agent Orchestration Adoption
-  status: active
+  status: done
+  updated_at: "2026-04-03T08:30:00Z"
 - id: parallel-agent-orchestration-adoption
   title: "Built-in team orchestration isn't being used — diagnose and fix"
   context: |
@@ -729,7 +733,8 @@
     - "commands/lib/step-transition.sh"
     - "commands/lib/init-row.sh"
     - ".claude/furrow.yaml"
-  status: active
+  status: done
+  updated_at: "2026-04-03T08:30:00Z"
 - id: script-access-restrictions
   title: "Restrict direct access to internal/dependency scripts"
   context: |
@@ -828,9 +833,9 @@
     - Add alm specialists: specialist template management (list, show, create, validate against specialists/_meta.yaml)
     - Add alm history: query cross-row knowledge (search promoted learnings, rationale entries, completed row summaries)
   source_type: manual
-  status: active
+  status: done
   created_at: "2026-04-03T03:26:40-04:00"
-  updated_at: "2026-04-03T03:26:40-04:00"
+  updated_at: "2026-04-03T08:30:00Z"
 - id: rws-review-archive-flow-and-deliverable-tracking
   title: rws review-archive flow and deliverable tracking
   context: During the beans-enforcement-integration review, archiving required manual update-state.sh calls to set step_status=completed and populate deliverables. The rws CLI should handle this internally — deliverable completion should be tracked via rws subcommands, and the review→archive flow should work without manual state manipulation.
@@ -841,6 +846,26 @@
     - Consider rws update-deliverable for tracking wave/corrections during implementation
     - Update commands/review.md and commands/archive.md to use new subcommands
   source_type: manual
-  status: active
+  status: done
   created_at: "2026-04-03T03:26:50-04:00"
-  updated_at: "2026-04-03T03:26:50-04:00"
+  updated_at: "2026-04-03T08:30:00Z"
+- id: specialist-templates-from-team-plan-not-enforced-d
+  title: Specialist templates from team-plan not enforced during implementation
+  context: During merge-specialist-and-legacy-todos implementation, the team-plan.md and plan.json assign specialist types to each deliverable (e.g., systems-architect for merge-specialist, harness-engineer for rationale-update). However, during actual agent dispatch in the implement step, these specialist templates are not loaded or referenced — agents execute without the specialist reasoning framework that was explicitly planned. The specialist assignment in plan.json is currently decorative, not enforced.
+  work_needed: |-
+    - Implement specialist template injection when dispatching agents during implement step
+    - When an agent is dispatched for a deliverable, load the assigned specialist template from specialists/{name}.md into the agent's prompt
+    - Validate that the specialist assignment in plan.json references a valid file in specialists/
+    - Consider a pre-implement hook that warns if specialist templates are not being loaded
+    - Update skills/implement.md to make specialist loading explicit and mandatory
+  source_type: brain-dump
+  status: active
+  created_at: "2026-04-03T04:37:52-04:00"
+  updated_at: "2026-04-03T04:37:52-04:00"
+  references:
+    - skills/implement.md
+    - specialists/
+    - plan.json
+  source_work_unit: merge-specialist-and-legacy-todos
+  files_touched:
+    - skills/implement.md

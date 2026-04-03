@@ -413,3 +413,83 @@ components:
   - path: references/research-mode.md
     exists_because: "Step agents need on-demand reference for research mode conventions and dimension selection"
     delete_when: "Claude Code provides built-in research mode documentation"
+  # --- Scripts (beans-integration row) ---
+  - path: scripts/cross-model-review.sh
+    exists_because: "Claude Code has no built-in cross-model evaluation capability for specialist review"
+    delete_when: "Claude Code supports multi-model review with configurable provider integration"
+  - path: scripts/evaluate-gate.sh
+    exists_because: "Claude Code has no built-in gate policy enforcement with verdict interpretation"
+    delete_when: "Claude Code provides built-in gate policy evaluation with verdict translation"
+  - path: scripts/generate-plan.sh
+    exists_because: "Claude Code has no built-in execution planning with dependency analysis and concurrent wave scheduling"
+    delete_when: "Claude Code provides native plan generation with topological sorting and wave assignment"
+  - path: scripts/migrate-to-furrow.sh
+    exists_because: "One-time migration utility for transitioning from legacy harness structure to Furrow format"
+    delete_when: "Migration to Furrow is complete and no legacy state remains"
+  - path: scripts/run-integration-tests.sh
+    exists_because: "Claude Code has no native test orchestration with discovery and structured reporting"
+    delete_when: "Claude Code provides built-in test execution with discovery and reporting"
+  - path: scripts/select-dimensions.sh
+    exists_because: "Claude Code has no built-in dimension file selection with research mode awareness"
+    delete_when: "Claude Code provides built-in dimension routing with workflow mode detection"
+  # --- Hooks (beans-integration row) ---
+  - path: hooks/correction-limit.sh
+    exists_because: "Claude Code has no native correction limit enforcement with file ownership tracking"
+    delete_when: "Claude Code enforces correction limits natively per deliverable"
+  - path: hooks/verdict-guard.sh
+    exists_because: "Claude Code has no built-in gate verdict write protection with role-based enforcement"
+    delete_when: "Claude Code provides built-in role-based write protection for gate artifacts"
+  # --- Evals (beans-integration row) ---
+  - path: evals/dimensions/seed-consistency.yaml
+    exists_because: "Row integrity requires seed status synchronization validation not available natively"
+    delete_when: "Claude Code provides built-in seed consistency validation"
+  - path: evals/gates/review.yaml
+    exists_because: "Review gate needs multi-dimensional post-step evaluation with unique criteria distinct from other gates"
+    delete_when: "Claude Code provides built-in review gate evaluation rubrics"
+  # --- CLIs (beans-integration row) ---
+  - path: bin/alm
+    exists_because: "Claude Code has no native almanac management with TODO triage, roadmap generation, and knowledge lifecycle"
+    delete_when: "Claude Code provides built-in knowledge management and planning UI"
+  - path: bin/rws
+    exists_because: "Claude Code has no native row lifecycle management with atomic state mutation and gate validation"
+    delete_when: "Claude Code provides built-in row lifecycle management with state safety"
+  - path: bin/sds
+    exists_because: "Claude Code has no native seed tracking with JSONL registry and concurrent-safe file locking"
+    delete_when: "Claude Code provides built-in seed registry with concurrent-safe mutation"
+  # --- Specialists (beans-integration row) ---
+  - path: specialists/cli-designer.md
+    exists_because: "Claude Code does not natively provide domain-specific agent priming for CLI design"
+    delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"
+  - path: specialists/complexity-skeptic.md
+    exists_because: "Claude Code does not natively provide domain-specific agent priming for complexity evaluation"
+    delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"
+  - path: specialists/document-db-architect.md
+    exists_because: "Claude Code does not natively provide domain-specific agent priming for document database modeling"
+    delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"
+  - path: specialists/go-specialist.md
+    exists_because: "Claude Code does not natively provide domain-specific agent priming for Go development"
+    delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"
+  - path: specialists/harness-engineer.md
+    exists_because: "Claude Code does not natively provide domain-specific agent priming for harness infrastructure"
+    delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"
+  - path: specialists/migration-strategist.md
+    exists_because: "Claude Code does not natively provide domain-specific agent priming for system migration"
+    delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"
+  - path: specialists/python-specialist.md
+    exists_because: "Claude Code does not natively provide domain-specific agent priming for Python development"
+    delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"
+  - path: specialists/relational-db-architect.md
+    exists_because: "Claude Code does not natively provide domain-specific agent priming for relational schema design"
+    delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"
+  - path: specialists/security-engineer.md
+    exists_because: "Claude Code does not natively provide domain-specific agent priming for security analysis"
+    delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"
+  - path: specialists/shell-specialist.md
+    exists_because: "Claude Code does not natively provide domain-specific agent priming for shell scripting"
+    delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"
+  - path: specialists/systems-architect.md
+    exists_because: "Claude Code does not natively provide domain-specific agent priming for system architecture"
+    delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"
+  - path: specialists/typescript-specialist.md
+    exists_because: "Claude Code does not natively provide domain-specific agent priming for TypeScript development"
+    delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"

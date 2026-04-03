@@ -1,0 +1,93 @@
+{
+  "name": "merge-specialist-and-legacy-todos",
+  "title": "Merge specialist template and legacy TODO migration",
+  "description": "Merge specialist template and legacy TODO migration",
+  "step": "implement",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "merge-specialist": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "harness-engineer-grounding": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "rationale-update": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "todos-roadmap-refresh": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "definition validated: 3 deliverables, supervised gate policy, cross-model review completed",
+      "timestamp": "2026-04-03T08:11:09Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "research complete: 4 deliverables researched, all implementation approaches clear, single wave feasible",
+      "timestamp": "2026-04-03T08:26:44Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "plan complete: single wave, 4 parallel deliverables, plan.json created, no agent team needed",
+      "timestamp": "2026-04-03T08:28:18Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "specs complete: 4 implementation-ready specs in specs/, all ACs addressable",
+      "timestamp": "2026-04-03T08:30:15Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "decompose complete: plan.json single wave, team-plan.md 2-agent split, no ownership overlaps",
+      "timestamp": "2026-04-03T08:32:24Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "implement complete: 4/4 deliverables done, 85 tests passing, todos validated, roadmap regenerated",
+      "timestamp": "2026-04-03T08:38:37Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/beans-integration",
+  "mode": "code",
+  "base_commit": "9c2957ca16593360a9bce6770501d39d0d74bd8a",
+  "seed_id": "furrow-795c",
+  "epic_seed_id": null,
+  "created_at": "2026-04-03T07:57:23Z",
+  "updated_at": "2026-04-03T08:38:37Z",
+  "archived_at": null,
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}
