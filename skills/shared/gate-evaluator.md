@@ -33,13 +33,31 @@ must be reproducible by any agent given only the listed inputs.
    - If `dimensions_from` is present, read that file for the dimension definitions.
    - If `additional_dimensions` is present, append those to the dimension list.
    - If dimensions are inline, use them directly.
-4. **Evaluate each dimension independently**:
+4. **Evaluate seed-sync dimensions**: For any dimension named "seed-sync":
+   - Read `seed_id` from state.json.
+   - Run `sds show <seed_id> --json` to get the seed's current status.
+   - Compare the seed status against the step mapping:
+
+     | Row Step   | Expected Seed Status |
+     |------------|---------------------|
+     | ideate     | ideating            |
+     | research   | researching         |
+     | plan       | planning            |
+     | spec       | speccing            |
+     | decompose  | decomposing         |
+     | implement  | implementing        |
+     | review     | reviewing           |
+
+   - PASS if seed exists, is not closed, and status matches the mapping.
+   - FAIL if seed not found, seed is closed, or status mismatches.
+
+5. **Evaluate each dimension independently**:
    - Gather evidence BEFORE making a judgment.
    - Read the relevant step output files to find evidence.
    - Apply pass_criteria and fail_criteria literally.
    - Record PASS or FAIL with evidence in the required format.
    - If uncertain, verdict is FAIL with explanation.
-5. **Produce overall verdict**: PASS only if ALL dimensions pass.
+6. **Produce overall verdict**: PASS only if ALL dimensions pass.
 
 ## Response Format
 

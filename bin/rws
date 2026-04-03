@@ -18,7 +18,7 @@ EXIT_VALIDATION=3
 EXIT_SUB_FAILED=4
 EXIT_WRONG_STATUS=5
 EXIT_POLICY=6
-# EXIT_SEED_MISMATCH=7  # reserved
+EXIT_SEED_MISMATCH=7
 
 # --- Constants ---
 
@@ -57,6 +57,40 @@ validate_kebab() {
 
 resolve_row_dir() {
   echo "${ROWS_DIR}/$1"
+}
+
+step_to_seed_status() {
+  case "$1" in
+    ideate)    echo "ideating" ;;
+    research)  echo "researching" ;;
+    plan)      echo "planning" ;;
+    spec)      echo "speccing" ;;
+    decompose) echo "decomposing" ;;
+    implement) echo "implementing" ;;
+    review)    echo "reviewing" ;;
+    *)         echo "" ;;
+  esac
+}
+
+sync_seed_status() {
+  _sss_name="$1"
+  _sss_step="$2"
+  _sss_state_file="$(resolve_state_file "$_sss_name")"
+  _sss_seed_id="$(jq -r '.seed_id // ""' "$_sss_state_file" 2>/dev/null)" || _sss_seed_id=""
+
+  if [ -z "$_sss_seed_id" ] || [ "$_sss_seed_id" = "null" ]; then
+    return 0
+  fi
+
+  _sss_seed_status="$(step_to_seed_status "$_sss_step")"
+  if [ -z "$_sss_seed_status" ]; then
+    return 0
+  fi
+
+  if command -v sds > /dev/null 2>&1; then
+    sds update "$_sss_seed_id" --status "$_sss_seed_status" 2>/dev/null || \
+      echo "Warning: failed to sync seed status to $_sss_seed_status" >&2
+  fi
 }
 
 resolve_state_file() {
@@ -1143,6 +1177,92 @@ rws_init() {
   mv "$_init_tmp" "${_init_work_dir}/state.json"
   trap - EXIT
 
+  # --- Seed integration ---
+  # After state.json exists, create or link a seed.
+
+  if command -v sds > /dev/null 2>&1; then
+    if [ -n "$_init_seed_id" ]; then
+      # Case 2: --seed-id provided — validate and link
+      if ! sds show "$_init_seed_id" > /dev/null 2>&1; then
+        echo "rws: seed not found: $_init_seed_id" >&2
+        rm -rf "$_init_work_dir"
+        exit 7
+      fi
+      _init_seed_status="$(sds show "$_init_seed_id" --json | jq -r '.status')"
+      if [ "$_init_seed_status" = "closed" ]; then
+        echo "rws: seed is closed: $_init_seed_id (status=$_init_seed_status)" >&2
+        rm -rf "$_init_work_dir"
+        exit 7
+      fi
+      sds update "$_init_seed_id" --status claimed 2>/dev/null || \
+        echo "Warning: failed to update seed status to claimed" >&2
+      update_state "$_init_name" ".seed_id = \"$_init_seed_id\""
+
+    elif [ -n "$_init_source_todo" ]; then
+      # Case 3: --source-todo provided — check for existing seed_id in todos.yaml
+      _init_todos_file=".furrow/almanac/todos.yaml"
+      _init_todo_seed=""
+      if [ -f "$_init_todos_file" ] && command -v yq > /dev/null 2>&1; then
+        _init_todo_seed="$(yq -r \
+          --arg id "$_init_source_todo" \
+          '[.todos[] | select(.id == $id) | .seed_id // ""] | .[0] // ""' \
+          "$_init_todos_file" 2>/dev/null)" || _init_todo_seed=""
+      fi
+
+      if [ -n "$_init_todo_seed" ] && [ "$_init_todo_seed" != "null" ]; then
+        # TODO already has a seed — validate and link
+        if ! sds show "$_init_todo_seed" > /dev/null 2>&1; then
+          echo "rws: seed from todo not found: $_init_todo_seed" >&2
+          rm -rf "$_init_work_dir"
+          exit 7
+        fi
+        _init_seed_status="$(sds show "$_init_todo_seed" --json | jq -r '.status')"
+        if [ "$_init_seed_status" = "closed" ]; then
+          echo "rws: seed from todo is closed: $_init_todo_seed" >&2
+          rm -rf "$_init_work_dir"
+          exit 7
+        fi
+        sds update "$_init_todo_seed" --status claimed 2>/dev/null || \
+          echo "Warning: failed to update seed status to claimed" >&2
+        update_state "$_init_name" ".seed_id = \"$_init_todo_seed\""
+      else
+        # TODO has no seed — create one and backfill
+        _init_new_seed="$(sds create --title "$_init_title" --type task)"
+        if [ -n "$_init_new_seed" ]; then
+          sds update "$_init_new_seed" --status claimed 2>/dev/null || \
+            echo "Warning: failed to update seed status to claimed" >&2
+          update_state "$_init_name" ".seed_id = \"$_init_new_seed\""
+          # Backfill seed_id into todos.yaml
+          if [ -f "$_init_todos_file" ] && command -v yq > /dev/null 2>&1; then
+            _init_backfill_ts="$(now_iso)"
+            yq -i \
+              --arg id "$_init_source_todo" \
+              --arg seed "$_init_new_seed" \
+              --arg ts "$_init_backfill_ts" \
+              '(.todos[] | select(.id == $id)) |= (.seed_id = $seed | .updated_at = $ts)' \
+              "$_init_todos_file" 2>/dev/null || \
+              echo "Warning: failed to backfill seed_id into todos.yaml" >&2
+          fi
+        else
+          echo "Warning: failed to create seed" >&2
+        fi
+      fi
+
+    else
+      # Case 1: No --seed-id, no --source-todo — auto-create
+      _init_new_seed="$(sds create --title "$_init_title" --type task)"
+      if [ -n "$_init_new_seed" ]; then
+        sds update "$_init_new_seed" --status claimed 2>/dev/null || \
+          echo "Warning: failed to update seed status to claimed" >&2
+        update_state "$_init_name" ".seed_id = \"$_init_new_seed\""
+      else
+        echo "Warning: failed to create seed" >&2
+      fi
+    fi
+  else
+    echo "Warning: sds command not found — seed not created" >&2
+  fi
+
   echo "Row initialized: $_init_work_dir"
 }
 
@@ -1265,6 +1385,9 @@ rws_transition() {
       exit "$EXIT_SUB_FAILED"
     }
 
+    # Sync seed status after successful advance
+    sync_seed_status "$_tr_name" "$_tr_next"
+
     echo "Transition complete: $_tr_boundary (confirmed)"
     exit "$EXIT_SUCCESS"
   fi
@@ -1377,6 +1500,9 @@ rws_transition() {
     echo "Failed to advance step" >&2
     exit "$EXIT_SUB_FAILED"
   }
+
+  # 4. Sync seed status after successful advance
+  sync_seed_status "$_tr_name" "$_tr_next"
 
   echo "Transition complete: $_tr_boundary ($_tr_outcome)"
 }
@@ -1513,6 +1639,15 @@ rws_archive() {
   # Archive
   _ar_now="$(now_iso)"
   update_state "$_ar_name" ".archived_at = \"$_ar_now\" | .step_status = \"completed\""
+
+  # Close seed
+  _ar_seed_id="$(jq -r '.seed_id // ""' "$_ar_state_file" 2>/dev/null)" || _ar_seed_id=""
+  if [ -n "$_ar_seed_id" ] && [ "$_ar_seed_id" != "null" ]; then
+    if command -v sds > /dev/null 2>&1; then
+      sds close "$_ar_seed_id" --reason "archived: $_ar_name" 2>/dev/null || \
+        echo "Warning: failed to close seed $_ar_seed_id" >&2
+    fi
+  fi
 
   # Clear focus if archiving the focused row
   if [ -f "$FOCUSED_FILE" ]; then
@@ -1845,7 +1980,7 @@ Exit codes:
   4  Sub-operation failed
   5  Wrong step_status
   6  Policy violation
-  7  Seed mismatch (reserved)
+  7  Seed mismatch
 EOF
 }
 

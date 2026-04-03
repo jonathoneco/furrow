@@ -151,6 +151,38 @@ if [ "$phase_a_check" -gt 0 ]; then
   phase_a_verdict="fail"
 fi
 
+# A6: Seed consistency (deterministic)
+seed_id="$(jq -r '.seed_id // ""' "$state_file")"
+seed_check_pass="false"
+seed_check_evidence=""
+
+if [ -z "$seed_id" ] || [ "$seed_id" = "null" ]; then
+  seed_check_pass="false"
+  seed_check_evidence="No seed_id in state.json — seeds are mandatory"
+elif command -v sds > /dev/null 2>&1; then
+  if ! sds show "$seed_id" > /dev/null 2>&1; then
+    seed_check_pass="false"
+    seed_check_evidence="Seed not found: $seed_id"
+  else
+    seed_status="$(sds show "$seed_id" --json | jq -r '.status')"
+    if [ "$seed_status" = "closed" ]; then
+      seed_check_pass="false"
+      seed_check_evidence="Seed is closed: $seed_id (status=$seed_status)"
+    else
+      seed_check_pass="true"
+      seed_check_evidence="Seed exists and is not closed: $seed_id (status=$seed_status)"
+    fi
+  fi
+else
+  # sds not available — cannot verify, pass with warning
+  seed_check_pass="true"
+  seed_check_evidence="sds command not available — seed existence not verified (seed_id=$seed_id)"
+fi
+
+if [ "$seed_check_pass" = "false" ]; then
+  phase_a_verdict="fail"
+fi
+
 # =====================================================================
 # Write Phase A results JSON
 # =====================================================================
@@ -167,11 +199,17 @@ jq -n \
   --arg mode "$mode" \
   --arg base_commit "$base_commit" \
   --argjson file_ownership "$file_ownership" \
+  --argjson seed_check_pass "$seed_check_pass" \
+  --arg seed_check_evidence "$seed_check_evidence" \
   --arg timestamp "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
   '{
     deliverable: $deliverable,
     artifacts_present: $artifacts_present,
     acceptance_criteria: $acceptance_criteria,
+    seed_check: {
+      pass: $seed_check_pass,
+      evidence: $seed_check_evidence
+    },
     verdict: $phase_a_verdict,
     mode: $mode,
     base_commit: $base_commit,

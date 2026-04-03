@@ -38,8 +38,8 @@ _write_state_json() {
   "branch": null,
   "mode": "${_mode}",
   "base_commit": "${_base_commit}",
-  "epic_id": null,
-  "issue_id": null,
+  "seed_id": "test-0000",
+  "epic_seed_id": null,
   "created_at": "2026-01-01T00:00:00Z",
   "updated_at": "2026-01-01T00:00:00Z",
   "archived_at": null

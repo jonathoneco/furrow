@@ -16,8 +16,7 @@
     "branch",
     "mode",
     "base_commit",
-    "epic_id",
-    "issue_id",
+    "seed_id",
     "created_at",
     "updated_at",
     "archived_at"
@@ -109,13 +108,13 @@
       "type": "string",
       "description": "Git SHA at row creation"
     },
-    "epic_id": {
-      "type": ["string", "null"],
-      "description": "Beans epic ID"
+    "seed_id": {
+      "type": "string",
+      "description": "Seeds tracker ID (from sds)"
     },
-    "issue_id": {
+    "epic_seed_id": {
       "type": ["string", "null"],
-      "description": "Beans issue ID"
+      "description": "Epic seed ID or null"
     },
     "created_at": {
       "type": "string",

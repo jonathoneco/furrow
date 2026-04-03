@@ -12,3 +12,9 @@ pre_step:
 
 post_step:
   dimensions_from: "evals/dimensions/spec.yaml"
+  additional_dimensions:
+    - name: "seed-sync"
+      definition: "Whether seed status synchronizes with row step"
+      pass_criteria: "Seed exists, is not closed, and its status matches the current step per mapping"
+      fail_criteria: "Seed not found, seed is closed, or seed status does not match expected status"
+      evidence_format: "Quote seed_id, seed status, and current step; for FAIL show mismatch"

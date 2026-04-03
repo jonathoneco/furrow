@@ -1,0 +1,14 @@
+dimensions:
+  - name: "seed-sync"
+    definition: "Whether seed status synchronizes with row step"
+    pass_criteria: >-
+      Seed exists, is not closed, and its status matches the current
+      step per mapping: ideate→ideating, research→researching,
+      plan→planning, spec→speccing, decompose→decomposing,
+      implement→implementing, review→reviewing
+    fail_criteria: >-
+      Seed not found, seed is closed, or seed status does not match
+      expected status for current step
+    evidence_format: >-
+      Quote seed_id from state.json, status from sds show, and
+      current step. For FAIL, show expected vs actual.
