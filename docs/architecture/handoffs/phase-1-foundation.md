@@ -92,7 +92,7 @@ Produce 4 specs in `docs/architecture/`, working through them sequentially since
 - Eval infrastructure (eval runner, trace normalizer, LLM-judge runner)
 - Documentation (what goes in CLAUDE.md vs skills vs hooks)
 - Health check tooling (self-diagnosis for state corruption, missing artifacts)
-- Per-work-unit directory structure (where active work lives, where archives go)
+- Per-row directory structure (where active work lives, where archives go)
 - Reusable templates (team templates, specialist prompts, eval specs)
 
 **Constraints**:
@@ -103,7 +103,7 @@ Produce 4 specs in `docs/architecture/`, working through them sequentially since
 
 **Design decisions to discuss with human**:
 - Flat structure vs grouped by concern (conventions/, enforcement/, adapters/, eval/)?
-- Where do work units live? (project-root work/ directory? configurable?)
+- Where do rows live? (project-root work/ directory? configurable?)
 - How are reusable artifacts (team templates, eval specs) distinguished from instance artifacts (specific work definitions)?
 
 ### Deliverable 3: Context Model (`docs/architecture/context-model.md`)

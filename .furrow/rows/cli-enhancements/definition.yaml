@@ -1,0 +1,56 @@
+objective: >-
+  Add knowledge management subcommands to alm (learn with full lifecycle,
+  rationale, plus stubs for docs/specialists/history) and fix the rws
+  review-archive flow with explicit deliverable tracking subcommands.
+
+deliverables:
+  - name: alm-knowledge-subcommands
+    acceptance_criteria:
+      - "alm learn list — lists learnings from all rows (.furrow/rows/*/learnings.jsonl) and promoted (.furrow/almanac/learnings/)"
+      - "alm learn search <query> — searches learnings by keyword across all sources"
+      - "alm learn show <id-or-index> — shows full learning detail"
+      - "alm learn promote <row> [--all|--id ID] — promotes row learnings to .furrow/almanac/learnings/{row}.jsonl"
+      - "alm learn add <row> — appends a learning to .furrow/rows/<row>/learnings.jsonl with schema validation"
+      - "alm rationale list — lists all rationale entries from .furrow/almanac/rationale.yaml"
+      - "alm rationale show <component> — shows rationale for a specific component"
+      - "alm rationale add <component> --reason R — adds or updates rationale entry"
+      - "alm docs, alm specialists, alm history exist as stubs with --help text and 'not yet implemented' message"
+      - "Learning schema validation matches skills/shared/learnings-protocol.md format"
+    specialist: cli-designer
+    file_ownership:
+      - "bin/alm"
+      - ".furrow/almanac/learnings/"
+
+  - name: rws-deliverable-tracking
+    acceptance_criteria:
+      - "rws complete-deliverable <name> <deliverable> marks deliverable status=completed in state.json"
+      - "rws complete-deliverable validates deliverable exists in definition.yaml"
+      - "rws complete-deliverable populates wave and corrections fields if not set"
+      - "rws complete-step <name> sets step_status=completed in state.json"
+      - "rws complete-step validates all deliverables are completed before allowing step completion at review"
+      - "rws archive error messages clearly state which preconditions are unmet"
+      - "Updated tests in test-rws.sh covering complete-deliverable and complete-step"
+    specialist: cli-designer
+    file_ownership:
+      - "bin/rws"
+      - "tests/integration/test-rws.sh"
+
+context_pointers:
+  - path: bin/alm
+    note: Existing alm CLI — add learn, rationale, and stub subcommands
+  - path: bin/rws
+    note: Existing rws CLI — add complete-deliverable, complete-step subcommands
+  - path: skills/shared/learnings-protocol.md
+    note: Learning schema format — alm learn must match this
+  - path: .furrow/almanac/rationale.yaml
+    note: Rationale data store — alm rationale reads/writes this
+  - path: commands/lib/promote-learnings.sh
+    note: Was deleted during seeds integration — logic needs reimplementing in alm learn --promote
+
+constraints:
+  - "Additive only — no changes to existing alm/rws subcommands"
+  - "alm docs, alm specialists, alm history are stubs only — print help and exit 1"
+  - "Learning schema must match learnings-protocol.md format (category, content, context, promoted)"
+  - "rws complete-deliverable must validate deliverable name against definition.yaml"
+
+gate_policy: supervised

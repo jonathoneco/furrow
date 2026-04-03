@@ -6,7 +6,7 @@
 # the in-context agent reads the signal (exit 10) and spawns via Agent tool.
 #
 # Usage: run-gate.sh <name> <gate_type>
-#   name      — work unit name (kebab-case)
+#   name      — row name (kebab-case)
 #   gate_type — "pre_step" or "post_step"
 #
 # Exit codes:
@@ -40,7 +40,7 @@ case "$gate_type" in
     ;;
 esac
 
-work_dir="${FURROW_ROOT}/.work/${name}"
+work_dir="${FURROW_ROOT}/.furrow/rows/${name}"
 state_file="${work_dir}/state.json"
 def_file="${work_dir}/definition.yaml"
 
@@ -147,7 +147,7 @@ cat > "$prompt_file" <<PROMPT_EOF
 gate_type: ${gate_type}
 step: ${current_step}
 mode: ${mode}
-work_unit: ${name}
+row: ${name}
 nonce: ${nonce}
 
 # Paths for the evaluator to read

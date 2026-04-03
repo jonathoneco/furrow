@@ -79,7 +79,7 @@ expensive. Reserve for high-stakes work or periodic calibration checks.
 Standard testing tools. Furrow doesn't need to build anything here — it
 needs to *require* that evals exist and *run* them at the right time.
 
-**Convention**: Evals for a work unit live in `evals/` relative to the work
+**Convention**: Evals for a row live in `evals/` relative to the work
 definition. They can be:
 
 - pytest files (`test_*.py`)
@@ -216,10 +216,10 @@ the start:
 
 Furrow needs an eval runner that:
 
-1. Discovers eval files for a work unit (by convention: `evals/` directory)
+1. Discovers eval files for a row (by convention: `evals/` directory)
 2. Executes them (shell out to pytest, bash, or a custom runner for LLM-judge specs)
 3. Reports results in a structured format (JSON)
-4. Stores results alongside the work unit (for history/calibration)
+4. Stores results alongside the row (for history/calibration)
 
 The eval runner handles discovery, execution, result storage, and calibration
 tracking across two runtimes and multiple eval types (deterministic, behavioral
@@ -304,7 +304,7 @@ The calibration loop:
 5. **Re-evaluate**: Run the updated judge on the same inputs to verify improvement.
 
 **Storage convention**: Judge outputs and calibration data live alongside the
-work unit:
+row:
 
 ```
 work/

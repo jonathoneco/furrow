@@ -1,0 +1,115 @@
+{
+  "name": "roadmap-process",
+  "title": "Build /work-roadmap command: reads todos.yaml, produces prioritized ROADMAP.md with dependency-aware phase grouping and worktree parallelism strategy",
+  "description": "Build /work-roadmap command: reads todos.yaml, produces prioritized ROADMAP.md with dependency-aware phase grouping and worktree parallelism strategy",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "todos-schema-extension": {
+      "status": "completed",
+      "assigned_to": null,
+      "wave": 1,
+      "corrections": 0
+    },
+    "roadmap-template": {
+      "status": "completed",
+      "assigned_to": null,
+      "wave": 1,
+      "corrections": 0
+    },
+    "triage-script": {
+      "status": "completed",
+      "assigned_to": null,
+      "wave": 2,
+      "corrections": 0
+    },
+    "command-skill": {
+      "status": "completed",
+      "assigned_to": null,
+      "wave": 3,
+      "corrections": 0
+    },
+    "harness-integration": {
+      "status": "completed",
+      "assigned_to": null,
+      "wave": 4,
+      "corrections": 0
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "definition.yaml validated. Cross-model review addressed 5 findings. 11 design decisions approved in supervised mode.",
+      "timestamp": "2026-04-02T20:50:00Z"
+    },
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "definition.yaml validated, cross-model review complete, 11 decisions approved",
+      "timestamp": "2026-04-02T20:55:45Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "4 parallel research agents completed: schema, template, script, command patterns. Synthesis written to research/synthesis.md.",
+      "timestamp": "2026-04-02T21:05:00Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "plan.json generated (4 waves), team-plan.md written, architecture decisions documented in summary.md",
+      "timestamp": "2026-04-02T21:20:00Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "5 specs written in specs/ directory covering all deliverables with implementation-ready detail",
+      "timestamp": "2026-04-02T21:25:00Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "plan.json validated: 5 deliverables across 4 waves, no file overlaps, dependency ordering correct. Work branch created.",
+      "timestamp": "2026-04-02T21:28:00Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 5 deliverables implemented and verified: schema extension (7 fields), roadmap template (2 files), triage script (tested with deps+conflicts+filtering), command skill, harness integration.",
+      "timestamp": "2026-04-02T21:35:00Z"
+    },
+    {
+      "boundary": "review->review",
+      "outcome": "pass",
+      "decided_by": "evaluated",
+      "evidence": "All 5 deliverables pass acceptance criteria. 0 critical issues, 0 important issues, 2 nice-to-have suggestions (1 applied).",
+      "timestamp": "2026-04-02T21:45:00Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/roadmap-process",
+  "mode": "code",
+  "base_commit": "22136f6b761069a2c93920dbb2bfeaab28f10451",
+  "created_at": "2026-04-02T19:46:36Z",
+  "updated_at": "2026-04-02T21:33:58Z",
+  "archived_at": "2026-04-02T21:50:00Z",
+  "seed_id": null,
+  "epic_seed_id": null
+}

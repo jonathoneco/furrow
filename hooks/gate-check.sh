@@ -4,58 +4,59 @@
 # Hook: PreToolUse (matcher: Bash)
 # Receives JSON on stdin with tool_name and tool_input.
 # Exit 2 to block if advancing without a passing gate; exit 0 otherwise.
+#
+# Delegates to: rws gate-check
 
 set -eu
 
 HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
 FURROW_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
+RWS="$FURROW_ROOT/bin/rws"
 
-COMMON_LIB="$FURROW_ROOT/hooks/lib/common.sh"
-VALIDATE_LIB="$FURROW_ROOT/hooks/lib/validate.sh"
-
-if [ ! -f "$COMMON_LIB" ] || [ ! -f "$VALIDATE_LIB" ]; then
+if [ ! -x "$RWS" ]; then
   exit 0
 fi
-
-# shellcheck source=lib/common.sh
-. "$COMMON_LIB"
-# shellcheck source=lib/validate.sh
-. "$VALIDATE_LIB"
 
 input="$(cat)"
 
 command_str="$(echo "$input" | jq -r '.tool_input.command // ""' 2>/dev/null)" || command_str=""
 
-# Only care about advance-step invocations
+# Only care about rws transition invocations
 case "$command_str" in
-  *advance-step*) ;;
+  *rws*transition*) ;;
   *) exit 0 ;;
 esac
 
-# Extract unit name from command: advance-step.sh <unit-name> [...]
-unit_name="$(echo "$command_str" | sed -E -n 's/.*advance-step[^ ]* +([^ ]*).*/\1/p')"
+# Extract row name from rws transition <name>
+row_name="$(echo "$command_str" | sed -E -n 's/.*rws +transition +([^ ]*).*/\1/p')"
 
-if [ -n "$unit_name" ]; then
-  work_dir=".work/$unit_name"
+if [ -n "$row_name" ]; then
+  state_file=".furrow/rows/$row_name/state.json"
+  def_file=".furrow/rows/$row_name/definition.yaml"
 else
-  # Fallback: try focused unit
-  work_dir="$(find_focused_work_unit)"
+  # Fallback: try focused row
+  focused_file=".furrow/.focused"
+  if [ -f "$focused_file" ]; then
+    row_name="$(cat "$focused_file")"
+    state_file=".furrow/rows/$row_name/state.json"
+    def_file=".furrow/rows/$row_name/definition.yaml"
+  else
+    exit 0
+  fi
 fi
 
-if [ -z "$work_dir" ] || [ ! -f "$work_dir/state.json" ]; then
+if [ -z "$row_name" ] || [ ! -f "$state_file" ]; then
   exit 0
 fi
 
-state_file="$work_dir/state.json"
+current="$(jq -r '.step' "$state_file" 2>/dev/null)" || current=""
+if [ -z "$current" ]; then
+  exit 0
+fi
 
-if ! validate_step_boundary "$state_file" 2>/dev/null; then
-  current="$(jq -r '.step' "$state_file" 2>/dev/null)" || current="unknown"
-  next="$(jq -r --arg s "$current" '
-    .steps_sequence as $seq |
-    ($seq | to_entries[] | select(.value == $s) | .key) as $idx |
-    if $idx + 1 < ($seq | length) then $seq[$idx + 1] else "end" end
-  ' "$state_file" 2>/dev/null)" || next="unknown"
-  log_error "Gate required: ${current}->${next}. No passing gate record found."
+# Delegate to rws gate-check
+if ! "$RWS" gate-check "$current" "$def_file" "$state_file" 2>/dev/null; then
+  printf 'rws: gate-check failed for %s at step %s\n' "$row_name" "$current" >&2
   exit 2
 fi
 

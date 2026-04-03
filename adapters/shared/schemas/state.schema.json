@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Work Unit State",
+  "title": "Row State",
   "description": "Schema for state.json — lifecycle and progress tracking per spec 00 §1.2",
   "type": "object",
   "required": [
@@ -16,8 +16,7 @@
     "branch",
     "mode",
     "base_commit",
-    "epic_id",
-    "issue_id",
+    "seed_id",
     "created_at",
     "updated_at",
     "archived_at"
@@ -107,15 +106,15 @@
     },
     "base_commit": {
       "type": "string",
-      "description": "Git SHA at work unit creation"
+      "description": "Git SHA at row creation"
     },
-    "epic_id": {
-      "type": ["string", "null"],
-      "description": "Beans epic ID"
+    "seed_id": {
+      "type": "string",
+      "description": "Seeds tracker ID (from sds)"
     },
-    "issue_id": {
+    "epic_seed_id": {
       "type": ["string", "null"],
-      "description": "Beans issue ID"
+      "description": "Epic seed ID or null"
     },
     "created_at": {
       "type": "string",
@@ -134,7 +133,7 @@
     "source_todo": {
       "type": ["string", "null"],
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
-      "description": "TODO entry ID this work unit was created from, or null"
+      "description": "TODO entry ID this row was created from, or null"
     },
     "gate_policy_init": {
       "type": ["string", "null"],

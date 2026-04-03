@@ -34,7 +34,7 @@ shift
 
 # --- locate state ---
 
-work_dir=".work/${name}"
+work_dir=".furrow/rows/${name}"
 state_file="${work_dir}/state.json"
 
 if [ ! -f "${state_file}" ]; then

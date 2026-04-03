@@ -52,7 +52,7 @@ These 5 specs are independent — use parallel agent teams.
   - Scheduled tasks (cron-style, using Claude Code's CronCreate or Agent SDK scheduling)
   - Webhooks (GitHub events, CI failures, monitoring alerts)
   - Incident alerts (PagerDuty, Grafana, custom monitoring)
-  - Dependent work completion (work unit A finishes -> work unit B starts)
+  - Dependent work completion (row A finishes -> row B starts)
   - Manual trigger with autonomous execution (human fires and forgets)
 - **Trigger-to-work-definition**: How does a trigger produce a work definition?
   - Template expansion (pre-defined work def with variable substitution from trigger context)
@@ -62,7 +62,7 @@ These 5 specs are independent — use parallel agent teams.
 - **Guardrails**: What prevents runaway autonomous work?
   - Scope limits per trigger (max deliverables, max files touched, restricted directories)
   - Escalation policies (auto-pause after N hours, mandatory human review for certain outputs)
-  - Budget guards (max concurrent autonomous work units, max per day)
+  - Budget guards (max concurrent autonomous rows, max per day)
   - Kill switch (operator can halt all autonomous work instantly)
 - **Trigger registration**: How are triggers configured? File-based? CLI command? Both?
 - **Trigger audit trail**: What's logged when a trigger fires? (Trigger source, timestamp, generated work definition, scope-check result)
@@ -75,13 +75,13 @@ These 5 specs are independent — use parallel agent teams.
 - **Notification system**: What events trigger notifications? Format and channel.
   - Gate failures (eval failed, deliverable blocked)
   - Escalation requests (agent is stuck, needs human input)
-  - Work completion (work unit finished, PR ready for review)
+  - Work completion (row finished, PR ready for review)
   - Anomalies (correction spiral detected, scope change proposed, unusual patterns)
   - Trigger events (autonomous work started, scope-check results)
 - **Review queue**: How does the operator review completed autonomous work?
   - Evidence package format and presentation
   - Approval/rejection flow
-  - Batch review for multiple completed work units
+  - Batch review for multiple completed rows
 - **Real-time monitoring**: Can the operator watch work in progress?
   - Progress dashboard (which deliverables done, which in progress, which blocked)
   - Agent activity feed (what the current specialist is doing)
@@ -90,7 +90,7 @@ These 5 specs are independent — use parallel agent teams.
   - Eval results per deliverable (structured JSON)
   - Agent traces (normalized event log)
   - Decision logs (scope changes, gate approvals/rejections, escalations)
-  - Cost metrics (token usage per work unit, per agent, per eval — even on flat rate, for waste detection)
+  - Cost metrics (token usage per row, per agent, per eval — even on flat rate, for waste detection)
 - **Tooling**: CLI commands, dashboard views, or both? What's the concrete interface?
 
 ### Spec 13: Concurrent Work Streams (`docs/architecture/concurrent-work-streams.md`)
@@ -98,23 +98,23 @@ These 5 specs are independent — use parallel agent teams.
 **What**: Multiple active work definitions running in parallel.
 
 **Must include**:
-- **Work isolation**: How are concurrent work units isolated?
-  - Separate work directories (each work unit in its own directory)
+- **Work isolation**: How are concurrent rows isolated?
+  - Separate work directories (each row in its own directory)
   - Separate git branches (no merge conflicts between work streams)
-  - Context isolation (agents from different work units don't share context)
+  - Context isolation (agents from different rows don't share context)
 - **Resource contention**: What shared resources exist and how are conflicts prevented?
-  - Git branch conflicts (two work units touching same files)
+  - Git branch conflicts (two rows touching same files)
   - Context budget across concurrent agents
-  - File system state (two work units writing to same config files)
-- **Cross-work interaction**: Can work units depend on each other?
-  - Work unit completion as trigger for another (covered in autonomous triggering)
-  - Shared artifacts (one work unit's output is another's input)
-  - Merge ordering (when two work units need to merge to same branch)
+  - File system state (two rows writing to same config files)
+- **Cross-work interaction**: Can rows depend on each other?
+  - Row completion as trigger for another (covered in autonomous triggering)
+  - Shared artifacts (one row's output is another's input)
+  - Merge ordering (when two rows need to merge to same branch)
 - **Operator view**: Dashboard showing all active work across all trust levels.
-  - Status per work unit (ideation, executing, reviewing, blocked, complete)
+  - Status per row (ideation, executing, reviewing, blocked, complete)
   - Resource utilization (agent count, context usage)
-  - Conflict detection (overlapping file ownership across work units)
-- **Limits**: Maximum concurrent work units. How does Furrow degrade gracefully when at capacity?
+  - Conflict detection (overlapping file ownership across rows)
+- **Limits**: Maximum concurrent rows. How does Furrow degrade gracefully when at capacity?
 
 ### Spec 14: Error Recovery (`docs/architecture/error-recovery.md`)
 

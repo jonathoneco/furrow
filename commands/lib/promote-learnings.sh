@@ -2,10 +2,10 @@
 # promote-learnings.sh — Archive-time learnings promotion ceremony
 #
 # Usage: promote-learnings.sh <name> [project_learnings_path]
-#   name                    — work unit name
+#   name                    — row name
 #   project_learnings_path  — path to project-level learnings.jsonl (default: learnings.jsonl)
 #
-# Reads per-work-unit learnings, auto-recommends promotion, and outputs
+# Reads per-row learnings, auto-recommends promotion, and outputs
 # promotion candidates for user confirmation.
 #
 # Exit codes:
@@ -22,16 +22,16 @@ fi
 name="$1"
 project_file="${2:-learnings.jsonl}"
 
-work_learnings=".work/${name}/learnings.jsonl"
+work_learnings=".furrow/rows/${name}/learnings.jsonl"
 
 if [ ! -f "${work_learnings}" ]; then
-  echo "No learnings to promote for work unit '${name}'."
+  echo "No learnings to promote for row '${name}'."
   exit 0
 fi
 
 line_count="$(wc -l < "${work_learnings}")"
 if [ "${line_count}" -eq 0 ]; then
-  echo "No learnings to promote for work unit '${name}'."
+  echo "No learnings to promote for row '${name}'."
   exit 0
 fi
 
@@ -87,7 +87,7 @@ while IFS= read -r line; do
       # Promote if content references a package/module
       if echo "${content}" | grep -qE '(package|module|import|require|dependency)'; then
         recommend="promote"
-        reason="Pitfall likely recurs in other work units."
+        reason="Pitfall likely recurs in other rows."
       else
         recommend="skip"
         reason="Pitfall appears task-specific."

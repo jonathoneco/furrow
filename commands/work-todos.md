@@ -1,13 +1,13 @@
 # /work-todos [--extract [name]] [--new]
 
-Manage TODO entries in `todos.yaml`. Two modes: extract candidates from work unit artifacts, or create a new TODO interactively.
+Manage TODO entries in `todos.yaml`. Two modes: extract candidates from row artifacts, or create a new TODO interactively.
 
 ## Syntax
 
 ```
 /work-todos              → Extract mode (active task)
 /work-todos --extract    → Extract mode (active task)
-/work-todos --extract N  → Extract mode (named work unit)
+/work-todos --extract N  → Extract mode (named row)
 /work-todos --new        → New mode (interactive creation)
 ```
 
@@ -17,15 +17,15 @@ Flags are mutually exclusive. Error if both provided.
 
 ## Extract Mode
 
-### 1. Resolve Work Unit
+### 1. Resolve Row
 
-- If `name` provided: verify `.work/{name}/` exists. Error if not.
-- If no `name`: run `commands/lib/detect-context.sh`. Error if no active task.
+- If `name` provided: verify `.furrow/rows/{name}/` exists. Error if not.
+- If no `name`: run `rws status`. Error if no active task.
 
 ### 2. Run Extraction
 
 ```sh
-scripts/extract-todo-candidates.sh "{name}"
+alm extract "{name}"
 ```
 
 Outputs JSON array of candidates with `source`, `title`, `context`, `raw_content`, `source_file`.
@@ -87,7 +87,7 @@ Re-display changed proposals before writing.
 **ADD**:
 - Generate slug `id` from title: lowercase → non-alphanum to hyphens → collapse → trim → max 60 chars. If collision, append `-2`, `-3`, etc.
 - Refine `context` and `work_needed` from raw candidate into clear prose (don't copy `raw_content` verbatim)
-- Set `source_work_unit` to work unit name
+- Set `source_work_unit` to row name
 - Map candidate `source` to `source_type` enum: `summary-open-questions` → `open-question`, `learnings-pitfall` → `unpromoted-learning`, `review-finding` → `review-finding`
 - Set `created_at` and `updated_at` to current ISO 8601
 
@@ -102,7 +102,7 @@ Re-display changed proposals before writing.
 
 ### 8. Validate
 
-Run `scripts/validate-todos.sh`. If fails, report error, do not commit, ask user to review.
+Run `alm validate`. If fails, report error, do not commit, ask user to review.
 
 ### 9. Commit
 
@@ -113,7 +113,7 @@ git add todos.yaml
 git commit -m "chore: extract TODOs from {name} into todos.yaml"
 ```
 
-Where `{name}` is the source work unit name.
+Where `{name}` is the source row name.
 
 ### 10. Report
 
@@ -157,12 +157,12 @@ Options:
 
 - Generate slug `id` from title (same rules as extract mode)
 - Set `source_type: "manual"`
-- Set `source_work_unit` to active task name if one exists, otherwise omit
+- Set `source_work_unit` to active row name if one exists, otherwise omit
 - If user chose merge: apply merge rules instead
 
 ### 5. Validate
 
-Run `scripts/validate-todos.sh`.
+Run `alm validate`.
 
 ### 6. Commit
 

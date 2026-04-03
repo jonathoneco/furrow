@@ -2,8 +2,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "state.schema.json",
   "$comment": "See _rationale.yaml for component rationale",
-  "title": "Work Unit State",
-  "description": "Lifecycle and progress tracking for a Furrow work unit. Furrow-exclusive write — agents never write this file directly.",
+  "title": "Row State",
+  "description": "Lifecycle and progress tracking for a Furrow row. Furrow-exclusive write — agents never write this file directly.",
   "type": "object",
   "required": [
     "name",
@@ -18,8 +18,7 @@
     "branch",
     "mode",
     "base_commit",
-    "epic_id",
-    "issue_id",
+    "seed_id",
     "created_at",
     "updated_at",
     "archived_at"
@@ -28,7 +27,7 @@
     "name": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
-      "description": "Kebab-case identifier matching the work unit directory name"
+      "description": "Kebab-case identifier matching the row directory name"
     },
     "title": {
       "type": "string",
@@ -148,15 +147,15 @@
     },
     "base_commit": {
       "type": "string",
-      "description": "Git SHA at work unit creation"
+      "description": "Git SHA at row creation"
     },
-    "epic_id": {
-      "type": ["string", "null"],
-      "description": "Beans epic ID or null"
+    "seed_id": {
+      "type": "string",
+      "description": "Seeds tracker ID (from sds)"
     },
-    "issue_id": {
+    "epic_seed_id": {
       "type": ["string", "null"],
-      "description": "Beans issue ID or null"
+      "description": "Epic seed ID or null"
     },
     "created_at": {
       "type": "string",
@@ -175,7 +174,7 @@
     "source_todo": {
       "type": ["string", "null"],
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
-      "description": "TODO entry ID this work unit was created from, or null"
+      "description": "TODO entry ID this row was created from, or null"
     },
     "gate_policy_init": {
       "type": ["string", "null"],

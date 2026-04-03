@@ -2,33 +2,97 @@
 # helpers.sh — Shared test utilities for integration tests
 #
 # Source this file; do not execute directly.
-# Provides: setup_fixture, teardown_fixture, assert_exit_code,
-#           assert_file_exists, assert_file_contains, assert_json_field,
-#           run_test
+# Provides: setup_test_env, teardown_test_env, setup_fixture,
+#           teardown_fixture, assert_exit_code, assert_file_exists,
+#           assert_file_not_exists, assert_file_contains,
+#           assert_file_not_contains, assert_json_field,
+#           assert_not_empty, assert_output_contains,
+#           assert_ge, run_test, print_summary
 
 TESTS_PASSED=0
 TESTS_FAILED=0
 TESTS_RUN=0
 
-# Resolve Furrow root (two levels up from tests/integration/)
-FURROW_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-export FURROW_ROOT
+# Resolve project root (two levels up from tests/integration/)
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+export PROJECT_ROOT
 
-# --- Fixture management ---
+# --- Test environment setup ---
+
+# setup_test_env
+#   Creates an isolated temp directory with .furrow/ structure,
+#   initializes a git repo, sets up PATH to include bin/.
+#   Sets TEST_DIR as the working directory for all test operations.
+setup_test_env() {
+  TEST_DIR="$(mktemp -d)"
+  export TEST_DIR
+
+  # Add project bin/ to PATH so sds/rws/alm are available
+  export PATH="${PROJECT_ROOT}/bin:${PATH}"
+
+  # Initialize minimal git repo
+  (
+    cd "$TEST_DIR" &&
+    git init -q &&
+    git config user.email "test@test.com" &&
+    git config user.name "Test" &&
+    echo "init" > .gitkeep &&
+    git add -A &&
+    git commit -q -m "initial"
+  )
+
+  # Create .furrow/ skeleton (do NOT create seeds/ — let sds init do that)
+  mkdir -p "${TEST_DIR}/.furrow/rows"
+  mkdir -p "${TEST_DIR}/.furrow/almanac"
+  mkdir -p "${TEST_DIR}/.claude"
+  mkdir -p "${TEST_DIR}/skills"
+
+  # Create minimal furrow.yaml
+  cat > "${TEST_DIR}/.claude/furrow.yaml" << 'YAML'
+defaults:
+  mode: code
+  gate_policy: supervised
+seeds:
+  prefix: test-proj
+YAML
+
+  # Create minimal skill files so load-step works
+  for step in ideate research plan spec decompose implement review; do
+    echo "# ${step} step instructions" > "${TEST_DIR}/skills/${step}.md"
+  done
+
+  # Ensure cleanup on signal
+  trap 'rm -rf "${TEST_DIR:-}"' EXIT INT TERM
+}
+
+# teardown_test_env
+#   Removes TEST_DIR if set.
+teardown_test_env() {
+  if [ -n "${TEST_DIR:-}" ] && [ -d "${TEST_DIR}" ]; then
+    rm -rf "${TEST_DIR}"
+  fi
+  unset TEST_DIR
+}
+
+# --- Legacy fixture management (for test-generate-plan.sh compatibility) ---
 
 # setup_fixture <name>
-#   Creates a temp dir with .work/<name>/ structure.
+#   Creates a temp dir with .furrow/rows/<name>/ structure.
 #   Sets FIXTURE_DIR, WORK_DIR. Registers cleanup trap.
 setup_fixture() {
   _name="$1"
   FIXTURE_DIR="$(mktemp -d)"
-  WORK_DIR="${FIXTURE_DIR}/.work/${_name}"
+  WORK_DIR="${FIXTURE_DIR}/.furrow/rows/${_name}"
   mkdir -p "${WORK_DIR}"
   mkdir -p "${FIXTURE_DIR}/skills"
   # Ensure cleanup on signal interruption
   trap 'rm -rf "${FIXTURE_DIR:-}"' EXIT INT TERM
   export FIXTURE_DIR WORK_DIR
 }
+
+# Resolve Furrow root for legacy tests
+FURROW_ROOT="$PROJECT_ROOT"
+export FURROW_ROOT
 
 # teardown_fixture
 #   Removes FIXTURE_DIR if set.
@@ -132,6 +196,51 @@ assert_json_field() {
   fi
 }
 
+# assert_not_empty <description> <value>
+assert_not_empty() {
+  _desc="$1"; _value="$2"
+  TESTS_RUN=$((TESTS_RUN + 1))
+  if [ -n "$_value" ]; then
+    printf "  PASS: %s\n" "$_desc"
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+    return 0
+  else
+    printf "  FAIL: %s (value is empty)\n" "$_desc" >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+    return 1
+  fi
+}
+
+# assert_output_contains <description> <output> <pattern>
+assert_output_contains() {
+  _desc="$1"; _output="$2"; _pattern="$3"
+  TESTS_RUN=$((TESTS_RUN + 1))
+  if printf '%s\n' "$_output" | grep -q "$_pattern" 2>/dev/null; then
+    printf "  PASS: %s\n" "$_desc"
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+    return 0
+  else
+    printf "  FAIL: %s (pattern '%s' not found in output)\n" "$_desc" "$_pattern" >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+    return 1
+  fi
+}
+
+# assert_ge <description> <actual> <minimum>
+assert_ge() {
+  _desc="$1"; _actual="$2"; _minimum="$3"
+  TESTS_RUN=$((TESTS_RUN + 1))
+  if [ "$_actual" -ge "$_minimum" ] 2>/dev/null; then
+    printf "  PASS: %s (%s >= %s)\n" "$_desc" "$_actual" "$_minimum"
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+    return 0
+  else
+    printf "  FAIL: %s (expected >= %s, got %s)\n" "$_desc" "$_minimum" "$_actual" >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+    return 1
+  fi
+}
+
 # --- Test runner ---
 
 # run_test <function_name>
@@ -144,4 +253,17 @@ run_test() {
   else
     : # assertions inside already counted failures
   fi
+}
+
+# print_summary
+#   Prints test summary and exits with appropriate code.
+print_summary() {
+  echo ""
+  echo "=========================================="
+  printf "  Results: %s passed, %s failed, %s total\n" "$TESTS_PASSED" "$TESTS_FAILED" "$TESTS_RUN"
+  echo "=========================================="
+  if [ "$TESTS_FAILED" -gt 0 ]; then
+    exit 1
+  fi
+  exit 0
 }

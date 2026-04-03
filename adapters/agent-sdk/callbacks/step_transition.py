@@ -28,7 +28,7 @@ def advance_step(
     """Advance from one step to the next.
 
     Args:
-        work_dir: Path to the work unit directory.
+        work_dir: Path to the row directory.
         from_step: The step being completed.
         to_step: The step to advance to.
 

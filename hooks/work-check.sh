@@ -19,9 +19,9 @@ fi
 # shellcheck source=lib/common.sh
 . "$COMMON_LIB"
 
-# Collect all active work units
+# Collect all active rows
 active_units=""
-for _state_file in .work/*/state.json; do
+for _state_file in .furrow/rows/*/state.json; do
   [ -f "$_state_file" ] || continue
   _archived="$(jq -r '.archived_at // "null"' "$_state_file" 2>/dev/null)" || continue
   if [ "$_archived" = "null" ]; then
@@ -44,7 +44,7 @@ update_script="$FURROW_ROOT/scripts/update-state.sh"
 for work_dir in $active_units; do
   state_file="$work_dir/state.json"
   summary_file="$work_dir/summary.md"
-  unit_name="$(work_unit_name "$work_dir")"
+  unit_name="$(row_name "$work_dir")"
 
   # Validate state.json integrity
   if [ -f "$VALIDATE_LIB" ]; then

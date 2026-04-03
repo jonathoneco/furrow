@@ -24,7 +24,7 @@ if [ $# -lt 1 ]; then
 fi
 
 name="$1"
-state_file="${FURROW_ROOT}/.work/${name}/state.json"
+state_file="${FURROW_ROOT}/.furrow/rows/${name}/state.json"
 
 if [ ! -f "$state_file" ]; then
   echo "Error: state.json not found at ${state_file}" >&2

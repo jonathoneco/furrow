@@ -3,14 +3,14 @@
 Shared git workflow conventions for implementation and review steps.
 
 ## Branch Naming
-Branch format: `work/{work-unit-name}`. One branch per work unit.
-Created at decompose->implement boundary via `scripts/create-work-branch.sh`.
+Branch format: `work/{row-name}`. One branch per row.
+Created at decompose->implement boundary via `rws init` (with branch creation).
 Parallel specialists share the branch — file ownership prevents conflicts.
 
 ## Commit Format
-Conventional commits with work-unit scope and trailers:
+Conventional commits with row scope and trailers:
 ```
-{type}({work-unit}): {description}
+{type}({row}): {description}
 
 Deliverable: {deliverable-name}
 Step: {step}
@@ -26,8 +26,8 @@ Gate commits: `chore({name}): gate pass {from}->{to}`.
 - Within work branch: rebase onto main periodically.
 - Back to main: `git merge --no-ff` via `scripts/merge-to-main.sh`.
   No squash — individual commits preserve deliverable traceability.
-- Merge requires archived work unit.
+- Merge requires archived row.
 
 ## Wave Boundaries
-Run `scripts/check-wave-conflicts.sh` before launching the next wave.
+Run `rws diff` before launching the next wave to check for conflicts.
 See `docs/git-conventions.md` for the full reference.

@@ -3,7 +3,7 @@
 #
 #
 # Usage: update-state.sh <name> <jq-expression>
-#   name          — work unit name (kebab-case)
+#   name          — row name (kebab-case)
 #   jq-expression — jq filter to apply to state.json (e.g., '.title = "New Title"')
 #
 # All mutations go through this script. It:
@@ -33,7 +33,7 @@ jq_expr="$2"
 
 # --- locate files ---
 
-work_dir=".work/${name}"
+work_dir=".furrow/rows/${name}"
 state_file="${work_dir}/state.json"
 
 if [ ! -f "${state_file}" ]; then
@@ -98,8 +98,8 @@ validation_result="$(jq -r '
   elif (.created_at | type) != "string" then "type:created_at"
   elif (.updated_at | type) != "string" then "type:updated_at"
   elif check_nullable_string(.archived_at) != "ok" then "type:archived_at"
-  elif check_nullable_string(.epic_id) != "ok" then "type:epic_id"
-  elif check_nullable_string(.issue_id) != "ok" then "type:issue_id"
+  elif check_nullable_string(.seed_id) != "ok" then "type:seed_id"
+  elif check_nullable_string(.epic_seed_id) != "ok" then "type:epic_seed_id"
   elif check_nullable_string(.force_stop_at) != "ok" then "type:force_stop_at"
   elif check_nullable_string(.branch) != "ok" then "type:branch"
   else "ok"

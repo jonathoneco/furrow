@@ -29,11 +29,11 @@ Resolve specialist templates from `specialists/*.md` by domain value.
 
 ## Step Mechanics
 Transition out: gate record `decompose->implement` with `pass` required.
-Pre-step shell check (`gate-precheck.sh`): <=2 deliverables, no depends_on, same
+Pre-step shell check (`rws gate-check`): <=2 deliverables, no depends_on, same
 specialist type, not supervised, not force-stopped.
 Pre-step evaluator (`evals/gates/decompose.yaml`): wave-triviality — can all
 deliverables execute in a single wave without coordination? Per `skills/shared/gate-evaluator.md`.
-At this boundary, `scripts/create-work-branch.sh` creates the work branch.
+At this boundary, `rws init` (with branch creation) creates the work branch.
 Next step expects: `plan.json` with waves, `team-plan.md` with coordination.
 
 ## Supervised Transition Protocol
@@ -42,17 +42,17 @@ Before requesting a step transition:
 2. Present work to user per `skills/shared/summary-protocol.md`.
 3. Ask explicitly: "**Ready to advance to implement?** Yes / No"
 4. Wait for user response. Do NOT proceed without explicit approval.
-5. On "yes": call `step-transition.sh --request` with `decided_by=manual`.
-6. After --request succeeds: call `step-transition.sh --confirm`.
+5. On "yes": call `rws transition --request` with `decided_by=manual`.
+6. After --request succeeds: call `rws transition --confirm`.
 7. On "no": ask what needs to change, address feedback, return to step 2.
 
 ## Learnings
-Append reusable insights to `.work/{name}/learnings.jsonl`.
+Append reusable insights to `.furrow/rows/{name}/learnings.jsonl`.
 Read `skills/shared/learnings-protocol.md` for schema and categories.
 
 ## Research Mode
 When `state.json.mode` is `"research"`:
-- File ownership: `.work/{name}/deliverables/{section-name}.md` (not git tree).
+- File ownership: `.furrow/rows/{name}/deliverables/{section-name}.md` (not git tree).
 - Specialists: research-domain experts (`domain-researcher`,
   `comparative-analyst`, `synthesis-writer`).
 - Waves organize authoring sections; dependencies reflect authoring order.

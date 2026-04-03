@@ -1,0 +1,266 @@
+objective: >-
+  Integrate Seeds as mandatory core infrastructure into Furrow, unify row
+  lifecycle management under the rws CLI, create the alm CLI for planning
+  and knowledge management, and restructure all harness state under .furrow/
+  — executing as a clean swap with no intermediate state.
+
+deliverables:
+  - name: furrow-restructure
+    acceptance_criteria:
+      - "No remaining references to .work/ in harness source (verified by grep, excluding .furrow/rows/ data)"
+      - "No remaining references to 'work unit' in harness source (verified by grep)"
+      - "Migration script (scripts/migrate-to-furrow.sh) moves .work/ → .furrow/rows/, .beans/ → .furrow/seeds/, todos.yaml → .furrow/almanac/todos.yaml, ROADMAP.md → .furrow/almanac/roadmap.yaml, _rationale.yaml → .furrow/almanac/rationale.yaml"
+      - "Migration script is idempotent (running twice is safe)"
+      - "Migration handles edge cases: mid-transition rows, missing dirs, no .beans/"
+      - "Migration renames state.json fields: issue_id → seed_id, epic_id → epic_seed_id in all existing row data"
+      - "references/work-unit-layout.md renamed to references/row-layout.md with updated content"
+      - ".claude/CLAUDE.md, .claude/furrow.yaml, install.sh updated for new paths"
+    specialist: shell-specialist
+    file_ownership:
+      - "scripts/migrate-to-furrow.sh"
+      - "references/row-layout.md"
+
+  - name: sds-cli
+    acceptance_criteria:
+      - "bin/sds exists as POSIX shell + jq script forked from work-harness bn"
+      - "sds init --prefix proj creates .furrow/seeds/config with prefix"
+      - "sds create --title '...' --type task creates entry in .furrow/seeds/seeds.jsonl"
+      - "sds update <id> --status implementing succeeds (extended harness-aware statuses)"
+      - "Extended statuses accepted: open, claimed, ideating, researching, planning, speccing, decomposing, implementing, reviewing, closed"
+      - "sds list, show, close, ready, dep add/rm, search all work correctly"
+      - "sds --json flag outputs valid JSONL for scripting"
+      - "Data stored in .furrow/seeds/seeds.jsonl with flock concurrency"
+      - "install.sh symlink table includes sds"
+    specialist: cli-designer
+    file_ownership:
+      - "bin/sds"
+
+  - name: rws-cli
+    acceptance_criteria:
+      - "bin/rws exists as POSIX shell + jq script with subcommand dispatch"
+      - "rws init <name> --title '...' creates .furrow/rows/<name>/state.json"
+      - "rws transition --request and --confirm implement two-phase flow (preserving supervised gating)"
+      - "rws status [name] shows row state"
+      - "rws list --active shows non-archived rows"
+      - "rws archive <name> marks row archived"
+      - "rws gate-check <name> runs pre-step structural filter"
+      - "rws load-step <name> outputs step skill content"
+      - "rws rewind <name> steps back with fail gate record"
+      - "rws diff <name> shows diff from base_commit"
+      - "rws --help documents all subcommands"
+      - "No harness code calls absorbed scripts directly (init-work-unit, step-transition, advance-step, detect-context, load-step, record-gate, validate-step-artifacts, regenerate-summary, gate-precheck, archive-work, rewind)"
+      - "Absorbed scripts are deleted (not stubbed)"
+      - "All Claude Code commands (work.md, status.md, archive.md, etc.) call rws subcommands"
+      - "Domain hooks folded into rws: gate-check, summary-regen, timestamp-update, transition-guard"
+      - "Policy hooks updated to call rws where needed: validate-summary, correction-limit, etc."
+      - "rws regenerate-summary and rws validate-summary exposed as public subcommands"
+      - "install.sh symlink table includes rws"
+    specialist: cli-designer
+    depends_on:
+      - furrow-restructure
+    file_ownership:
+      - "bin/rws"
+
+  - name: seeds-row-integration
+    acceptance_criteria:
+      - "rws init auto-creates seed via sds create, stores seed_id in state.json"
+      - "rws init --seed-id <id> validates seed exists via sds show, links it"
+      - "rws init --source-todo <id> looks up TODO seed_id; if absent, creates seed and backfills .furrow/almanac/todos.yaml"
+      - "Every rws transition updates seed status to match new step via sds update"
+      - "Gate evaluation includes seed-consistency dimension: seed exists, not closed, status matches"
+      - "Seed status mismatch produces hard block with clear error message and recovery instructions"
+      - "rws archive auto-closes seed via sds close --reason 'archived: {name}'"
+      - "Recovery path documented: how to investigate mismatch, manual sds update to resync"
+      - "state.json schema uses seed_id and epic_seed_id (no issue_id or epic_id)"
+      - "hooks/gate-check.sh validates seed state"
+      - "furrow.yaml has no beans opt-in section — seeds always on"
+      - "evals/gates/ include seed-consistency checks"
+    specialist: harness-engineer
+    depends_on:
+      - sds-cli
+      - rws-cli
+    file_ownership:
+      - "evals/dimensions/seed-consistency.yaml"
+
+  - name: alm-cli
+    acceptance_criteria:
+      - "bin/alm exists as POSIX shell + jq script with subcommand dispatch"
+      - "alm add creates a TODO in .furrow/almanac/todos.yaml"
+      - "alm extract [row] extracts TODO candidates from row artifacts"
+      - "alm list shows TODOs with seed linkage where present"
+      - "alm show <id> displays TODO detail and linked seed status"
+      - "alm triage generates .furrow/almanac/roadmap.yaml from todos.yaml"
+      - "alm next [--phase N] generates handoff prompts from roadmap.yaml"
+      - "alm validate validates todos.yaml schema"
+      - "alm --help documents all subcommands"
+      - "todos.yaml schema accepts optional seed_id field"
+      - "source_type enum includes 'legacy'"
+      - "roadmap.yaml is structured YAML (phases, work units, dependency graph, conflict zones)"
+      - "alm render generates optional human-readable Markdown from roadmap.yaml on demand"
+      - "Claude Code commands (/work-todos, /furrow:triage, /furrow:next) call alm"
+      - "install.sh symlink table includes alm"
+      - "Post-completion TODOs extracted for deferred almanac subcommands (learn, rationale, docs, specialists, history)"
+    specialist: cli-designer
+    depends_on:
+      - furrow-restructure
+    file_ownership:
+      - "bin/alm"
+      - ".furrow/almanac/"
+
+  - name: cli-test-suite
+    acceptance_criteria:
+      - "Old integration tests (test-step-transition.sh, test-correction-limit.sh, test-load-step.sh, test-check-artifacts.sh) deleted"
+      - "New test suite framed around CLIs: test-sds.sh, test-rws.sh, test-alm.sh"
+      - "sds tests cover: init, create, update with extended statuses, list, show, close, ready, dep, search"
+      - "rws tests cover: init, transition (two-phase supervised flow), status, list, archive, rewind, diff, focus"
+      - "alm tests cover: add, extract, validate, triage (roadmap.yaml output), next"
+      - "Integration test: full lifecycle (rws init → sds seed created → step transitions with seed sync → archive with seed close)"
+      - "tests/integration/helpers.sh updated for .furrow/ paths"
+    specialist: test-engineer
+    depends_on:
+      - seeds-row-integration
+    file_ownership:
+      - "tests/integration/test-sds.sh"
+      - "tests/integration/test-rws.sh"
+      - "tests/integration/test-alm.sh"
+
+  - name: architecture-docs
+    acceptance_criteria:
+      - "docs/architecture/cli-architecture.md documents three-CLI model (sds, rws, alm), data flows, .furrow/ directory structure"
+      - "docs/architecture/cli-architecture.md documents hook disposition (domain hooks in CLIs vs policy hooks separate)"
+      - "docs/architecture/cli-architecture.md documents the abstraction principle: harness interacts via CLIs, not internals"
+      - "references/row-layout.md updated to reflect .furrow/ structure with seeds/ and almanac/"
+      - "references/gate-protocol.md updated with seed-consistency dimension"
+      - "Migration guide included: how to bring existing .work/ project to .furrow/"
+    specialist: harness-engineer
+    depends_on:
+      - seeds-row-integration
+    file_ownership:
+      - "docs/architecture/cli-architecture.md"
+
+context_pointers:
+  # --- CLIs to create ---
+  - path: bin/
+    note: Target location for sds, rws, and alm CLIs
+  - path: /home/jonco/src/work-harness/bin/bn
+    note: Source for sds fork — ~450 line POSIX shell + jq issue tracker
+
+  # --- Scripts absorbed into rws ---
+  - path: commands/lib/
+    note: "11 scripts — init-work-unit, step-transition, detect-context, load-step, gate-precheck, generate-summary, promote-components, promote-learnings, append-learning, validate-learning, rewind — most absorbed into rws"
+  - path: scripts/advance-step.sh
+    note: Step state machine → rws transition internals
+  - path: scripts/record-gate.sh
+    note: Gate record writer → rws transition internals
+  - path: scripts/validate-step-artifacts.sh
+    note: Artifact validation → rws transition internals
+  - path: scripts/regenerate-summary.sh
+    note: Summary regen → rws transition internals
+  - path: scripts/archive-work.sh
+    note: Archive logic → rws archive
+
+  # --- Scripts absorbed into alm ---
+  - path: scripts/extract-todo-candidates.sh
+    note: TODO extraction → alm extract
+  - path: scripts/validate-todos.sh
+    note: Schema validation → alm validate
+  - path: scripts/triage-todos.sh
+    note: Dependency graph + triage → alm triage
+
+  # --- Scripts that stay but need path updates (17 scripts) ---
+  - path: scripts/
+    note: "28 total scripts — run-gate, evaluate-gate, check-artifacts, update-state, generate-plan, validate-definition, cross-model-review, create-work-branch, merge-to-main, furrow-doctor, check-wave-conflicts, select-gate, select-dimensions, update-deliverable, validate-naming, measure-context, run-ci-checks, run-integration-tests all need .work/ → .furrow/rows/ path updates"
+
+  # --- Schemas (define data contracts) ---
+  - path: adapters/shared/schemas/state.schema.json
+    note: "issue_id → seed_id, epic_id → epic_seed_id, update work unit → row terminology"
+  - path: adapters/shared/schemas/todos.schema.yaml
+    note: "Add seed_id field, add 'legacy' to source_type enum"
+  - path: adapters/shared/schemas/definition.schema.yaml
+    note: "Update work unit → row terminology"
+  - path: adapters/shared/schemas/gate-record.schema.json
+    note: "May need seed consistency fields"
+  - path: schemas/
+    note: "4 duplicate schemas — keep in sync with adapters/shared/schemas/ or consolidate"
+
+  # --- Hooks (15 files, enforcement layer) ---
+  - path: hooks/
+    note: "All 15 hooks need .work/ → .furrow/rows/ path updates. gate-check.sh gets seed validation. transition-guard.sh updated for rws. work-check.sh renamed to row-check.sh"
+  - path: hooks/lib/common.sh
+    note: "Shared path resolution helpers — critical to update"
+  - path: hooks/lib/validate.sh
+    note: "Validation helpers — update paths"
+
+  # --- Gate evaluation ---
+  - path: evals/gates/
+    note: "7 gate YAMLs — add seed-consistency dimension to all"
+  - path: evals/dimensions/
+    note: "7 dimension YAMLs + new seed-consistency.yaml"
+
+  # --- Skills (15 files, agent guidance) ---
+  - path: skills/
+    note: "8 step skills + 7 shared skills — all reference .work/, update to .furrow/rows/"
+  - path: skills/work-context.md
+    note: "Always-loaded context — critical path, update terminology"
+
+  # --- Commands (Claude Code entry points) ---
+  - path: commands/
+    note: "9 command docs (work, status, archive, checkpoint, review, work-todos, triage, next, redirect) — become thin wrappers over rws/alm"
+
+  # --- Config and project files ---
+  - path: .claude/furrow.yaml
+    note: "Remove beans opt-in, seeds mandatory, update paths"
+  - path: .claude/CLAUDE.md
+    note: "Update .work/ → .furrow/, work unit → row terminology"
+  - path: .claude/settings.json
+    note: "Update hook paths if they reference .work/"
+  - path: install.sh
+    note: "Add sds, rws, alm to symlink table"
+
+  # --- Files moving to .furrow/almanac/ ---
+  - path: todos.yaml
+    note: "Moves to .furrow/almanac/todos.yaml"
+  - path: ROADMAP.md
+    note: "Moves to .furrow/almanac/roadmap.yaml (format change: MD → YAML)"
+  - path: _rationale.yaml
+    note: "Moves to .furrow/almanac/rationale.yaml"
+
+  # --- Tests ---
+  - path: tests/integration/
+    note: "4+ test files + helpers.sh — update .work/ paths, issue_id → seed_id, script calls → rws calls"
+
+  # --- Adapters ---
+  - path: adapters/claude-code/
+    note: "Commands and skills — update .work/ references"
+  - path: adapters/agent-sdk/
+    note: "Python callbacks and templates — update paths, field names (issue_id → seed_id)"
+
+  # --- References and docs ---
+  - path: references/
+    note: "work-unit-layout.md → row-layout.md, work-unit-meta.yaml → row-meta.yaml, gate-protocol.md path updates"
+  - path: docs/
+    note: "Architecture docs and handoffs — update .work/ references, work unit terminology"
+
+  # --- Templates ---
+  - path: templates/
+    note: "roadmap.md.tmpl and roadmap-sections.yaml — update for YAML roadmap format"
+
+constraints:
+  - "state.json is Furrow-exclusive write — agents read, only rws/scripts mutate"
+  - "Two-phase --request/--confirm transition flow must be preserved in rws transition"
+  - "Clean swap — no intermediate state where old (.work/) and new (.furrow/) coexist in source code"
+  - "sds, rws, and alm are POSIX shell + jq — no new runtime dependencies"
+  - "Seeds is mandatory — no opt-in config, no graceful degradation except during initial project bootstrap"
+  - "Seed status mismatch is a hard block — user must investigate, never auto-correct"
+  - "Old integration tests deleted, replaced with CLI-framed test suite (sds, rws, alm)"
+  - "CLIs are the abstraction layer — all harness enforcement/interaction goes through sds/rws/alm, never raw scripts"
+  - "Domain hooks (gate-check, summary-regen, timestamp-update, transition-guard) fold into rws; policy hooks stay separate"
+  - "Absorbed scripts are deleted after CLI absorption (no stubs)"
+  - "furrow.yaml seeds section: just prefix for now (seeds.prefix)"
+  - "Recovery from seed mismatch requires human input — no automated resync"
+  - "Gate policy and nonce verification in supervised transitions must remain intact through rws refactor"
+  - "Post-completion: extract TODOs for deferred almanac subcommands (learn, rationale, docs, specialists, history)"
+
+gate_policy: supervised
+
+source_todo: beans-enforcement-integration

@@ -2,9 +2,9 @@
 # JSON format. Tooling should glob both *.json and *.yaml in this directory.
 #
 # definition.yaml validation schema
-# Validates work unit definitions per spec 00 §1.1
+# Validates row definitions per spec 00 §1.1
 $schema: "https://json-schema.org/draft/2020-12/schema"
-title: "Work Unit Definition"
+title: "Row Definition"
 description: "Schema for definition.yaml — the work contract"
 type: object
 required:
@@ -93,5 +93,5 @@ properties:
   source_todo:
     type: string
     pattern: "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
-    description: "ID of the TODO entry this work unit was created from"
+    description: "ID of the TODO entry this row was created from"
 additionalProperties: false

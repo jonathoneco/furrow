@@ -1,22 +1,22 @@
 # Work Context (Work Layer)
 
-Loaded when a work unit is active. Provides task discovery, state conventions,
+Loaded when a row is active. Provides task discovery, state conventions,
 and command entry points. Does NOT contain step-specific guidance.
 
 ## Commands
 
 | Command | Purpose |
 |---------|---------|
-| `/work <desc>` | Create or resume a work unit |
+| `/work <desc>` | Create or resume a row |
 | `/work-status` | Show step, deliverable progress, suggested next action |
 | `/work-checkpoint` | Save session progress for continuity |
 | `/work-reground` | Recover context after break or compaction |
 | `/work-review` | Run structured review with specialist agents |
-| `/work-archive` | Archive completed work unit |
+| `/work-archive` | Archive completed row |
 
 ## Active Task State
 
-Read from `.work/{name}/state.json`:
+Read from `.furrow/rows/{name}/state.json`:
 - `step`: current step in the 7-step sequence
 - `step_status`: `not_started` | `in_progress` | `completed` | `blocked`
 - `deliverables`: map of deliverable name to status/wave/corrections
@@ -30,7 +30,7 @@ Read from `.work/{name}/state.json`:
 ideate -> research -> plan -> spec -> decompose -> implement -> review
 ```
 
-All work units traverse all 7 steps. No steps are skipped. Pre-step evaluation
+All rows traverse all 7 steps. No steps are skipped. Pre-step evaluation
 may determine a step adds no information and record a `prechecked` gate, advancing
 without user input (unless `gate_policy: supervised`).
 
@@ -38,7 +38,7 @@ without user input (unless `gate_policy: supervised`).
 
 | Element | Convention | Example |
 |---------|-----------|---------|
-| Work unit directory | `.work/{kebab-case}/` | `.work/add-rate-limiting/` |
+| Row directory | `.furrow/rows/{kebab-case}/` | `.furrow/rows/add-rate-limiting/` |
 | Deliverable names | kebab-case | `rate-limiter-middleware` |
 | Specialist types | kebab-case | `api-designer` |
 | Research files | `research/{topic}.md` | `research/prior-art.md` |
@@ -59,7 +59,7 @@ without user input (unless `gate_policy: supervised`).
 
 ## Core Files
 
-Every work unit has: `definition.yaml`, `state.json`, `summary.md`, `reviews/`.
+Every row has: `definition.yaml`, `state.json`, `summary.md`, `reviews/`.
 Conditional files created by steps: `plan.json`, `team-plan.md`, `research.md`,
 `spec.md`, `gates/`.
 
@@ -116,7 +116,7 @@ Vocabulary:
 - `prechecked`: pre-step evaluation determined step not needed
 
 Gate evaluation flow:
-1. Phase A (deterministic, shell): `commands/lib/gate-precheck.sh` checks structural criteria
+1. Phase A (deterministic, shell): `rws gate-check` checks structural criteria
 2. Phase B (judgment, isolated subagent): evaluator assesses quality dimensions from `evals/gates/{step}.yaml`
 3. Trust gradient (`scripts/evaluate-gate.sh`) applies `gate_policy` to the evaluator's verdict
 
@@ -143,4 +143,4 @@ Detailed protocols live in `references/` (NOT injected — read on demand):
 - `references/definition-shape.md` — complexity mapping
 - `references/deduplication-strategy.md` — context dedup rules
 - `references/research-mode.md` — research mode conventions
-- `references/work-unit-layout.md` — directory layout conventions
+- `references/row-layout.md` — directory layout conventions

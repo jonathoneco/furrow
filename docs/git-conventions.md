@@ -5,8 +5,8 @@ Detailed git workflow conventions for Furrow.
 ## 1. Branch Lifecycle
 
 ### Creation
-- Branch name: `work/{work-unit-name}` (kebab-case, matches `.work/` directory)
-- Created at the `decompose->implement` gate boundary by `scripts/create-work-branch.sh`
+- Branch name: `work/{row-name}` (kebab-case, matches `.furrow/rows/` directory)
+- Created at the `decompose->implement` gate boundary by `rws init` (with branch creation)
 - Branch starts from current HEAD at creation time
 - Recorded in `state.json.branch`
 
@@ -21,14 +21,14 @@ Detailed git workflow conventions for Furrow.
 - Branch deletion is manual (not automated by Furrow)
 
 ### Idempotent Checkout
-- If the branch already exists (e.g., correction cycle), `create-work-branch.sh`
+- If the branch already exists (e.g., correction cycle), `rws init`
   checks it out without recreating
 
 ## 2. Commit Message Format
 
 ### Standard Commits
 ```
-{type}({work-unit-name}): {description}
+{type}({row-name}): {description}
 
 Deliverable: {deliverable-name}
 Step: {step}
@@ -38,14 +38,14 @@ Step: {step}
 
 ### Gate Commits
 ```
-chore({work-unit-name}): gate pass {from}->{to}
+chore({row-name}): gate pass {from}->{to}
 
 Step: {to}
 ```
 
 ### Merge Commits
 ```
-merge: complete {work-unit-name}
+merge: complete {row-name}
 
 Deliverables: {comma-separated list}
 Gate: review pass
@@ -74,7 +74,7 @@ On-branch commits (implement through review) go to `work/{name}`.
 - Always `--no-ff` merge (never fast-forward, never squash)
 - Squash is explicitly disallowed — individual commits provide traceability
 - Merge commit preserves the full commit history
-- Merge requires the work unit to be archived (review passed)
+- Merge requires the row to be archived (review passed)
 
 ## 5. Conflict Resolution
 
@@ -83,7 +83,7 @@ File ownership enforcement (at decompose time and via write hooks) is the
 primary conflict prevention mechanism.
 
 ### Detection
-`scripts/check-wave-conflicts.sh` runs at wave boundaries to detect files
+`rws diff` runs at wave boundaries to detect files
 modified outside a specialist's ownership that overlap with another specialist.
 
 ### Resolution Escalation
@@ -117,8 +117,8 @@ at `gates/implement-to-review-ci.json`.
 }
 ```
 
-## 7. Work Unit Diff
+## 7. Row Diff
 
-`scripts/work-unit-diff.sh` produces a `git diff --stat` from `state.json.base_commit`
+`rws diff` produces a `git diff --stat` from `state.json.base_commit`
 to HEAD. Used by the review step (Phase A) for plan completion audit — cross-referencing
 changed files against deliverable file_ownership globs.

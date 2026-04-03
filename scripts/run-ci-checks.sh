@@ -2,10 +2,10 @@
 # run-ci-checks.sh — Run CI tests and produce structured gate evidence
 #
 # Usage: run-ci-checks.sh <name>
-#   name — work unit name
+#   name — row name
 #
 # Reads CI commands from .claude/furrow.yaml ci section.
-# Produces gate evidence at .work/{name}/gates/implement-to-review-ci.json.
+# Produces gate evidence at .furrow/rows/{name}/gates/implement-to-review-ci.json.
 #
 # Exit codes:
 #   0 — all checks pass
@@ -24,7 +24,7 @@ fi
 
 name="$1"
 
-work_dir="${FURROW_ROOT}/.work/${name}"
+work_dir="${FURROW_ROOT}/.furrow/rows/${name}"
 gates_dir="${work_dir}/gates"
 
 # --- read CI config ---

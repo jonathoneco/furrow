@@ -1,0 +1,80 @@
+objective: >-
+  Create the merge-specialist reasoning template, update the harness-engineer
+  specialist to reflect V2 Furrow architecture, and bring rationale.yaml up to
+  date with all current harness components — completing pre-merge hygiene for
+  the work/beans-integration branch.
+
+deliverables:
+  - name: merge-specialist
+    acceptance_criteria:
+      - "specialists/merge-specialist.md follows references/specialist-template.md format"
+      - "Covers rebase vs merge tradeoffs with decision heuristics"
+      - "Documents wave merge conflict detection for parallel worktree branches"
+      - "Documents row-to-main merge validation (pre-merge checks, --no-ff policy)"
+      - "Includes post-merge verification patterns"
+      - "Acknowledges bootstrap gap: specialist cannot guide its own inaugural merge"
+      - "Registered in specialists/_meta.yaml"
+    specialist: systems-architect
+    file_ownership:
+      - "specialists/merge-specialist.md"
+      - "specialists/_meta.yaml"
+
+  - name: harness-engineer-grounding
+    acceptance_criteria:
+      - "specialists/harness-engineer.md Context Requirements updated with pointers to: seeds system, almanac, gate enforcement pipeline, eval protocols, adapter patterns, CLIs"
+      - "Each pointer names the file/directory and its role (one line each, not prose)"
+      - "No architecture content duplicated from rationale.yaml, work-context.md, or gate-protocol.md"
+      - "Existing valid content (enforcement spectrum, contract thinking, anti-patterns) preserved"
+    specialist: harness-engineer
+    file_ownership:
+      - "specialists/harness-engineer.md"
+
+  - name: rationale-update
+    acceptance_criteria:
+      - "rationale.yaml entries added for all 3 CLIs (bin/alm, bin/rws, bin/sds)"
+      - "rationale.yaml entries added for missing scripts (cross-model-review, evaluate-gate, generate-plan, migrate-to-furrow, run-integration-tests, select-dimensions)"
+      - "rationale.yaml entries added for missing hooks (correction-limit, verdict-guard)"
+      - "rationale.yaml entries added for all undocumented specialists"
+      - "rationale.yaml entries added for missing evals (seed-consistency, review gate)"
+      - "Each entry follows existing format: component, why, deletion_criteria"
+    specialist: harness-engineer
+    file_ownership:
+      - ".furrow/almanac/rationale.yaml"
+
+  - name: todos-roadmap-refresh
+    acceptance_criteria:
+      - "TODOs completed by archived rows marked status: done (beans-enforcement-integration, cli-enhancements, namespace-rename)"
+      - "TODOs addressed by this row marked status: done (merge-specialist, legacy-todos-migration)"
+      - "New TODOs added for architecture implications discovered during this row"
+      - "Roadmap regenerated via alm triage reflecting current state"
+      - "todos.yaml passes alm validate"
+    specialist: harness-engineer
+    file_ownership:
+      - ".furrow/almanac/todos.yaml"
+      - ".furrow/almanac/roadmap-legacy.md"
+
+context_pointers:
+  - path: references/specialist-template.md
+    note: Template format for merge-specialist
+  - path: specialists/harness-engineer.md
+    note: Current harness-engineer to update
+  - path: .furrow/almanac/rationale.yaml
+    note: Rationale file to extend
+  - path: scripts/merge-to-main.sh
+    note: Existing merge mechanics — specialist reasons about when/how to use
+  - path: skills/implement.md
+    note: How specialists are loaded during wave execution
+  - path: skills/work-context.md
+    note: Furrow architecture reference for harness-engineer grounding
+  - path: .furrow/almanac/todos.yaml
+    note: Current TODOs to audit and update
+  - path: .furrow/almanac/roadmap-legacy.md
+    note: Current roadmap to regenerate
+
+constraints:
+  - "Additive only — no changes to existing specialist reasoning that is still valid"
+  - "85 tests passing — do not break them"
+  - "Legacy TODO audit result recorded in summary.md, not as a deliverable"
+  - "Branch: work/beans-integration (12 commits ahead of main)"
+
+gate_policy: supervised

@@ -46,5 +46,18 @@ Scripts use `set -eu` and follow exit code conventions (0=success, 1=usage, 2=no
 
 - Required: `hooks/lib/common.sh`, `hooks/lib/validate.sh`, `scripts/update-state.sh` patterns
 - Required: `schemas/` directory for JSON schema patterns
+- Required: `references/gate-protocol.md` — gate evaluation lifecycle and trust gradients
+- Required: `references/row-layout.md` — .furrow/ directory structure and ownership rules
+- Required: `skills/work-context.md` — step sequence, file conventions, active row recovery
+- Required: `skills/shared/gate-evaluator.md` — isolated evaluator contract and dimension loading
+- Required: `skills/shared/eval-protocol.md` — two-phase review protocol and dimension structure
+- Required: `adapters/shared/conventions.md` — naming, paths, step sequence, write ownership
 - Helpful: `.claude/settings.json` for hook registration patterns
 - Helpful: `_rationale.yaml` for understanding component justifications
+- Helpful: `.furrow/seeds/` — seed registry (seeds.jsonl format, config for project prefix)
+- Helpful: `.furrow/almanac/` — centralized knowledge (rationale.yaml, todos.yaml)
+- Helpful: `adapters/claude-code/` — Claude Code runtime adapter (commands, skills, progressive-loading)
+- Helpful: `adapters/agent-sdk/` — Agent SDK adapter bindings (templates, callbacks)
+- Helpful: `evals/gates/*.yaml` — gate dimension rubrics per step transition
+- Helpful: `evals/dimensions/*.yaml` — quality dimension definitions for artifact review
+- Helpful: `bin/rws`, `bin/sds`, `bin/alm` — CLI entry points for row, seed, and almanac management

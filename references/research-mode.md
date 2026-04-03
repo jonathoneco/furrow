@@ -11,8 +11,8 @@ but outputs change. Research mode produces knowledge artifacts instead of code.
 | research | Prior art, architecture options | Source inventory, knowledge landscape, gap analysis |
 | plan | Architecture decisions, `plan.json` | Knowledge artifact structure, `plan.json` |
 | spec | Component specifications | Knowledge artifact outline with per-section acceptance criteria |
-| decompose | Parallel code work items | Parallel authoring sections with `.work/{name}/deliverables/` ownership |
-| implement | Code changes in git | Knowledge artifact in `.work/{name}/deliverables/` |
+| decompose | Parallel code work items | Parallel authoring sections with `.furrow/rows/{name}/deliverables/` ownership |
+| implement | Code changes in git | Knowledge artifact in `.furrow/rows/{name}/deliverables/` |
 | review | Code quality eval (implement dimensions) | Deliverable quality eval (research-implement dimensions) |
 
 ## Dimension Selection Logic
@@ -54,7 +54,7 @@ Templates at `templates/research-{format}.md`.
 ## Storage
 
 ```
-.work/{name}/
+.furrow/rows/{name}/
   deliverables/           # research implement output
     {section-name}.md     # one file per deliverable
   research/               # research step output (raw findings)
@@ -65,6 +65,6 @@ Templates at `templates/research-{format}.md`.
 ## Key Rules
 
 - Research step NEVER auto-advances (always requires gate evaluation).
-- Implement outputs to `.work/{name}/deliverables/`, NOT to git working tree.
+- Implement outputs to `.furrow/rows/{name}/deliverables/`, NOT to git working tree.
 - Every factual claim must cite a source. Unsourced claims marked `[unverified]`.
 - No auto-promotion of findings. All promotion is user-confirmed at archive time.

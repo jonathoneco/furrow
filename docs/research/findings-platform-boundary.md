@@ -44,7 +44,7 @@ These are the genuine gaps — where Furrow must add value:
 | **Work definition format** | Neither platform has a structured way to express "what needs to be done" with evaluation criteria. Skills say *how to do things*. CLAUDE.md says *what you need to know*. Neither says *what to build and how to judge it*. |
 | **Eval infrastructure** | No built-in eval runner in either platform. No standard format for behavioral evals. No feedback loop from eval results to prompt improvement. |
 | **Generator-evaluator enforcement** | Neither platform structurally separates generation from evaluation. An agent can self-review, but the seed research shows this fails reliably. |
-| **Work-scoped context management** | CLAUDE.md loads everything. The Agent SDK loads what you tell it. Neither has a mechanism for "load exactly the context relevant to this work unit." |
+| **Work-scoped context management** | CLAUDE.md loads everything. The Agent SDK loads what you tell it. Neither has a mechanism for "load exactly the context relevant to this row." |
 | **Quality gate orchestration** | No built-in mechanism to route work through evaluation checkpoints with configurable depth (automated tests → LLM review → human review). |
 | **Cross-session work continuity** | Claude Code has session resume/compact, but compaction quality for half-implemented features is unreliable. Agent SDK has session continuity but no structured handoff format. |
 | **Evaluator calibration** | No built-in mechanism to iterate on evaluator prompts based on divergence from human judgment. |

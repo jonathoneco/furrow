@@ -294,7 +294,7 @@ Installed from: $FURROW_ROOT
 
 | Command | Purpose |
 |---------|---------|
-| /furrow:work | Create or resume a work unit |
+| /furrow:work | Create or resume a row |
 | /furrow:status | Show step, deliverable progress |
 | /furrow:checkpoint | Save session progress |
 | /furrow:review | Run structured review |
@@ -357,6 +357,35 @@ for _dir in skills hooks scripts schemas evals specialists references adapters t
     fi
   fi
 done
+
+# --- 6b. CLI tools (sds, rws, alm) ---
+echo ""
+echo "--- CLI tools ---"
+
+# Detect user-level bin directory on PATH
+_user_bin=""
+if [ -d "$HOME/.local/bin" ] && echo "$PATH" | tr ':' '\n' | grep -q "$HOME/.local/bin"; then
+  _user_bin="$HOME/.local/bin"
+elif [ -d "$HOME/bin" ] && echo "$PATH" | tr ':' '\n' | grep -q "$HOME/bin"; then
+  _user_bin="$HOME/bin"
+fi
+
+for _cli in sds rws alm; do
+  _src="$FURROW_ROOT/bin/$_cli"
+  if [ -e "$_src" ]; then
+    # Project-local symlink (for worktrees)
+    ensure_dir "$_proj_root/bin"
+    symlink "$_src" "$_proj_root/bin/$_cli"
+    # User-level PATH symlink (system-wide availability)
+    if [ -n "$_user_bin" ]; then
+      symlink "$_src" "$_user_bin/$_cli"
+    fi
+  fi
+done
+
+if [ -z "$_user_bin" ]; then
+  echo "  note: no ~/.local/bin or ~/bin on PATH — add project bin/ to PATH manually"
+fi
 
 # --- Summary ---
 echo ""

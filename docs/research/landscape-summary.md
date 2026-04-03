@@ -1,6 +1,6 @@
 # AI Dev Landscape Research — Key Findings
 
-Source: work-harness `docs/feature/ai-dev-landscape.md` and `.work/ai-dev-landscape/`
+Source: work-harness `docs/feature/ai-dev-landscape.md` and `.furrow/rows/ai-dev-landscape/`
 
 ## Headline Findings
 

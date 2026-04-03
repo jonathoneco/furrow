@@ -1,0 +1,871 @@
+- id: rethink-hint-file-pattern
+  title: "Rethink hint file pattern — consolidate into state.json"
+  context: |
+    The harness uses dot-prefixed hint files (.gate_policy_hint, and nearly added .source_todo)
+    to pass init-time values from init-row.sh to the ideate step. These sidecar files are
+    never read by any script — agents discover them by listing the directory. This is fragile,
+    undiscoverable, and scales poorly. The harness-ux-fixes row migrates both to state.json
+    fields, but the pattern should be formally deprecated and any future init-time hints should
+    go directly into state.json.
+  work_needed: |
+    - Audit for any remaining hint files (grep for hint patterns in init-row.sh and skills/)
+    - Document the "init hints go in state.json" convention in _rationale.yaml
+    - Add a furrow-doctor check that warns if .furrow/rows/*/.* hint files are found
+  source_work_unit: "harness-ux-fixes"
+  source_type: "open-question"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "low"
+  impact: "low"
+  effort: "small"
+  status: active
+- id: interactive-ideation-checkpoints
+  title: "Collaborative check-ins at pre-implementation steps"
+  context: |
+    Ideation currently runs as a one-shot ceremony. But ideation, research, plan, and spec
+    should all have exhaustive interactive collaboration sections where the agent works
+    back and forth with the user — not just pausing once, but continuing to iterate until
+    clarity is achieved. The instruction should be explicit: "continue to work back and
+    forth with me to create clarity / address any open questions / hash out implementation
+    details / challenge assumptions — don't make any assumptions, keep asking until we've
+    fully resolved each area." This makes early steps genuinely collaborative rather than
+    the agent producing artifacts the user reviews after the fact.
+  work_needed: |
+    - Identify which step skills (ideate, research, plan, spec) need exhaustive interactive loops
+    - Add explicit "don't make assumptions" instructions: the agent must ask rather than guess
+    - Define the collaboration loop: present draft → ask targeted questions → incorporate answers → repeat until resolved
+    - Each step's collaboration should be scoped (ideate: create clarity on goals, research: validate findings, plan: hash out implementation details, spec: address open questions)
+    - Consider a shared skill fragment for the interaction pattern
+    - Ensure stop hooks don't penalize the agent for iterating mid-step
+  references:
+    - "skills/ideate.md"
+    - "skills/research.md"
+    - "skills/plan.md"
+    - "skills/spec.md"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "medium"
+  impact: "high"
+  effort: "medium"
+  files_touched:
+    - "skills/ideate.md"
+    - "skills/research.md"
+    - "skills/plan.md"
+    - "skills/spec.md"
+    - "skills/shared/"
+  status: active
+- id: stop-hook-false-positives
+  title: "Handle stop hooks enforcing fluff requirements"
+  context: |
+    Stop hooks like validate-summary.sh sometimes block session end for requirements
+    that are genuinely not applicable (e.g., "open questions have been addressed" when
+    there were no open questions). The enforcement is too rigid — it penalizes
+    thoroughness gaps that don't exist rather than catching real omissions.
+  work_needed: |
+    - Audit stop hooks for conditions that can false-positive
+    - Add "not applicable" bypass logic where requirements are conditional
+    - Consider a hook response mechanism: agent can declare "N/A because X" and the hook accepts it
+    - Document which hooks are hard blockers vs advisory warnings
+  references:
+    - "hooks/validate-summary.sh"
+    - "hooks/stop-ideation.sh"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "medium"
+  impact: "medium"
+  effort: "small"
+  files_touched:
+    - "hooks/validate-summary.sh"
+    - "hooks/stop-ideation.sh"
+    - "hooks/lib/validate.sh"
+  status: active
+- id: user-action-integration
+  title: "Integration points for actions the user must take"
+  context: |
+    Some workflow steps require the user to do something outside Claude Code
+    (e.g., run an interactive login, approve a deploy, review a PR in browser).
+    There's no harness pattern for declaring "this requires user action" and
+    tracking completion. The agent either blocks or skips with no audit trail.
+  work_needed: |
+    - Define a "user action" artifact type or state field
+    - Add a mechanism for the agent to declare a pending user action with instructions
+    - Track whether the action was completed before proceeding
+    - Consider notify-send integration for desktop notifications
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "low"
+  impact: "medium"
+  effort: "medium"
+  files_touched:
+    - "skills/shared/"
+    - "commands/lib/step-transition.sh"
+  # Cluster: Seeds & Knowledge Flow
+  status: active
+- id: seeds-concept
+  title: "Seeds as a structured knowledge reduction stage"
+  context: |
+    After research, lay-of-the-land, ideas, designs, and considerations have been
+    challenged, consumed, and processed, we should reduce them into "seeds" — focused,
+    scoped artifacts that drive subsequent research, planning, and implementation.
+    A "seeding" stage would sit between broad exploration and focused execution,
+    producing compact context packages for downstream steps.
+  work_needed: |
+    - Define the "seed" artifact format (compact context package with scope, constraints, open questions)
+    - Determine where seeding fits in the step sequence (post-research? post-plan?)
+    - Consider whether seeds replace or augment the current summary.md handoff
+    - Design how seeds get consumed by downstream steps (injected context? reference?)
+    - Prototype with a research row to validate the pattern
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "low"
+  impact: "high"
+  effort: "large"
+  files_touched:
+    - "skills/"
+    - "references/"
+    - "templates/"
+  status: active
+- id: specialist-encoded-reasoning
+  title: "Specialists need encoded reasoning, not just role descriptions"
+  context: |
+    Learnings from usage show that specialist templates work better when they
+    include the *reasoning* behind their domain expertise, not just a role
+    description. A specialist that says "I'm a database architect" is weaker
+    than one that encodes *how* a database architect thinks about schema design.
+  work_needed: |
+    - Audit existing specialist templates for reasoning depth
+    - Add encoded reasoning patterns (decision frameworks, common tradeoffs, red flags)
+    - Document the template convention: role + reasoning + anti-patterns
+    - Update specialist-template.md reference
+  references:
+    - "specialists/"
+    - "references/specialist-template.md"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "medium"
+  impact: "high"
+  effort: "medium"
+  files_touched:
+    - "specialists/"
+    - "references/specialist-template.md"
+  status: active
+- id: research-documentation-detection
+  title: "Detect when research output should be documentation instead"
+  context: |
+    Some research rows produce output that is really documentation —
+    reference material, how-to guides, architectural context. These should
+    be routed to docs/ or references/ rather than staying buried in .furrow/rows/.
+    Need a pattern for recognizing and promoting research-as-docs.
+  work_needed: |
+    - Add a check in the review step or archive ceremony for "is this really docs?"
+    - Define criteria for research → documentation promotion
+    - Consider a deliverable type annotation: research-report vs reference-doc
+    - Wire into the existing promote-components.sh flow
+  references:
+    - "commands/lib/promote-components.sh"
+    - "commands/archive.md"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "low"
+  impact: "medium"
+  effort: "small"
+  files_touched:
+    - "commands/lib/promote-components.sh"
+    - "skills/review.md"
+  # Cluster: Research Process
+  status: active
+- id: research-source-guidance
+  title: "Structured guidance for primary vs secondary source research"
+  context: |
+    During Convex research, Claude was missing content from November 2023 because
+    it relied on training data rather than fetching primary sources. Research steps
+    need explicit guidance on source hierarchy: primary sources first (official docs,
+    changelogs, source code), secondary sources with caveats (blog posts, tutorials),
+    and training data only as orientation.
+  work_needed: |
+    - Add source hierarchy instructions to skills/research.md
+    - Define when to use WebFetch/WebSearch vs training knowledge
+    - Add a "source inventory" section to research deliverables (what was checked, what was stale)
+    - Consider making the research-sources.md template mandatory rather than optional
+  references:
+    - "skills/research.md"
+    - "templates/research-sources.md"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "high"
+  impact: "high"
+  effort: "small"
+  files_touched:
+    - "skills/research.md"
+    - "templates/research-sources.md"
+  status: active
+- id: fresh-session-review
+  title: "Run review in a truly fresh session (no shared context)"
+  context: |
+    Any subagent spawned from the current session shares its context window,
+    which defeats the purpose of an independent review. A truly fresh review
+    needs a separate session that only reads artifacts, not conversation history.
+    This is the generator-evaluator separation problem.
+  work_needed: |
+    - Investigate Claude Code mechanisms for fully isolated review (separate process? worktree agent?)
+    - Consider whether /review should instruct the user to start a new session
+    - Evaluate if worktree isolation (already supported) provides sufficient context separation
+    - Document the recommended pattern for independent review
+  references:
+    - "skills/review.md"
+    - "skills/shared/eval-protocol.md"
+    - "skills/shared/gate-evaluator.md"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "medium"
+  impact: "high"
+  effort: "medium"
+  files_touched:
+    - "skills/review.md"
+    - "skills/shared/eval-protocol.md"
+    - "commands/review.md"
+  status: active
+- id: worktree-reintegration-summary
+  title: "Produce summary for worktree reintegration"
+  context: |
+    When work completes in a worktree, the main session needs a summary of
+    what was done for context reintegration. Currently there's no structured
+    handoff from worktree back to the spawning session.
+  work_needed: |
+    - Define a worktree completion summary format
+    - Generate the summary automatically when a worktree agent finishes
+    - Include: files changed, decisions made, open items, test results
+    - Place the summary where the main session can read it on reintegration
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "low"
+  impact: "medium"
+  effort: "small"
+  files_touched:
+    - "skills/implement.md"
+    - "skills/shared/context-isolation.md"
+  # Cluster: TODO / Roadmap System
+  status: active
+- id: todo-context-references
+  title: "TODOs with context references from dump and active sessions"
+  context: |
+    TODOs should carry context about where they came from — brain dump sessions
+    for planning, active sessions where futures were identified, etc. Work
+    discovery and implementation should be two separate queues: one linear
+    (roadmap), one decentralized (pick-off). TODOs can be picked off ad-hoc
+    or incorporated into a phased roadmap.
+  work_needed: |
+    - Add source_context field to TODO schema (dump session, active session, review finding, etc.)
+    - Support a "futures" source type for TODOs discovered during implementation
+    - Design the two-queue model: discovery backlog vs execution roadmap
+    - Ensure todos.yaml supports both linear and decentralized consumption patterns
+  references:
+    - "todos.yaml"
+    - "ROADMAP.md"
+    - "commands/work-todos.md"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "low"
+  impact: "medium"
+  effort: "medium"
+  files_touched:
+    - "commands/work-todos.md"
+    - "scripts/triage-todos.sh"
+    - "todos.yaml"
+  status: active
+- id: roadmap-todo-integration
+  title: "Roadmap provides tackling prompts and merges TODOs"
+  context: |
+    ROADMAP.md should provide a ready-to-go prompt for tackling each TODO —
+    not just a description but a bootstrapping instruction. Additionally,
+    TODOs should be mergeable as part of roadmap handling when multiple
+    TODOs converge on the same work.
+  work_needed: |
+    - Add a "prompt" or "bootstrap" field to roadmap entries generated from TODOs
+    - Implement TODO merging logic in the triage/roadmap pipeline
+    - Generate /work-ready prompts that include context, scope, and references
+    - Consider auto-detecting TODO overlap for merge suggestions
+  references:
+    - "ROADMAP.md"
+    - "templates/roadmap.md.tmpl"
+    - "commands/work-roadmap.md"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "low"
+  impact: "medium"
+  effort: "medium"
+  files_touched:
+    - "templates/roadmap.md.tmpl"
+    - "commands/work-roadmap.md"
+    - "scripts/triage-todos.sh"
+  # Cluster: Context & Design Patterns
+  status: active
+- id: design-pattern-context-construction
+  title: "Context construction driven by design pattern thinking"
+  context: |
+    The harness should think about context construction as a first-class goal:
+    how do we build the right context window for each step and each agent?
+    This intersects with design pattern thinking — applying known software
+    design patterns (builder, strategy, chain of responsibility) to how
+    context is assembled, filtered, and injected.
+  work_needed: |
+    - Audit current context loading for pattern conformance
+    - Document the context construction patterns used (progressive loading, layered injection, reference-on-demand)
+    - Identify where design patterns could improve context quality (e.g., strategy pattern for model-specific context)
+    - Add design pattern vocabulary to harness documentation
+  references:
+    - "references/deduplication-strategy.md"
+    - "adapters/claude-code/progressive-loading.yaml"
+    - "docs/skill-injection-order.md"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "low"
+  impact: "medium"
+  effort: "medium"
+  files_touched:
+    - "references/"
+    - "docs/"
+  status: active
+- id: claude-md-docs-routing
+  title: "CLAUDE.md should reference docs routing"
+  context: |
+    The CLAUDE.md ambient layer should include pointers to where documentation
+    lives — routing the agent to the right reference for the right topic.
+    Currently agents have to discover docs/ and references/ on their own.
+  work_needed: |
+    - Add a "Documentation" section to .claude/CLAUDE.md with routing pointers
+    - Map topics to reference files (gates → gate-protocol.md, reviews → review-methodology.md, etc.)
+    - Keep it within the ambient layer budget (<=100 lines total)
+  references:
+    - ".claude/CLAUDE.md"
+    - "references/index.md"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "low"
+  impact: "medium"
+  effort: "small"
+  files_touched:
+    - ".claude/CLAUDE.md"
+  # Cluster: Model Selection & Cost
+  status: active
+- id: sonnet-model-routing
+  title: "Use Sonnet for on-rails tasks, reserve Opus for reasoning"
+  context: |
+    Since most harness steps are "on rails" (following structured instructions),
+    Sonnet should be the default model for subagents. Opus should only be used
+    for tasks requiring deep reasoning — research synthesis, architectural
+    decisions, complex review. This reduces cost significantly.
+  work_needed: |
+    - Identify which agent spawns can use Sonnet (implementation specialists, file searches, validation)
+    - Identify which must remain Opus (research synthesis, review evaluation, planning)
+    - Add model routing hints to specialist templates or step skills
+    - Consider a model field in the specialist template format
+  references:
+    - "specialists/"
+    - "skills/shared/context-isolation.md"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "medium"
+  impact: "high"
+  effort: "small"
+  files_touched:
+    - "specialists/"
+    - "skills/implement.md"
+    - "skills/shared/context-isolation.md"
+  # Cluster: Infrastructure / Cleanup
+  status: active
+- id: rename-to-furrow
+  title: "Rename project from 'harness' to 'furrow'"
+  context: |
+    The project should be renamed from "work-harness-v2" / "harness" to "furrow"
+    throughout. This includes the namespace, directory name, all "harness"
+    references in code, commands, docs, and CLAUDE.md.
+  work_needed: |
+    - Rename the repository/directory
+    - Update all command names (/furrow:* → /furrow:* or similar)
+    - Update CLAUDE.md, rules, docs references
+    - Update install.sh and furrow.yaml naming
+    - Update _rationale.yaml references
+    - Grep for "harness" across all files and replace
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "low"
+  impact: "low"
+  effort: "large"
+  files_touched:
+    - "*"
+  status: done
+  updated_at: "2026-04-03T08:30:00Z"
+  depends_on:
+    - duplication-cleanup
+- id: duplication-cleanup
+  title: "Clean up file duplication and align command namespace"
+  context: |
+    There's duplication between the harness source (furrow) and installed copies
+    in .claude/. Either use symlinks to keep a single source of truth or implement
+    a build-time copy step that stamps versions. Additionally, command naming is
+    inconsistent — some commands are namespaced (furrow:work, furrow:status) while
+    others are bare (work-todos, work-roadmap, work-fix, etc.). All tooling should
+    be under a consistent namespace (furrow:* now, furrow:* after rename).
+  work_needed: |
+    - Audit current duplication between harness source and installed locations
+    - Evaluate symlinks vs build-time copy tradeoffs (symlinks are simpler but less portable)
+    - Implement the chosen strategy in install.sh
+    - Ensure cross-platform compatibility (symlinks behave differently on Windows)
+    - Audit all command names for namespace consistency
+    - Align all commands under furrow:* (or furrow:* if rename-to-furrow lands first)
+    - Update install.sh to enforce the namespace during installation
+    - Update CLAUDE.md command table, rules, and any docs referencing old names
+  references:
+    - "install.sh"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "low"
+  impact: "medium"
+  effort: "medium"
+  files_touched:
+    - "install.sh"
+  status: done
+- id: cross-platform-compatibility
+  title: "Cross-platform compatibility check"
+  context: |
+    The harness is currently developed on Linux (EndeavourOS). Shell scripts
+    may use Linux-specific features (GNU coreutils, bash-isms in POSIX scripts,
+    /dev/fd paths). Need a compatibility audit for macOS and potentially WSL.
+  work_needed: |
+    - Audit all shell scripts for GNU-specific flags (date, sed, grep, etc.)
+    - Check for bash-isms in scripts declared as #!/bin/sh
+    - Test on macOS (BSD userland differences)
+    - Document platform requirements or add compatibility shims
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "low"
+  impact: "medium"
+  effort: "medium"
+  files_touched:
+    - "scripts/"
+    - "hooks/"
+    - "commands/lib/"
+  # Cluster: Work Artifact Lifecycle
+  status: done
+  depends_on:
+    - rename-to-furrow
+- id: work-folder-structure-and-cleanup
+  title: "Structure .furrow/rows/ to prevent unbounded growth"
+  context: |
+    The .furrow/rows/ directory grows indefinitely — every row (active and archived)
+    lives in the same flat directory. Archived units keep all intermediate artifacts
+    (research notes, specs, plans, review results) even when only the final deliverables
+    matter. Over time this becomes unruly: hard to navigate, slow to scan, and pollutes
+    git history with artifacts that served their purpose during execution.
+  work_needed: |
+    - Evaluate directory structure options:
+      - Flat with archive pruning (delete intermediate artifacts on archive)
+      - Nested by status (.furrow/rows/active/, .furrow/rows/archived/)
+      - Nested by date (.furrow/rows/2026-04/)
+      - Hybrid: active in .furrow/rows/, archived moved to .furrow/rows/.archive/ or removed entirely
+    - Define which artifacts survive archival vs get pruned:
+      - Keep: definition.yaml, state.json, summary.md, final deliverables
+      - Prune candidates: research/, specs/, reviews/, plan.json, team-plan.md
+    - Consider a retention policy (e.g., prune after N days, keep last N archived units)
+    - Update scripts/archive-work.sh to implement the chosen strategy
+    - Ensure /work-reground and detect-context.sh still work with the new structure
+    - Consider .gitignore patterns for intermediate artifacts that shouldn't be committed
+  references:
+    - "scripts/archive-work.sh"
+    - "commands/archive.md"
+    - "references/row-layout.md"
+    - "references/row-meta.yaml"
+    - "commands/lib/detect-context.sh"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "medium"
+  impact: "medium"
+  effort: "medium"
+  files_touched:
+    - "scripts/archive-work.sh"
+    - "commands/archive.md"
+    - "commands/lib/detect-context.sh"
+    - "references/row-layout.md"
+  # Cluster: Integrations & Extensions
+  status: active
+- id: beans-enforcement-integration
+  title: "Beans task management for enforcement layer and programmatic checks"
+  context: |
+    Beans (the task management system) could provide an enforcement layer —
+    programmatic checks that a beans issue exists, status is correct, and
+    transitions are valid before the harness allows step advancement.
+  work_needed: |
+    - Define which harness checkpoints should validate beans state
+    - Add beans issue existence check to row init
+    - Consider beans status sync on step transitions
+    - Wire into gate-check or step-transition as optional enforcement
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "low"
+  impact: "medium"
+  effort: "medium"
+  files_touched:
+    - "hooks/gate-check.sh"
+    - "commands/lib/step-transition.sh"
+    - "commands/lib/init-row.sh"
+  status: done
+  updated_at: "2026-04-03T08:30:00Z"
+- id: legacy-todos-migration
+  title: "Incorporate legacy TODOs into the system after beans integration"
+  context: |
+    Once beans is integrated, legacy TODOs (from before the structured system)
+    should be migrated in. Since this is a relatively young project, we can
+    check git history for deleted/handled ones to avoid importing stale items.
+  work_needed: |
+    - After beans-enforcement-integration lands, audit git history for prior TODOs
+    - Check which were deleted (handled) vs which fell through the cracks
+    - Import surviving items into todos.yaml with source_type: "legacy"
+    - Link to beans issues where applicable
+  depends_on:
+    - beans-enforcement-integration
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "low"
+  impact: "low"
+  effort: "small"
+  files_touched:
+    - "todos.yaml"
+  status: done
+  updated_at: "2026-04-03T08:30:00Z"
+- id: mine-claude-code
+  title: "Mine Claude Code for reusable patterns and capabilities"
+  context: |
+    Claude Code itself has patterns, hooks, and capabilities that the harness
+    could leverage more directly rather than reimplementing. Need a research
+    pass to identify what Claude Code provides natively that overlaps with
+    harness functionality.
+  work_needed: |
+    - Research Claude Code's built-in workflow capabilities
+    - Identify harness components that duplicate Claude Code features
+    - Document which harness components could be simplified or removed
+    - Create a compatibility matrix: harness feature → Claude Code native equivalent
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "low"
+  impact: "medium"
+  effort: "small"
+  files_touched: []
+  status: active
+- id: merge-specialist
+  title: "Add a merge specialist template"
+  context: |
+    No specialist template exists for merge operations — resolving conflicts,
+    choosing merge strategies, validating merge results. This is a gap when
+    the implementation step produces parallel worktree branches that need merging.
+  work_needed: |
+    - Create specialists/merge-specialist.md
+    - Include reasoning about merge strategies (rebase vs merge, conflict resolution heuristics)
+    - Wire into the implementation step's wave merge phase
+    - Add _rationale.yaml entry
+  references:
+    - "specialists/"
+    - "references/specialist-template.md"
+    - "scripts/merge-to-main.sh"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "low"
+  impact: "low"
+  effort: "small"
+  files_touched:
+    - "specialists/merge-specialist.md"
+    - "_rationale.yaml"
+  # Cluster: Agent Orchestration Adoption
+  status: done
+  updated_at: "2026-04-03T08:30:00Z"
+- id: parallel-agent-orchestration-adoption
+  title: "Built-in team orchestration isn't being used — diagnose and fix"
+  context: |
+    The harness has a fully built parallel agent orchestration system:
+    wave planning (generate-plan.sh with topological sort), specialist templates
+    (14+ types with reasoning patterns), context isolation rules, file ownership
+    conflict detection (check-wave-conflicts.sh), team-plan.md structure, and
+    dual-path specialist loading (Skill tool for solo, Agent prompt for multi-agent).
+
+    Despite all this infrastructure, the implement step consistently falls back to
+    solo execution rather than dispatching specialist teams. The decompose step
+    produces plan.json with waves and assignments, but the agent doesn't follow
+    through on multi-agent dispatch during implementation.
+
+    Possible causes:
+    - The implement skill instructions are too dense — agent doesn't internalize the dispatch pattern
+    - No concrete example of the orchestration loop (plan → dispatch wave 1 → wait → curate → dispatch wave 2)
+    - Context curation (selecting what to pass each sub-agent) is underspecified
+    - The agent may not trust the wave plan and defaults to doing everything itself
+    - Model capability — orchestration may require Opus-level reasoning while we're considering Sonnet routing
+  work_needed: |
+    - Diagnose: run a multi-deliverable row and observe where the agent deviates from team dispatch
+    - Simplify the implement skill's orchestration instructions — fewer words, clearer decision tree
+    - Add a concrete orchestration example (copy-pasteable Agent tool call with specialist injection)
+    - Consider a "dispatch checklist" the agent follows: read plan.json → for each wave → for each deliverable → spawn agent with specialist + context
+    - Evaluate whether a shell-level orchestrator (like run-gate.sh for gates) would be more reliable than agent-level orchestration
+    - Test with a 2-wave, 3-deliverable row as a validation case
+  references:
+    - "skills/implement.md"
+    - "skills/decompose.md"
+    - "skills/shared/context-isolation.md"
+    - "scripts/generate-plan.sh"
+    - "scripts/check-wave-conflicts.sh"
+    - "references/specialist-template.md"
+    - "specialists/"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "high"
+  impact: "high"
+  effort: "medium"
+  files_touched:
+    - "skills/implement.md"
+    - "skills/shared/context-isolation.md"
+  # Cluster: Advanced / Exploratory
+  status: active
+- id: memetic-algorithms-research
+  title: "Research memetic algorithms for LLM orchestration"
+  context: |
+    Memetic algorithms combine evolutionary/population-based search with local
+    optimization. This could apply to LLM orchestration — evolving prompt
+    strategies, specialist configurations, or context construction approaches
+    based on outcome quality. Exploratory research topic.
+  work_needed: |
+    - Research memetic algorithm literature and LLM orchestration applications
+    - Identify which harness components could benefit from evolutionary optimization
+    - Prototype a simple memetic loop (generate variants → evaluate → select → refine)
+    - Determine if this is practical or purely academic for our scale
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "low"
+  impact: "low"
+  effort: "large"
+  files_touched: []
+  status: active
+# Cluster: Harness UX / Ergonomics
+- id: skill-loading-visible-internals
+  title: "Skill loading exposes internals — should be seamless"
+  context: |
+    When a gate precheck triggers skill loading, the user sees raw internal
+    mechanics like "Plan precheck failed (4 deliverables). Let me load the
+    plan skill and generate the plan." followed by a visible Read() of the
+    skill file. This should be invisible plumbing, not user-facing output.
+    The agent should load the skill and proceed without narrating the
+    infrastructure.
+  work_needed: |
+    - Audit step skill loading for unnecessary user-facing output
+    - Determine whether the verbosity comes from the skill instructions or the agent's interpretation
+    - Add guidance to skills/shared/ or step skills: "load context silently, do not narrate infrastructure"
+    - Consider whether gate-precheck.sh output formatting contributes to the problem
+  references:
+    - "commands/lib/gate-precheck.sh"
+    - "commands/lib/load-step.sh"
+    - "skills/"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "medium"
+  impact: "medium"
+  effort: "small"
+  files_touched:
+    - "commands/lib/load-step.sh"
+    - "commands/lib/gate-precheck.sh"
+    - "skills/"
+  status: active
+- id: default-supervised-gating
+  title: "Default gate policy should be supervised, not auto-advance"
+  context: |
+    The harness should default to supervised gating — the user confirms gate
+    passage rather than the agent auto-advancing. Auto-advance is appropriate
+    for well-understood pipelines, but the default should be the safer option
+    where the user reviews gate results and decides whether to proceed.
+    Additionally, supervised mode currently has no structural enforcement —
+    the agent can call step-transition.sh with "manual" as the decider without
+    actually pausing for user review. The namespace-rename row demonstrated
+    this: it steamrolled from research through implement without a single user
+    interaction turn after ideation.
+  work_needed: |
+    - Change the default gate_policy in furrow.yaml / init-row.sh to "supervised"
+    - Ensure /work --gate-policy flag still allows override to "auto" or "manual"
+    - Update documentation and CLAUDE.md to reflect the new default
+    - Audit existing step-transition.sh for supervised flow (pause, present evidence, ask)
+    - Enforce supervised pause structurally: step-transition.sh or a hook should reject
+      transitions in supervised mode unless there's evidence of user interaction (e.g.,
+      a conversation turn marker, or explicit "present output and wait" in step skills)
+    - Add explicit "present and wait" instructions to each step skill's transition section
+      for supervised mode — the agent must show the step's output and get user sign-off
+  references:
+    - "commands/lib/step-transition.sh"
+    - "commands/lib/init-row.sh"
+    - "references/gate-protocol.md"
+    - "skills/shared/summary-protocol.md"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "high"
+  impact: "high"
+  effort: "small"
+  files_touched:
+    - "commands/lib/step-transition.sh"
+    - "commands/lib/init-row.sh"
+    - ".claude/furrow.yaml"
+  status: done
+  updated_at: "2026-04-03T08:30:00Z"
+- id: script-access-restrictions
+  title: "Restrict direct access to internal/dependency scripts"
+  context: |
+    Some scripts are internal plumbing that should never be called directly by
+    the agent — e.g., update-state.sh (harness-exclusive write), advance-step.sh
+    (wrapped by step-transition.sh), record-gate.sh (wrapped by run-gate.sh).
+    Direct invocation bypasses validation, ordering, and audit trails. These
+    should be marked off-limits or protected.
+  work_needed: |
+    - Inventory scripts that are procedural wrappers vs directly callable
+    - Mark internal scripts (e.g., move to scripts/internal/ or add a naming convention like _update-state.sh)
+    - Add hook-level protection (PreToolUse on Bash) that warns/blocks direct calls to internal scripts
+    - Document which scripts are user/agent-callable vs internal-only
+    - Consider whether the state-guard.sh hook already covers some of this
+  references:
+    - "scripts/update-state.sh"
+    - "scripts/advance-step.sh"
+    - "scripts/record-gate.sh"
+    - "hooks/state-guard.sh"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "medium"
+  impact: "high"
+  effort: "medium"
+  files_touched:
+    - "scripts/"
+    - "hooks/"
+  status: active
+- id: guard-against-horizontal-slices
+  title: "Guard against horizontal slices in decomposition"
+  context: |
+    LLMs naturally decompose work into horizontal slices (by layer: "do all the
+    database work, then all the API work, then all the frontend work") rather than
+    vertical slices (by feature: "build the complete user creation flow end-to-end").
+    Horizontal slices are harder to test incrementally, produce integration risk at
+    the seams, and delay working functionality. The decompose step and review
+    dimensions should actively detect and reject horizontal decomposition.
+  work_needed: |
+    - Add a "vertical slice" check to the decompose step skill or gate evaluation
+    - Define heuristics for detecting horizontal slices (e.g., deliverables named by layer, no deliverable is independently testable)
+    - Add to red-flags.md or decompose eval dimensions: "deliverables should be vertical slices, not horizontal layers"
+    - Consider adding this to the interactive ideation checkpoints (challenge the user's decomposition if it looks horizontal)
+    - Document the vertical vs horizontal slice distinction in a reference
+  references:
+    - "skills/decompose.md"
+    - "skills/shared/red-flags.md"
+    - "evals/dimensions/decompose.yaml"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "medium"
+  impact: "high"
+  effort: "small"
+  files_touched:
+    - "skills/decompose.md"
+    - "skills/shared/red-flags.md"
+    - "evals/dimensions/decompose.yaml"
+  # Cluster: Meta-Process
+  status: active
+- id: brain-dump-triage-command
+  title: "Brain dump triage command to turn notes into actionable TODOs"
+  context: |
+    The process of taking unstructured brain dump notes, sorting them
+    semantically, and converting them into structured todos.yaml entries
+    was done manually this session. This should be a repeatable command.
+  work_needed: |
+    - Create a /brain-dump or /dump-triage command
+    - Intake: raw text (conversation, notes, voice-to-text, markdown)
+    - Step 1: Cluster semantically into themes
+    - Step 2: Present clusters for user review/adjustment
+    - Step 3: Convert approved clusters into todos.yaml entries with proper schema
+    - Step 4: Assign triage metadata (urgency, impact, effort)
+    - Optionally trigger /work-roadmap to regenerate the roadmap
+  references:
+    - "todos.yaml"
+    - "commands/work-todos.md"
+    - "commands/work-roadmap.md"
+  source_type: "brain-dump"
+  created_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-02T00:00:00Z"
+  urgency: "medium"
+  impact: "high"
+  effort: "medium"
+  files_touched:
+    - "commands/"
+    - "commands/work-todos.md"
+  status: active
+- id: almanac-knowledge-subcommands-learn-rationale-docs
+  title: Almanac knowledge subcommands (learn, rationale, docs, specialists, history)
+  context: 'The alm CLI was built with 8 planning subcommands (add, extract, list, show, triage, next, validate, render). The knowledge management subcommands were deferred from beans-enforcement-integration. These expand the almanac from a planning tool to a full knowledge management system: learnings capture, rationale tracking, architecture doc lifecycle, specialist template management, and cross-row knowledge queries.'
+  work_needed: |-
+    - Add alm learn: capture/query project learnings from .furrow/rows/*/learnings.jsonl and promoted learnings in .furrow/almanac/learnings/
+    - Add alm rationale: view/add/edit component rationale in .furrow/almanac/rationale.yaml
+    - Add alm docs: architecture doc lifecycle management (creation, staleness detection, cross-referencing)
+    - Add alm specialists: specialist template management (list, show, create, validate against specialists/_meta.yaml)
+    - Add alm history: query cross-row knowledge (search promoted learnings, rationale entries, completed row summaries)
+  source_type: manual
+  status: done
+  created_at: "2026-04-03T03:26:40-04:00"
+  updated_at: "2026-04-03T08:30:00Z"
+- id: rws-review-archive-flow-and-deliverable-tracking
+  title: rws review-archive flow and deliverable tracking
+  context: During the beans-enforcement-integration review, archiving required manual update-state.sh calls to set step_status=completed and populate deliverables. The rws CLI should handle this internally — deliverable completion should be tracked via rws subcommands, and the review→archive flow should work without manual state manipulation.
+  work_needed: |-
+    - Add rws complete-deliverable <name> <deliverable> subcommand to mark deliverables completed in state.json
+    - Add rws complete-step <name> subcommand to mark step_status=completed (or fold into transition flow)
+    - Ensure rws archive validates preconditions (step=review, step_status=completed, all deliverables completed) and provides clear error messages for each unmet condition
+    - Consider rws update-deliverable for tracking wave/corrections during implementation
+    - Update commands/review.md and commands/archive.md to use new subcommands
+  source_type: manual
+  status: done
+  created_at: "2026-04-03T03:26:50-04:00"
+  updated_at: "2026-04-03T08:30:00Z"
+- id: specialist-templates-from-team-plan-not-enforced-d
+  title: Specialist templates from team-plan not enforced during implementation
+  context: During merge-specialist-and-legacy-todos implementation, the team-plan.md and plan.json assign specialist types to each deliverable (e.g., systems-architect for merge-specialist, harness-engineer for rationale-update). However, during actual agent dispatch in the implement step, these specialist templates are not loaded or referenced — agents execute without the specialist reasoning framework that was explicitly planned. The specialist assignment in plan.json is currently decorative, not enforced.
+  work_needed: |-
+    - Implement specialist template injection when dispatching agents during implement step
+    - When an agent is dispatched for a deliverable, load the assigned specialist template from specialists/{name}.md into the agent's prompt
+    - Validate that the specialist assignment in plan.json references a valid file in specialists/
+    - Consider a pre-implement hook that warns if specialist templates are not being loaded
+    - Update skills/implement.md to make specialist loading explicit and mandatory
+  source_type: brain-dump
+  status: active
+  created_at: "2026-04-03T04:37:52-04:00"
+  updated_at: "2026-04-03T04:37:52-04:00"
+  references:
+    - skills/implement.md
+    - specialists/
+    - plan.json
+  source_work_unit: merge-specialist-and-legacy-todos
+  files_touched:
+    - skills/implement.md

@@ -7,15 +7,15 @@
 # Skips validation for auto-advanced steps.
 #
 # Exit codes:
-#   0 — valid (or no active work unit, or auto-advanced)
+#   0 — valid (or no active row, or auto-advanced)
 #   1 — validation failure
 
 set -eu
 
-# Optional step argument for step-aware validation (called from step-transition.sh)
+# Optional step argument for step-aware validation (called from rws transition)
 step_arg="${1:-}"
 
-# --- locate focused work unit ---
+# --- locate focused row ---
 
 HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
 FURROW_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
@@ -28,7 +28,7 @@ fi
 # shellcheck source=lib/common.sh
 . "$COMMON_LIB"
 
-work_dir="$(find_focused_work_unit)"
+work_dir="$(find_focused_row)"
 
 if [ -z "${work_dir}" ]; then
   exit 0

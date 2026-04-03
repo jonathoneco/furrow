@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Work Definition",
-  "description": "Schema for definition.yaml — the work contract for a Furrow work unit.",
+  "description": "Schema for definition.yaml — the work contract for a Furrow row.",
   "type": "object",
   "required": ["objective", "deliverables", "context_pointers", "constraints", "gate_policy"],
   "additionalProperties": false,
@@ -92,7 +92,7 @@
     "source_todo": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
-      "description": "ID of the TODO entry this work unit was created from"
+      "description": "ID of the TODO entry this row was created from"
     }
   }
 }

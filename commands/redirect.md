@@ -8,7 +8,7 @@ Record a failed approach and redirect work to a new approach within the current 
 
 ## Behavior
 
-1. Find active task via `commands/lib/detect-context.sh`.
+1. Find active task via `rws status`.
 2. Read `state.json` for current step.
 
 3. Record redirect as a fail gate entry in `state.json.gates[]`:
@@ -27,7 +27,7 @@ Record a failed approach and redirect work to a new approach within the current 
    ```
    - [{timestamp}] {current_step}: {reason}
    ```
-6. Git commit `.work/{name}/` with message: `chore: redirect {name} at {step}`.
+6. Git commit `.furrow/rows/{name}/` with message: `chore: redirect {name} at {step}`.
 
 ## Constraints
 

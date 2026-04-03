@@ -31,14 +31,14 @@ Assign `file_ownership` globs to prevent cross-specialist conflicts in waves.
 ## Research Mode
 When `state.json.mode` is `"research"`:
 - Define knowledge artifact structure: sections, sub-topics, evidence requirements.
-- `file_ownership` targets `.work/{name}/deliverables/` paths, not git tree globs.
+- `file_ownership` targets `.furrow/rows/{name}/deliverables/` paths, not git tree globs.
 - No parallel waves needed — research deliverables are authored sequentially or by section.
 - Specialist assignment uses research roles (domain-researcher, synthesis-writer).
 - Read `references/research-mode.md` for artifact formats.
 
 ## Step Mechanics
 Transition out: gate record `plan->spec` with outcome `pass` required.
-Pre-step shell check (`gate-precheck.sh`): 1 deliverable, no depends_on, not
+Pre-step shell check (`rws gate-check`): 1 deliverable, no depends_on, not
 supervised, not force-stopped.
 Pre-step evaluator (`evals/gates/plan.yaml`): complexity-assessment — does the
 deliverable need architectural decisions beyond definition.yaml? Per `skills/shared/gate-evaluator.md`.
@@ -51,11 +51,11 @@ Before requesting a step transition:
 2. Present work to user per `skills/shared/summary-protocol.md`.
 3. Ask explicitly: "**Ready to advance to spec?** Yes / No"
 4. Wait for user response. Do NOT proceed without explicit approval.
-5. On "yes": call `step-transition.sh --request` with `decided_by=manual`.
-6. After --request succeeds: call `step-transition.sh --confirm`.
+5. On "yes": call `rws transition --request` with `decided_by=manual`.
+6. After --request succeeds: call `rws transition --confirm`.
 7. On "no": ask what needs to change, address feedback, return to step 2.
 
 ## Learnings
 When you discover a reusable insight (pattern, pitfall, preference, convention,
-or dependency quirk), append it to `.work/{name}/learnings.jsonl` using the
+or dependency quirk), append it to `.furrow/rows/{name}/learnings.jsonl` using the
 learning schema. Read `skills/shared/learnings-protocol.md` for format.

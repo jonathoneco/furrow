@@ -14,17 +14,17 @@ COMMON_LIB="$FURROW_ROOT/hooks/lib/common.sh"
 VALIDATE_LIB="$FURROW_ROOT/hooks/lib/validate.sh"
 
 if [ ! -f "$COMMON_LIB" ]; then
-  echo "No active work unit. Start with /work." >&2
+  echo "No active row. Start with /work." >&2
   exit 0
 fi
 
 # shellcheck source=lib/common.sh
 . "$COMMON_LIB"
 
-work_dir="$(find_focused_work_unit)"
+work_dir="$(find_focused_row)"
 
 if [ -z "$work_dir" ]; then
-  echo "No focused work unit. Run /work to focus a unit."
+  echo "No focused row. Run /work to focus a row."
   exit 0
 fi
 

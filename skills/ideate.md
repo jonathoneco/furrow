@@ -4,7 +4,7 @@
 Explore the problem space. Produce a validated `definition.yaml` as the work contract.
 
 ## What This Step Produces
-- `.work/{name}/definition.yaml` (validated against schema)
+- `.furrow/rows/{name}/definition.yaml` (validated against schema)
 
 ## Step-Specific Rules
 Run the 6-part ceremony in order:
@@ -52,11 +52,11 @@ Before requesting a step transition:
 2. Present work to user per `skills/shared/summary-protocol.md`.
 3. Ask explicitly: "**Ready to advance to research?** Yes / No"
 4. Wait for user response. Do NOT proceed without explicit approval.
-5. On "yes": call `step-transition.sh --request` with `decided_by=manual`.
-6. After --request succeeds: call `step-transition.sh --confirm`.
+5. On "yes": call `rws transition --request` with `decided_by=manual`.
+6. After --request succeeds: call `rws transition --confirm`.
 7. On "no": ask what needs to change, address feedback, return to step 2.
 
 ## Learnings
 When you discover a reusable insight (pattern, pitfall, preference, convention,
-or dependency quirk), append it to `.work/{name}/learnings.jsonl` using the
+or dependency quirk), append it to `.furrow/rows/{name}/learnings.jsonl` using the
 learning schema. Read `skills/shared/learnings-protocol.md` for format.

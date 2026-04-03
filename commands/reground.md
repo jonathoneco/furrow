@@ -4,15 +4,15 @@ Recover context after session break or compaction event.
 
 ## Arguments
 
-- `name` (optional): Specific work unit. If absent, uses active task.
+- `name` (optional): Specific row. If absent, uses active task.
 
 ## Behavior (per spec 00 SS5.4)
 
-Read ONLY these three sources:
+Run `rws status [name]` for compact state, then read ONLY these three sources:
 
 1. **state.json**: current step, step_status, deliverable progress, gate history.
 2. **summary.md**: latest synthesized context (key findings, decisions, open questions).
-3. **Current step skill**: `skills/{step}.md` for the active step.
+3. **Current step skill**: run `rws load-step [name]` to get the active step skill.
 
 Display a compact status:
 ```

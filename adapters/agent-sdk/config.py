@@ -1,7 +1,7 @@
 """SDK configuration and initialization for the Agent SDK adapter.
 
 Handles:
-- Work unit discovery (find active .work/ directory)
+- Row discovery (find active .furrow/rows/ directory)
 - Schema validation at startup
 - Specialist template loading
 - Dimension definition loading
@@ -45,10 +45,10 @@ class HarnessConfig:
         """Initialize harness configuration.
 
         Args:
-            work_dir: Path to the work unit directory. If None, auto-discovers.
+            work_dir: Path to the row directory. If None, auto-discovers.
 
         Raises:
-            ConfigError: If no active work unit found or validation fails.
+            ConfigError: If no active row found or validation fails.
         """
         self.root = _project_root()
         self.work_dir = Path(work_dir) if work_dir else self._discover_work()
@@ -56,17 +56,17 @@ class HarnessConfig:
         self._validate_at_startup()
 
     def _discover_work(self) -> Path:
-        """Find active work unit by scanning .work/*/state.json.
+        """Find active row by scanning .furrow/rows/*/state.json.
 
         Returns:
-            Path to the active work unit directory.
+            Path to the active row directory.
 
         Raises:
-            ConfigError: If no active work unit found.
+            ConfigError: If no active row found.
         """
-        work_root = self.root / ".work"
+        work_root = self.root / ".furrow" / "rows"
         if not work_root.exists():
-            raise ConfigError("No .work/ directory found")
+            raise ConfigError("No .furrow/rows/ directory found")
 
         active_units = []
         for state_file in work_root.glob("*/state.json"):
@@ -80,10 +80,10 @@ class HarnessConfig:
                 active_units.append(state_file.parent)
 
         if not active_units:
-            raise ConfigError("No active work units found (all archived)")
+            raise ConfigError("No active rows found (all archived)")
         if len(active_units) > 1:
             names = [u.name for u in active_units]
-            raise ConfigError(f"Multiple active work units found: {names}")
+            raise ConfigError(f"Multiple active rows found: {names}")
 
         return active_units[0]
 
