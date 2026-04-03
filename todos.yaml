@@ -430,7 +430,7 @@
   files_touched:
   - "*"
 
-  status: active
+  status: done
   depends_on:
   - duplication-cleanup
 - id: duplication-cleanup
@@ -462,7 +462,7 @@
   files_touched:
   - "install.sh"
 
-  status: active
+  status: done
 - id: cross-platform-compatibility
   title: "Cross-platform compatibility check"
   context: |
@@ -487,7 +487,7 @@
 
 # Cluster: Work Artifact Lifecycle
 
-  status: active
+  status: done
   depends_on:
   - rename-to-furrow
 - id: work-folder-structure-and-cleanup

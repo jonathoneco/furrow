@@ -1,6 +1,6 @@
 # Roadmap
 
-> Updated: 2026-04-02 | 8 phases, 3/8 complete | 30 TODOs across 13 work units
+> Updated: 2026-04-02 | 8 phases, 4/8 complete | 30 TODOs across 13 work units
 
 ---
 
@@ -15,20 +15,22 @@ Phase 2 ─────────────┤── T5 [x] ── T7 [x] �
                      │
 Phase 3 ─────────────┤── T9 [x] ── T10 [x] ── T11+T12 [x]
                      │
-Phase 4 ─────────────┤── namespace-rename ──┐
-  (sequential)       │   (dup→rename→compat)│
-                     │                      ├~~ beans-integration
-                     │                      │   (beans→legacy→merge)
-                     │                      │
-Phase 5 ─────────────┤── safety-defaults ···│·· quality-guardrails ··· context-routing
-  (3 parallel)       │                      │
-                     │                      │
-Phase 6 ─────────────┤── agent-orchestration│··· interactive-collab ··· review-independence
-  (3 parallel)       │                      │
-                     │                      │
-Phase 7 ─────────────┤── script-hardening ··│·· work-lifecycle ··· knowledge-pipeline ··· todo-roadmap
-  (4 parallel)       │                      │
-                     │                      │
+Phase 4 ─────────────┤── namespace-rename [x] ──┐
+  (IN PROGRESS)      │   (dup→rename→compat)    │
+                     │                          ├── supervised-gating
+                     │                          │   (foundational)
+                     │                          ├~~ beans-integration
+                     │                          │   (beans→merge-spec→legacy)
+                     │                          │
+Phase 5 ─────────────┤── safety-defaults ··· quality-guardrails ··· context-routing ··· interactive-collab
+  (4 parallel)       │
+                     │
+Phase 6 ─────────────┤── agent-orchestration ··· review-independence
+  (2 parallel)       │
+                     │
+Phase 7 ─────────────┤── script-hardening ··· work-lifecycle ··· knowledge-pipeline ··· todo-roadmap
+  (4 parallel)       │
+                     │
 Phase 8 ─────────────┘── memetic-research [terminal]
 ```
 
@@ -40,8 +42,10 @@ Legend: `[x]` done · `[ ]` TODO · `──` hard dep · `~~` inferred (foundati
 
 | Phase | Files | Overlapping TODOs |
 |-------|-------|-------------------|
-| 4 | `*` (rename touches everything) | namespace-rename must complete before beans-integration starts |
-| 6 | `skills/implement.md`, `skills/shared/context-isolation.md` | agent-orchestration vs interactive-collaboration (low risk — different sections) |
+| 4 | `step-transition.sh`, `init-work-unit.sh` | supervised-gating then beans-integration (sequential due to file overlap) |
+| 5 | `skills/research.md` | quality-guardrails vs interactive-collaboration (low risk — different sections) |
+| 5 | `skills/implement.md`, `skills/shared/context-isolation.md` | context-routing vs interactive-collaboration (low risk — different sections) |
+| 6 | `skills/implement.md`, `skills/shared/context-isolation.md` | agent-orchestration (low risk — lands after Phase 5) |
 | 7 | `references/`, `skills/` | knowledge-pipeline vs script-hardening (low risk — different files) |
 
 ---
@@ -85,23 +89,24 @@ Completed in commit `7808ec2`.
 
 ---
 
-## Phase 4 — Foundational Infrastructure — PLANNED
+## Phase 4 — Foundational Infrastructure — IN PROGRESS
 
-**Rationale:** Three work units change the ground truth everything else builds on. The rename changes every file path; beans changes the enforcement pipeline every branch merges through; supervised gating ensures all subsequent work units actually pause for user review at step boundaries. The namespace-rename incident (steamrolled research→implement without user interaction) proved this is foundational, not cosmetic.
+**Rationale:** These work units change the ground truth everything else builds on. The rename changed every file path; supervised gating ensures all subsequent work units actually pause for user review at step boundaries; beans changes the enforcement pipeline every branch merges through.
 
-### work/namespace-rename (3 TODOs, ~2-3 sessions, sequential)
-`duplication-cleanup`: Clean up file duplication and align command namespace
-`rename-to-furrow`: Rename project from 'harness' to 'furrow'
-`cross-platform-compatibility`: Cross-platform compatibility check
-- **Key files**: `install.sh`, `*` (rename), `scripts/`, `hooks/`, `commands/lib/`
-- **Conflict risk**: high — rename touches `*`, must run solo
-- **Why together**: Sequential pipeline: clean up duplication first (so rename is clean), rename everything, then audit the final codebase for portability.
-- **Dependencies**: `rename-to-furrow` → `duplication-cleanup`, `cross-platform-compatibility` → `rename-to-furrow`
+### work/namespace-rename (3 TODOs) — DONE
+
+| TODO | Result |
+|------|--------|
+| `duplication-cleanup` | Cleaned up file duplication and aligned command namespace |
+| `rename-to-furrow` | Renamed project from 'harness' to 'furrow' across all files |
+| `cross-platform-compatibility` | Cross-platform shell portability fixes for macOS/WSL |
+
+Completed across commits `e2e268e`..`4500bab`. Work unit archived at `c2482ed`.
 
 ### work/supervised-gating (1 TODO, ~1 session)
 `default-supervised-gating`: Default gate policy should be supervised with structural enforcement
 - **Key files**: `commands/lib/step-transition.sh`, `commands/lib/init-work-unit.sh`, `.claude/furrow.yaml`, step skills
-- **Conflict risk**: low (step-transition.sh shared with namespace-rename, but different changes)
+- **Conflict risk**: low (step-transition.sh shared with beans-integration, but different changes)
 - **Why here**: The namespace-rename work unit proved supervised mode has no structural enforcement — the agent steamrolled from research through implement without pausing. Every subsequent work unit benefits from this fix landing first.
 
 ### work/beans-integration (3 TODOs, ~1-2 sessions, sequential)
@@ -109,60 +114,60 @@ Completed in commit `7808ec2`.
 `merge-specialist`: Add a merge specialist template (built against new enforcement layer)
 `legacy-todos-migration`: Incorporate legacy TODOs into the system
 - **Key files**: `hooks/gate-check.sh`, `commands/lib/step-transition.sh`, `commands/lib/init-work-unit.sh`, `specialists/merge-specialist.md`, `todos.yaml`
-- **Conflict risk**: none (after namespace-rename completes)
+- **Conflict risk**: none (after supervised-gating completes)
 - **Why together**: Beans changes the enforcement pipeline; merge specialist needs to know about beans status validation; legacy migration depends on beans being in place.
 - **Dependencies**: `legacy-todos-migration` → `beans-enforcement-integration`
 
-**Parallelism**: namespace-rename first (touches `*`), then supervised-gating and beans-integration can parallel.
+**Parallelism**: supervised-gating first (foundational), then beans-integration.
 
 ---
 
-## Phase 5 — Safety & Quality Defaults — PLANNED
+## Phase 5 — Safety, Quality & Collaboration — PLANNED
 
-**Rationale:** All small-effort, high-value changes. Built against the renamed codebase, supervised gating, and beans enforcement layer. Quality guardrails (source hierarchy, vertical slices, model routing) and hook fixes that raise the bar for all subsequent work. Minimal file conflicts — 3 parallel worktrees.
+**Rationale:** High-value changes built against the renamed codebase and supervised gating. Quality guardrails raise the bar for all subsequent work. Interactive collaboration is promoted here because making early steps genuinely collaborative compounds across every future work unit. Four parallel worktrees with low-risk file overlaps on different sections.
 
 ### work/safety-defaults (1 TODO, ~1 session)
 `stop-hook-false-positives`: Handle stop hooks enforcing fluff requirements
 - **Key files**: `hooks/validate-summary.sh`, `hooks/stop-ideation.sh`, `hooks/lib/validate.sh`
 - **Conflict risk**: none
-- **Why standalone**: Fix hook false positives that block valid work. Supervised gating enforcement moved to Phase 4.
+- **Why standalone**: Fix hook false positives that block valid work.
 
 ### work/quality-guardrails (3 TODOs, ~1 session)
 `research-source-guidance`: Structured guidance for primary vs secondary source research
 `guard-against-horizontal-slices`: Guard against horizontal slices in decomposition
 `skill-loading-visible-internals`: Skill loading exposes internals — should be seamless
 - **Key files**: `skills/research.md`, `templates/research-sources.md`, `skills/decompose.md`, `skills/shared/red-flags.md`, `evals/dimensions/decompose.yaml`, `commands/lib/load-step.sh`, `commands/lib/gate-precheck.sh`
-- **Conflict risk**: none
+- **Conflict risk**: low (`skills/research.md` overlap with interactive-collaboration — different sections)
 - **Why together**: All add guardrail instructions to step skills — different skills, same pattern.
 
 ### work/context-routing (2 TODOs, ~1 session)
 `claude-md-docs-routing`: CLAUDE.md should reference docs routing
 `sonnet-model-routing`: Use Sonnet for on-rails tasks, reserve Opus for reasoning
 - **Key files**: `.claude/CLAUDE.md`, `specialists/`, `skills/implement.md`, `skills/shared/context-isolation.md`
-- **Conflict risk**: none
+- **Conflict risk**: low (`skills/implement.md` overlap with interactive-collaboration — different sections)
 - **Why together**: Both are routing decisions baked into ambient context — docs routing and model routing.
-
-**Parallelism**: all 3 work units run in parallel.
-
----
-
-## Phase 6 — Orchestration & Collaboration — PLANNED
-
-**Rationale:** The two biggest capability gaps: agents aren't being dispatched (despite full infrastructure), and early steps lack genuine human collaboration. No hard file conflicts between the three tracks — orchestration touches implement.md/context-isolation.md, collaboration touches ideate/research/plan/spec skills, review touches review.md/commands.
-
-### work/agent-orchestration (2 TODOs, ~2-3 sessions)
-`parallel-agent-orchestration-adoption`: Built-in team orchestration isn't being used — diagnose and fix
-`specialist-encoded-reasoning`: Specialists need encoded reasoning, not just role descriptions
-- **Key files**: `skills/implement.md`, `skills/shared/context-isolation.md`, `specialists/`, `references/specialist-template.md`
-- **Conflict risk**: low (skills/implement.md overlap with context-routing in Phase 5, but that lands first)
-- **Why together**: Can't fix orchestration adoption without improving what gets dispatched.
 
 ### work/interactive-collaboration (2 TODOs, ~1-2 sessions)
 `interactive-ideation-checkpoints`: Collaborative check-ins at pre-implementation steps
 `worktree-reintegration-summary`: Produce summary for worktree reintegration
 - **Key files**: `skills/ideate.md`, `skills/research.md`, `skills/plan.md`, `skills/spec.md`, `skills/shared/`, `skills/implement.md`, `skills/shared/context-isolation.md`
-- **Conflict risk**: low (skills/implement.md shared with agent-orchestration — different sections)
+- **Conflict risk**: low (shared files with quality-guardrails and context-routing — different sections)
 - **Why together**: Both improve human↔agent handoff quality at different points in the workflow.
+
+**Parallelism**: all 4 work units run in parallel.
+
+---
+
+## Phase 6 — Orchestration & Review — PLANNED
+
+**Rationale:** The two biggest remaining capability gaps: agents aren't being dispatched (despite full infrastructure), and review lacks true independence. With interactive collaboration landing in Phase 5, this phase focuses on the agent-side orchestration and process isolation.
+
+### work/agent-orchestration (2 TODOs, ~2-3 sessions)
+`parallel-agent-orchestration-adoption`: Built-in team orchestration isn't being used — diagnose and fix
+`specialist-encoded-reasoning`: Specialists need encoded reasoning, not just role descriptions
+- **Key files**: `skills/implement.md`, `skills/shared/context-isolation.md`, `specialists/`, `references/specialist-template.md`
+- **Conflict risk**: low (skills/implement.md modified in Phase 5, but those changes land first)
+- **Why together**: Can't fix orchestration adoption without improving what gets dispatched.
 
 ### work/review-independence (2 TODOs, ~1-2 sessions)
 `fresh-session-review`: Run review in a truly fresh session (no shared context)
@@ -171,7 +176,7 @@ Completed in commit `7808ec2`.
 - **Conflict risk**: none
 - **Why together**: Both create new commands/workflows — review isolation and brain dump triage.
 
-**Parallelism**: all 3 work units run in parallel.
+**Parallelism**: both work units run in parallel.
 
 ---
 
@@ -240,20 +245,22 @@ Completed in commit `7808ec2`.
 ## Worktree Quick Reference
 
 ```sh
-# Phase 4 — Foundational Infrastructure (sequential)
-git worktree add ../wt-namespace-rename -b work/namespace-rename main
-# ... complete namespace-rename, merge, then:
+# Phase 4 — Foundational Infrastructure
+# namespace-rename: DONE
+# supervised-gating next:
+git worktree add ../wt-supervised-gating -b work/supervised-gating main
+# ... complete, merge, then:
 git worktree add ../wt-beans-integration -b work/beans-integration main
 
-# Phase 5 — Safety & Quality Defaults (3 parallel)
-git worktree add ../wt-safety-defaults    -b work/safety-defaults    main
-git worktree add ../wt-quality-guardrails -b work/quality-guardrails main
-git worktree add ../wt-context-routing    -b work/context-routing    main
-
-# Phase 6 — Orchestration & Collaboration (3 parallel)
-git worktree add ../wt-agent-orchestration      -b work/agent-orchestration      main
+# Phase 5 — Safety, Quality & Collaboration (4 parallel)
+git worktree add ../wt-safety-defaults          -b work/safety-defaults          main
+git worktree add ../wt-quality-guardrails       -b work/quality-guardrails       main
+git worktree add ../wt-context-routing          -b work/context-routing          main
 git worktree add ../wt-interactive-collaboration -b work/interactive-collaboration main
-git worktree add ../wt-review-independence       -b work/review-independence       main
+
+# Phase 6 — Orchestration & Review (2 parallel)
+git worktree add ../wt-agent-orchestration -b work/agent-orchestration main
+git worktree add ../wt-review-independence -b work/review-independence main
 
 # Phase 7 — Infrastructure & Knowledge (4 parallel)
 git worktree add ../wt-script-hardening   -b work/script-hardening   main
