@@ -501,6 +501,10 @@ components:
     exists_because: "Claude Code has no native harness health check, update, or self-modification"
     delete_when: "Claude Code provides built-in workflow infrastructure management"
 
+  - path: commands/next.md
+    exists_because: "Claude Code has no native roadmap-to-session handoff prompt generation"
+    delete_when: "Claude Code provides built-in work unit dispatch from roadmap phases"
+
   - path: commands/lib/detect-context.sh
     exists_because: "Claude Code has no native active task scanning across .work/ directories"
     delete_when: "Claude Code provides built-in active work unit detection API"

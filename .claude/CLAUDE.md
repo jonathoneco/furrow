@@ -64,6 +64,7 @@ Installed from: /home/jonco/src/furrow
 | /harness:redirect | Record dead end and pivot |
 | /work-todos | Extract or create TODOs in todos.yaml |
 | /harness:triage | Triage todos.yaml and generate ROADMAP.md |
+| /harness:next | Generate handoff prompt(s) for next roadmap work |
 | /harness | Harness management (doctor, update, meta) |
 
 Run `/harness:doctor` to check health. Run `install.sh --check` to verify installation.
