@@ -44,7 +44,7 @@
     - "skills/spec.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-04T00:00:00Z"
   urgency: "medium"
   impact: "high"
   effort: "medium"
@@ -54,6 +54,8 @@
     - "skills/plan.md"
     - "skills/spec.md"
     - "skills/shared/"
+  depends_on:
+    - guard-against-horizontal-slices  # inferred: foundational — guardrails before skill UX changes
   status: active
 - id: stop-hook-false-positives
   title: "Handle stop hooks enforcing fluff requirements"
@@ -106,18 +108,26 @@
   # Cluster: Seeds & Knowledge Flow
   status: active
 - id: seeds-concept
-  title: "Seeds as a structured knowledge reduction stage"
+  title: "Seeds as a structured knowledge reduction stage with dependency wiring"
   context: |
     After research, lay-of-the-land, ideas, designs, and considerations have been
     challenged, consumed, and processed, we should reduce them into "seeds" — focused,
     scoped artifacts that drive subsequent research, planning, and implementation.
     A "seeding" stage would sit between broad exploration and focused execution,
     producing compact context packages for downstream steps.
+
+    Additionally, seeds need to subsume the dependency wiring role that beans played.
+    The current seeds concept is too shallow — it doesn't do the sort of dependency
+    graph construction and cross-seed relationship tracking that beans provided.
+    Seeds should be the nodes in a first-class dependency graph within the almanac.
+    See also: almanac-graph-primitives TODO for the graph infrastructure side.
   work_needed: |
     - Define the "seed" artifact format (compact context package with scope, constraints, open questions)
     - Determine where seeding fits in the step sequence (post-research? post-plan?)
     - Consider whether seeds replace or augment the current summary.md handoff
     - Design how seeds get consumed by downstream steps (injected context? reference?)
+    - Design seed-to-seed dependency edges (replaces beans' dependency wiring)
+    - Define how seeds interact with the almanac graph primitives (see almanac-graph-primitives)
     - Prototype with a research row to validate the pattern
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
@@ -147,13 +157,15 @@
     - "references/specialist-template.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-04T00:00:00Z"
   urgency: "medium"
   impact: "high"
   effort: "medium"
   files_touched:
     - "specialists/"
     - "references/specialist-template.md"
+  depends_on:
+    - sonnet-model-routing  # inferred: merge-implication — model routing affects specialist template design
   status: active
 - id: research-documentation-detection
   title: "Detect when research output should be documentation instead"
@@ -506,6 +518,8 @@
     - "bin/rws"
     - "commands/archive.md"
     - "references/row-layout.md"
+  depends_on:
+    - brain-dump-triage-command  # inferred: merge-implication — command changes land before infra restructure
   # Cluster: Integrations & Extensions
   status: active
 - id: beans-enforcement-integration
@@ -638,13 +652,16 @@
     - "specialists/"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-04T00:00:00Z"
   urgency: "high"
   impact: "high"
   effort: "medium"
   files_touched:
     - "skills/implement.md"
     - "skills/shared/context-isolation.md"
+  depends_on:
+    - specialist-expansion  # inferred: foundational — specialist templates must work before agent dispatch
+    - interactive-ideation-checkpoints  # inferred: foundational — skills/implement.md stability
   # Cluster: Advanced / Exploratory
   status: active
 - id: memetic-algorithms-research
@@ -815,13 +832,15 @@
     - "commands/work-roadmap.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-04T00:00:00Z"
   urgency: "medium"
   impact: "high"
   effort: "medium"
   files_touched:
     - "commands/"
     - "commands/work-todos.md"
+  depends_on:
+    - parallel-agent-orchestration-adoption  # inferred: merge-implication — skills/ stable before command layer
   status: active
 - id: almanac-knowledge-subcommands-learn-rationale-docs
   title: Almanac knowledge subcommands (learn, rationale, docs, specialists, history)
@@ -872,3 +891,305 @@
   source_work_unit: merge-specialist-and-legacy-todos
   files_touched:
     - skills/implement.md
+# --- Bundle A: CLI Architecture ---
+- id: cli-architecture-overhaul
+  title: "CLI architecture overhaul — functionality over script routing, modularization, Go evaluation"
+  context: |
+    The CLIs (alm, rws, sds) are currently shell scripts that route to other shell scripts.
+    They should be functionality-first, reducing context burden on agents, with clean verticals
+    per CLI. Related questions: should they be modularized into subcommand libraries? Should
+    they move to Go for type safety and testability? The harness also lacks self-understanding —
+    it doesn't know its own tool inventory, and past conversations contain patterns that should
+    be extracted into CLI features.
+  work_needed: |
+    - Audit current CLI architecture: what's script routing vs real logic
+    - Define clean verticals for each CLI (alm = knowledge, rws = rows, sds = seeds)
+    - Evaluate Go vs shell tradeoffs (testability, type safety, portability, development speed)
+    - Design modularization strategy (subcommand libraries, shared utilities)
+    - Add harness self-understanding: CLI should be able to describe its own capabilities
+    - Mine past Furrow conversations for patterns that should become CLI features
+    - Reduce context burden: CLIs should handle complexity so skills don't have to
+  references:
+    - bin/alm
+    - bin/rws
+    - bin/sds
+    - bin/frw.d/scripts/
+  source_type: brain-dump
+  created_at: "2026-04-04T00:00:00Z"
+  updated_at: "2026-04-04T00:00:00Z"
+  urgency: medium
+  impact: high
+  effort: large
+  files_touched:
+    - bin/alm
+    - bin/rws
+    - bin/sds
+    - bin/frw.d/scripts/
+  depends_on:
+    - brain-dump-triage-command  # inferred: merge-implication — command experience informs CLI architecture
+  status: active
+# --- Bundle B: Specialist Expansion ---
+- id: specialist-expansion
+  title: "Specialist expansion — step-specific modes, new domains, rationale grounding"
+  context: |
+    Current specialists are domain-specific (api-designer, go-specialist, etc.) but not
+    step-specific. An architect thinks differently when specing vs implementing. We also
+    lack frontend/design specialists entirely (15 exist, all backend/infra). Additionally,
+    harness-engineer.md should ground itself in rationale.yaml to reason about Furrow
+    conventions from first principles rather than memorized patterns.
+  work_needed: |
+    - Design step-specific specialist modes (architecting vs specing vs implementing thinking)
+    - Determine if this is a template variant or a skill injection that modifies specialist behavior per step
+    - Add frontend/design specialist types (frontend-design, css-specialist, accessibility, etc.)
+    - Update harness-engineer.md to reference and load rationale.yaml for self-grounding
+    - Update specialist-template.md reference to document step-specific mode convention
+    - Consider whether step-specific behavior belongs in the specialist template or the step skill
+  references:
+    - specialists/
+    - specialists/harness-engineer.md
+    - references/specialist-template.md
+    - .furrow/almanac/rationale.yaml
+  source_type: brain-dump
+  created_at: "2026-04-04T00:00:00Z"
+  updated_at: "2026-04-04T00:00:00Z"
+  urgency: medium
+  impact: high
+  effort: medium
+  files_touched:
+    - specialists/
+    - references/specialist-template.md
+    - .furrow/almanac/rationale.yaml
+  depends_on:
+    - specialist-encoded-reasoning  # inferred: foundational — format/reasoning first, then expand
+    - sonnet-model-routing  # inferred: merge-implication — model routing affects specialist design
+  status: active
+# --- Bundle C: Almanac Graph Primitives ---
+- id: almanac-graph-primitives
+  title: "First-class dependency graph in almanac — deterministic DAG over LLM reasoning"
+  context: |
+    Work planning and cascading should be deterministic and based on explicit data model
+    edges, not LLM reasoning about dependencies. alm triage already builds a dependency
+    graph, but it's triage output — not a first-class almanac primitive. The almanac should
+    own an explicit DAG where nodes are seeds/TODOs/rows and edges are typed relationships
+    (depends-on, blocks, informs, produces). This subsumes what beans did for dependency
+    wiring and makes planning deterministic. See also seeds-concept for the node side.
+  work_needed: |
+    - Design the graph data model (nodes: seeds/TODOs/rows, edges: typed relationships)
+    - Determine storage format (YAML adjacency list? JSONL edge list? embedded in todos.yaml?)
+    - Add alm subcommands: alm graph add-edge, alm graph show, alm graph validate
+    - Make alm triage consume the explicit graph rather than inferring dependencies
+    - Integrate with seeds — seeds become graph nodes with explicit edges
+    - Consider visualization (ASCII DAG, mermaid export)
+    - Ensure the graph survives row archival (edges to archived nodes preserved)
+  references:
+    - bin/alm
+    - .furrow/almanac/todos.yaml
+    - .furrow/almanac/roadmap.yaml
+  source_type: brain-dump
+  created_at: "2026-04-04T00:00:00Z"
+  updated_at: "2026-04-04T00:00:00Z"
+  urgency: medium
+  impact: high
+  effort: large
+  files_touched:
+    - bin/alm
+    - .furrow/almanac/
+  depends_on:
+    - cli-architecture-overhaul  # inferred: foundational — CLI architecture gates where to build features
+  status: active
+# --- Bundle D: Harness Lifecycle UX ---
+- id: harness-lifecycle-ux
+  title: "Harness UX — sow/reap verbs, status line, installation/exploration skill"
+  context: |
+    Three user-facing concerns that share a branding/identity dimension: (1) Rename
+    work→sow and archive→reap to match the agricultural metaphor (furrow/row/sow/reap).
+    (2) Design a Claude Code status line that surfaces row state, step, deliverables,
+    and other artifacts. (3) Create an installation/exploration skill for new users to
+    learn Furrow's structure and capabilities. These should be designed together since
+    the rename affects command names in the skill and status line labels.
+  work_needed: |
+    - Design the sow/reap rename scope (commands, skills, CLIs, docs, hooks)
+    - Evaluate impact: how many files change? Is this a rename-to-furrow scale effort?
+    - Design status line format: what artifacts to surface, update frequency, formatting
+    - Implement Claude Code statusLine configuration
+    - Create installation/exploration skill: guided tour of Furrow structure, commands, workflow
+    - Ensure the skill works for both new installs and existing projects
+    - Coordinate naming across all three so labels are consistent
+  references:
+    - commands/work.md
+    - commands/archive.md
+    - install.sh
+  source_type: brain-dump
+  created_at: "2026-04-04T00:00:00Z"
+  updated_at: "2026-04-04T00:00:00Z"
+  urgency: low
+  impact: medium
+  effort: large
+  files_touched:
+    - commands/
+    - skills/
+    - install.sh
+    - .claude/settings.json
+  depends_on:
+    - cli-architecture-overhaul  # inferred: foundational — CLI decisions gate verb rename and status line
+  status: active
+# --- Bundle E: Quality & Enforcement Expansion ---
+- id: quality-enforcement-expansion
+  title: "Quality enforcement — PostToolUse hooks, test cases from spec, naming guidance"
+  context: |
+    Three enforcement gaps: (1) PostToolUse hooks are empty — no post-action validation
+    exists. (2) The spec step doesn't produce test cases; test case identification should
+    be an explicit spec deliverable or companion artifact. (3) No written guidance exists
+    for naming rows, TODOs, seeds — validate-naming.sh enforces kebab-case but doesn't
+    guide what makes a good name.
+  work_needed: |
+    - Design PostToolUse hook strategy: what to validate after Write/Edit/Bash
+    - Consider: post-edit schema validation, post-bash state consistency checks, post-write naming validation
+    - Add test case identification to spec step (skills/spec.md) as explicit output section
+    - Define test case format: acceptance tests? property-based? integration scenarios?
+    - Write naming guidance document: row names, TODO ids, seed ids, deliverable names
+    - Add naming guidance to relevant skills (ideate for row names, work-todos for TODO ids)
+    - Update .claude/settings.json PostToolUse array with new hooks
+  references:
+    - .claude/settings.json
+    - skills/spec.md
+    - bin/frw.d/scripts/validate-naming.sh
+  source_type: brain-dump
+  created_at: "2026-04-04T00:00:00Z"
+  updated_at: "2026-04-04T00:00:00Z"
+  urgency: medium
+  impact: high
+  effort: medium
+  files_touched:
+    - .claude/settings.json
+    - skills/spec.md
+    - bin/frw.d/hooks/
+    - references/
+  status: active
+# --- Standalone: Rules Strategy ---
+- id: rules-strategy
+  title: "Rules strategy — harness-scoped vs project-scoped .claude/rules/"
+  context: |
+    .claude/rules/ currently has only one file (workflow-detect.md symlink). No guidance
+    exists for what rules to create, when to use harness-scoped rules vs project-scoped
+    rules, or how rules interact with the skill/hook system. Rules survive compaction
+    (unlike skills), making them valuable for invariants that must persist.
+  work_needed: |
+    - Audit what belongs in rules vs skills vs hooks vs CLAUDE.md
+    - Define harness-scoped rules (Furrow invariants: state ownership, step sequence, naming)
+    - Define project-scoped rule patterns (stack conventions, testing requirements, API standards)
+    - Create initial harness rules that extract invariants currently buried in skills
+    - Document the rules strategy in references/ or docs/
+    - Update install.sh to manage rule symlinks alongside skill/command symlinks
+  references:
+    - .claude/rules/workflow-detect.md
+    - .claude/CLAUDE.md
+    - skills/
+  source_type: brain-dump
+  created_at: "2026-04-04T00:00:00Z"
+  updated_at: "2026-04-04T00:00:00Z"
+  urgency: medium
+  impact: high
+  effort: medium
+  files_touched:
+    - .claude/rules/
+    - install.sh
+  status: active
+# --- Standalone: Mine V1 Harness ---
+- id: mine-v1-harness
+  title: "Mine v1 harness for learnings, insights, and research"
+  context: |
+    The v1 harness (pre-Furrow) contained patterns, conventions, and hard-won lessons
+    that may not have been fully carried forward. A research pass through v1 could surface
+    insights about what worked, what failed, and what was abandoned prematurely.
+    Different from mine-claude-code which mines the platform — this mines our own prior work.
+  work_needed: |
+    - Locate v1 harness artifacts (git history, archived branches, old docs)
+    - Extract patterns that worked and were lost in the v2 rewrite
+    - Identify abandoned approaches and document why they were dropped
+    - Capture learnings in .furrow/almanac/learnings/ or as seeds
+    - Cross-reference with current TODOs to avoid reinventing solutions
+  source_type: brain-dump
+  created_at: "2026-04-04T00:00:00Z"
+  updated_at: "2026-04-04T00:00:00Z"
+  urgency: low
+  impact: medium
+  effort: small
+  files_touched: []
+  status: active
+# --- Standalone: Apply Nate Jones Harness Skill ---
+- id: apply-nate-jones-skill
+  title: "Apply Nate Jones harness skill patterns to Furrow"
+  context: |
+    An external harness skill (Nate Jones') exists that may contain patterns, conventions,
+    or approaches applicable to Furrow. Needs evaluation of what it provides and how it
+    maps to Furrow's architecture.
+  work_needed: |
+    - Research the Nate Jones harness skill: what does it do, what patterns does it encode
+    - Identify overlaps and gaps with Furrow's current approach
+    - Extract applicable patterns and adapt them to Furrow's conventions
+    - Document any rejected patterns with rationale
+  source_type: brain-dump
+  created_at: "2026-04-04T00:00:00Z"
+  updated_at: "2026-04-04T00:00:00Z"
+  urgency: low
+  impact: medium
+  effort: small
+  files_touched: []
+  status: active
+# --- Standalone: Adapters Audit ---
+- id: adapters-audit
+  title: "Adapters pass — check for atrophy, modularization decay, internal consistency"
+  context: |
+    The adapters/ directory was designed for dual-runtime support (Claude Code + Agent SDK).
+    It may have atrophied as development focused on Claude Code. Need an audit for stale
+    files, broken assumptions, modularization decay, and internal consistency between
+    adapters/claude-code/ and adapters/agent-sdk/.
+  work_needed: |
+    - Audit adapters/claude-code/ for staleness against current .claude/ state
+    - Audit adapters/agent-sdk/ for staleness against current Agent SDK capabilities
+    - Check internal consistency: do shared schemas match actual usage?
+    - Identify dead code and stale references
+    - Determine if the adapter abstraction is still pulling its weight or adding overhead
+    - Update or prune as needed, update rationale.yaml entries
+  references:
+    - adapters/
+    - adapters/shared/conventions.md
+    - .furrow/almanac/rationale.yaml
+  source_type: brain-dump
+  created_at: "2026-04-04T00:00:00Z"
+  updated_at: "2026-04-04T00:00:00Z"
+  urgency: low
+  impact: medium
+  effort: medium
+  files_touched:
+    - adapters/
+  status: active
+# --- Standalone: Research Methodology for Design ---
+- id: research-methodology-design
+  title: "Research methodology for systems design — beyond naive web search"
+  context: |
+    During prior research rows, naive Google searching produced vague resources for systems
+    design questions. The research step needs a methodology for finding high-quality design
+    knowledge: architectural pattern catalogs, conference talks, implementation case studies,
+    open-source codebases as reference implementations. The current research-source-guidance
+    TODO covers source hierarchy (primary/secondary) but not the meta-question of how to
+    research design best practices effectively.
+  work_needed: |
+    - Define a research methodology for systems design questions
+    - Identify high-value knowledge sources beyond web search (GitHub repos, academic papers, conference proceedings, RFCs)
+    - Add design-research-specific guidance to skills/research.md
+    - Consider a curated reference list of architectural pattern sources
+    - Document the methodology so future research rows can follow it
+  references:
+    - skills/research.md
+    - templates/research-sources.md
+  source_type: brain-dump
+  created_at: "2026-04-04T00:00:00Z"
+  updated_at: "2026-04-04T00:00:00Z"
+  urgency: low
+  impact: medium
+  effort: small
+  files_touched:
+    - skills/research.md
+  status: active
