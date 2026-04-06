@@ -104,25 +104,39 @@ Output as JSON: {\"dimensions\": [{\"name\": \"...\", \"verdict\": \"...\", \"ev
   mkdir -p "${work_dir}/reviews"
 
   response=""
-  _claude_err="$(mktemp)"
-  if command -v claude >/dev/null 2>&1; then
-    response="$(claude --model "${provider}" --print "${prompt}" 2>"$_claude_err")" || true
+  _invoke_err="$(mktemp)"
+
+  # Dispatch based on provider prefix
+  case "$provider" in
+    codex/*)
+      _model="${provider#codex/}"
+      if command -v codex >/dev/null 2>&1; then
+        response="$(codex exec -m "$_model" "$prompt" 2>"$_invoke_err")" || true
+      else
+        echo "error: codex CLI not found" >&2
+        rm -f "$_invoke_err"
+        return 2
+      fi
+      ;;
+    *)
+      # Default: use claude CLI with --model
+      if command -v claude >/dev/null 2>&1; then
+        response="$(claude --model "${provider}" --print "${prompt}" 2>"$_invoke_err")" || true
+      fi
+      ;;
+  esac
+
+  if [ -s "$_invoke_err" ]; then
+    echo "cross-model stderr: $(cat "$_invoke_err")" >&2
   fi
-  if [ -s "$_claude_err" ]; then
-    echo "claude stderr: $(cat "$_claude_err")" >&2
-  fi
-  rm -f "$_claude_err"
+  rm -f "$_invoke_err"
 
   if [ -z "$response" ]; then
     prompt_file="${work_dir}/prompts/review-${deliverable}-cross.md"
     prompt_tmp="$(mktemp)"
     printf '%s\n' "$prompt" > "$prompt_tmp"
     mv "$prompt_tmp" "$prompt_file"
-    if command -v claude >/dev/null 2>&1; then
-      echo "Cross-model invocation failed — prompt written to ${prompt_file}" >&2
-    else
-      echo "Prompt written — invoke manually with model ${provider}" >&2
-    fi
+    echo "Cross-model invocation failed — prompt written to ${prompt_file}" >&2
     return 2
   fi
 

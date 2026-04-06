@@ -32,7 +32,7 @@ context_docs: []
 # Used during ideation for outside-voice review.
 # If absent, same-model fresh-context review is used.
 cross_model:
-  provider: ""          # e.g., "openai/gpt-4o", "google/gemini-2.5-pro"
+  provider: "codex/o3"  # "codex/{model}" uses codex CLI, other values use claude --model
 
 # CI commands for pre-merge checks
 ci:
