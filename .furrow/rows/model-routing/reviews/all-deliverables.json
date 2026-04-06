@@ -1,0 +1,38 @@
+{
+  "phase_a": {
+    "specialist-model-hints": {
+      "verdict": "pass",
+      "acs_checked": 6,
+      "acs_passed": 6,
+      "notes": "All 15 specialists have model_hint in frontmatter. 3 opus, 12 sonnet. Correct placement and comment."
+    },
+    "step-model-defaults": {
+      "verdict": "pass",
+      "acs_checked": 4,
+      "acs_passed": 4,
+      "notes": "All 7 step skills have Model Default section. 2 opus, 5 sonnet. Correct placement."
+    },
+    "consumer-wiring": {
+      "verdict": "pass",
+      "acs_checked": 5,
+      "acs_passed": 5,
+      "notes": "implement.md, decompose.md, review.md all have routing instructions with resolution chain."
+    },
+    "routing-docs": {
+      "verdict": "pass",
+      "acs_checked": 6,
+      "acs_passed": 6,
+      "notes": "Model Resolution section in context-isolation.md. Correct placement, content, and posture."
+    }
+  },
+  "phase_b": {
+    "consistency": "pass — resolution order stated identically across all 4 consumer files",
+    "completeness": "pass — all 15 specialists and 7 step skills covered",
+    "minimal_diff": "pass — only model_hint/model_default additions, no unrelated changes"
+  },
+  "overall": "pass",
+  "total_acs": 21,
+  "total_passed": 21,
+  "total_failed": 0,
+  "reviewed_at": "2026-04-06T18:30:00Z"
+}
