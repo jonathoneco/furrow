@@ -193,32 +193,6 @@
     - "skills/review.md"
   # Cluster: Research Process
   status: active
-- id: research-source-guidance
-  title: "Structured guidance for primary vs secondary source research"
-  context: |
-    During Convex research, Claude was missing content from November 2023 because
-    it relied on training data rather than fetching primary sources. Research steps
-    need explicit guidance on source hierarchy: primary sources first (official docs,
-    changelogs, source code), secondary sources with caveats (blog posts, tutorials),
-    and training data only as orientation.
-  work_needed: |
-    - Add source hierarchy instructions to skills/research.md
-    - Define when to use WebFetch/WebSearch vs training knowledge
-    - Add a "source inventory" section to research deliverables (what was checked, what was stale)
-    - Consider making the research-sources.md template mandatory rather than optional
-  references:
-    - "skills/research.md"
-    - "templates/research-sources.md"
-  source_type: "brain-dump"
-  created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-02T00:00:00Z"
-  urgency: "high"
-  impact: "high"
-  effort: "small"
-  files_touched:
-    - "skills/research.md"
-    - "templates/research-sources.md"
-  status: active
 - id: fresh-session-review
   title: "Run review in a truly fresh session (no shared context)"
   context: |
@@ -780,37 +754,6 @@
   files_touched:
     - "bin/frw.d/scripts/"
     - "bin/frw.d/hooks/"
-  status: active
-- id: guard-against-horizontal-slices
-  title: "Guard against horizontal slices in decomposition"
-  context: |
-    LLMs naturally decompose work into horizontal slices (by layer: "do all the
-    database work, then all the API work, then all the frontend work") rather than
-    vertical slices (by feature: "build the complete user creation flow end-to-end").
-    Horizontal slices are harder to test incrementally, produce integration risk at
-    the seams, and delay working functionality. The decompose step and review
-    dimensions should actively detect and reject horizontal decomposition.
-  work_needed: |
-    - Add a "vertical slice" check to the decompose step skill or gate evaluation
-    - Define heuristics for detecting horizontal slices (e.g., deliverables named by layer, no deliverable is independently testable)
-    - Add to red-flags.md or decompose eval dimensions: "deliverables should be vertical slices, not horizontal layers"
-    - Consider adding this to the interactive ideation checkpoints (challenge the user's decomposition if it looks horizontal)
-    - Document the vertical vs horizontal slice distinction in a reference
-  references:
-    - "skills/decompose.md"
-    - "skills/shared/red-flags.md"
-    - "evals/dimensions/decompose.yaml"
-  source_type: "brain-dump"
-  created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-02T00:00:00Z"
-  urgency: "medium"
-  impact: "high"
-  effort: "small"
-  files_touched:
-    - "skills/decompose.md"
-    - "skills/shared/red-flags.md"
-    - "evals/dimensions/decompose.yaml"
-  # Cluster: Meta-Process
   status: active
 - id: brain-dump-triage-command
   title: "Brain dump triage command to turn notes into actionable TODOs"

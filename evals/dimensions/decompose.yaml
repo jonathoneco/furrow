@@ -26,3 +26,9 @@ dimensions:
     pass_criteria: "File_ownership globs are non-overlapping across all assignments in each wave; every deliverable has at least one glob"
     fail_criteria: "Any overlap exists or a deliverable has no file_ownership"
     evidence_format: "Name the overlapping globs or unowned deliverable"
+
+  - name: "vertical-slicing"
+    definition: "Whether deliverables are vertical slices producing testable behavior"
+    pass_criteria: "Each deliverable produces at least one testable behavior change or verifiable artifact. Infrastructure-only deliverables have a consumer in the same or earlier wave, OR the plan explicitly justifies horizontal decomposition"
+    fail_criteria: "A deliverable modifies only one architectural layer with no consumer and no justification"
+    evidence_format: "Name the horizontal deliverable and whether justification exists in the plan"

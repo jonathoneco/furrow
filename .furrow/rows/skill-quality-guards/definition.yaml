@@ -1,0 +1,53 @@
+objective: >-
+  Strengthen decomposition quality and research reliability by adding
+  vertical-slice guardrails to the decompose step and source hierarchy
+  guidance to the research step. Two independent improvements that
+  prevent common LLM failure modes before they compound downstream.
+
+deliverables:
+  - name: vertical-slice-guardrails
+    specialist: harness-engineer
+    acceptance_criteria:
+      - "Red flag entry in red-flags.md defines horizontal-slice naming patterns (by-layer names) and testability check"
+      - "Binary eval dimension 'vertical-slicing' added to decompose.yaml with mechanical pass condition"
+      - "Pass condition: each deliverable produces at least one testable behavior change; infrastructure-only deliverables without a consumer in the same or earlier wave fail unless justified in the plan"
+      - "Justification-as-pass: horizontal slicing is allowed when the plan explicitly states why vertical slicing is inappropriate for this row"
+      - "Decompose skill references the vertical-slice concept without duplicating the red flag or eval content"
+    file_ownership:
+      - "skills/shared/red-flags.md"
+      - "evals/dimensions/decompose.yaml"
+      - "skills/decompose.md"
+    depends_on: []
+
+  - name: research-source-hierarchy
+    specialist: harness-engineer
+    acceptance_criteria:
+      - "Source hierarchy defined in research.md: primary (official docs, source code, changelogs, CLI help) > secondary (blogs, tutorials, SO) > tertiary (training data)"
+      - "Training data scoped: acceptable for well-established facts (language syntax, stdlib APIs); not for version-specific, behavior-specific, or configuration-specific claims"
+      - "Mandatory '## Sources Consulted' section added to research output format in research.md"
+      - "Templates/research-sources.md updated with hierarchy guidance and when-to-use-what table above existing citation format"
+    file_ownership:
+      - "skills/research.md"
+      - "templates/research-sources.md"
+    depends_on: []
+
+context_pointers:
+  - path: "skills/decompose.md"
+    note: "Decomposition step skill — add vertical-slice reference"
+  - path: "skills/shared/red-flags.md"
+    note: "Cross-step anti-pattern table — add horizontal-slice red flag"
+  - path: "evals/dimensions/decompose.yaml"
+    note: "Binary eval dimensions — add vertical-slicing dimension"
+  - path: "skills/research.md"
+    note: "Research step skill — add source hierarchy and mandatory Sources Consulted section"
+  - path: "templates/research-sources.md"
+    note: "Source inventory template — add hierarchy guidance"
+
+constraints:
+  - "No new eval dimensions for research — hierarchy is guidance, not binary pass/fail"
+  - "No schema changes to eval dimension format — use justification-as-pass within existing binary"
+  - "Both deliverables are independent — no dependency between them"
+  - "Red flag is pre-write warning; eval dimension is gate enforcement — clear roles, not redundant enforcement"
+
+gate_policy: supervised
+source_todo: guard-against-horizontal-slices

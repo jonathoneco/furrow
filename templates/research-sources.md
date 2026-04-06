@@ -2,6 +2,18 @@
 
 Sources consulted during research, with relevance ratings and contributions.
 
+## Source Hierarchy
+
+Consult sources in priority order. Higher-tier sources override lower-tier ones on conflicts.
+
+| Tier | Sources | Use when |
+|------|---------|----------|
+| Primary | Official docs, source code, changelogs, CLI `--help`, API responses | Always for version/behavior/config claims. First resort. |
+| Secondary | Blog posts, tutorials, StackOverflow, conference talks | When primary is ambiguous or insufficient. Cross-reference with primary. |
+| Tertiary | Training data (model knowledge) | Well-established facts only (language syntax, stdlib APIs). Never for version-specific claims. |
+
+If a claim cannot be verified against a primary source, flag it as **unverified**.
+
 ## Source Types
 
 | Type | Attribution Format | Description |
@@ -15,9 +27,9 @@ Sources consulted during research, with relevance ratings and contributions.
 
 ## Sources
 
-| # | Source | Type | Relevance | Contribution |
-|---|--------|------|-----------|--------------|
-| 1 | {attribution} | {type} | high/medium/low | {one-line summary} |
+| # | Source | Type | Tier | Relevance | Contribution |
+|---|--------|------|------|-----------|--------------|
+| 1 | {attribution} | {type} | primary/secondary/tertiary | high/medium/low | {one-line summary} |
 
 ## Citation Format
 
