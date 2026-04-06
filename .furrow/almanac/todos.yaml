@@ -107,39 +107,43 @@
   # Cluster: Seeds & Knowledge Flow
   status: active
 - id: seeds-concept
-  title: "Seeds as the task management primitive — work graph, dependencies, and knowledge reduction"
+  title: "Seeds as the task management primitive — work graph, in-row tracking, and gating"
   context: |
-    Seeds are the fundamental task management primitive for Furrow. They are not just
-    knowledge artifacts — they are the nodes in the work graph. Every piece of planned
-    work, dependency relationship, and execution ordering flows through seeds.
+    Seeds are the fundamental task management primitive for Furrow. They operate at
+    two levels:
 
-    The seed concept has three dimensions:
-    1. **Knowledge reduction** — After research, ideas, and designs have been challenged
-       and processed, reduce them into focused, scoped artifacts that drive downstream
-       steps. Seeds sit between broad exploration and focused execution.
-    2. **Work graph management** — Seeds own the dependency graph: edges between work
+    1. **Cross-row work graph** — Seeds own the dependency graph: edges between work
        items, dependency types (blocks, informs, requires, produces), ordering constraints,
        and cascading implications. This subsumes what beans did and what alm triage
        currently infers through LLM reasoning. The graph should be explicit and
-       deterministic, not reasoned about.
-    3. **Task lifecycle** — Seeds have status, priority, type, ownership. They are
-       claimable, trackable, and archivable. They bridge the gap between "TODO in a
-       YAML file" and "row being actively worked." A seed can spawn a row, and a row
-       can produce new seeds.
+       deterministic, not reasoned about. Almanac (alm) calls seeds for graph queries
+       when doing triage, roadmapping, and planning — alm is the planning surface,
+       seeds are the graph engine.
 
-    The almanac-graph-primitives TODO covers the graph infrastructure; this TODO covers
-    the seed data model, lifecycle, and integration with the rest of the harness.
+    2. **Within-row granular work management** — Seeds are used inside a row for
+       spec'ing and decomposition. During spec, work items become seeds with explicit
+       edges. During decompose, the seed graph determines wave ordering and parallelism.
+       Gate checks query seed status to verify preconditions are met before step
+       transitions. This replaces the current pattern where plan.json and definition.yaml
+       carry implicit dependency information.
+
+    Additionally, seeds serve as knowledge reduction artifacts — after research and
+    exploration, broad findings are distilled into focused seeds that drive downstream
+    steps. But this is secondary to their role as the work graph primitive.
+
+    The sds CLI is the primary interface. alm delegates graph queries to sds.
+    rws consumes seed state for gating and step transitions within rows.
   work_needed: |
     - Define the seed data model: id, title, type, status, priority, edges, metadata
     - Design edge types: blocks, depends-on, informs, produces, supersedes
     - Define seed lifecycle: open → claimed → active (row) → closed
     - Design how seeds spawn rows and how rows produce seeds
-    - Determine where seeding fits in the step sequence (post-research? post-plan?)
-    - Consider whether seeds replace or augment the current summary.md handoff
-    - Design how seeds get consumed by downstream steps (injected context? reference?)
-    - Integrate with sds CLI: sds should become the primary interface for work graph queries
-    - Define how triage reads the explicit graph rather than inferring dependencies
-    - Prototype with a research row to validate the pattern
+    - Design within-row seed usage: spec creates seeds, decompose reads the graph for waves
+    - Wire gate checks to query seed status for precondition verification
+    - Integrate with sds CLI: sds should become the primary interface for graph operations
+    - Design how rws consumes seed state for step transitions and gating
+    - Consider whether seeds replace plan.json's implicit dependency tracking
+    - Prototype with a multi-deliverable row to validate both levels
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -922,24 +926,27 @@
   status: active
 # --- Bundle C: Almanac Graph Primitives ---
 - id: almanac-graph-primitives
-  title: "Graph infrastructure for seeds — storage, querying, and visualization"
+  title: "Almanac calls seeds for graph management — triage, roadmap, and planning consume the seed graph"
   context: |
-    This is the infrastructure layer for the seeds work graph. Seeds own the data model
-    (nodes, edge types, lifecycle); this TODO covers how the graph is stored, queried,
-    validated, and visualized. The almanac (alm CLI) becomes the interface for graph
-    operations, and triage consumes the explicit graph rather than inferring dependencies
-    through LLM reasoning.
+    Almanac (alm) is the high-level work planning surface: TODO management, roadmapping,
+    documentation upkeep, learnings. It delegates graph management to seeds (sds) rather
+    than owning graph primitives itself. When alm triage needs dependency ordering, it
+    queries the seed graph. When alm roadmap needs phase grouping, it reads seed edges.
 
-    This is tightly coupled with seeds-concept — seeds define WHAT the graph contains,
-    this defines HOW the graph is implemented and accessed.
+    The responsibility split:
+    - **alm**: planning surface — TODOs, roadmap generation, knowledge lifecycle, docs
+    - **sds**: graph engine — nodes, edges, dependency types, queries, validation
+
+    This TODO covers wiring alm's planning operations to consume the seed graph instead
+    of inferring dependencies through LLM reasoning. alm triage, alm next, and roadmap
+    generation should all read from sds rather than reasoning about relationships.
   work_needed: |
-    - Design storage format for the seed graph (YAML adjacency list? JSONL edge list? embedded in seeds registry?)
-    - Add alm/sds subcommands: add-edge, remove-edge, show-graph, validate-graph
-    - Make alm triage consume the explicit seed graph rather than inferring dependencies
-    - Build graph query capabilities: "what blocks X?", "what does X unblock?", "critical path?"
-    - Consider visualization (ASCII DAG, mermaid export)
-    - Ensure the graph survives row archival (edges to archived seeds preserved)
-    - Design how roadmap generation reads the seed graph for phase ordering
+    - Wire alm triage to query sds for dependency ordering instead of inferring
+    - Wire alm roadmap generation to read seed edges for phase grouping
+    - Add alm commands that delegate graph queries to sds (e.g., alm deps, alm critical-path)
+    - Ensure roadmap generation reads the explicit seed graph for phase ordering
+    - Consider visualization pass-through (alm renders, sds provides data)
+    - Design how alm surfaces seed graph state in roadmap.yaml and roadmap.md
   references:
     - bin/alm
     - .furrow/almanac/todos.yaml
