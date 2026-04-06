@@ -1,0 +1,79 @@
+{
+  "name": "skill-quality-guards",
+  "title": "Add vertical-slice guardrails and research source hierarchy guidance",
+  "description": "Add vertical-slice guardrails and research source hierarchy guidance",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {},
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "definition.yaml validated; 3 design decisions approved; cross-model review incorporated; summary.md complete",
+      "timestamp": "2026-04-06T18:22:53Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 5 target files read and insertion points identified; mechanical vertical-slice definition designed; source hierarchy 3-tier model defined; no schema changes needed",
+      "timestamp": "2026-04-06T18:32:22Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Plan approved: 6 edits across 5 files, single wave, both deliverables parallel, no schema changes; user reviewed exact edit content and approved",
+      "timestamp": "2026-04-06T18:45:58Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Specs written for both deliverables with testable ACs, exact insertion points, and implementation notes; user approved",
+      "timestamp": "2026-04-06T18:47:33Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "plan.json validated: 2 deliverables in wave 1, no file overlap, no dependencies, specialist assignments correct",
+      "timestamp": "2026-04-06T18:49:22Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 6 edits implemented across 5 files; 33 insertions, 0 deletions; all changes additive as spec'd",
+      "timestamp": "2026-04-06T18:51:01Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 6 edits committed (2f32d46); 33 insertions, 0 deletions; all changes additive as spec'd",
+      "timestamp": "2026-04-06T18:51:22Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/skill-quality-guards",
+  "mode": "code",
+  "base_commit": "7baa5b3bb36944b1e3b6f84718e3cf3287048f78",
+  "seed_id": "furrow-2c57",
+  "epic_seed_id": null,
+  "created_at": "2026-04-05T00:51:54Z",
+  "updated_at": "2026-04-06T19:38:23Z",
+  "archived_at": "2026-04-06T19:38:23Z",
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}

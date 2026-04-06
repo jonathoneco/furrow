@@ -24,11 +24,11 @@ dependency_graph:
     - id: guard-against-horizontal-slices
       phase: 1
       row: skill-quality-guards
-      status: active
+      status: done
     - id: research-source-guidance
       phase: 1
       row: skill-quality-guards
-      status: active
+      status: done
     - id: sonnet-model-routing
       phase: 1
       row: model-routing

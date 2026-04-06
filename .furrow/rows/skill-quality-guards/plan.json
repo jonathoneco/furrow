@@ -1,0 +1,22 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": ["vertical-slice-guardrails", "research-source-hierarchy"],
+      "assignments": {
+        "vertical-slice-guardrails": {
+          "specialist": "harness-engineer",
+          "file_ownership": ["skills/shared/red-flags.md", "evals/dimensions/decompose.yaml", "skills/decompose.md"],
+          "skills": []
+        },
+        "research-source-hierarchy": {
+          "specialist": "harness-engineer",
+          "file_ownership": ["skills/research.md", "templates/research-sources.md"],
+          "skills": []
+        }
+      }
+    }
+  ],
+  "created_at": "2026-04-06T00:00:00Z",
+  "created_by": "plan-step"
+}
