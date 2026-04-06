@@ -57,11 +57,11 @@ dependency_graph:
     - id: quality-enforcement-expansion
       phase: 2
       row: quality-and-rules
-      status: active
+      status: done
     - id: rules-strategy
       phase: 2
       row: quality-and-rules
-      status: active
+      status: done
     # Phase 3
     - id: parallel-agent-orchestration-adoption
       phase: 3

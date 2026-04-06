@@ -1,0 +1,34 @@
+{
+  "gate_type": "post_step",
+  "step": "ideate",
+  "nonce": "a35e7a9a6198c896e12c803c231b105d",
+  "verdict": "PASS",
+  "dimensions": [
+    {
+      "name": "completeness",
+      "verdict": "PASS",
+      "evidence": "All required fields present: objective (6-item description), 6 deliverables with unique names and acceptance_criteria, 12 context_pointers, gate_policy='supervised', 5 constraints. No depends_on references to validate. All enum values valid."
+    },
+    {
+      "name": "alignment",
+      "verdict": "PASS",
+      "evidence": "Objective enumerates 6 items; each maps 1:1 to a deliverable. Cross-model finding (a) incorporated: constraint 4 states 'No new PostToolUse hooks' and deliverable cli-post-actions replaces original approach. No unrelated deliverables."
+    },
+    {
+      "name": "feasibility",
+      "verdict": "PASS",
+      "evidence": "All 20 acceptance criteria contain testable verbs ('returns', 'regenerates', 'refreshed', 'has', 'documents', 'symlinks') or file paths (templates/spec.md, skills/spec.md, evals/dimensions/spec.yaml, step-sequence.md, install.sh, skills/ideate.md). Scope bounded by 6 deliverables touching specific files and <=120 line context budget constraint."
+    },
+    {
+      "name": "cross-model",
+      "verdict": "PASS",
+      "evidence": "Fresh subagent review produced 3 findings: (a) PostToolUse hooks dropped — reflected in constraint 4 and cli-post-actions deliverable, (b) summary-regen as CLI post-action — reflected in cli-post-actions AC1, (c) split-into-two-rows rejected — row remains single bundle of 6 deliverables."
+    },
+    {
+      "name": "seed-sync",
+      "verdict": "PASS",
+      "evidence": "seed_id=furrow-94b3, sds show status='ideating', row step='ideate'. Mapping: ideate->ideating. Match confirmed. Seed not closed (closed_at=null)."
+    }
+  ],
+  "summary": "Definition is complete, aligned with user intent, feasible with testable ACs, reflects cross-model review findings, and seed status is synchronized."
+}
