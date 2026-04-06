@@ -1,0 +1,65 @@
+{
+  "name": "specialist-overhaul",
+  "title": "Encoded reasoning, template enforcement, step-specific modes, and new specialist domains",
+  "description": "Encoded reasoning, template enforcement, step-specific modes, and new specialist domains",
+  "step": "implement",
+  "step_status": "not_started",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {},
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Gate evaluation PASS — all 5 dimensions (completeness, alignment, feasibility, cross-model, seed-sync) passed. Verdict: post_step-ideate.json",
+      "timestamp": "2026-04-06T21:12:06Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Gate evaluation PASS — all 5 dimensions (coverage, evidence-basis, specificity, contradiction-check, seed-sync) passed",
+      "timestamp": "2026-04-06T21:26:36Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Gate evaluation PASS — all 5 dimensions passed (coverage, feasibility, specificity, research-grounding, seed-sync)",
+      "timestamp": "2026-04-06T21:35:05Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Gate evaluation PASS — all 5 dimensions (testability, completeness, consistency, implementability, seed-sync) passed",
+      "timestamp": "2026-04-06T21:46:36Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Gate evaluation PASS — all 6 dimensions (granularity, parallelism, coverage, ownership-clarity, vertical-slicing, seed-sync) passed",
+      "timestamp": "2026-04-06T21:49:34Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/specialist-overhaul",
+  "mode": "code",
+  "base_commit": "ffef8768ff910b2c8a45c2dce3b5197959ea47df",
+  "seed_id": "furrow-fed8",
+  "epic_seed_id": null,
+  "created_at": "2026-04-06T19:55:31Z",
+  "updated_at": "2026-04-06T21:49:38Z",
+  "archived_at": null,
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}

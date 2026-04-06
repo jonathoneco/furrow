@@ -1,0 +1,130 @@
+objective: >-
+  Upgrade the specialist system: deepen encoded reasoning in all 15 existing
+  templates, enforce specialist loading during implementation, add step-level
+  specialist modifiers to relevant step skills, expand the roster with
+  frontend/design and strategic specialist domains, and fix the gate-check
+  hook that blocks manual transitions from non-auto-advanceable steps,
+  collapse the two-phase transition ceremony into a single atomic command,
+  and prevent the review step from self-answering TODO extraction questions
+  by borrowing consent from unrelated prior user responses.
+
+deliverables:
+  - name: gate-check-hook-fix
+    specialist: harness-engineer
+    acceptance_criteria:
+      - "Hook regex correctly parses rws transition --request/--confirm <name> to extract row name (not --request as the name)"
+      - "Hook uses has_passing_gate() from common.sh instead of rws gate-check — checks for recorded passing gate in state.json, not auto-advance heuristic"
+      - "Hook only checks on --request (--confirm relies on --request having recorded the gate)"
+      - "Transitions with a recorded passing gate proceed; transitions without one are blocked"
+    file_ownership:
+      - "bin/frw.d/hooks/gate-check.sh"
+    depends_on: []
+
+  - name: transition-simplification
+    specialist: harness-engineer
+    acceptance_criteria:
+      - "rws transition is a single command: rws transition <name> --outcome pass --decided-by manual --evidence '...'"
+      - "Single command records gate, validates artifacts, checks gate_policy, validates nonce (if evaluated), advances step, and syncs seed — atomically"
+      - "--request and --confirm phases removed — no intermediate pending_approval state"
+      - "All step skills updated to use the single-command transition instead of the two-phase ceremony"
+      - "Gate policy enforcement (supervised requires decided_by=manual, etc.) preserved in the single command"
+    file_ownership:
+      - "bin/rws"
+      - "skills/ideate.md"
+      - "skills/research.md"
+      - "skills/plan.md"
+      - "skills/spec.md"
+      - "skills/decompose.md"
+      - "skills/implement.md"
+      - "skills/review.md"
+    depends_on:
+      - "gate-check-hook-fix"
+
+  - name: review-consent-isolation
+    specialist: harness-engineer
+    acceptance_criteria:
+      - "skills/review.md explicitly states: each question requiring user input is independent — a 'yes' to one question does not carry over to subsequent questions"
+      - "The supervised transition protocol in review.md separates archive approval from TODO extraction approval as distinct user consent gates"
+      - "Anti-pattern documented: borrowing consent from a prior unrelated user response to skip a subsequent decision point"
+    file_ownership:
+      - "skills/review.md"
+    depends_on: []
+
+  - name: enforcement-wiring
+    specialist: harness-engineer
+    acceptance_criteria:
+      - "skills/implement.md requires specialist template loading before any agent dispatch — hard stop, not advisory"
+      - "Dispatching an agent without loading its assigned specialist from specialists/{type}.md is a blocking error"
+      - "plan.json specialist assignments are validated against existing files in specialists/ before dispatch"
+      - "Step-level specialist modifiers added to skills/spec.md, skills/implement.md, and skills/review.md"
+      - "Modifier instructions tell the agent how specialist reasoning applies in that step's context"
+    file_ownership:
+      - "skills/implement.md"
+      - "skills/spec.md"
+      - "skills/review.md"
+    depends_on: []
+
+  - name: specialist-reasoning-upgrade
+    specialist: complexity-skeptic
+    acceptance_criteria:
+      - "All 15 existing specialists audited against references/specialist-template.md standard"
+      - "Each specialist's reasoning patterns encode decision frameworks and project-specific conventions, not model defaults"
+      - "Anti-pattern tables have actionable 'Do This Instead' column with project-specific alternatives"
+      - "Language-reference content (syntax reminders, stdlib listings) removed or replaced with opinionated conventions"
+      - "references/specialist-template.md updated with encoded reasoning guidance if audit reveals standard gaps"
+      - "specialists/_meta.yaml registry updated for any structural changes"
+    file_ownership:
+      - "specialists/*.md"
+      - "references/specialist-template.md"
+      - "specialists/_meta.yaml"
+    depends_on: []
+
+  - name: specialist-expansion
+    specialist: systems-architect
+    acceptance_criteria:
+      - "New frontend/design specialists created: frontend-designer.md, css-specialist.md, accessibility-auditor.md"
+      - "New strategic specialists created: prompt-engineer.md, technical-writer.md"
+      - "All new specialists follow the template standard exactly — frontmatter, reasoning patterns, quality criteria, anti-patterns, context requirements"
+      - "All new specialists registered in specialists/_meta.yaml with rationale entries in rationale.yaml"
+      - "harness-engineer.md context requirements explicitly reference rationale.yaml for self-grounding"
+      - "New specialists have domain-specific reasoning patterns, not generic role descriptions"
+    file_ownership:
+      - "specialists/frontend-designer.md"
+      - "specialists/css-specialist.md"
+      - "specialists/accessibility-auditor.md"
+      - "specialists/prompt-engineer.md"
+      - "specialists/technical-writer.md"
+      - "specialists/_meta.yaml"
+      - ".furrow/almanac/rationale.yaml"
+      - "specialists/harness-engineer.md"
+    depends_on: []
+
+context_pointers:
+  - path: "bin/frw.d/hooks/gate-check.sh"
+    note: "Broken hook — blocks transitions from ideate/implement/review"
+  - path: "bin/rws"
+    note: "Transition command — collapse --request/--confirm into single atomic command"
+  - path: "references/specialist-template.md"
+    note: "Template standard — authority for specialist format and quality bar"
+  - path: "skills/implement.md"
+    note: "Implementation step skill — enforcement target"
+  - path: "specialists/"
+    note: "All specialist files — audit and upgrade targets"
+  - path: ".furrow/almanac/rationale.yaml"
+    note: "Component rationale — grounding source and registration target"
+  - path: "specialists/_meta.yaml"
+    note: "Specialist registry — update for new entries"
+  - path: "skills/spec.md"
+    note: "Spec step skill — step modifier target"
+  - path: "skills/review.md"
+    note: "Review step skill — step modifier target"
+
+constraints:
+  - "Specialist templates must not exceed 80 lines — concise but complete"
+  - "Reasoning patterns must encode project-specific conventions, not restate model defaults"
+  - "Anti-patterns must be actionable (Do This Instead column), not just warnings"
+  - "New specialists must follow the template standard exactly — no structural deviations"
+  - "Enforcement in implement.md must be a hard stop, not advisory guidance"
+
+gate_policy: supervised
+source_todo: specialist-encoded-reasoning

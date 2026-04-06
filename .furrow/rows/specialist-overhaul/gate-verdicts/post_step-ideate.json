@@ -1,0 +1,35 @@
+{
+  "gate_type": "post_step",
+  "step": "ideate",
+  "row": "specialist-overhaul",
+  "nonce": "11ca098c66f2d21581a5cb4b34e6d446",
+  "overall_verdict": "PASS",
+  "dimensions": [
+    {
+      "name": "completeness",
+      "verdict": "PASS",
+      "evidence": "All required fields present: objective (string), deliverables (3 items: enforcement-wiring, specialist-reasoning-upgrade, specialist-expansion — each with name, acceptance_criteria, specialist, file_ownership, depends_on), context_pointers (7 entries with path and note), gate_policy ('supervised'). Deliverable names unique. All depends_on are empty arrays — no dangling references."
+    },
+    {
+      "name": "alignment",
+      "verdict": "PASS",
+      "evidence": "Objective: 'Upgrade the specialist system: deepen encoded reasoning in all 15 existing templates, enforce specialist loading during implementation, add step-level specialist modifiers to relevant step skills, and expand the roster with frontend/design and strategic specialist domains.' Three deliverables map 1:1: enforcement-wiring (enforcement + modifiers), specialist-reasoning-upgrade (deepen reasoning in 15 templates), specialist-expansion (new domains). source_todo: 'specialist-encoded-reasoning' confirms origin. No unrelated deliverables."
+    },
+    {
+      "name": "feasibility",
+      "verdict": "PASS",
+      "evidence": "All acceptance criteria contain testable verbs and specific file paths. enforcement-wiring: 'requires' specialist loading (hard stop), 'validated against existing files', modifiers 'added to' named skill files. specialist-reasoning-upgrade: 'All 15 audited', anti-pattern tables have 'Do This Instead column', language-reference content 'removed or replaced'. specialist-expansion: specific new files named (frontend-designer.md, css-specialist.md, accessibility-auditor.md, prompt-engineer.md, technical-writer.md), 'registered in specialists/_meta.yaml'. No unbounded deliverables."
+    },
+    {
+      "name": "cross-model",
+      "verdict": "PASS",
+      "evidence": "Review artifact at .furrow/rows/specialist-overhaul/reviews/cross-model-ideate.md. Fresh-context subagent review (dated 2026-04-06) raised 5 challenges. Dispositions: (1) Scope misdiagnosis — accepted as audit context, (2) Enforcement ordering — adopted, enforcement-wiring is deliverable #1 with depends_on: [], (3) Frontend specialist rot — rejected with rationale (separate frontend project), (4) Prompt engineer circularity — rejected with rationale (AI tooling context), (5) No validation mechanism — deferred as separate TODO. All findings addressed with explicit disposition."
+    },
+    {
+      "name": "seed-sync",
+      "verdict": "PASS",
+      "evidence": "seed_id: furrow-fed8, seed status: 'ideating', row step: 'ideate', expected status per mapping: 'ideating'. Seed is not closed (closed_at: null). Status matches."
+    }
+  ],
+  "summary": "Definition is complete, aligned with user intent, has testable acceptance criteria, cross-model review findings are addressed, and seed status is synchronized."
+}
