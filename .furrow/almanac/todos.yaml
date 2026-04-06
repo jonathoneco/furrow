@@ -107,26 +107,38 @@
   # Cluster: Seeds & Knowledge Flow
   status: active
 - id: seeds-concept
-  title: "Seeds as a structured knowledge reduction stage with dependency wiring"
+  title: "Seeds as the task management primitive — work graph, dependencies, and knowledge reduction"
   context: |
-    After research, lay-of-the-land, ideas, designs, and considerations have been
-    challenged, consumed, and processed, we should reduce them into "seeds" — focused,
-    scoped artifacts that drive subsequent research, planning, and implementation.
-    A "seeding" stage would sit between broad exploration and focused execution,
-    producing compact context packages for downstream steps.
+    Seeds are the fundamental task management primitive for Furrow. They are not just
+    knowledge artifacts — they are the nodes in the work graph. Every piece of planned
+    work, dependency relationship, and execution ordering flows through seeds.
 
-    Additionally, seeds need to subsume the dependency wiring role that beans played.
-    The current seeds concept is too shallow — it doesn't do the sort of dependency
-    graph construction and cross-seed relationship tracking that beans provided.
-    Seeds should be the nodes in a first-class dependency graph within the almanac.
-    See also: almanac-graph-primitives TODO for the graph infrastructure side.
+    The seed concept has three dimensions:
+    1. **Knowledge reduction** — After research, ideas, and designs have been challenged
+       and processed, reduce them into focused, scoped artifacts that drive downstream
+       steps. Seeds sit between broad exploration and focused execution.
+    2. **Work graph management** — Seeds own the dependency graph: edges between work
+       items, dependency types (blocks, informs, requires, produces), ordering constraints,
+       and cascading implications. This subsumes what beans did and what alm triage
+       currently infers through LLM reasoning. The graph should be explicit and
+       deterministic, not reasoned about.
+    3. **Task lifecycle** — Seeds have status, priority, type, ownership. They are
+       claimable, trackable, and archivable. They bridge the gap between "TODO in a
+       YAML file" and "row being actively worked." A seed can spawn a row, and a row
+       can produce new seeds.
+
+    The almanac-graph-primitives TODO covers the graph infrastructure; this TODO covers
+    the seed data model, lifecycle, and integration with the rest of the harness.
   work_needed: |
-    - Define the "seed" artifact format (compact context package with scope, constraints, open questions)
+    - Define the seed data model: id, title, type, status, priority, edges, metadata
+    - Design edge types: blocks, depends-on, informs, produces, supersedes
+    - Define seed lifecycle: open → claimed → active (row) → closed
+    - Design how seeds spawn rows and how rows produce seeds
     - Determine where seeding fits in the step sequence (post-research? post-plan?)
     - Consider whether seeds replace or augment the current summary.md handoff
     - Design how seeds get consumed by downstream steps (injected context? reference?)
-    - Design seed-to-seed dependency edges (replaces beans' dependency wiring)
-    - Define how seeds interact with the almanac graph primitives (see almanac-graph-primitives)
+    - Integrate with sds CLI: sds should become the primary interface for work graph queries
+    - Define how triage reads the explicit graph rather than inferring dependencies
     - Prototype with a research row to validate the pattern
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
@@ -910,22 +922,24 @@
   status: active
 # --- Bundle C: Almanac Graph Primitives ---
 - id: almanac-graph-primitives
-  title: "First-class dependency graph in almanac — deterministic DAG over LLM reasoning"
+  title: "Graph infrastructure for seeds — storage, querying, and visualization"
   context: |
-    Work planning and cascading should be deterministic and based on explicit data model
-    edges, not LLM reasoning about dependencies. alm triage already builds a dependency
-    graph, but it's triage output — not a first-class almanac primitive. The almanac should
-    own an explicit DAG where nodes are seeds/TODOs/rows and edges are typed relationships
-    (depends-on, blocks, informs, produces). This subsumes what beans did for dependency
-    wiring and makes planning deterministic. See also seeds-concept for the node side.
+    This is the infrastructure layer for the seeds work graph. Seeds own the data model
+    (nodes, edge types, lifecycle); this TODO covers how the graph is stored, queried,
+    validated, and visualized. The almanac (alm CLI) becomes the interface for graph
+    operations, and triage consumes the explicit graph rather than inferring dependencies
+    through LLM reasoning.
+
+    This is tightly coupled with seeds-concept — seeds define WHAT the graph contains,
+    this defines HOW the graph is implemented and accessed.
   work_needed: |
-    - Design the graph data model (nodes: seeds/TODOs/rows, edges: typed relationships)
-    - Determine storage format (YAML adjacency list? JSONL edge list? embedded in todos.yaml?)
-    - Add alm subcommands: alm graph add-edge, alm graph show, alm graph validate
-    - Make alm triage consume the explicit graph rather than inferring dependencies
-    - Integrate with seeds — seeds become graph nodes with explicit edges
+    - Design storage format for the seed graph (YAML adjacency list? JSONL edge list? embedded in seeds registry?)
+    - Add alm/sds subcommands: add-edge, remove-edge, show-graph, validate-graph
+    - Make alm triage consume the explicit seed graph rather than inferring dependencies
+    - Build graph query capabilities: "what blocks X?", "what does X unblock?", "critical path?"
     - Consider visualization (ASCII DAG, mermaid export)
-    - Ensure the graph survives row archival (edges to archived nodes preserved)
+    - Ensure the graph survives row archival (edges to archived seeds preserved)
+    - Design how roadmap generation reads the seed graph for phase ordering
   references:
     - bin/alm
     - .furrow/almanac/todos.yaml
