@@ -14,8 +14,19 @@ context before making changes. See `.claude/rules/` for enforcement details.
 
 ## Context Budget
 
-Ambient (this file + rules/) <=100 lines. Work <=150. Step <=50. Total <=300.
-Run `frw measure-context` to verify.
+| Layer | Budget | Content |
+|-------|--------|---------|
+| Ambient | <=120 lines | This file + rules/ (always loaded) |
+| Work | <=150 lines | `skills/work-context.md` (during active work) |
+| Step | <=50 lines | `skills/{step}.md` (per step, replaced at boundaries) |
+| Reference | ~600 lines | `references/` (on demand, NOT injected) |
+
+Total injected (ambient + work + step) must not exceed 320 lines.
+Each instruction appears in exactly one layer. Run `frw measure-context` to verify.
+
+## Component Rationale
+
+Component rationale is centralized in `.furrow/almanac/rationale.yaml` (not injected into context).
 
 ## Commit Conventions
 
