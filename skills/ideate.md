@@ -18,9 +18,11 @@ Run the 6-part ceremony in order:
 3. **Questions before research** — surface design decisions as named options
    (Option A/B/C) with a stated lean. Wait for user response in supervised mode.
    Emit `<!-- ideation:section:{name} -->` before each decision block.
-4. **Cross-model outside voice** — request a cross-model review of problem framing
-   and deliverables. Read `cross_model.provider` from `furrow.yaml`; if absent,
-   use a fresh same-model subagent. Record findings in gate evidence.
+4. **Dual outside voice** — run both reviewers in parallel:
+   a. Fresh same-model subagent (isolated context) for problem framing review.
+   b. Cross-model review via `frw cross-model-review` if `cross_model.provider`
+      is configured in `furrow.yaml`. If absent, skip cross-model.
+   Synthesize findings from both. Record in gate evidence.
 5. **Section-by-section approval** — build `definition.yaml` incrementally. Present
    each section individually: objective, each deliverable, context pointers,
    constraints, gate policy. Emit section markers before each.

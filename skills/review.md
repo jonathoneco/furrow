@@ -24,6 +24,17 @@ model_default: opus
 - `skills/shared/context-isolation.md` — when dispatching review sub-agents
 - `skills/shared/summary-protocol.md` — before completing step
 
+## Dual-Reviewer Protocol
+Every review runs **two independent reviewers in parallel**:
+1. **Fresh Claude subagent** — isolated context, same model. Spawn via Agent tool.
+2. **Cross-model reviewer** — run `frw cross-model-review {name} {deliverable}`.
+   Reads `cross_model.provider` from `furrow.yaml`. If no provider configured, skip.
+
+Both reviewers evaluate the same deliverable against the same dimensions.
+After both complete, **synthesize** — flag any dimension where reviewers disagree,
+note unique findings from each, and produce the final `reviews/{deliverable}.json`
+with a `reviewers` field recording both sources.
+
 ## Team Planning
 For multi-deliverable work, assign review sub-agents per deliverable. Read `skills/shared/context-isolation.md`.
 When spawning reviewer agents, read the specialist's `model_hint` from frontmatter
