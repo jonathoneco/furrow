@@ -17,6 +17,15 @@ The `validate-summary.sh` hook enforces this at step boundaries.
 
 ## Content Rules
 
-- **>=2** non-empty bullet points per required section.
+- **>=1** non-empty line per required section.
 - Bullets: `- ` prefix, substantive content (not "TBD", "None", "N/A", "TODO").
-- Update BEFORE requesting step transition — the hook blocks incomplete sections.
+- Update via CLI: `rws update-summary [name] <section> [--replace]` with content on stdin.
+- Do NOT edit summary.md directly — use the CLI.
+
+## When to Update
+
+Update summary sections incrementally throughout the step, not just at boundaries:
+- After completing a deliverable or sub-task
+- After settling a design decision
+- After discovering a key finding or new open question
+- Before requesting step transition (hook enforces this)

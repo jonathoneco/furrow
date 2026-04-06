@@ -987,6 +987,81 @@ ENDMD
 }
 
 # ============================================================
+#  update_summary — update an agent-written summary section
+# ============================================================
+
+update_summary() {
+  _usm_name="$1"
+  _usm_section="$2"
+  _usm_replace="${3:-false}"
+
+  _usm_work_dir="$(resolve_row_dir "$_usm_name")"
+  _usm_summary_file="${_usm_work_dir}/summary.md"
+
+  if [ ! -f "$_usm_summary_file" ]; then
+    echo "summary.md not found: $_usm_summary_file" >&2
+    exit "$EXIT_NOT_FOUND"
+  fi
+
+  # Map kebab-case section to display name
+  case "$_usm_section" in
+    key-findings)     _usm_display="Key Findings" ;;
+    open-questions)   _usm_display="Open Questions" ;;
+    recommendations)  _usm_display="Recommendations" ;;
+    *)
+      echo "Invalid section: $_usm_section (must be key-findings, open-questions, or recommendations)" >&2
+      exit "$EXIT_USAGE"
+      ;;
+  esac
+
+  # Reject if stdin is a TTY
+  if [ -t 0 ]; then
+    echo "Content must be piped via stdin (not a TTY)" >&2
+    exit "$EXIT_USAGE"
+  fi
+
+  # Read content from stdin
+  _usm_content="$(cat)"
+
+  if [ -z "$_usm_content" ]; then
+    echo "No content provided on stdin" >&2
+    exit "$EXIT_VALIDATION"
+  fi
+
+  # For append mode, extract existing section content and prepend it
+  if [ "$_usm_replace" != "true" ]; then
+    _usm_existing="$(awk "/^## ${_usm_display}\$/{found=1; next} /^## /{if(found) exit} found{print}" "$_usm_summary_file")"
+    _usm_existing="$(echo "$_usm_existing" | sed '/^$/d')"
+    if [ -n "$_usm_existing" ]; then
+      _usm_content="${_usm_existing}
+${_usm_content}"
+    fi
+  fi
+
+  # Atomic rewrite: replace only the target section
+  _usm_tmp="${_usm_summary_file}.tmp.$$"
+
+  awk -v section="$_usm_display" -v new_content="$_usm_content" '
+    /^## / { if (header == section) { replacing=0 } }
+    /^## / { header=$0; sub(/^## /, "", header) }
+    header == section && !printed_new { print "## " section; printf "%s\n", new_content; printed_new=1; replacing=1; next }
+    replacing { next }
+    { print }
+  ' "$_usm_summary_file" > "$_usm_tmp"
+
+  mv "$_usm_tmp" "$_usm_summary_file"
+
+  # Validate section has at least 1 non-empty line
+  _usm_check="$(awk "/^## ${_usm_display}\$/{found=1; next} /^## /{if(found) exit} found && NF{print}" "$_usm_summary_file")"
+  if [ -z "$_usm_check" ]; then
+    echo "Validation failed: section '$_usm_display' has no non-empty lines after update" >&2
+    exit "$EXIT_VALIDATION"
+  fi
+
+  echo "Updated ${_usm_display} in summary.md"
+}
+
+# ============================================================
 #  validate_summary — summary section validation
 # ============================================================
 
@@ -2043,6 +2118,52 @@ rws_validate_summary() {
 }
 
 # ============================================================
+#  Subcommand: update-summary
+# ============================================================
+
+rws_update_summary() {
+  _usub_name=""
+  _usub_section=""
+  _usub_replace="false"
+
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --replace)
+        _usub_replace="true"
+        shift
+        ;;
+      *)
+        if [ -z "$_usub_section" ]; then
+          # Could be name or section — check if it's a valid section
+          case "$1" in
+            key-findings|open-questions|recommendations)
+              _usub_section="$1"
+              ;;
+            *)
+              if [ -z "$_usub_name" ]; then
+                _usub_name="$1"
+              else
+                _usub_section="$1"
+              fi
+              ;;
+          esac
+        fi
+        shift
+        ;;
+    esac
+  done
+
+  if [ -z "$_usub_section" ]; then
+    die "Usage: rws update-summary [name] <section> [--replace]"
+  fi
+
+  _usub_name="$(resolve_name "$_usub_name")"
+  require_state "$_usub_name" > /dev/null
+
+  update_summary "$_usub_name" "$_usub_section" "$_usub_replace"
+}
+
+# ============================================================
 #  Subcommand: help
 # ============================================================
 
@@ -2079,6 +2200,8 @@ Commands:
   focus [name|--clear]                   Set, show, or clear focused row
   regenerate-summary [name]              Regenerate summary.md skeleton
   validate-summary [name] [--step S]     Validate summary.md sections
+  update-summary [name] <section> [--replace]
+                                         Update an agent-written summary section
 
   help                                   Show this help message
 
@@ -2116,6 +2239,7 @@ case "$cmd" in
   focus)              rws_focus "$@" ;;
   regenerate-summary) rws_regenerate_summary "$@" ;;
   validate-summary)   rws_validate_summary "$@" ;;
+  update-summary)     rws_update_summary "$@" ;;
   help|--help|-h)     rws_help ;;
   *)                  echo "Unknown command: $cmd" >&2; rws_help >&2; exit 1 ;;
 esac
