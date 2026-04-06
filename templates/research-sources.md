@@ -27,9 +27,9 @@ If a claim cannot be verified against a primary source, flag it as **unverified*
 
 ## Sources
 
-| # | Source | Type | Relevance | Contribution |
-|---|--------|------|-----------|--------------|
-| 1 | {attribution} | {type} | high/medium/low | {one-line summary} |
+| # | Source | Type | Tier | Relevance | Contribution |
+|---|--------|------|------|-----------|--------------|
+| 1 | {attribution} | {type} | primary/secondary/tertiary | high/medium/low | {one-line summary} |
 
 ## Citation Format
 
