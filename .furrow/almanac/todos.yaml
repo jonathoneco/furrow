@@ -131,8 +131,10 @@
     exploration, broad findings are distilled into focused seeds that drive downstream
     steps. But this is secondary to their role as the work graph primitive.
 
-    The sds CLI is the primary interface. alm delegates graph queries to sds.
-    rws consumes seed state for gating and step transitions within rows.
+    The sds CLI is the primary interface for all graph operations. Both alm
+    and rws delegate graph functionality to sds — alm for planning (triage,
+    roadmap), rws for row-level operations (gating, step transitions, wave
+    ordering, deliverable dependencies).
   work_needed: |
     - Define the seed data model: id, title, type, status, priority, edges, metadata
     - Design edge types: blocks, depends-on, informs, produces, supersedes
@@ -141,7 +143,7 @@
     - Design within-row seed usage: spec creates seeds, decompose reads the graph for waves
     - Wire gate checks to query seed status for precondition verification
     - Integrate with sds CLI: sds should become the primary interface for graph operations
-    - Design how rws consumes seed state for step transitions and gating
+    - Design how rws delegates to sds for step transitions, gating, and wave ordering
     - Consider whether seeds replace plan.json's implicit dependency tracking
     - Prototype with a multi-deliverable row to validate both levels
   source_type: "brain-dump"
