@@ -1,6 +1,6 @@
 # Roadmap
 
-> Updated: 2026-04-04 | 7 phases, 0/7 complete | 33 active TODOs across 17 rows
+> Updated: 2026-04-06 | 7 phases, 1/7 complete | 27 active TODOs across 14 rows
 
 ## Dependency DAG
 
@@ -39,7 +39,7 @@ Legend: `──` hard dep · `~~` inferred (foundational/merge) · `···` inde
 | 5 | bin/frw.d/hooks/, bin/frw.d/scripts/ | infra-cleanup, cli-architecture | medium | infra-cleanup merges first |
 | 6 | references/, skills/ | almanac-and-seeds, context-patterns | low | different subdirectories |
 
-## Phase 1 — Foundational Fixes & Guards — PLANNED
+## Phase 1 — Foundational Fixes & Guards — DONE
 
 Small-effort, high-impact fixes with no file overlaps. Front-loads hook reliability and skill guardrails before larger refactors.
 

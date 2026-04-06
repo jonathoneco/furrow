@@ -54,8 +54,6 @@
     - "skills/plan.md"
     - "skills/spec.md"
     - "skills/shared/"
-  depends_on:
-    - guard-against-horizontal-slices  # inferred: foundational — guardrails before skill UX changes
   status: active
 - id: stop-hook-false-positives
   title: "Handle stop hooks enforcing fluff requirements"
@@ -82,7 +80,8 @@
     - "bin/frw.d/hooks/validate-summary.sh"
     - "bin/frw.d/hooks/stop-ideation.sh"
     - "bin/frw.d/lib/validate.sh"
-  status: active
+  status: done
+  updated_at: "2026-04-06T00:00:00Z"
 - id: user-action-integration
   title: "Integration points for actions the user must take"
   context: |
@@ -348,7 +347,8 @@
   files_touched:
     - ".claude/CLAUDE.md"
   # Cluster: Model Selection & Cost
-  status: active
+  status: done
+  updated_at: "2026-04-06T00:00:00Z"
 - id: sonnet-model-routing
   title: "Use Sonnet for on-rails tasks, reserve Opus for reasoning"
   context: |
@@ -375,7 +375,8 @@
     - "skills/implement.md"
     - "skills/shared/context-isolation.md"
   # Cluster: Infrastructure / Cleanup
-  status: active
+  status: done
+  updated_at: "2026-04-06T00:00:00Z"
 - id: rename-to-furrow
   title: "Rename project from 'harness' to 'furrow'"
   context: |
@@ -686,7 +687,8 @@
   files_touched:
     - "bin/rws"
     - "skills/"
-  status: active
+  status: done
+  updated_at: "2026-04-06T00:00:00Z"
 - id: default-supervised-gating
   title: "Default gate policy should be supervised, not auto-advance"
   context: |

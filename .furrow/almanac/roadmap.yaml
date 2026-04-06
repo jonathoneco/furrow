@@ -3,9 +3,9 @@ metadata:
   project: furrow
   generated_at: "2026-04-04T20:00:00Z"
   total_phases: 7
-  completed_phases: 0
-  active_todos: 33
-  done_todos: 10
+  completed_phases: 1
+  active_todos: 27
+  done_todos: 16
 dependency_graph:
   nodes:
     # Phase 1
@@ -278,7 +278,7 @@ conflict_zones:
 phases:
   - number: 1
     title: "Foundational Fixes & Guards"
-    status: planned
+    status: done
     rationale: "Small-effort, high-impact fixes with no file overlaps. Front-loads hook reliability and skill guardrails before larger refactors."
     parallelism: "quick-harness-fixes || skill-quality-guards || model-routing"
     rows:
