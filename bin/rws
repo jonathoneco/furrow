@@ -1020,11 +1020,12 @@ update_summary() {
     exit "$EXIT_USAGE"
   fi
 
-  # Read content from stdin
+  # Read content from stdin, reject empty or whitespace-only
   _usm_content="$(cat)"
 
-  if [ -z "$_usm_content" ]; then
-    echo "No content provided on stdin" >&2
+  _usm_trimmed="$(echo "$_usm_content" | sed '/^[[:space:]]*$/d')"
+  if [ -z "$_usm_trimmed" ]; then
+    echo "No substantive content provided on stdin (empty or whitespace-only)" >&2
     exit "$EXIT_VALIDATION"
   fi
 
@@ -1049,14 +1050,15 @@ ${_usm_content}"
     { print }
   ' "$_usm_summary_file" > "$_usm_tmp"
 
-  mv "$_usm_tmp" "$_usm_summary_file"
-
-  # Validate section has at least 1 non-empty line
-  _usm_check="$(awk "/^## ${_usm_display}\$/{found=1; next} /^## /{if(found) exit} found && NF{print}" "$_usm_summary_file")"
+  # Validate temp file before replacing original
+  _usm_check="$(awk "/^## ${_usm_display}\$/{found=1; next} /^## /{if(found) exit} found && NF{print}" "$_usm_tmp")"
   if [ -z "$_usm_check" ]; then
+    rm -f "$_usm_tmp"
     echo "Validation failed: section '$_usm_display' has no non-empty lines after update" >&2
     exit "$EXIT_VALIDATION"
   fi
+
+  mv "$_usm_tmp" "$_usm_summary_file"
 
   echo "Updated ${_usm_display} in summary.md"
 }

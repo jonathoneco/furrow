@@ -2,47 +2,24 @@
 
 This project uses Furrow (V2 adaptive work harness). Task state lives in `.furrow/rows/`.
 Check `.furrow/rows/*/state.json` for tasks where `archived_at` is null. If found, recover
-context before making changes. See `.claude/rules/workflow-detect.md` for details.
+context before making changes. See `.claude/rules/` for enforcement details.
 
 ## File Conventions
 
 - Rows: `.furrow/rows/{kebab-case-name}/`
 - Core files: `definition.yaml`, `state.json`, `summary.md`, `reviews/`
-- All identifiers (names, deliverables, specialists): kebab-case
-- Schema fields (JSON/YAML): snake_case
-- Timestamps: ISO 8601 with timezone
+- Identifiers: kebab-case. Schema fields: snake_case. Timestamps: ISO 8601.
+- `state.json` is Furrow-exclusive write — never edit directly.
+- Step sequence: ideate -> research -> plan -> spec -> decompose -> implement -> review
 
-## Step Sequence
+## Context Budget
 
-All rows traverse: ideate -> research -> plan -> spec -> decompose -> implement -> review
-
-## State Ownership
-
-`state.json` is Furrow-exclusive write. Agents read it but never write it directly.
-
-## Context Budget Enforcement
-
-| Layer     | Budget      | Content                                               |
-| --------- | ----------- | ----------------------------------------------------- |
-| Ambient   | <=100 lines | This file + rules/ (always loaded)                    |
-| Work      | <=150 lines | `skills/work-context.md` (during active work)         |
-| Step      | <=50 lines  | `skills/{step}.md` (per step, replaced at boundaries) |
-| Reference | ~600 lines  | `references/` (on demand, NOT injected)               |
-
-Total injected (ambient + work + step) must not exceed 300 lines.
-Each instruction appears in exactly one layer. Run `frw measure-context` to verify.
-
-## Component Rationale
-
-Component rationale is centralized in `.furrow/almanac/rationale.yaml` (not injected into context).
+Ambient (this file + rules/) <=100 lines. Work <=150. Step <=50. Total <=300.
+Run `frw measure-context` to verify.
 
 ## Commit Conventions
 
 Conventional commits: feat:, fix:, chore:, docs:, refactor:, test:, infra:
-
-## Rules
-
-See `.claude/rules/` for platform-managed rules that survive compaction.
 
 ## Topic Routing
 
