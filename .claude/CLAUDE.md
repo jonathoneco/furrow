@@ -16,12 +16,12 @@ context before making changes. See `.claude/rules/` for enforcement details.
 
 | Layer | Budget | Content |
 |-------|--------|---------|
-| Ambient | <=120 lines | This file + rules/ (always loaded) |
+| Ambient | <=150 lines | This file + rules/ (always loaded) |
 | Work | <=150 lines | `skills/work-context.md` (during active work) |
 | Step | <=50 lines | `skills/{step}.md` (per step, replaced at boundaries) |
 | Reference | ~600 lines | `references/` (on demand, NOT injected) |
 
-Total injected (ambient + work + step) must not exceed 320 lines.
+Total injected (ambient + work + step) must not exceed 350 lines.
 Each instruction appears in exactly one layer. Run `frw measure-context` to verify.
 
 ## Component Rationale

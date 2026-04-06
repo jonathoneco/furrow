@@ -14,3 +14,6 @@ advancing automatically — but the step is still recorded in state.json.
 - `rws transition` validates step ordering; out-of-order transitions fail
 - `gate-check` hook blocks transitions without passing gate verdicts
 - `state.json.step` tracks current position; only `rws` commands may modify it
+
+**Violation**: Attempting to skip or reorder steps results in a blocked transition.
+The gate-check hook returns exit 2 and the agent must follow the sequence.

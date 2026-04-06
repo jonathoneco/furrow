@@ -62,13 +62,13 @@ Use for step-scoped procedural guidance:
 1. An invariant keeps being violated despite being in CLAUDE.md
 2. The violation causes actual harm (state corruption, broken workflow)
 3. A hook exists or should exist to back the enforcement
-4. The rule is <=15 lines (ambient budget is shared)
+4. The rule is <=20 lines (ambient budget is shared, <=150 lines)
 
 Do NOT extract if:
 - The invariant is advisory (context budgets, naming quality)
 - It's step-scoped (belongs in the skill)
 - It's already well-covered by an existing rule
-- Extracting would push ambient context over 120 lines
+- Extracting would push ambient context over 150 lines
 
 ## install.sh Management
 
