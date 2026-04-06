@@ -32,7 +32,7 @@ context_docs: []
 # Used during ideation for outside-voice review.
 # If absent, same-model fresh-context review is used.
 cross_model:
-  provider: "codex/o3"  # "codex/{model}" uses codex CLI, other values use claude --model
+  provider: "codex"     # "codex" or "codex/{model}" uses codex CLI, other values use claude --model
 
 # CI commands for pre-merge checks
 ci:

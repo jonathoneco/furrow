@@ -108,14 +108,18 @@ Output as JSON: {\"dimensions\": [{\"name\": \"...\", \"verdict\": \"...\", \"ev
 
   # Dispatch based on provider prefix
   case "$provider" in
-    codex/*)
-      _model="${provider#codex/}"
-      if command -v codex >/dev/null 2>&1; then
-        response="$(codex exec -m "$_model" "$prompt" 2>"$_invoke_err")" || true
-      else
+    codex|codex/*)
+      if ! command -v codex >/dev/null 2>&1; then
         echo "error: codex CLI not found" >&2
         rm -f "$_invoke_err"
         return 2
+      fi
+      _model="${provider#codex}"
+      _model="${_model#/}"
+      if [ -n "$_model" ]; then
+        response="$(codex exec -m "$_model" "$prompt" 2>"$_invoke_err")" || true
+      else
+        response="$(codex exec "$prompt" 2>"$_invoke_err")" || true
       fi
       ;;
     *)
