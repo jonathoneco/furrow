@@ -6,6 +6,9 @@ Explore the problem space. Produce a validated `definition.yaml` as the work con
 ## What This Step Produces
 - `.furrow/rows/{name}/definition.yaml` (validated against schema)
 
+## Model Default
+model_default: sonnet
+
 ## Step-Specific Rules
 Run the 6-part ceremony in order:
 

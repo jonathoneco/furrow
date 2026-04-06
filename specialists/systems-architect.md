@@ -2,6 +2,7 @@
 name: systems-architect
 description: Component boundaries, dependency direction, coupling/cohesion trade-offs, and architectural evolution strategy
 type: specialist
+model_hint: opus  # valid: sonnet | opus | haiku
 ---
 
 # Systems Architect Specialist

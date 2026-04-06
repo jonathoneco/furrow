@@ -2,6 +2,7 @@
 name: typescript-specialist
 description: TypeScript type system design, narrowing patterns, module boundaries, and runtime/compile-time separation
 type: specialist
+model_hint: sonnet  # valid: sonnet | opus | haiku
 ---
 
 # TypeScript Specialist

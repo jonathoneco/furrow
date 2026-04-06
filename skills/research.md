@@ -7,6 +7,9 @@ Investigate prior art, architecture options, and constraints identified during i
 - `research.md` (single-agent) or `research/` directory with per-topic files + `synthesis.md`
 - Updated `summary.md` with key findings
 
+## Model Default
+model_default: opus
+
 ## Step-Specific Rules
 - All questions from ideation must be addressed or explicitly deferred.
 - Research must reference `definition.yaml` deliverables by name.

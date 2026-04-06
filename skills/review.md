@@ -7,6 +7,9 @@ Evaluate implementation against spec and audit plan completion.
 - `reviews/{deliverable}.json` per deliverable (Phase A + Phase B results)
 - Gate record in `state.json` with overall verdict
 
+## Model Default
+model_default: opus
+
 ## Step-Specific Rules
 - Phase A: verify artifacts exist, acceptance criteria met, planned files touched.
 - Phase B: evaluate quality dimensions per artifact type.
@@ -23,6 +26,8 @@ Evaluate implementation against spec and audit plan completion.
 
 ## Team Planning
 For multi-deliverable work, assign review sub-agents per deliverable. Read `skills/shared/context-isolation.md`.
+When spawning reviewer agents, read the specialist's `model_hint` from frontmatter
+and pass as the Agent tool's `model` parameter. Resolution: specialist `model_hint` > step `model_default` > sonnet.
 
 ## Step Mechanics
 Review is the final step. No pre-step evaluation — review always runs.

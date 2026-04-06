@@ -9,6 +9,9 @@ Synthesize research into architecture decisions and execution strategy.
   Use `templates/plan.json` as the schema reference for plan.json structure.
 - `team-plan.md` if agent teams will be used
 
+## Model Default
+model_default: sonnet
+
 ## Step-Specific Rules
 - Every deliverable from `definition.yaml` must have a clear implementation path.
 - Architecture decisions must reference research findings, not assumptions.

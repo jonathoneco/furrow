@@ -1,0 +1,107 @@
+{
+  "name": "model-routing",
+  "title": "Add Sonnet/Opus model routing hints to specialist templates and step skills",
+  "description": "Add Sonnet/Opus model routing hints to specialist templates and step skills",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "specialist-model-hints": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "step-model-defaults": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "consumer-wiring": {
+      "status": "completed",
+      "wave": 2,
+      "corrections": 0
+    },
+    "routing-docs": {
+      "status": "completed",
+      "wave": 3,
+      "corrections": 0
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Definition validated. User approved objective, deliverables, context pointers, constraints, and gate policy. Cross-model review incorporated decompose.md and review.md as additional consumers.",
+      "timestamp": "2026-04-06T03:22:33Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Research complete: all 4 deliverables have confirmed implementation targets. Uniform specialist frontmatter, clear dispatch insertion points in implement/decompose/review, context-isolation insertion point identified.",
+      "timestamp": "2026-04-06T03:40:20Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Plan complete: 2-wave execution (D1+D2 parallel, D3+D4 sequential), single harness-engineer specialist, plan.json validated.",
+      "timestamp": "2026-04-06T18:15:28Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Plan complete: 3-wave execution (D1+D2 parallel, D3 consumer-wiring, D4 routing-docs), single harness-engineer specialist, plan.json validated.",
+      "timestamp": "2026-04-06T18:15:43Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Specs complete: 4 deliverables specified with exact insertion points, before/after examples, and verification commands. All ACs refined to be testable.",
+      "timestamp": "2026-04-06T18:18:11Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Decompose complete: 4 deliverables populated in state.json, 3-wave plan.json, team-plan.md written. Single harness-engineer specialist, no multi-agent team needed.",
+      "timestamp": "2026-04-06T18:21:03Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 4 deliverables implemented: specialist-model-hints (15 files), step-model-defaults (7 files), consumer-wiring (3 files), routing-docs (1 file). 26 files modified.",
+      "timestamp": "2026-04-06T18:27:24Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 4 deliverables implemented and committed (6e211af). 35 files changed, 606 insertions.",
+      "timestamp": "2026-04-06T18:27:46Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/model-routing",
+  "mode": "code",
+  "base_commit": "7baa5b3bb36944b1e3b6f84718e3cf3287048f78",
+  "seed_id": "furrow-421b",
+  "epic_seed_id": null,
+  "created_at": "2026-04-05T00:51:14Z",
+  "updated_at": "2026-04-06T18:45:37Z",
+  "archived_at": "2026-04-06T18:45:37Z",
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}

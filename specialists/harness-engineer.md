@@ -2,6 +2,7 @@
 name: harness-engineer
 description: Workflow harness infrastructure — shell scripts, hooks, schemas, validation pipelines, and continuous improvement
 type: specialist
+model_hint: sonnet  # valid: sonnet | opus | haiku
 ---
 
 # Harness Engineer Specialist

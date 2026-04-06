@@ -1,0 +1,56 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": ["specialist-model-hints", "step-model-defaults"],
+      "assignments": {
+        "specialist-model-hints": {
+          "specialist": "harness-engineer",
+          "file_ownership": ["specialists/*.md"],
+          "skills": []
+        },
+        "step-model-defaults": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "skills/ideate.md",
+            "skills/research.md",
+            "skills/plan.md",
+            "skills/spec.md",
+            "skills/decompose.md",
+            "skills/implement.md",
+            "skills/review.md"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 2,
+      "deliverables": ["consumer-wiring"],
+      "assignments": {
+        "consumer-wiring": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "skills/implement.md",
+            "skills/decompose.md",
+            "skills/review.md"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 3,
+      "deliverables": ["routing-docs"],
+      "assignments": {
+        "routing-docs": {
+          "specialist": "harness-engineer",
+          "file_ownership": ["skills/shared/context-isolation.md"],
+          "skills": []
+        }
+      }
+    }
+  ],
+  "created_at": "2026-04-05T01:00:00Z",
+  "created_by": "plan"
+}

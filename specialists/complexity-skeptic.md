@@ -2,6 +2,7 @@
 name: complexity-skeptic
 description: Evaluates every dependency, shim, and abstraction as a liability — argues for simplicity, removal, and clean design over incremental patching
 type: specialist
+model_hint: opus  # valid: sonnet | opus | haiku
 ---
 
 # Complexity Skeptic Specialist

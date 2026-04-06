@@ -6,6 +6,9 @@ Execute decomposed work items against specs using specialist agents.
 ## What This Step Produces
 Code mode: code changes in git. Research mode: knowledge artifact in deliverables/.
 
+## Model Default
+model_default: sonnet
+
 ## Step-Specific Rules
 - Each specialist works within its `file_ownership` boundaries.
 - All acceptance criteria from `definition.yaml` must be addressed.
@@ -24,6 +27,10 @@ Two consumption paths for specialist templates in `specialists/`:
   into the current agent's context.
 - **Multi-agent**: include the specialist template content in the Agent
   tool's `prompt` parameter when dispatching a subagent.
+
+When dispatching a sub-agent, read the specialist's `model_hint` from its
+YAML frontmatter and pass it as the Agent tool's `model` parameter.
+Resolution order: specialist `model_hint` > step `model_default` > project default (sonnet).
 
 ## Team Planning
 Write `team-plan.md` if not created during decompose. Ownership: each

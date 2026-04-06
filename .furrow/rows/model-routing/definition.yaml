@@ -1,0 +1,78 @@
+objective: >-
+  Add model routing hints to Furrow specialist templates and step skills so the
+  lead agent knows which Claude model (Sonnet or Opus) to use when spawning
+  sub-agents. Two-tier resolution: specialist model_hint overrides step
+  model_default, which overrides project default (sonnet).
+
+deliverables:
+  - name: specialist-model-hints
+    acceptance_criteria:
+      - All 16 specialist templates have model_hint field in YAML frontmatter
+      - systems-architect, complexity-skeptic, security-engineer set to opus
+      - All 13 other specialists set to sonnet
+      - Frontmatter comment documents allowlist (sonnet | opus | haiku)
+    file_ownership:
+      - "specialists/*.md"
+
+  - name: step-model-defaults
+    acceptance_criteria:
+      - All 7 step skills have model_default annotation
+      - research.md and review.md set to opus
+      - ideate.md, plan.md, spec.md, decompose.md, implement.md set to sonnet
+    file_ownership:
+      - "skills/ideate.md"
+      - "skills/research.md"
+      - "skills/plan.md"
+      - "skills/spec.md"
+      - "skills/decompose.md"
+      - "skills/implement.md"
+      - "skills/review.md"
+
+  - name: consumer-wiring
+    acceptance_criteria:
+      - implement.md reads specialist model_hint, falls back to step model_default
+      - decompose.md propagates specialist model_hint into task definitions
+      - review.md reads specialist model_hint when spawning reviewer agents
+      - Resolution order documented inline (specialist > step > project default)
+    depends_on:
+      - specialist-model-hints
+      - step-model-defaults
+    file_ownership:
+      - "skills/implement.md"
+      - "skills/decompose.md"
+      - "skills/review.md"
+
+  - name: routing-docs
+    acceptance_criteria:
+      - context-isolation.md updated with model resolution order section
+      - Documents specialist > step > project default resolution
+      - Explains hints-not-enforcement posture
+      - Lists allowlist values (sonnet | opus | haiku)
+    depends_on:
+      - consumer-wiring
+    file_ownership:
+      - "skills/shared/context-isolation.md"
+
+context_pointers:
+  - path: "specialists/"
+    note: "All 16 specialist templates — targets for model_hint addition"
+  - path: "skills/implement.md"
+    note: "Primary consumer — spawns specialist sub-agents"
+  - path: "skills/decompose.md"
+    note: "Consumer — assigns specialists to tasks, should propagate hints"
+  - path: "skills/review.md"
+    note: "Consumer — spawns reviewer agents"
+  - path: "skills/shared/context-isolation.md"
+    note: "Routing documentation target"
+  - path: ".furrow/almanac/todos.yaml"
+    note: "Source TODO: sonnet-model-routing"
+
+constraints:
+  - "Hints only — no enforcement mechanism; lead agent makes final dispatch decision"
+  - "No new config files; use existing frontmatter and step skill annotations"
+  - "Allowlist values: sonnet | opus | haiku"
+  - "Step skill changes must stay within 50-line context budget"
+  - "Parallel implementation: specialist-model-hints and step-model-defaults are independent"
+
+gate_policy: supervised
+source_todo: sonnet-model-routing

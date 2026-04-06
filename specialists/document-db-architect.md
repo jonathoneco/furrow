@@ -2,6 +2,7 @@
 name: document-db-architect
 description: Document database modeling, denormalization-by-design, schema evolution, and consistency tradeoff management
 type: specialist
+model_hint: sonnet  # valid: sonnet | opus | haiku
 ---
 
 # Document DB Architect Specialist
