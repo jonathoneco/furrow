@@ -1167,3 +1167,63 @@
   files_touched:
     - skills/research.md
   status: active
+# --- Token Optimization ---
+- id: per-step-model-routing
+  title: "Per-step model routing — Opus for reasoning, Sonnet for execution, session-level switching"
+  context: |
+    Token burn rate is unsustainable — 15% of weekly usage in 3 hours on a Monday.
+    Not every step needs Opus. The step sequence has fundamentally different cognitive
+    demands: ideate/plan/review-synthesis need deep reasoning (Opus), while
+    research/spec/decompose/implement-agents are mostly following structured instructions
+    (Sonnet). Gate evaluators and Phase A artifact checks are formulaic (Sonnet).
+
+    Step model hints already exist in skill frontmatter (model_default), and specialist
+    templates have model_hint. But these only affect subagent spawning — the main session
+    always runs at whatever model it launched with. The real savings come from:
+    1. Launching sessions with the right model per step/row
+    2. Ensuring subagent model routing is actually followed (not ignored)
+    3. Recommending session breaks at step boundaries for model switching
+
+    Rough cost impact: research, spec, decompose, and implementation agents are the
+    bulk of work — routing these to Sonnet could save 40-60% of token cost.
+
+    Model mapping:
+    - ideate: Opus (creative reasoning, premise challenge)
+    - research: Sonnet (web search, doc reading, synthesis)
+    - plan: Opus (architecture decisions, tradeoff analysis)
+    - spec: Sonnet (structured writing from plan decisions)
+    - decompose: Sonnet (formulaic given plan)
+    - implement orchestrator: Opus, implement agents: Sonnet
+    - review Phase A: Sonnet (artifact checks), Phase B synthesis: Opus
+    - gate evaluators: Sonnet (structured rubric evaluation)
+
+    Implementation options:
+    a. frw launch-phase passes --model per row based on step
+    b. Checkpoint recommends model switch at step boundaries
+    c. rws transition suggests ending session and restarting with different model
+  work_needed: |
+    - Audit current model_default and model_hint usage — is it being respected?
+    - Wire frw launch-phase to read step model hints and pass --model to claude
+    - Add model recommendation to rws transition output ("next step prefers Sonnet")
+    - Consider a rws model-for-step helper that returns the right model for a given step
+    - Update skills/shared/context-isolation.md with model routing enforcement
+    - Measure before/after token usage on a representative row
+    - Deduplicate global/parent CLAUDE.md as a baseline optimization
+    - Consider hook consolidation (5 PreToolUse hooks per Write/Edit)
+  references:
+    - skills/implement.md
+    - skills/shared/context-isolation.md
+    - specialists/
+    - bin/frw.d/scripts/launch-phase.sh
+  source_type: brain-dump
+  created_at: "2026-04-06T00:00:00Z"
+  updated_at: "2026-04-06T00:00:00Z"
+  urgency: critical
+  impact: high
+  effort: medium
+  files_touched:
+    - skills/
+    - specialists/
+    - bin/frw.d/scripts/launch-phase.sh
+    - bin/rws
+  status: active
