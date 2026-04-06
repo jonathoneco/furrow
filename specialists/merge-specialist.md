@@ -2,6 +2,7 @@
 name: merge-specialist
 description: Merge strategy, conflict detection, and post-merge validation for Furrow workflows
 type: specialist
+model_hint: sonnet  # valid: sonnet | opus | haiku
 ---
 
 # Merge Specialist

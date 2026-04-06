@@ -2,6 +2,7 @@
 name: shell-specialist
 description: POSIX-portable shell scripting, safe argument handling, pipeline composition, and process lifecycle management
 type: specialist
+model_hint: sonnet  # valid: sonnet | opus | haiku
 ---
 
 # Shell Specialist

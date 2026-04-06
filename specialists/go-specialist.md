@@ -2,6 +2,7 @@
 name: go-specialist
 description: Go idioms, concurrency patterns, interface design, and error propagation strategy
 type: specialist
+model_hint: sonnet  # valid: sonnet | opus | haiku
 ---
 
 # Go Specialist

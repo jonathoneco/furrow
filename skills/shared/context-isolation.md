@@ -26,6 +26,19 @@ The lead agent uses the specialist template's Context Requirements section to gu
 - **Helpful** items are included when they exist and are relevant to this assignment.
 - **Exclude** items are never included — they distract the specialist from its domain focus.
 
+## Model Resolution
+
+When dispatching a sub-agent, select the model using this resolution order:
+
+1. **Specialist `model_hint`** — read from the specialist template's YAML frontmatter.
+2. **Step `model_default`** — declared in the current step skill's Model Default section.
+3. **Project default** — `sonnet` (if neither specialist nor step specifies).
+
+Pass the resolved model as the Agent tool's `model` parameter (valid values: `sonnet`, `opus`, `haiku`).
+
+These are hints, not enforcement. The lead agent may override when task complexity
+warrants a different model than the hint suggests.
+
 ## Wave Isolation
 
 Within a wave, agents work on independent deliverables concurrently:

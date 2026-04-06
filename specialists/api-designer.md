@@ -2,6 +2,7 @@
 name: api-designer
 description: HTTP API design — resource modeling, error handling, backward compatibility
 type: specialist
+model_hint: sonnet  # valid: sonnet | opus | haiku
 ---
 
 # API Designer Specialist

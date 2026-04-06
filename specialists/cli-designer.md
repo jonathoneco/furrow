@@ -2,6 +2,7 @@
 name: cli-designer
 description: Command-line interface design — progressive disclosure, Unix composability, destructive operation gates, and terminal UX
 type: specialist
+model_hint: sonnet  # valid: sonnet | opus | haiku
 ---
 
 # CLI Designer Specialist

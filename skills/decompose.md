@@ -7,6 +7,9 @@ Break spec into executable work items with concurrency map (waves).
 - `plan.json` with wave assignments and specialist mappings
 - `team-plan.md` with coordination strategy
 
+## Model Default
+model_default: sonnet
+
 ## Step-Specific Rules
 - Every deliverable must appear in exactly one wave.
 - `depends_on` ordering must be respected across waves.
@@ -26,6 +29,8 @@ Sections: Scope Analysis, Team Composition, Task Assignment, Coordination, Skill
 Team sizing: 2-3 specialists for 2-3 deliverables; 4+: 2-3 agents multi-tasking.
 Validate: every deliverable assigned, ownership globs match, skills exist.
 Resolve specialist templates from `specialists/*.md` by domain value.
+When assigning specialists, read `model_hint` from frontmatter and include it
+in team-plan.md task assignments. Resolution: specialist `model_hint` > step `model_default` > sonnet.
 
 ## Step Mechanics
 Transition out: gate record `decompose->implement` with `pass` required.

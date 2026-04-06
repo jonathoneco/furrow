@@ -2,6 +2,7 @@
 name: relational-db-architect
 description: Relational schema design, normalization, constraint modeling, migration safety, and query optimization
 type: specialist
+model_hint: sonnet  # valid: sonnet | opus | haiku
 ---
 
 # Relational DB Architect Specialist

@@ -2,6 +2,7 @@
 name: python-specialist
 description: Pythonic patterns, protocol-based design, dependency management, and runtime safety in a dynamic language
 type: specialist
+model_hint: sonnet  # valid: sonnet | opus | haiku
 ---
 
 # Python Specialist

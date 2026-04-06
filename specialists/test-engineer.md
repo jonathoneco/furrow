@@ -2,6 +2,7 @@
 name: test-engineer
 description: Test design, coverage analysis, edge case identification, flakiness prevention
 type: specialist
+model_hint: sonnet  # valid: sonnet | opus | haiku
 ---
 
 # Test Engineer Specialist

@@ -2,6 +2,7 @@
 name: security-engineer
 description: Threat modeling, authentication/authorization patterns, input validation boundaries, and secrets lifecycle management
 type: specialist
+model_hint: opus  # valid: sonnet | opus | haiku
 ---
 
 # Security Engineer Specialist

@@ -2,6 +2,7 @@
 name: migration-strategist
 description: Evolves running systems without downtime or data loss — expand-contract discipline, blast radius management, and phased cutover
 type: specialist
+model_hint: sonnet  # valid: sonnet | opus | haiku
 ---
 
 # Migration Strategist Specialist

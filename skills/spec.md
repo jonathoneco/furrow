@@ -9,6 +9,9 @@ Define exactly what should be built in enough detail to implement.
 - Refined acceptance criteria per deliverable
 - Code mode: component specifications; Research mode: knowledge artifact structure
 
+## Model Default
+model_default: sonnet
+
 ## Step-Specific Rules
 - Every acceptance criterion from `definition.yaml` must be addressed.
 - Specs must be implementation-ready — no ambiguous requirements.
