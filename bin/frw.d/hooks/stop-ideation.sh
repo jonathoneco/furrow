@@ -1,18 +1,19 @@
-# stop-ideation.sh — Validate section-by-section interaction during ideation
+# stop-ideation.sh — Validate definition completeness during ideation
 #
 # Hook: Stop (matcher: empty)
-# Checks the ideation agent presented definition sections
-# individually rather than batch-approving the entire definition.
+# Validates that definition.yaml has all required fields as a proxy for
+# section-by-section ideation completeness. Hooks cannot read conversation
+# history, so field presence is the enforcement mechanism.
 #
-# Checks for section markers: <!-- ideation:section:{name} -->
-# Required markers: objective, deliverables, context-pointers, constraints, gate-policy
+# Required fields: objective, deliverables (>=1), context_pointers (>=1),
+#   constraints, gate_policy
 #
-# In supervised/delegated mode: all 5 markers must be present.
-# In autonomous mode: marker check is skipped (evaluator validates instead).
+# In supervised/delegated mode: all fields must be present.
+# In autonomous mode: check is skipped (evaluator validates instead).
 #
 # Return codes:
 #   0 — valid (or not in ideation step, or autonomous mode)
-#   2 — missing section markers (blocking)
+#   2 — missing required fields (blocking)
 
 hook_stop_ideation() {
   work_dir="$(find_focused_row)"
