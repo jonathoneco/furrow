@@ -182,7 +182,7 @@ Legend: `──` hard dep · `~~` inferred (foundational/merge) · `···` inde
 Generate shell command blocks per phase. Branches map to rows, not individual TODOs:
 ```sh
 # Phase N — {Title}
-git worktree add ../wt-{branch-name} -b work/{branch-name}
+git worktree add ../{project_name}-{branch-name} -b work/{branch-name}
 ```
 
 ### 8. Present for Confirmation

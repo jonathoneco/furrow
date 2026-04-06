@@ -184,32 +184,32 @@ Low-urgency research and audit items with no production dependencies. Insights f
 
 ```sh
 # Phase 1 — Foundational Fixes & Guards (parallel)
-git worktree add ../wt-quick-harness-fixes -b work/quick-harness-fixes
-git worktree add ../wt-skill-quality-guards -b work/skill-quality-guards
-git worktree add ../wt-model-routing -b work/model-routing
+git worktree add ../furrow-quick-harness-fixes -b work/quick-harness-fixes
+git worktree add ../furrow-skill-quality-guards -b work/skill-quality-guards
+git worktree add ../furrow-model-routing -b work/model-routing
 
 # Phase 2 — Specialist, Enforcement & Rules (parallel)
-git worktree add ../wt-specialist-overhaul -b work/specialist-overhaul
-git worktree add ../wt-ideation-and-review-ux -b work/ideation-and-review-ux
-git worktree add ../wt-quality-and-rules -b work/quality-and-rules
+git worktree add ../furrow-specialist-overhaul -b work/specialist-overhaul
+git worktree add ../furrow-ideation-and-review-ux -b work/ideation-and-review-ux
+git worktree add ../furrow-quality-and-rules -b work/quality-and-rules
 
 # Phase 3 — Agent Orchestration
-git worktree add ../wt-parallel-agent-wiring -b work/parallel-agent-wiring
+git worktree add ../furrow-parallel-agent-wiring -b work/parallel-agent-wiring
 
 # Phase 4 — Command Pipeline (parallel)
-git worktree add ../wt-todo-pipeline -b work/todo-pipeline
-git worktree add ../wt-research-methodology -b work/research-methodology
+git worktree add ../furrow-todo-pipeline -b work/todo-pipeline
+git worktree add ../furrow-research-methodology -b work/research-methodology
 
 # Phase 5 — Infrastructure & CLI Strategy (parallel)
-git worktree add ../wt-infra-cleanup -b work/infra-cleanup
-git worktree add ../wt-cli-architecture -b work/cli-architecture
+git worktree add ../furrow-infra-cleanup -b work/infra-cleanup
+git worktree add ../furrow-cli-architecture -b work/cli-architecture
 
 # Phase 6 — Knowledge Architecture & Harness Identity (parallel)
-git worktree add ../wt-almanac-and-seeds -b work/almanac-and-seeds
-git worktree add ../wt-context-patterns -b work/context-patterns
-git worktree add ../wt-harness-lifecycle-ux -b work/harness-lifecycle-ux
+git worktree add ../furrow-almanac-and-seeds -b work/almanac-and-seeds
+git worktree add ../furrow-context-patterns -b work/context-patterns
+git worktree add ../furrow-harness-lifecycle-ux -b work/harness-lifecycle-ux
 
 # Phase 7 — Audits & Exploration (parallel)
-git worktree add ../wt-audits-and-mining -b work/audits-and-mining
-git worktree add ../wt-exploratory-research -b work/exploratory-research
+git worktree add ../furrow-audits-and-mining -b work/audits-and-mining
+git worktree add ../furrow-exploratory-research -b work/exploratory-research
 ```

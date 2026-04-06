@@ -960,6 +960,7 @@ cmd_render() {
   roadmap=$(yq -o=json '.' "$ALM_ROADMAP") || die "render: failed to parse $ALM_ROADMAP"
 
   md=$(printf '%s' "$roadmap" | jq -r '
+    (.metadata.project // "project") as $prefix |
     # Header
     "# Roadmap\n\n" +
     "**Updated:** " + .metadata.generated_at + "  \n" +
@@ -1019,7 +1020,7 @@ cmd_render() {
     "\n## Worktree Commands\n\n```sh\n" +
     ([.phases[] | select(.status != "done") |
       "# Phase " + (.number | tostring) + "\n" +
-      ([.work_units[] | "git worktree add ../wt-" + .branch_name + " -b " + .branch_name] | join("\n"))
+      ([.work_units[] | "git worktree add ../" + $prefix + "-" + .branch_name + " -b " + .branch_name] | join("\n"))
     ] | join("\n\n")) +
     "\n```\n"
   ')
