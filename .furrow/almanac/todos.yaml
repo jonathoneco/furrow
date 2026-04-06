@@ -1197,26 +1197,39 @@
     - review Phase A: Sonnet (artifact checks), Phase B synthesis: Opus
     - gate evaluators: Sonnet (structured rubric evaluation)
 
-    Preferred architecture: **orchestrator + step agents**. The main session stays
-    Opus as a persistent orchestrator that handles user interaction, supervised gating,
-    and step transitions. Each step dispatches to a subagent at the appropriate model:
-    - Opus-demanding steps (ideate, plan, review synthesis) can run inline in the
-      orchestrator or dispatch to an Opus agent for context isolation
-    - Sonnet steps (research, spec, decompose, implement agents) dispatch to Sonnet
-      subagents, saving ~5x token cost on the bulk of work
-    - The orchestrator loads the step skill, primes the agent with curated context,
-      dispatches, collects results, and presents to the user for gate approval
+    Preferred architecture: **orchestrator + step agents with collaborate/execute split**.
+    The main session stays Opus as a persistent orchestrator. Every step has two phases:
 
-    This also solves context pollution — each step agent starts fresh with only the
-    context it needs rather than accumulating the full conversation history.
+    - **Collaborate** (inline, Opus) — orchestrator presents findings/drafts to user,
+      asks targeted questions, iterates until decisions are made. Collaboration never
+      leaves the orchestrator session — it's the orchestrator's core job.
+    - **Execute** (dispatched, Sonnet) — subagent does the heavy lifting with the
+      decisions already made: read docs, write specs, generate code, check artifacts.
+
+    The dispatch loop per step:
+    1. Orchestrator dispatches Sonnet agent → "do research on X, Y, Z"
+    2. Agent returns findings/artifacts
+    3. Orchestrator presents to user, collaborates, iterates
+    4. Orchestrator dispatches Sonnet agent → "write artifact based on these decisions"
+    5. Agent returns final artifact
+    6. Orchestrator presents for gate approval
+    7. Repeat collaborate/execute as needed within the step
+
+    Ideation runs fully inline (it's pure collaboration). Other steps sandwich Sonnet
+    execution between Opus collaboration rounds. Step skills split into two concerns:
+    execution instructions (for the subagent) and collaboration protocol (for the
+    orchestrator). This also solves context pollution — each step agent starts fresh
+    with only the context it needs.
   work_needed: |
-    - Design the orchestrator → step agent dispatch pattern
-    - Define what context the orchestrator passes to each step agent (skill + summary + definition)
+    - Design the collaborate/execute split for each step skill
+    - Split step skills into: execution instructions (subagent) + collaboration protocol (orchestrator)
+    - Create orchestrator skill: dispatch loop, context curation, collaboration protocol
+    - Define what context the orchestrator passes to step agents (skill + summary + decisions)
+    - Define how step agent results flow back (artifact files, structured summary)
     - Audit current model_default and model_hint usage — is it being respected?
-    - Update skills/work-context.md or create an orchestrator skill for the dispatch loop
     - Wire Agent tool calls with explicit model parameter per step
-    - Define how step agent results flow back to the orchestrator (summary update? artifact files?)
-    - Handle supervised gating: step agent produces output, orchestrator presents to user
+    - Handle multi-round collaborate/execute within a single step (research → discuss → refine → discuss)
+    - Ensure ideation runs fully inline (pure collaboration, no dispatch)
     - Update skills/shared/context-isolation.md with orchestrator/step-agent boundary rules
     - Measure before/after token usage on a representative row
     - Deduplicate global/parent CLAUDE.md as a baseline optimization
