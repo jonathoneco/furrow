@@ -5,6 +5,7 @@ Investigate prior art, architecture options, and constraints identified during i
 
 ## What This Step Produces
 - `research.md` (single-agent) or `research/` directory with per-topic files + `synthesis.md`
+- Every research deliverable must include a `## Sources Consulted` section listing sources checked, their tier (primary/secondary/tertiary), and contribution.
 - Updated `summary.md` with key findings
 
 ## Step-Specific Rules
@@ -12,6 +13,11 @@ Investigate prior art, architecture options, and constraints identified during i
 - Research must reference `definition.yaml` deliverables by name.
 - Ensure `skills/work-context.md` is loaded.
 - Read `summary.md` for ideation context (do not re-read raw definition discussions).
+- Source hierarchy: primary (official docs, source code, changelogs, `--help`) >
+  secondary (blogs, tutorials, StackOverflow) > tertiary (training data).
+  Training data is acceptable for well-established facts (language syntax, stdlib).
+  Version-specific, behavior-specific, or config-specific claims require primary source verification.
+- Claims about external software that cannot be verified against a primary source must be flagged as **unverified**.
 
 ## Shared References
 Read these when relevant to your current action:

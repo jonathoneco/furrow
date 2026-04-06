@@ -12,6 +12,7 @@ Break spec into executable work items with concurrency map (waves).
 - `depends_on` ordering must be respected across waves.
 - `file_ownership` globs must not overlap within a wave.
 - Read `summary.md` for spec context.
+- Prefer vertical slices (each deliverable is independently testable). See red-flags.md and the `vertical-slicing` eval dimension.
 
 ## Shared References
 - `skills/shared/red-flags.md` — before finalizing decomposition

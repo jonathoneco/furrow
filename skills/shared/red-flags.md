@@ -32,6 +32,7 @@ Read before any file write or step transition. Each flag has a signal, risk, and
 | Signal | Risk | Action |
 |--------|------|--------|
 | All deliverables in a single wave | No parallelism | Check if dependencies actually prevent parallelism |
+| Deliverables named by architectural layer ("database", "API", "UI") instead of behavior | Horizontal slicing — delays testable functionality, concentrates integration risk | Reframe as vertical slices; if horizontal is justified, document why in the plan |
 | Specialist types are generic ("implementer") | Weak domain framing | Rename to domain experts |
 
 ## Implement
