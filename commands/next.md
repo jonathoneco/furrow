@@ -81,6 +81,28 @@ Phase {N} has {M} sequential rows. Complete in order:
 
 Display the handoff prompt(s) directly — no confirmation needed. This is a read-only command.
 
+### 7. Offer to Launch (if tmux is available)
+
+After displaying the handoff prompts, check if `tmux` is installed (`command -v tmux`).
+
+If available, offer:
+
+```
+tmux detected. Launch parallel sessions? [y/N/yolo]
+  y    — create worktrees, tmux sessions, and start Claude in each
+  yolo — same, but with --dangerously-skip-permissions
+  N    — just display prompts (default)
+```
+
+If the user accepts, run:
+```sh
+frw launch-phase --phase {N}        # for "y"
+frw launch-phase --phase {N} --yolo # for "yolo"
+```
+
+The script handles: worktree creation, prompt file writing, tmux session creation
+(named `{project_name}-{row_name}`), and launching interactive Claude sessions.
+
 ---
 
 ## Constraints
@@ -89,3 +111,4 @@ Display the handoff prompt(s) directly — no confirmation needed. This is a rea
 - Handoff prompts reference files by path, not by content — the fresh session reads them
 - TODO prose (`context`, `work_needed`) is NOT duplicated in the prompt — the prompt points at `.furrow/almanac/todos.yaml`
 - If a row spans multiple TODOs, the `/work` description synthesizes the theme, not each TODO title
+- Launch script requires: `tmux`, `yq`, `jq`, `claude` CLI

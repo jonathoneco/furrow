@@ -290,6 +290,10 @@ components:
   - path: skills/shared/learnings-protocol.md
     exists_because: "Steps need a shared protocol for capturing and routing learnings"
     delete_when: "Claude Code provides built-in learning capture across workflow steps"
+  # --- Phase Launch ---
+  - path: bin/frw.d/scripts/launch-phase.sh
+    exists_because: "Claude Code has no native parallel session orchestration for roadmap phases"
+    delete_when: "Claude Code provides built-in worktree + session management for workflow phases"
   # --- W-13: Git Workflow ---
   - path: bin/frw.d/scripts/run-ci-checks.sh
     exists_because: "Claude Code has no native CI integration with structured gate evidence"
