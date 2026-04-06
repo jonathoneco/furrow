@@ -127,6 +127,11 @@
        transitions. This replaces the current pattern where plan.json and definition.yaml
        carry implicit dependency information.
 
+    Critically, these two levels share one graph. Within-row seeds can have edges to
+    cross-row seeds — a deliverable in row A might depend on a seed that originated
+    in row B, or produce a seed that feeds row C. sds owns this unified graph,
+    giving visibility into how granular in-flight work connects to the broader plan.
+
     Additionally, seeds serve as knowledge reduction artifacts — after research and
     exploration, broad findings are distilled into focused seeds that drive downstream
     steps. But this is secondary to their role as the work graph primitive.
@@ -145,7 +150,8 @@
     - Integrate with sds CLI: sds should become the primary interface for graph operations
     - Design how rws delegates to sds for step transitions, gating, and wave ordering
     - Consider whether seeds replace plan.json's implicit dependency tracking
-    - Prototype with a multi-deliverable row to validate both levels
+    - Design cross-row ↔ within-row edge semantics (deliverable depends on external seed, row produces downstream seeds)
+    - Prototype with a multi-deliverable row to validate both levels and cross-row connections
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
