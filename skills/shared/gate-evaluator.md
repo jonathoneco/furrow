@@ -25,6 +25,16 @@ You MUST NOT read or reference:
 If you encounter a reference to a prohibited file, ignore it. Your evaluation
 must be reproducible by any agent given only the listed inputs.
 
+## Isolation Verification (Empirical)
+
+Agent tool subagents do NOT receive conversation history or prior tool results
+from the spawning session. They DO inherit system context (CLAUDE.md, memory
+files, MCP tools). This isolation level is adequate for gate evaluation —
+the evaluator sees only its prompt inputs, not the generator's reasoning.
+
+For maximum isolation (e.g., final review Phase B), use `claude -p --bare`
+which additionally strips system context. See `commands/review.md`.
+
 ## Evaluation Protocol
 
 1. **Read inputs**: Read definition.yaml, gate YAML, and Phase A results.

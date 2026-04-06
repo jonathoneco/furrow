@@ -1,0 +1,50 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": ["decision-format", "agent-isolation-audit"],
+      "assignments": {
+        "decision-format": {
+          "specialist": "harness-engineer",
+          "file_ownership": ["skills/shared/decision-format.md"],
+          "skills": []
+        },
+        "agent-isolation-audit": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            ".furrow/rows/ideation-and-review-ux/research/agent-isolation-findings.md",
+            "skills/shared/gate-evaluator.md"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 2,
+      "deliverables": ["per-step-collaboration", "fresh-session-review"],
+      "assignments": {
+        "per-step-collaboration": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "skills/ideate.md",
+            "skills/research.md",
+            "skills/plan.md",
+            "skills/spec.md"
+          ],
+          "skills": []
+        },
+        "fresh-session-review": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "commands/review.md",
+            "skills/review.md",
+            "templates/review-prompt.md"
+          ],
+          "skills": []
+        }
+      }
+    }
+  ],
+  "created_at": "2026-04-06T20:30:00Z",
+  "created_by": "plan-step"
+}

@@ -22,6 +22,22 @@ model_default: opus
   Version-specific, behavior-specific, or config-specific claims require primary source verification.
 - Claims about external software that cannot be verified against a primary source must be flagged as **unverified**.
 
+## Collaboration Protocol
+
+Record decisions using `skills/shared/decision-format.md`. Don't assume — ask.
+
+**Decision categories** for research:
+- **Source trust** — which sources to rely on when findings conflict
+- **Finding validation** — whether findings match the user's domain knowledge
+- **Coverage sufficiency** — when to stop researching and move on
+
+**High-value question examples** (ask these, not "does this look right?"):
+- "Source A says {X}, Source B says {Y}. Which should we trust for this project?"
+- "Does this finding match your domain experience, or should I dig deeper into {area}?"
+- "I've covered {areas}. Is there a dimension I'm missing, or is this sufficient?"
+
+Mid-step iteration is expected; `step_status` remains `in_progress` throughout.
+
 ## Shared References
 Read these when relevant to your current action:
 - `skills/shared/red-flags.md` — before concluding research

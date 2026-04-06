@@ -11,8 +11,11 @@ Evaluate implementation against spec and audit plan completion.
 model_default: opus
 
 ## Step-Specific Rules
-- Phase A: verify artifacts exist, acceptance criteria met, planned files touched.
-- Phase B: evaluate quality dimensions per artifact type.
+- **Phase A** (in-session): verify artifacts exist, acceptance criteria met, planned files touched.
+  Deterministic shell checks — runs in the current session.
+- **Phase B** (fresh-session): evaluate quality dimensions per artifact type.
+  Runs via `claude -p --bare` as an isolated process with no conversation context.
+  See `commands/review.md` for the invocation protocol.
 - `overall` is `pass` only when both phases pass.
 - Read `references/review-methodology.md` and `references/eval-dimensions.md`.
 
@@ -24,10 +27,19 @@ model_default: opus
 - `skills/shared/context-isolation.md` — when dispatching review sub-agents
 - `skills/shared/summary-protocol.md` — before completing step
 
+## Review Isolation
+
+Phase B uses `claude -p --bare` for generator-evaluator separation. The reviewer
+process receives ONLY the review prompt template + artifact paths + eval dimensions.
+It does NOT receive: `summary.md`, `state.json`, conversation history, or CLAUDE.md.
+
+Agent tool subagents (used for gate evaluations) are isolated from conversation
+history but inherit system context — adequate for gates, not for final review.
+See `skills/shared/gate-evaluator.md` Isolation Verification section.
+
 ## Team Planning
-For multi-deliverable work, assign review sub-agents per deliverable. Read `skills/shared/context-isolation.md`.
-When spawning reviewer agents, read the specialist's `model_hint` from frontmatter
-and pass as the Agent tool's `model` parameter. Resolution: specialist `model_hint` > step `model_default` > sonnet.
+For multi-deliverable work, Phase B runs one `claude -p` invocation per deliverable.
+Each invocation is fully independent — no shared state between deliverable reviews.
 
 ## Step Mechanics
 Review is the final step. No pre-step evaluation — review always runs.

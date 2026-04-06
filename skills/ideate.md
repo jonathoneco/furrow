@@ -35,6 +35,22 @@ Mode adaptations:
 - **Delegated**: agent self-answers decisions; user approves final definition.
 - **Autonomous**: evaluator validates instead of human; escalates on failure.
 
+## Collaboration Protocol
+
+Record decisions using `skills/shared/decision-format.md`. Don't assume — ask.
+
+**Decision categories** for ideation:
+- **Scope boundaries** — what's in vs out of this work
+- **Success criteria** — what "done" looks like concretely
+- **Constraint priorities** — which constraints are hard vs soft/negotiable
+
+**High-value question examples** (ask these, not "does this look right?"):
+- "I see two framings — {X} (scope-limited) and {Y} (scope-expanded). Which aligns with your intent?"
+- "Is {constraint} a hard requirement or negotiable if it conflicts with {goal}?"
+- "What does 'done' look like — {concrete outcome A} or {concrete outcome B}?"
+
+Mid-step iteration is expected; `step_status` remains `in_progress` throughout.
+
 ## Shared References
 Read these when relevant to your current action:
 - `skills/shared/red-flags.md` — before finalizing definition

@@ -1,0 +1,79 @@
+objective: |
+  Make pre-implementation steps (ideate, research, plan, spec) genuinely
+  collaborative through structured decision documentation and high-value
+  question guidance. Ensure review runs with true generator-evaluator
+  separation via isolated fresh-session Phase B evaluation using claude -p.
+
+deliverables:
+  - name: decision-format
+    acceptance_criteria:
+      - Format is concrete and auditable (not generic advice)
+      - Mode adaptation is built into the format, not bolted on
+      - Loop exit conditions prevent both premature closure and infinite iteration
+      - Compatible with existing summary-protocol.md (decisions feed into summary)
+    file_ownership:
+      - skills/shared/decision-format.md
+
+  - name: per-step-collaboration
+    acceptance_criteria:
+      - Each step has at least 3 examples of high-value questions
+      - Decision categories are step-specific, not generic
+      - References shared decision-format.md for recording mechanics
+      - Stop hooks are compatible with mid-step iteration
+      - Supervised/delegated/autonomous behavior is clear per step
+    depends_on:
+      - decision-format
+    file_ownership:
+      - skills/ideate.md
+      - skills/research.md
+      - skills/plan.md
+      - skills/spec.md
+
+  - name: fresh-session-review
+    acceptance_criteria:
+      - Reviewer process receives ONLY artifacts + eval dimensions (no summary.md, no conversation history)
+      - --bare flag strips hooks/memory/CLAUDE.md from reviewer
+      - Tool allowlist is audited (Read, Glob, Grep, Bash + relevant MCP tools)
+      - Structured JSON output with per-dimension PASS/FAIL + evidence
+      - Re-review works without knowledge of prior review findings
+      - Error handling for API failures, timeout, malformed output
+    depends_on:
+      - agent-isolation-audit
+    file_ownership:
+      - commands/review.md
+      - skills/review.md
+      - templates/review-prompt.md
+
+  - name: agent-isolation-audit
+    acceptance_criteria:
+      - Empirical test performed (not just documentation review)
+      - Findings document what context is/isn't shared
+      - gate-evaluator.md updated to reflect verified isolation level
+      - Recommendation on when to use Agent tool vs. claude -p for isolation
+    file_ownership:
+      - .furrow/rows/ideation-and-review-ux/research/agent-isolation-findings.md
+      - skills/shared/gate-evaluator.md
+
+context_pointers:
+  - path: skills/shared/gate-evaluator.md
+    note: Existing isolation contract for gate evaluation subagents
+  - path: skills/shared/eval-protocol.md
+    note: Evaluation guidelines and dimension loading protocol
+  - path: skills/shared/summary-protocol.md
+    note: Summary format — decisions from collaboration feed here
+  - path: skills/shared/context-isolation.md
+    note: Subagent context curation rules
+  - path: evals/gates/
+    note: Gate evaluation criteria per step
+  - path: commands/review.md
+    note: Review command entry point (primary modification target)
+
+constraints:
+  - "Context budget: shared decision-format.md must stay under 50 lines (step-layer budget)"
+  - "Per-step collaboration additions must not push any skill file beyond its current size + 30 lines"
+  - "review-prompt template must be self-contained (reviewer reads only the template + artifacts)"
+  - "No changes to state.json schema or CLI commands (this row is skill/command-level only)"
+
+gate_policy: supervised
+
+source_todo: interactive-ideation-checkpoints

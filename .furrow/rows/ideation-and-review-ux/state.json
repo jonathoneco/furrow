@@ -1,0 +1,99 @@
+{
+  "name": "ideation-and-review-ux",
+  "title": "Interactive collaboration loops and fresh-session review isolation",
+  "description": "Interactive collaboration loops and fresh-session review isolation",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "decision-format": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "agent-isolation-audit": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "per-step-collaboration": {
+      "status": "completed",
+      "wave": 2,
+      "corrections": 0
+    },
+    "fresh-session-review": {
+      "status": "completed",
+      "wave": 2,
+      "corrections": 0
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "type": "post_step",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "definition.yaml validated, cross-model review completed, user approved all sections",
+      "timestamp": "2026-04-06T20:35:37Z"
+    },
+    {
+      "boundary": "research->plan",
+      "type": "post_step",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "4 research artifacts produced, agent isolation empirically verified, claude -p capabilities confirmed, synthesis complete",
+      "timestamp": "2026-04-06T20:45:06Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "type": "post_step",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "plan.json created with 2-wave structure, architecture decisions documented, file inventory complete",
+      "timestamp": "2026-04-06T20:46:27Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "type": "post_step",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "4 specs written with testable ACs, all acceptance criteria have action verbs and measurable conditions",
+      "timestamp": "2026-04-06T20:48:49Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "type": "post_step",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "plan.json with 2 waves, team-plan.md with single specialist, no file overlap",
+      "timestamp": "2026-04-06T20:51:22Z"
+    },
+    {
+      "boundary": "implement->review",
+      "type": "post_step",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "4/4 deliverables complete, budget constraints verified, 2 new files + 7 modified files",
+      "timestamp": "2026-04-06T20:56:24Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/ideation-and-review-ux",
+  "mode": "code",
+  "base_commit": "ffef8768ff910b2c8a45c2dce3b5197959ea47df",
+  "seed_id": "furrow-1a42",
+  "epic_seed_id": null,
+  "created_at": "2026-04-06T19:55:46Z",
+  "updated_at": "2026-04-06T21:07:51Z",
+  "archived_at": "2026-04-06T21:07:51Z",
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}

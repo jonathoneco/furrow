@@ -18,6 +18,22 @@ model_default: sonnet
 - Ensure `skills/work-context.md` is loaded.
 - Read `summary.md` for plan context.
 
+## Collaboration Protocol
+
+Record decisions using `skills/shared/decision-format.md`. Don't assume — ask.
+
+**Decision categories** for spec:
+- **Acceptance criteria precision** — how specific is "enough" to implement and test
+- **Edge case coverage** — which edge cases matter vs which are out of scope
+- **Testability approach** — how to verify each criterion (unit, integration, manual)
+
+**High-value question examples** (ask these, not "does this look right?"):
+- "Is '{criterion}' specific enough to test, or should I tighten it to {more specific version}?"
+- "Should we cover {edge case}, or is it out of scope for this work?"
+- "How should we verify this — unit test, integration test, or manual check?"
+
+Mid-step iteration is expected; `step_status` remains `in_progress` throughout.
+
 ## Shared References
 Read these when relevant to your current action:
 - `skills/shared/red-flags.md` — before finalizing specs
