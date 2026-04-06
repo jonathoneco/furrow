@@ -13,6 +13,11 @@ model_default: sonnet
 Run the 6-part ceremony in order:
 
 1. **Brainstorm** — explore dimensions of the problem. Surface at least 3 angles.
+   When naming the row, choose an **outcome-oriented** name (max 40 chars):
+   - Single focus: verb-noun (`add-rate-limiting`, `fix-timestamp-drift`)
+   - Bundles: noun-and-noun (`guards-and-source-hierarchy`, `hooks-and-naming`)
+   - Good: `isolated-gate-evaluation`, `default-supervised-gating`, `namespace-rename`
+   - Bad: `research-e2e`, `todos-workflow`, `roadmap-process` (too vague)
 2. **Premise challenge** — apply three-layer analysis: conventional wisdom, search
    for prior art in the codebase, first-principles reasoning.
 3. **Questions before research** — surface design decisions as named options

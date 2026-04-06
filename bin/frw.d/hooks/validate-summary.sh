@@ -8,7 +8,7 @@
 #
 # Return codes:
 #   0 — valid (or no active row, or auto-advanced)
-#   1 — validation failure
+#   2 — validation failure (blocking)
 
 hook_validate_summary() {
   # Optional step argument for step-aware validation (called from rws transition)
@@ -70,7 +70,7 @@ hook_validate_summary() {
 
   if [ -n "${errors}" ]; then
     printf "summary.md validation failed:\n%b" "${errors}" >&2
-    return 1
+    return 2
   fi
 
   return 0

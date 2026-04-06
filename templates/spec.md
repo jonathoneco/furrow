@@ -13,6 +13,17 @@ For schemas: required fields, validation rules, consumers.}
 - Has a measurable condition (file exists, exit code 0, field equals value)
 - References specific artifacts (file paths, field names, tool names)}
 
+## Test Scenarios
+
+{Named test scenarios per deliverable. Each scenario supplements an AC with
+concrete verification. Trivially testable ACs (e.g., "exit code 0") may omit scenarios.}
+
+### Scenario: [descriptive name]
+- **Verifies**: [AC reference]
+- **WHEN**: [preconditions + action]
+- **THEN**: [observable outcome]
+- **Verification**: [command or check procedure]
+
 ## Implementation Notes
 
 {Architecture decisions, constraints, patterns to follow.

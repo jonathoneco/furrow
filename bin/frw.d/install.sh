@@ -136,12 +136,14 @@ _frw_install_check() {
   # Rules
   echo ""
   echo "--- Rules ---"
-  if [ -f "$_target/rules/cli-mediation.md" ]; then
-    _ok "rules/cli-mediation.md"
-  else
-    _fail "rules/cli-mediation.md not found"
-    errors=$((errors + 1))
-  fi
+  for _rule in cli-mediation.md step-sequence.md; do
+    if [ -f "$_target/rules/$_rule" ]; then
+      _ok "rules/$_rule"
+    else
+      _fail "rules/$_rule not found"
+      errors=$((errors + 1))
+    fi
+  done
 
   # CLAUDE.md
   echo ""

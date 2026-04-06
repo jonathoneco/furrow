@@ -25,6 +25,12 @@ All harness state mutations go through CLI commands, never direct file edits.
 State mutations must be atomic and schema-validated. Direct edits bypass
 validation, risk corruption, and break the harness audit trail.
 
+## Correction Limit
+
+During the implement step, each deliverable has a correction limit (default: 3).
+Writes to files owned by a deliverable that reached its limit are blocked by the
+`correction-limit` hook. Escalate to human for guidance — no CLI override exists.
+
 ## If No CLI Exists
 
 If you need an operation that has no CLI command, flag it as a gap rather

@@ -15,6 +15,9 @@ model_default: sonnet
 ## Step-Specific Rules
 - Every acceptance criterion from `definition.yaml` must be addressed.
 - Specs must be implementation-ready — no ambiguous requirements.
+- For each deliverable, produce test scenarios (WHEN/THEN + verification command)
+  that supplement the ACs. Trivially testable ACs may omit scenarios.
+  See `templates/spec.md` for the scenario format.
 - Ensure `skills/work-context.md` is loaded.
 - Read `summary.md` for plan context.
 
