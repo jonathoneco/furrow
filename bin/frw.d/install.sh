@@ -426,6 +426,36 @@ Run \`/furrow:doctor\` to check health. Run \`install.sh --check\` to verify ins
     echo "  note: no ~/.local/bin or ~/bin on PATH — add project bin/ to PATH manually"
   fi
 
+  # --- 8. Gitignore Furrow-managed symlinks ---
+  echo ""
+  echo "--- Gitignore ---"
+  _gitignore="$_proj_root/.gitignore"
+  _marker="# furrow:managed"
+  _furrow_ignores="$_marker
+skills
+schemas
+evals
+specialists
+references
+adapters
+templates
+bin/sds
+bin/rws
+bin/alm
+.claude/commands/furrow:*
+.claude/commands/specialist:*
+.claude/commands/lib/
+.claude/rules/cli-mediation.md
+.claude/CLAUDE.md"
+
+  if [ -f "$_gitignore" ] && grep -q "$_marker" "$_gitignore" 2>/dev/null; then
+    _skip ".gitignore already has Furrow entries"
+  else
+    echo "" >> "$_gitignore"
+    echo "$_furrow_ignores" >> "$_gitignore"
+    _ok ".gitignore updated with Furrow-managed paths"
+  fi
+
   # --- Summary ---
   echo ""
   echo "=== Installation Complete ==="

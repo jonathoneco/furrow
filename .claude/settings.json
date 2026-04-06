@@ -29,6 +29,14 @@
         ]
       }
     ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          { "type": "command", "command": "frw hook auto-install" }
+        ]
+      }
+    ],
     "PostCompact": [
       {
         "matcher": "",

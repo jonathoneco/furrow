@@ -290,6 +290,10 @@ components:
   - path: skills/shared/learnings-protocol.md
     exists_because: "Steps need a shared protocol for capturing and routing learnings"
     delete_when: "Claude Code provides built-in learning capture across workflow steps"
+  # --- Auto-install ---
+  - path: bin/frw.d/hooks/auto-install.sh
+    exists_because: "Claude Code has no native Furrow installation verification at session start"
+    delete_when: "Claude Code provides built-in workflow installation management"
   # --- Phase Launch ---
   - path: bin/frw.d/scripts/launch-phase.sh
     exists_because: "Claude Code has no native parallel session orchestration for roadmap phases"
