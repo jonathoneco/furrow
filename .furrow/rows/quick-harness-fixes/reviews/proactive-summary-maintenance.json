@@ -1,0 +1,39 @@
+{
+  "deliverable": "proactive-summary-maintenance",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [
+      {
+        "criterion": "Shared rule or skill guidance specifies when to update summary.md",
+        "met": true,
+        "evidence": "skills/shared/summary-protocol.md has a new 'When to Update' section (lines 27-32) that specifies 4 triggers: after completing a deliverable/sub-task, after settling a design decision, after discovering a key finding/open question, and before requesting step transition. This is in the shared skills layer, available to all steps."
+      },
+      {
+        "criterion": "Guidance references CLI commands, not direct file writes",
+        "met": true,
+        "evidence": "summary-protocol.md line 23: 'Update via CLI: rws update-summary [name] <section> [--replace] with content on stdin.' Line 24: 'Do NOT edit summary.md directly — use the CLI.' The old version said only 'Update BEFORE requesting step transition' with no CLI reference."
+      },
+      {
+        "criterion": "validate-summary.sh and summary-protocol.md requirements are reconciled",
+        "met": true,
+        "evidence": "Key reconciliation: the old summary-protocol.md required '>=2 non-empty bullet points per required section', but validate-summary.sh (both the hook version and the rws validate_summary function) checks for >=1 non-empty line. The new summary-protocol.md now says '>=1 non-empty line per required section', which matches what the hook actually enforces. The step-aware ideate exception (only Open Questions required) is documented in the Required Sections table and implemented in both validate-summary.sh (line 53) and validate_summary() (line 1098-1100)."
+      }
+    ],
+    "planned_files_touched": true,
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "quality_issues": [
+      {
+        "severity": "info",
+        "description": "validate-summary.sh was not modified in this row — the reconciliation was achieved by updating summary-protocol.md to match the existing hook behavior. This is the correct approach since the hook was the ground truth and changing the hook would have been riskier."
+      },
+      {
+        "severity": "minor",
+        "description": "summary-protocol.md says 'Bullets: - prefix, substantive content (not TBD, None, N/A, TODO)' but neither validate-summary.sh nor validate_summary() actually checks for these placeholder values. They only check for non-empty lines. This is a pre-existing gap, not introduced by this row, but the new protocol perpetuates it."
+      }
+    ],
+    "verdict": "pass"
+  },
+  "overall": "pass"
+}

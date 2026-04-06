@@ -1,0 +1,53 @@
+objective: |
+  Fix three harness UX issues: (1) enforce CLI-mediated interaction with harness
+  state files instead of direct file surgery, adding missing CLI surface where needed;
+  (2) add guidance ensuring agents proactively maintain summary.md throughout steps
+  via CLI; (3) add project routing to CLAUDE.md so agents discover documentation
+  for sub-systems without ad-hoc exploration.
+
+deliverables:
+  - name: cli-mediated-interaction
+    acceptance_criteria:
+      - "rws has a command for updating agent-written summary sections"
+      - "Rule in .claude/rules/ enforces CLI-mediated harness interaction"
+      - "Hooks that guard state.json (state-guard.sh) are reviewed for coverage"
+    depends_on: []
+
+  - name: proactive-summary-maintenance
+    acceptance_criteria:
+      - "Shared rule or skill guidance specifies when to update summary.md"
+      - "Guidance references CLI commands, not direct file writes"
+      - "validate-summary.sh and summary-protocol.md requirements are reconciled"
+    depends_on:
+      - cli-mediated-interaction
+
+  - name: claude-md-docs-routing
+    acceptance_criteria:
+      - "CLAUDE.md has a routing section mapping topics to doc files"
+      - "Total CLAUDE.md stays within 100-line ambient budget"
+    depends_on: []
+
+context_pointers:
+  - path: .furrow/almanac/todos.yaml
+    note: "Source TODOs with detailed context and work_needed"
+  - path: bin/rws
+    note: "CLI tool — check existing subcommands for gaps"
+  - path: bin/frw.d/hooks/
+    note: "All hook scripts including state-guard.sh, validate-summary.sh"
+  - path: bin/frw.d/lib/validate.sh
+    note: "Validation utilities used by hooks"
+  - path: skills/shared/summary-protocol.md
+    note: "Current summary guidance — reconcile with hook requirements"
+  - path: .claude/rules/
+    note: "Existing rules — add CLI-mediation and summary rules here"
+  - path: references/index.md
+    note: "Current docs index for routing reference"
+
+constraints:
+  - "CLAUDE.md must stay within 100-line ambient budget"
+  - "New CLI commands should be minimal — don't overengineer"
+  - "Don't weaken existing hook enforcement — hooks are doing their job"
+  - "Rules must survive context compaction"
+  - "Mine furrow/wrangle worktree conversations for D2 research"
+
+gate_policy: supervised

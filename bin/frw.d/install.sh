@@ -136,10 +136,10 @@ _frw_install_check() {
   # Rules
   echo ""
   echo "--- Rules ---"
-  if [ -L "$_target/rules/workflow-detect.md" ]; then
-    _ok "rules/workflow-detect.md"
+  if [ -f "$_target/rules/cli-mediation.md" ]; then
+    _ok "rules/cli-mediation.md"
   else
-    _fail "rules/workflow-detect.md not linked"
+    _fail "rules/cli-mediation.md not found"
     errors=$((errors + 1))
   fi
 

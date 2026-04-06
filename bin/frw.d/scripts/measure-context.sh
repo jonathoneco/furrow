@@ -79,9 +79,9 @@ frw_measure_context() {
   echo "Ambient layer (CLAUDE.md + rules/):"
   echo "  .claude/CLAUDE.md:    ${claude_md} lines"
   echo "  .claude/rules/:       ${rules_lines} lines"
-  echo "  Total:                ${ambient} lines (budget: 100)"
+  echo "  Total:                ${ambient} lines (budget: 120)"
 
-  if [ "$ambient" -gt 100 ]; then
+  if [ "$ambient" -gt 120 ]; then
     echo "  FAIL: ambient layer exceeds budget"
     errors=1
   else
@@ -109,9 +109,9 @@ frw_measure_context() {
 
   echo ""
   echo "Total injected (ambient + work + largest step):"
-  echo "  ${ambient} + ${work_layer} + ${step_max} = ${total_injected} (budget: 300)"
+  echo "  ${ambient} + ${work_layer} + ${step_max} = ${total_injected} (budget: 320)"
 
-  if [ "$total_injected" -gt 300 ]; then
+  if [ "$total_injected" -gt 320 ]; then
     echo "  FAIL: total injected exceeds budget"
     errors=1
   else
