@@ -1,0 +1,43 @@
+{
+  "deliverable": "cli-mediated-interaction",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [
+      {
+        "criterion": "rws has a command for updating agent-written summary sections",
+        "met": true,
+        "evidence": "bin/rws has update_summary() (line 993) as internal function and rws_update_summary() (line 2124) as subcommand entry point. Registered in dispatch table at line 2242 and documented in help text at line 2203. Supports [name], <section> (key-findings|open-questions|recommendations), --replace flag, reads content from stdin, validates non-empty output, and does atomic rewrite via tmp file."
+      },
+      {
+        "criterion": "Rule in .claude/rules/ enforces CLI-mediated harness interaction",
+        "met": true,
+        "evidence": ".claude/rules/cli-mediation.md is a new file (32 lines). Maps 6 operations to their CLI commands, lists 4 forbidden patterns (direct state.json edits, direct summary.md agent-section edits, jq/sed/awk mutations, echo/cat appends), and includes a fallback policy for missing CLI commands."
+      },
+      {
+        "criterion": "Hooks that guard state.json (state-guard.sh) are reviewed for coverage",
+        "met": true,
+        "evidence": "state-guard.sh (bin/frw.d/hooks/state-guard.sh) is a PreToolUse hook matching Write|Edit. It blocks any path ending in state.json. The cli-mediation rule references this hook by name. Coverage gap: state-guard.sh does NOT block direct summary.md writes — only a convention rule covers that. This is an intentional design choice since summary.md is less critical than state.json, but worth noting."
+      }
+    ],
+    "planned_files_touched": true,
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "quality_issues": [
+      {
+        "severity": "minor",
+        "description": "The rws_update_summary argument parser has an edge case: if the user passes two non-section positional args (e.g., 'rws update-summary myrow badarg'), the second positional goes into _usub_section but won't match a valid section. This is handled safely downstream by update_summary()'s case statement which rejects invalid section names, so no actual bug — just a slightly confusing error path."
+      },
+      {
+        "severity": "info",
+        "description": "The update_summary awk script for section replacement uses string comparison on header names. This works correctly for the three allowed sections (Key Findings, Open Questions, Recommendations) since none contain regex special characters. The approach is correct."
+      },
+      {
+        "severity": "info",
+        "description": "state-guard.sh only protects state.json, not summary.md agent sections. The cli-mediation rule documents this as a convention rather than a hook enforcement. This is a reasonable design choice — summary.md is less critical than state.json, and a hook blocking all summary.md writes would also block legitimate scaffold/regeneration operations."
+      }
+    ],
+    "verdict": "pass"
+  },
+  "overall": "pass"
+}

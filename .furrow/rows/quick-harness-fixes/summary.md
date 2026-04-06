@@ -8,7 +8,7 @@ via CLI; (3) add project routing to CLAUDE.md so agents discover documentation
 for sub-systems without ad-hoc exploration.
 
 ## Current State
-Step: implement | Status: not_started
+Step: review | Status: completed
 Deliverables: 3/3
 Mode: code
 
@@ -26,16 +26,22 @@ Mode: code
 - **plan->spec**: pass — plan.json created with 2-wave execution, architecture decisions recorded in summary.md
 - **spec->decompose**: pass — specs written for all 3 deliverables with refined ACs, interface contracts, and implementation notes
 - **decompose->implement**: pass — plan.json and team-plan.md finalized, 2 waves, 2 agents, no file ownership overlap
+- **implement->review**: pass — all 3 deliverables implemented and verified: rws update-summary command, cli-mediation rule, CLAUDE.md routing, summary-protocol reconciliation
+- **implement->review**: pass — all 3 deliverables implemented, committed, and verified
 
 ## Context Budget
 Measurement unavailable
 
 ## Key Findings
-- D1: Added `rws update-summary` command to bin/rws (append/replace modes, stdin, 3 sections). Created `.claude/rules/cli-mediation.md`. Fixed broken workflow-detect.md symlink.
-- D2: Updated summary-protocol.md: reconciled to ≥1 line (matches hook), added timing guidance, references CLI.
-- D3: Added topic routing table to CLAUDE.md (11 categories, 88 lines total — within 100-line budget). Removed duplicate Furrow section.
+- All 3 deliverables pass Phase A (artifacts, ACs) and Phase B (quality).
+- D1: rws update-summary is POSIX-clean, follows existing patterns. cli-mediation rule covers 6 ops + 4 forbidden patterns.
+- D2: summary-protocol.md reconciled with hook, 4 incremental triggers, CLI references.
+- D3: 11-entry routing table, all 16 referenced files verified to exist, 88 lines.
+- Note: ambient budget (CLAUDE.md + rules/) may need revisiting as rules/ grows — not a regression.
+
 ## Open Questions
 - None.
+
 ## Recommendations
-- All 3 deliverables implemented and verified. Ready for review.
-- rws update-summary tested: append, replace, invalid section rejection all work correctly.
+- Ready for archive. All ACs met, no regressions.
+- Consider future TODO: revisit ambient budget accounting as rules/ grows.
