@@ -21,6 +21,22 @@ model_default: sonnet
   clarity from the user for this step's decisions. It must not produce artifacts
   that span or replace the spec, decompose, or implement steps.
 
+## Collaboration Protocol
+
+Record decisions using `skills/shared/decision-format.md`. Don't assume — ask.
+
+**Decision categories** for planning:
+- **Architecture trade-offs** — simplicity vs extensibility, performance vs maintainability
+- **Dependency ordering** — what blocks what and why
+- **Risk tolerance** — acceptable failure modes and mitigation level
+
+**High-value question examples** (ask these, not "does this look right?"):
+- "This trades simplicity for extensibility. Given the project scope, which do you prefer?"
+- "I see two dependency orders — {A then B} or {B then A}. Any reason to prefer one?"
+- "This approach has {risk}. Is that acceptable, or should we add mitigation?"
+
+Mid-step iteration is expected; `step_status` remains `in_progress` throughout.
+
 ## Shared References
 Read these when relevant to your current action:
 - `skills/shared/red-flags.md` — before finalizing plan

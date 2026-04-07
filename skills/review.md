@@ -11,8 +11,11 @@ Evaluate implementation against spec and audit plan completion.
 model_default: opus
 
 ## Step-Specific Rules
-- Phase A: verify artifacts exist, acceptance criteria met, planned files touched.
-- Phase B: evaluate quality dimensions per artifact type.
+- **Phase A** (in-session): verify artifacts exist, acceptance criteria met, planned files touched.
+  Deterministic shell checks — runs in the current session.
+- **Phase B** (fresh-session): evaluate quality dimensions per artifact type.
+  Runs via `claude -p --bare` as an isolated process with no conversation context.
+  See `commands/review.md` for the invocation protocol.
 - `overall` is `pass` only when both phases pass.
 - Read `references/review-methodology.md` and `references/eval-dimensions.md`.
 
@@ -32,7 +35,9 @@ judgments: what to check, what constitutes a violation, what quality bar to hold
 
 ## Dual-Reviewer Protocol
 Every review runs **two independent reviewers in parallel**:
-1. **Fresh Claude subagent** — isolated context, same model. Spawn via Agent tool.
+1. **Fresh Claude reviewer** — `claude -p --bare` for generator-evaluator separation.
+   Receives ONLY the review prompt template + artifact paths + eval dimensions.
+   Does NOT receive: `summary.md`, `state.json`, conversation history, or CLAUDE.md.
 2. **Cross-model reviewer** — run `frw cross-model-review {name} {deliverable}`.
    Reads `cross_model.provider` from `furrow.yaml`. If no provider configured, skip.
 
@@ -41,10 +46,13 @@ After both complete, **synthesize** — flag any dimension where reviewers disag
 note unique findings from each, and produce the final `reviews/{deliverable}.json`
 with a `reviewers` field recording both sources.
 
+Agent tool subagents (used for gate evaluations) are isolated from conversation
+history but inherit system context — adequate for gates, not for final review.
+See `skills/shared/gate-evaluator.md` Isolation Verification section.
+
 ## Team Planning
-For multi-deliverable work, assign review sub-agents per deliverable. Read `skills/shared/context-isolation.md`.
-When spawning reviewer agents, read the specialist's `model_hint` from frontmatter
-and pass as the Agent tool's `model` parameter. Resolution: specialist `model_hint` > step `model_default` > sonnet.
+For multi-deliverable work, Phase B runs one `claude -p` invocation per deliverable.
+Each invocation is fully independent — no shared state between deliverable reviews.
 
 ## Step Mechanics
 Review is the final step. No pre-step evaluation — review always runs.

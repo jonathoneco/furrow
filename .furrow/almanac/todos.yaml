@@ -44,7 +44,7 @@
     - "skills/spec.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-04T00:00:00Z"
+  updated_at: "2026-04-06T00:00:00Z"
   urgency: "medium"
   impact: "high"
   effort: "medium"
@@ -54,7 +54,7 @@
     - "skills/plan.md"
     - "skills/spec.md"
     - "skills/shared/"
-  status: active
+  status: done
 - id: stop-hook-false-positives
   title: "Handle stop hooks enforcing fluff requirements"
   context: |
@@ -234,7 +234,7 @@
     - "skills/shared/gate-evaluator.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-06T00:00:00Z"
   urgency: "medium"
   impact: "high"
   effort: "medium"
@@ -242,7 +242,7 @@
     - "skills/review.md"
     - "skills/shared/eval-protocol.md"
     - "commands/review.md"
-  status: active
+  status: done
 - id: worktree-reintegration-summary
   title: "Produce summary for worktree reintegration"
   context: |
@@ -518,7 +518,7 @@
     - "commands/archive.md"
     - "references/row-layout.md"
   depends_on:
-    - brain-dump-triage-command  # inferred: merge-implication — command changes land before infra restructure
+    - brain-dump-triage-command # inferred: merge-implication — command changes land before infra restructure
   # Cluster: Integrations & Extensions
   status: active
 - id: beans-enforcement-integration
@@ -659,8 +659,8 @@
     - "skills/implement.md"
     - "skills/shared/context-isolation.md"
   depends_on:
-    - specialist-expansion  # inferred: foundational — specialist templates must work before agent dispatch
-    - interactive-ideation-checkpoints  # inferred: foundational — skills/implement.md stability
+    - specialist-expansion # inferred: foundational — specialist templates must work before agent dispatch
+    - interactive-ideation-checkpoints # inferred: foundational — skills/implement.md stability
   # Cluster: Advanced / Exploratory
   status: active
 - id: memetic-algorithms-research
@@ -809,7 +809,7 @@
     - "commands/"
     - "commands/work-todos.md"
   depends_on:
-    - parallel-agent-orchestration-adoption  # inferred: merge-implication — skills/ stable before command layer
+    - parallel-agent-orchestration-adoption # inferred: merge-implication — skills/ stable before command layer
   status: active
 - id: almanac-knowledge-subcommands-learn-rationale-docs
   title: Almanac knowledge subcommands (learn, rationale, docs, specialists, history)
@@ -895,7 +895,7 @@
     - bin/sds
     - bin/frw.d/scripts/
   depends_on:
-    - brain-dump-triage-command  # inferred: merge-implication — command experience informs CLI architecture
+    - brain-dump-triage-command # inferred: merge-implication — command experience informs CLI architecture
   status: active
 # --- Bundle B: Specialist Expansion ---
 - id: specialist-expansion
@@ -929,8 +929,8 @@
     - references/specialist-template.md
     - .furrow/almanac/rationale.yaml
   depends_on:
-    - specialist-encoded-reasoning  # inferred: foundational — format/reasoning first, then expand
-    - sonnet-model-routing  # inferred: merge-implication — model routing affects specialist design
+    - specialist-encoded-reasoning # inferred: foundational — format/reasoning first, then expand
+    - sonnet-model-routing # inferred: merge-implication — model routing affects specialist design
   status: active
 # --- Bundle C: Almanac Graph Primitives ---
 - id: almanac-graph-primitives
@@ -969,7 +969,7 @@
     - bin/alm
     - .furrow/almanac/
   depends_on:
-    - cli-architecture-overhaul  # inferred: foundational — CLI architecture gates where to build features
+    - cli-architecture-overhaul # inferred: foundational — CLI architecture gates where to build features
   status: active
 # --- Bundle D: Harness Lifecycle UX ---
 - id: harness-lifecycle-ux
@@ -1005,7 +1005,7 @@
     - install.sh
     - .claude/settings.json
   depends_on:
-    - cli-architecture-overhaul  # inferred: foundational — CLI decisions gate verb rename and status line
+    - cli-architecture-overhaul # inferred: foundational — CLI decisions gate verb rename and status line
   status: active
 # --- Bundle E: Quality & Enforcement Expansion ---
 - id: quality-enforcement-expansion
@@ -1316,4 +1316,28 @@
     - bin/rws
     - bin/sds
     - bin/alm
+  status: active
+# --- Standalone: Gate Check Hook Fix ---
+- id: gate-check-hook-excluded-steps
+  title: "gate-check hook blocks transitions for excluded steps (ideate/implement/review)"
+  context: |
+    The PreToolUse:Bash gate-check hook intercepts rws transition commands and
+    delegates to rws gate-check. For steps in the exclusion list (ideate, implement,
+    review), gate-check always returns exit 1 (by design — these steps can't be
+    skipped). But the hook interprets exit 1 as "gate failed" and blocks with exit 2.
+    Workaround: use frw update-state directly to advance the step.
+  work_needed: |
+    - Fix hook to check for a passing gate record in state.json instead of running the pre-step evaluator
+    - Or exempt excluded steps from the hook check
+  references:
+    - "bin/frw.d/hooks/gate-check.sh"
+    - "bin/rws (rws_gate_check function)"
+  source_type: "review-finding"
+  created_at: "2026-04-06T00:00:00Z"
+  updated_at: "2026-04-06T00:00:00Z"
+  urgency: "medium"
+  impact: "medium"
+  effort: "small"
+  files_touched:
+    - "bin/frw.d/hooks/gate-check.sh"
   status: active
