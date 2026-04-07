@@ -235,7 +235,7 @@ update_state() {
     elif .title == null and (.title | type) != "string" then "type:title"
     elif (.description | type) != "string" then "type:description"
     elif check_enum(.step; ["ideate","research","plan","spec","decompose","implement","review"]) != "ok" then "invalid:step"
-    elif check_enum(.step_status; ["not_started","in_progress","completed","blocked","pending_approval"]) != "ok" then "invalid:step_status"
+    elif check_enum(.step_status; ["not_started","in_progress","completed","blocked"]) != "ok" then "invalid:step_status"
     elif (.steps_sequence | type) != "array" then "type:steps_sequence"
     elif (.steps_sequence | length) != 7 then "length:steps_sequence"
     elif (.deliverables | type) != "object" then "type:deliverables"
@@ -1359,133 +1359,8 @@ rws_init() {
 # ============================================================
 
 rws_transition() {
-  _tr_phase=""
-  case "${1:-}" in
-    --request) _tr_phase="request"; shift ;;
-    --confirm) _tr_phase="confirm"; shift ;;
-    *) die "Usage: rws transition --request|--confirm <name> ..." ;;
-  esac
-
-  # --------------------------------------------------------
-  #  --confirm phase
-  # --------------------------------------------------------
-
-  if [ "$_tr_phase" = "confirm" ]; then
-    if [ "$#" -lt 1 ]; then
-      die "Usage: rws transition --confirm <name>"
-    fi
-
-    _tr_name="$1"
-    _tr_state_file="$(require_state "$_tr_name")"
-    _tr_work_dir="$(resolve_row_dir "$_tr_name")"
-
-    # Verify pending_approval
-    _tr_status="$(jq -r '.step_status' "$_tr_state_file")"
-    if [ "$_tr_status" != "pending_approval" ]; then
-      echo "Cannot confirm: step_status is '$_tr_status', expected 'pending_approval'." >&2
-      echo "Call 'rws transition --request' first." >&2
-      exit "$EXIT_WRONG_STATUS"
-    fi
-
-    # Determine boundary
-    _tr_current="$(jq -r '.step' "$_tr_state_file")"
-    _tr_current_idx="$(jq -r --arg step "$_tr_current" '.steps_sequence | to_entries[] | select(.value == $step) | .key' "$_tr_state_file")"
-    _tr_total="$(jq -r '.steps_sequence | length' "$_tr_state_file")"
-    _tr_next_idx=$((_tr_current_idx + 1))
-    _tr_next="$(jq -r --argjson idx "$_tr_next_idx" '.steps_sequence[$idx] // "review"' "$_tr_state_file")"
-    _tr_boundary="${_tr_current}->${_tr_next}"
-
-    # Read gate_policy
-    _tr_gate_policy="$(read_gate_policy "$_tr_name")"
-
-    # Read decided_by from most recent gate for this boundary
-    _tr_decided_by="$(jq -r --arg b "$_tr_boundary" '[.gates[] | select(.boundary == $b)] | last | .decided_by // ""' "$_tr_state_file")"
-
-    # Validate decided_by against gate_policy
-    case "$_tr_gate_policy" in
-      supervised)
-        if [ "$_tr_decided_by" != "manual" ]; then
-          echo "Policy violation: supervised mode requires decided_by=manual, got '$_tr_decided_by'." >&2
-          exit "$EXIT_POLICY"
-        fi
-        ;;
-      delegated)
-        case "$_tr_decided_by" in
-          manual|evaluated) ;;
-          *)
-            echo "Policy violation: delegated mode requires decided_by=manual or evaluated, got '$_tr_decided_by'." >&2
-            exit "$EXIT_POLICY"
-            ;;
-        esac
-        ;;
-      autonomous)
-        # All decided_by values accepted
-        ;;
-    esac
-
-    # Verdict nonce validation (evaluated gates)
-    if [ "$_tr_decided_by" = "evaluated" ]; then
-      _tr_verdict_file=""
-      for _tr_vtype in post_step pre_step; do
-        _tr_vf="${_tr_work_dir}/gate-verdicts/${_tr_vtype}-${_tr_current}.json"
-        if [ -f "$_tr_vf" ]; then
-          _tr_verdict_file="$_tr_vf"
-          break
-        fi
-      done
-
-      if [ -z "$_tr_verdict_file" ]; then
-        echo "Verdict file not found in ${_tr_work_dir}/gate-verdicts/. Evaluator must write verdict before confirming." >&2
-        exit "$EXIT_SUB_FAILED"
-      fi
-
-      _tr_prompt_file=""
-      for _tr_ptype in post_step pre_step; do
-        _tr_pf="${_tr_work_dir}/gate-prompts/${_tr_ptype}-${_tr_current}.yaml"
-        if [ -f "$_tr_pf" ]; then
-          _tr_prompt_file="$_tr_pf"
-          break
-        fi
-      done
-
-      if [ -z "$_tr_prompt_file" ]; then
-        echo "Prompt file not found in ${_tr_work_dir}/gate-prompts/. Cannot validate verdict nonce." >&2
-        exit "$EXIT_SUB_FAILED"
-      fi
-
-      _tr_prompt_nonce="$(grep '^nonce:' "$_tr_prompt_file" | sed 's/^nonce: *//' | tr -d '[:space:]')" || _tr_prompt_nonce=""
-      _tr_verdict_nonce="$(jq -r '.nonce // ""' "$_tr_verdict_file" 2>/dev/null)" || _tr_verdict_nonce=""
-
-      if [ -n "$_tr_prompt_nonce" ] && [ "$_tr_prompt_nonce" != "$_tr_verdict_nonce" ]; then
-        echo "Nonce mismatch: prompt='$_tr_prompt_nonce' verdict='$_tr_verdict_nonce'. Verdict may be stale or forged." >&2
-        exit "$EXIT_SUB_FAILED"
-      fi
-    fi
-
-    # Regenerate summary
-    regenerate_summary "$_tr_name" || {
-      echo "Warning: summary regeneration failed" >&2
-    }
-
-    # Advance step
-    advance_step "$_tr_name" || {
-      echo "Failed to advance step" >&2
-      exit "$EXIT_SUB_FAILED"
-    }
-
-    # Sync seed status after successful advance
-    sync_seed_status "$_tr_name" "$_tr_next"
-
-    echo "Transition complete: $_tr_boundary (confirmed)"
-    exit "$EXIT_SUCCESS"
-  fi
-
-  # --------------------------------------------------------
-  #  --request phase
-  # --------------------------------------------------------
-
   if [ "$#" -lt 4 ]; then
-    echo "Usage: rws transition --request <name> <outcome> <decided_by> <evidence> [conditions_json]" >&2
+    echo "Usage: rws transition <name> <outcome> <decided_by> <evidence> [conditions_json]" >&2
     exit "$EXIT_USAGE"
   fi
 
@@ -1513,7 +1388,7 @@ rws_transition() {
     exit "$EXIT_VALIDATION"
   fi
 
-  # 1. Record gate
+  # 1. Record gate (before any validation so the gate is always persisted)
   if [ -n "$_tr_conditions" ]; then
     record_gate "$_tr_name" "$_tr_boundary" "$_tr_outcome" "$_tr_decided_by" "$_tr_evidence" "$_tr_conditions" || {
       echo "Failed to record gate" >&2
@@ -1526,7 +1401,7 @@ rws_transition() {
     }
   fi
 
-  # 1b. Validate step artifacts (only on pass/conditional)
+  # 2. Validate step artifacts (only on pass/conditional)
   if [ "$_tr_outcome" != "fail" ]; then
     validate_step_artifacts "$_tr_name" "$_tr_boundary" || {
       echo "Artifact validation failed for $_tr_boundary. Gate recorded but advancement blocked." >&2
@@ -1534,7 +1409,69 @@ rws_transition() {
     }
   fi
 
-  # Handle fail: do not advance
+  # 3. Validate decided_by against gate_policy
+  _tr_gate_policy="$(read_gate_policy "$_tr_name")"
+  case "$_tr_gate_policy" in
+    supervised)
+      if [ "$_tr_decided_by" != "manual" ]; then
+        echo "Policy violation: supervised mode requires decided_by=manual, got '$_tr_decided_by'." >&2
+        exit "$EXIT_POLICY"
+      fi
+      ;;
+    delegated)
+      case "$_tr_decided_by" in
+        manual|evaluated) ;;
+        *)
+          echo "Policy violation: delegated mode requires decided_by=manual or evaluated, got '$_tr_decided_by'." >&2
+          exit "$EXIT_POLICY"
+          ;;
+      esac
+      ;;
+    autonomous)
+      # All decided_by values accepted
+      ;;
+  esac
+
+  # 4. Verdict nonce validation (evaluated gates)
+  if [ "$_tr_decided_by" = "evaluated" ]; then
+    _tr_verdict_file=""
+    for _tr_vtype in post_step pre_step; do
+      _tr_vf="${_tr_work_dir}/gate-verdicts/${_tr_vtype}-${_tr_current}.json"
+      if [ -f "$_tr_vf" ]; then
+        _tr_verdict_file="$_tr_vf"
+        break
+      fi
+    done
+
+    if [ -z "$_tr_verdict_file" ]; then
+      echo "Verdict file not found in ${_tr_work_dir}/gate-verdicts/. Evaluator must write verdict before transition." >&2
+      exit "$EXIT_SUB_FAILED"
+    fi
+
+    _tr_prompt_file=""
+    for _tr_ptype in post_step pre_step; do
+      _tr_pf="${_tr_work_dir}/gate-prompts/${_tr_ptype}-${_tr_current}.yaml"
+      if [ -f "$_tr_pf" ]; then
+        _tr_prompt_file="$_tr_pf"
+        break
+      fi
+    done
+
+    if [ -z "$_tr_prompt_file" ]; then
+      echo "Prompt file not found in ${_tr_work_dir}/gate-prompts/. Cannot validate verdict nonce." >&2
+      exit "$EXIT_SUB_FAILED"
+    fi
+
+    _tr_prompt_nonce="$(grep '^nonce:' "$_tr_prompt_file" | sed 's/^nonce: *//' | tr -d '[:space:]')" || _tr_prompt_nonce=""
+    _tr_verdict_nonce="$(jq -r '.nonce // ""' "$_tr_verdict_file" 2>/dev/null)" || _tr_verdict_nonce=""
+
+    if [ -n "$_tr_prompt_nonce" ] && [ "$_tr_prompt_nonce" != "$_tr_verdict_nonce" ]; then
+      echo "Nonce mismatch: prompt='$_tr_prompt_nonce' verdict='$_tr_verdict_nonce'. Verdict may be stale or forged." >&2
+      exit "$EXIT_SUB_FAILED"
+    fi
+  fi
+
+  # 5. Handle fail: do not advance
   if [ "$_tr_outcome" = "fail" ]; then
     update_state "$_tr_name" '.step_status = "in_progress"'
     case "$_tr_current" in
@@ -1548,7 +1485,7 @@ rws_transition() {
     exit "$EXIT_SUCCESS"
   fi
 
-  # 1c. Wave conflict check at implement->review (code mode only)
+  # 6. Wave conflict check at implement->review (code mode only)
   if [ "$_tr_current" = "implement" ] && [ "$_tr_next" = "review" ]; then
     _tr_mode="$(jq -r '.mode // "code"' "$_tr_state_file" 2>/dev/null)" || _tr_mode="code"
     if [ "$_tr_mode" = "code" ]; then
@@ -1558,38 +1495,25 @@ rws_transition() {
     fi
   fi
 
-  # 1d. Validate summary sections
-  if [ "$_tr_outcome" != "fail" ]; then
-    validate_summary "$_tr_name" "$_tr_current" || {
-      echo "Summary validation failed. Populate Key Findings, Open Questions, and Recommendations in summary.md before advancing." >&2
-      echo "See skills/shared/summary-protocol.md for step-specific requirements." >&2
-      exit "$EXIT_SUB_FAILED"
-    }
-  fi
+  # 6b. Validate summary sections
+  validate_summary "$_tr_name" "$_tr_current" || {
+    echo "Summary validation failed. Populate Key Findings, Open Questions, and Recommendations in summary.md before advancing." >&2
+    echo "See skills/shared/summary-protocol.md for step-specific requirements." >&2
+    exit "$EXIT_SUB_FAILED"
+  }
 
-  # Phase split: supervised stops here
-  _tr_gate_policy="$(read_gate_policy "$_tr_name")"
-  if [ "$_tr_gate_policy" = "supervised" ]; then
-    update_state "$_tr_name" '.step_status = "pending_approval"'
-    echo "Gate recorded: $_tr_boundary ($_tr_outcome). Awaiting user approval."
-    echo "Call 'rws transition --confirm $_tr_name' after user approves."
-    exit "$EXIT_SUCCESS"
-  fi
-
-  # For delegated/autonomous: fall through to complete inline
-
-  # 2. Regenerate summary
+  # 7. Regenerate summary
   regenerate_summary "$_tr_name" || {
     echo "Warning: summary regeneration failed" >&2
   }
 
-  # 3. Advance step
+  # 8. Advance step
   advance_step "$_tr_name" || {
     echo "Failed to advance step" >&2
     exit "$EXIT_SUB_FAILED"
   }
 
-  # 4. Sync seed status after successful advance
+  # 9. Sync seed status after successful advance
   sync_seed_status "$_tr_name" "$_tr_next"
 
   echo "Transition complete: $_tr_boundary ($_tr_outcome)"
@@ -2183,9 +2107,8 @@ Commands:
     --source-todo ID                     TODO entry this row was created from
     --seed-id ID                         Pre-existing seed ID to link
 
-  transition --request <name> <outcome> <decided_by> <evidence> [conditions]
-                                         Record gate and request step transition
-  transition --confirm <name>            Confirm pending transition (supervised)
+  transition <name> <outcome> <decided_by> <evidence> [conditions]
+                                         Record gate, validate, and advance step
 
   status [name]                          Show row status (default: focused row)
   list [--active|--archived|--all]       List rows (default: --active)

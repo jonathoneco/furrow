@@ -21,8 +21,18 @@ model_default: sonnet
 - `skills/shared/context-isolation.md` — when coordinating agent teams
 - `skills/shared/summary-protocol.md` — before completing step
 
-## Specialist Loading
-Two consumption paths for specialist templates in `specialists/`:
+## Specialist Loading (Mandatory)
+Before starting implementation, validate that every deliverable's `specialist`
+field in `plan.json` references an existing file in `specialists/`. Surface
+any missing specialists as errors and STOP — do not proceed with unresolved
+specialist assignments.
+
+Before dispatching any agent for a deliverable, you MUST read and load the
+specialist template from `specialists/{specialist}.md` as assigned in plan.json.
+If the file does not exist, STOP and surface the error. This is a blocking
+requirement, not guidance.
+
+Two consumption paths:
 - **Solo work**: invoke the specialist as a skill to load domain framing
   into the current agent's context.
 - **Multi-agent**: include the specialist template content in the Agent
@@ -31,6 +41,12 @@ Two consumption paths for specialist templates in `specialists/`:
 When dispatching a sub-agent, read the specialist's `model_hint` from its
 YAML frontmatter and pass it as the Agent tool's `model` parameter.
 Resolution order: specialist `model_hint` > step `model_default` > project default (sonnet).
+
+### Step-Level Specialist Modifier
+When working with a specialist during implementation, emphasize incremental
+correctness, testability, and adherence to the spec over exploratory design.
+The specialist's reasoning patterns apply to implementation decisions: which
+pattern to use, how to structure the code, what anti-patterns to avoid.
 
 ## Team Planning
 Write `team-plan.md` if not created during decompose. Ownership: each
@@ -52,9 +68,8 @@ Before requesting a step transition:
 2. Present work to user per `skills/shared/summary-protocol.md`.
 3. Ask explicitly: "**Ready to advance to review?** Yes / No"
 4. Wait for user response. Do NOT proceed without explicit approval.
-5. On "yes": call `rws transition --request` with `decided_by=manual`.
-6. After --request succeeds: call `rws transition --confirm`.
-7. On "no": ask what needs to change, address feedback, return to step 2.
+5. On "yes": call `rws transition <name> pass manual "<evidence summary>"`.
+6. On "no": ask what needs to change, address feedback, return to step 2.
 
 ## Learnings
 Append reusable insights to `.furrow/rows/{name}/learnings.jsonl`.

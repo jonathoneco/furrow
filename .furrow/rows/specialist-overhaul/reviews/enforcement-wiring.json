@@ -1,0 +1,73 @@
+{
+  "deliverable": "enforcement-wiring",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [
+      {
+        "criterion": "skills/implement.md requires specialist template loading before any agent dispatch — hard stop, not advisory",
+        "met": true,
+        "evidence": "Lines 30-33 of implement.md: 'Before dispatching any agent for a deliverable, you MUST read and load the specialist template from specialists/{specialist}.md as assigned in plan.json. If the file does not exist, STOP and surface the error. This is a blocking requirement, not guidance.' Uses MUST/STOP/blocking language explicitly contrasted with 'not guidance'."
+      },
+      {
+        "criterion": "Dispatching an agent without loading its assigned specialist from specialists/{type}.md is a blocking error",
+        "met": true,
+        "evidence": "Same lines 30-33: 'If the file does not exist, STOP and surface the error. This is a blocking requirement, not guidance.' The word 'blocking' appears literally."
+      },
+      {
+        "criterion": "plan.json specialist assignments are validated against existing files in specialists/ before dispatch",
+        "met": true,
+        "evidence": "Lines 25-28 of implement.md: 'Before starting implementation, validate that every deliverable's specialist field in plan.json references an existing file in specialists/. Surface any missing specialists as errors and STOP — do not proceed with unresolved specialist assignments.' Upfront validation before any dispatch begins."
+      },
+      {
+        "criterion": "Step-level specialist modifiers added to skills/spec.md, skills/implement.md, and skills/review.md",
+        "met": true,
+        "evidence": "All three files contain a '### Step-Level Specialist Modifier' subsection: spec.md lines 21-25, implement.md lines 45-49, review.md lines 19-23."
+      },
+      {
+        "criterion": "Modifier instructions tell the agent how specialist reasoning applies in that step's context",
+        "met": true,
+        "evidence": "Each modifier is step-specific: spec.md emphasizes 'contract completeness, boundary definition, and constraint enumeration'; implement.md emphasizes 'incremental correctness, testability, and adherence to the spec'; review.md emphasizes 'acceptance criteria verification, anti-pattern detection, and quality dimension coverage'. Each maps specialist reasoning to that step's decision space."
+      }
+    ],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "pass",
+        "evidence": "Specialist loading sequence is correct: (1) upfront validation of all plan.json specialist assignments against specialists/ directory, (2) per-dispatch loading of the specialist template, (3) two consumption paths (solo skill load vs Agent tool prompt parameter). The enforcement is a hard stop at both the batch and per-dispatch level."
+      },
+      {
+        "name": "maintainability",
+        "verdict": "pass",
+        "evidence": "Specialist Loading section in implement.md is ~20 lines covering upfront validation, per-dispatch loading, consumption paths, and model_hint resolution. Step-Level Specialist Modifier sections are 4-5 lines each — concise and self-contained. No redundancy between files."
+      },
+      {
+        "name": "api_contract",
+        "verdict": "pass",
+        "evidence": "Consistent pattern across all three files: same heading ('### Step-Level Specialist Modifier'), same sentence structure ('When working with a specialist during {step}, emphasize... The specialist's reasoning patterns apply to {step} decisions: ...'), same level of specificity. Specialist loading instructions appear only in implement.md, which is the correct location since spec and review sub-agents are dispatched via Team Planning sections with their own specialist/model_hint resolution."
+      },
+      {
+        "name": "completeness",
+        "verdict": "pass",
+        "evidence": "All five ACs are addressed. The specialist loading covers the full lifecycle: validate assignments upfront, load before dispatch, choose consumption path, resolve model_hint. The modifiers cover all three target steps with step-appropriate priorities."
+      },
+      {
+        "name": "implementability",
+        "verdict": "pass",
+        "evidence": "Instructions are mechanically followable: check plan.json specialist field exists as a file in specialists/, STOP if not. Load specialist content before Agent tool dispatch. The two consumption paths (solo vs multi-agent) give concrete instructions for each mode. Modifiers name specific priorities per step, not abstract goals."
+      }
+    ],
+    "verdict": "pass"
+  },
+  "overall": "pass",
+  "corrections": 0,
+  "reviewer": "harness-reviewer",
+  "cross_model": false,
+  "timestamp": "2026-04-07T15:30:00Z"
+}

@@ -18,6 +18,12 @@ model_default: sonnet
 - Ensure `skills/work-context.md` is loaded.
 - Read `summary.md` for plan context.
 
+### Step-Level Specialist Modifier
+When working with a specialist during spec, emphasize contract completeness,
+boundary definition, and constraint enumeration over implementation pragmatism.
+The specialist's reasoning patterns apply to specification decisions: what
+interfaces to define, what invariants to enforce, what edge cases to address.
+
 ## Shared References
 Read these when relevant to your current action:
 - `skills/shared/red-flags.md` — before finalizing specs
@@ -43,9 +49,8 @@ Before requesting a step transition:
 2. Present work to user per `skills/shared/summary-protocol.md`.
 3. Ask explicitly: "**Ready to advance to decompose?** Yes / No"
 4. Wait for user response. Do NOT proceed without explicit approval.
-5. On "yes": call `rws transition --request` with `decided_by=manual`.
-6. After --request succeeds: call `rws transition --confirm`.
-7. On "no": ask what needs to change, address feedback, return to step 2.
+5. On "yes": call `rws transition <name> pass manual "<evidence summary>"`.
+6. On "no": ask what needs to change, address feedback, return to step 2.
 
 ## Learnings
 When you discover a reusable insight (pattern, pitfall, preference, convention,

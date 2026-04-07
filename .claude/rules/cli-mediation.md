@@ -8,7 +8,7 @@ All harness state mutations go through CLI commands, never direct file edits.
 |-----------|---------|
 | Update summary sections | `rws update-summary [name] <section> [--replace]` (stdin) |
 | Read task state | `rws status [name]` |
-| Advance steps | `rws transition --request ...` |
+| Advance steps | `rws transition <name> <outcome> <decided_by> <evidence>` |
 | Complete deliverables | `rws complete-deliverable [name] <deliverable>` |
 | Regenerate summary | `rws regenerate-summary [name]` |
 | Validate summary | `rws validate-summary [name]` |

@@ -1,0 +1,63 @@
+{
+  "deliverable": "review-consent-isolation",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [
+      {
+        "criterion": "skills/review.md explicitly states: each question requiring user input is independent — a 'yes' to one question does not carry over to subsequent questions",
+        "met": true,
+        "evidence": "Lines 53-54 of review.md: 'Each question requiring user input is an independent decision — a \"yes\" to one question does NOT carry over to subsequent questions.' Exact wording matches the AC."
+      },
+      {
+        "criterion": "The supervised transition protocol in review.md separates archive approval from TODO extraction approval as distinct user consent gates",
+        "met": true,
+        "evidence": "Lines 55-56 of review.md: 'Archive approval, TODO extraction, learning promotion, and any other user-facing decisions are separate consent gates.' Explicitly names archive and TODO extraction as distinct gates, and extends the principle to learning promotion."
+      },
+      {
+        "criterion": "Anti-pattern documented: borrowing consent from a prior unrelated user response to skip a subsequent decision point",
+        "met": true,
+        "evidence": "Lines 57-59 of review.md: 'Do not interpret prior user responses as approval for unrelated subsequent decisions (e.g., \"yes to archive\" does not mean \"yes to skip TODOs\" or \"yes to promote learnings\").' Anti-pattern documented with concrete examples."
+      }
+    ],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "pass",
+        "evidence": "Instructions accurately describe the desired consent isolation behavior. The principle (independent decisions), the named gates (archive, TODO extraction, learning promotion), and the anti-pattern (consent borrowing) all align with the objective in definition.yaml."
+      },
+      {
+        "name": "maintainability",
+        "verdict": "pass",
+        "evidence": "Consent Isolation is a 7-line subsection under the Supervised Transition Protocol — exactly where a reader would look for consent rules. No duplication with other sections. Uses concrete examples instead of abstract language."
+      },
+      {
+        "name": "api_contract",
+        "verdict": "pass",
+        "evidence": "Consent isolation lives only in review.md, which is appropriate: review is the only step with multiple sequential user decisions (archive, TODOs, learnings). Other step skills have a single transition gate and do not need this section. No cross-file inconsistency."
+      },
+      {
+        "name": "completeness",
+        "verdict": "pass",
+        "evidence": "All three consent-requiring actions in the review flow are named: archive approval, TODO extraction, and learning promotion. The anti-pattern section covers the general principle and gives two specific forbidden inference examples."
+      },
+      {
+        "name": "implementability",
+        "verdict": "pass",
+        "evidence": "Instructions are unambiguous and mechanically verifiable: an agent either asks each question independently or it does not. The negative examples ('yes to archive does not mean yes to skip TODOs') make the boundary clear without requiring interpretation."
+      }
+    ],
+    "verdict": "pass"
+  },
+  "overall": "pass",
+  "corrections": 0,
+  "reviewer": "harness-reviewer",
+  "cross_model": false,
+  "timestamp": "2026-04-07T15:30:00Z"
+}

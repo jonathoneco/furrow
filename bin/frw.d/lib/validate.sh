@@ -103,8 +103,8 @@ validate_state_json() {
   _status="$(jq -r '.step_status // ""' "$_state_path" 2>/dev/null)" || _status=""
   if [ -n "$_status" ]; then
     case "$_status" in
-      not_started|in_progress|completed|blocked|pending_approval) ;;
-      *) _errors="${_errors}Invalid step_status: $_status (must be not_started, in_progress, completed, blocked, or pending_approval)\n" ;;
+      not_started|in_progress|completed|blocked) ;;
+      *) _errors="${_errors}Invalid step_status: $_status (must be not_started, in_progress, completed, or blocked)\n" ;;
     esac
   fi
 

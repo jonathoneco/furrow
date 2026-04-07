@@ -29,6 +29,15 @@ Applies progressive disclosure at every layer: the zero-flag invocation handles 
 
 - **Help text as primary documentation** — `--help` is the first documentation most users see. Every command, subcommand, and flag has a one-line description. Examples section for non-obvious usage. If a user can't figure out the tool from `--help` alone, the interface is wrong.
 
+## When NOT to Use
+
+Do not use for API contract design, backward compatibility analysis, or error envelope design (api-designer). Do not use for harness infrastructure implementation (harness-engineer). Use cli-designer for terminal UX, command structure, progressive disclosure, and help text.
+
+## Overlap Boundaries
+
+- **api-designer**: API-designer owns contract stability and backward compatibility. CLI-designer owns terminal UX, help text, and progressive disclosure.
+- **harness-engineer**: Harness-engineer implements CLI commands. CLI-designer advises on command structure and user experience.
+
 ## Quality Criteria
 
 Every command has `--help` with description and examples. Destructive operations require `--force` or confirmation. `--json` available for programmatic output. Exit codes documented and consistent. No silent failures.
@@ -42,6 +51,7 @@ Every command has `--help` with description and examples. Destructive operations
 | Required flags instead of positional arguments | Adds ceremony to the common case | Make the most common input a positional arg |
 | Commands that silently succeed on no-op | User can't tell if anything happened | Print what was done or "nothing to do" to stderr |
 | Version-less CLIs | No way to report bugs or pin behavior | Always support `--version`; embed build metadata |
+| `frw`/`rws` subcommand that requires flags for the common case | Adds ceremony to every invocation | Make the row name positional; use flags for overrides only |
 
 ## Context Requirements
 

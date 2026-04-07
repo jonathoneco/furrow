@@ -43,22 +43,22 @@ Scripts use `set -eu` and follow exit code conventions (0=success, 1=usage, 2=no
 | Advisory enforcement for critical behaviors | Model may ignore prose instructions | Use hooks with non-zero exit codes |
 | CC plan mode replacing Furrow steps | Bypasses gated artifact pipeline | Use plan mode within current step only |
 
+## When NOT to Use
+
+Do not use for architectural boundary decisions (systems-architect) or for non-harness shell scripts like `install.sh` and integration tests (shell-specialist). Do not use for auditing harness security properties (security-engineer).
+
+## Overlap Boundaries
+
+- **shell-specialist**: Shell-specialist owns non-harness scripts (`install.sh`, `tests/integration/`, `commands/lib/`). Harness-engineer owns `bin/frw.d/`, `bin/rws.d/`, `bin/alm.d/`, `bin/sds.d/`, hooks, and validators.
+- **security-engineer**: Harness-engineer builds enforcement components; security-engineer audits them for bypass paths and fail-open conditions.
+
 ## Context Requirements
 
 - Required: `bin/frw.d/lib/common.sh`, `bin/frw.d/lib/validate.sh`, `frw update-state` patterns
-- Required: `schemas/` directory for JSON schema patterns
-- Required: `references/gate-protocol.md` — gate evaluation lifecycle and trust gradients
-- Required: `references/row-layout.md` — .furrow/ directory structure and ownership rules
-- Required: `skills/work-context.md` — step sequence, file conventions, active row recovery
-- Required: `skills/shared/gate-evaluator.md` — isolated evaluator contract and dimension loading
-- Required: `skills/shared/eval-protocol.md` — two-phase review protocol and dimension structure
+- Required: `schemas/`, `references/gate-protocol.md`, `references/row-layout.md`
+- Required: `skills/work-context.md`, `skills/shared/gate-evaluator.md`, `skills/shared/eval-protocol.md`
 - Required: `adapters/shared/conventions.md` — naming, paths, step sequence, write ownership
-- Helpful: `.claude/settings.json` for hook registration patterns
-- Helpful: `.furrow/almanac/rationale.yaml` for understanding component justifications
-- Helpful: `.furrow/seeds/` — seed registry (seeds.jsonl format, config for project prefix)
-- Helpful: `.furrow/almanac/` — centralized knowledge (rationale.yaml, todos.yaml)
-- Helpful: `adapters/claude-code/` — Claude Code runtime adapter (commands, skills, progressive-loading)
-- Helpful: `adapters/agent-sdk/` — Agent SDK adapter bindings (templates, callbacks)
-- Helpful: `evals/gates/*.yaml` — gate dimension rubrics per step transition
-- Helpful: `evals/dimensions/*.yaml` — quality dimension definitions for artifact review
+- Required: `.furrow/almanac/rationale.yaml` — consult before adding, modifying, or deleting components; verify exists_because justification and delete_when conditions
+- Helpful: `.claude/settings.json`, `.furrow/seeds/`
+- Helpful: `adapters/claude-code/`, `adapters/agent-sdk/`, `evals/gates/*.yaml`, `evals/dimensions/*.yaml`
 - Helpful: `bin/rws`, `bin/sds`, `bin/alm` — CLI entry points for row, seed, and almanac management

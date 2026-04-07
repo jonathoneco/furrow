@@ -124,14 +124,10 @@ test_transition() {
   # Write definition.yaml for ideate->research validation
   _write_definition ".furrow/rows/test-row"
 
-  # Request transition
-  rws transition --request test-row pass manual "test evidence"
-
   state_file=".furrow/rows/test-row/state.json"
-  assert_json_field "step_status pending after request" "$state_file" '.step_status' "pending_approval"
 
-  # Confirm transition
-  rws transition --confirm test-row
+  # Single-command transition (records gate, validates, and advances atomically)
+  rws transition test-row pass manual "test evidence"
   assert_json_field "step advanced to research" "$state_file" '.step' "research"
 
   # Verify seed status synced

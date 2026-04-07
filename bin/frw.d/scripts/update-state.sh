@@ -86,7 +86,7 @@ frw_update_state() {
     elif .title == null and (.title | type) != "string" then "type:title"
     elif (.description | type) != "string" then "type:description"
     elif check_enum(.step; ["ideate","research","plan","spec","decompose","implement","review"]) != "ok" then "invalid:step"
-    elif check_enum(.step_status; ["not_started","in_progress","completed","blocked","pending_approval"]) != "ok" then "invalid:step_status"
+    elif check_enum(.step_status; ["not_started","in_progress","completed","blocked"]) != "ok" then "invalid:step_status"
     elif (.steps_sequence | type) != "array" then "type:steps_sequence"
     elif (.steps_sequence | length) != 7 then "length:steps_sequence"
     elif (.deliverables | type) != "object" then "type:deliverables"

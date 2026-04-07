@@ -156,7 +156,7 @@
     - "references/specialist-template.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-04T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
   urgency: "medium"
   impact: "high"
   effort: "medium"
@@ -165,7 +165,7 @@
     - "references/specialist-template.md"
   depends_on:
     - sonnet-model-routing  # inferred: merge-implication — model routing affects specialist template design
-  status: active
+  status: done
 - id: research-documentation-detection
   title: "Detect when research output should be documentation instead"
   context: |
@@ -1166,4 +1166,41 @@
   files_touched:
     - evals/
     - references/specialist-template.md
+  status: active
+# --- Standalone: Consumer Project FURROW_ROOT Resolution ---
+- id: consumer-project-furrow-root
+  title: "frw/rws resolve FURROW_ROOT to install dir, not consumer project root"
+  context: |
+    When Furrow is installed via symlink (e.g., ~/.local/bin/frw -> ~/src/furrow/bin/frw)
+    and used from a consumer project (e.g., ~/src/wrangle/), frw line 9 resolves
+    FURROW_ROOT to the script's install directory (~/src/furrow/), not the consumer
+    project. Commands like `frw run-gate` then look for .furrow/rows/ in the wrong
+    location. Observed in wrangle-test-coverage-expansion session where the agent
+    called the absolute install path instead of the consumer project's relative bin/frw.
+    Using relative paths (bin/frw, bin/rws) from the consumer project works correctly
+    because script-relative resolution lands on the project root. The bug manifests
+    when agents discover the CLI via PATH or absolute install paths instead.
+  work_needed: |
+    - Change FURROW_ROOT resolution to walk up from $PWD looking for .furrow/ directory
+    - Fall back to script-relative resolution only if no .furrow/ found (running from Furrow source repo)
+    - Ensure rws, sds, alm all use the same resolution logic
+    - Update install.sh to document the consumer project contract
+    - Test: frw commands work when run from a consumer project directory
+  references:
+    - bin/frw (line 9, FURROW_ROOT resolution)
+    - bin/rws
+    - bin/sds
+    - bin/alm
+  source_work_unit: "specialist-overhaul"
+  source_type: open-question
+  created_at: "2026-04-06T00:00:00Z"
+  updated_at: "2026-04-06T00:00:00Z"
+  urgency: medium
+  impact: high
+  effort: medium
+  files_touched:
+    - bin/frw
+    - bin/rws
+    - bin/sds
+    - bin/alm
   status: active
