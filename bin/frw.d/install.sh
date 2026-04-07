@@ -80,6 +80,13 @@ _relpath() {
 symlink() {
   _src="$1"
   _dst="$2"
+  _src_path="$(cd "$(dirname "$_src")" && pwd)/$(basename "$_src")"
+  _dst_path="$(cd "$(dirname "$_dst")" && pwd)/$(basename "$_dst")"
+  if [ "$_src_path" = "$_dst_path" ]; then
+    _skip "$_dst (source and destination are the same path)"
+    return 0
+  fi
+
   if [ -L "$_dst" ]; then
     _existing="$(_canonicalize "$_dst")"
     _expected="$(_canonicalize "$_src")"
