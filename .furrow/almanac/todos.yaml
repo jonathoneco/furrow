@@ -659,8 +659,8 @@
     - "skills/implement.md"
     - "skills/shared/context-isolation.md"
   depends_on:
-    - specialist-expansion # inferred: foundational — specialist templates must work before agent dispatch
-    - interactive-ideation-checkpoints # inferred: foundational — skills/implement.md stability
+    - specialist-expansion  # inferred: foundational — specialist templates must work before agent dispatch
+    - per-step-model-routing  # inferred: foundational — model routing must be in place before dispatch
   # Cluster: Advanced / Exploratory
   status: active
 - id: memetic-algorithms-research

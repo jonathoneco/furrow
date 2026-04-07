@@ -1,189 +1,140 @@
 schema_version: "2.0"
 metadata:
   project: furrow
-  generated_at: "2026-04-04T20:00:00Z"
-  total_phases: 7
-  completed_phases: 1
-  active_todos: 27
-  done_todos: 16
+  generated_at: "2026-04-07T00:00:00Z"
+  total_phases: 6
+  completed_phases: 0
+  active_todos: 26
+  done_todos: 19
 dependency_graph:
   nodes:
     # Phase 1
-    - id: stop-hook-false-positives
+    - id: per-step-model-routing
       phase: 1
-      row: quick-harness-fixes
-      status: active
-    - id: skill-loading-visible-internals
-      phase: 1
-      row: quick-harness-fixes
-      status: active
-    - id: claude-md-docs-routing
-      phase: 1
-      row: quick-harness-fixes
-      status: active
-    - id: guard-against-horizontal-slices
-      phase: 1
-      row: skill-quality-guards
-      status: done
-    - id: research-source-guidance
-      phase: 1
-      row: skill-quality-guards
-      status: done
-    - id: sonnet-model-routing
-      phase: 1
-      row: model-routing
-      status: active
-    # Phase 2
-    - id: specialist-encoded-reasoning
-      phase: 2
-      row: specialist-overhaul
-      status: active
-    - id: specialist-templates-from-team-plan-not-enforced-d
-      phase: 2
-      row: specialist-overhaul
+      row: model-routing-and-specialists
       status: active
     - id: specialist-expansion
-      phase: 2
-      row: specialist-overhaul
+      phase: 1
+      row: model-routing-and-specialists
       status: active
-    - id: interactive-ideation-checkpoints
-      phase: 2
-      row: ideation-and-review-ux
+    - id: consumer-project-furrow-root
+      phase: 1
+      row: infra-bug-fixes
       status: active
-    - id: fresh-session-review
-      phase: 2
-      row: ideation-and-review-ux
+    - id: gate-check-hook-excluded-steps
+      phase: 1
+      row: infra-bug-fixes
       status: active
-    - id: quality-enforcement-expansion
-      phase: 2
-      row: quality-and-rules
-      status: done
-    - id: rules-strategy
-      phase: 2
-      row: quality-and-rules
-      status: done
-    # Phase 3
+    - id: specialist-templates-from-team-plan-not-enforced-d
+      phase: 1
+      row: infra-bug-fixes
+      status: active
+    # Phase 2
     - id: parallel-agent-orchestration-adoption
-      phase: 3
+      phase: 2
       row: parallel-agent-wiring
       status: active
     - id: worktree-reintegration-summary
-      phase: 3
+      phase: 2
       row: parallel-agent-wiring
       status: active
     - id: user-action-integration
-      phase: 3
+      phase: 2
       row: parallel-agent-wiring
       status: active
-    # Phase 4
+    - id: script-access-restrictions
+      phase: 2
+      row: script-safety
+      status: active
+    # Phase 3
     - id: brain-dump-triage-command
-      phase: 4
+      phase: 3
       row: todo-pipeline
       status: active
     - id: todo-context-references
-      phase: 4
+      phase: 3
       row: todo-pipeline
       status: active
     - id: roadmap-todo-integration
-      phase: 4
+      phase: 3
       row: todo-pipeline
       status: active
     - id: research-documentation-detection
-      phase: 4
+      phase: 3
       row: todo-pipeline
       status: active
     - id: research-methodology-design
-      phase: 4
+      phase: 3
       row: research-methodology
       status: active
-    # Phase 5
+    # Phase 4
     - id: work-folder-structure-and-cleanup
-      phase: 5
-      row: infra-cleanup
-      status: active
-    - id: script-access-restrictions
-      phase: 5
+      phase: 4
       row: infra-cleanup
       status: active
     - id: cli-architecture-overhaul
-      phase: 5
+      phase: 4
       row: cli-architecture
       status: active
-    # Phase 6
+    # Phase 5
     - id: almanac-graph-primitives
-      phase: 6
+      phase: 5
       row: almanac-and-seeds
       status: active
     - id: seeds-concept
-      phase: 6
+      phase: 5
       row: almanac-and-seeds
       status: active
     - id: design-pattern-context-construction
-      phase: 6
+      phase: 5
       row: context-patterns
       status: active
     - id: harness-lifecycle-ux
-      phase: 6
+      phase: 5
       row: harness-lifecycle-ux
       status: active
-    # Phase 7
+    # Phase 6
     - id: adapters-audit
-      phase: 7
+      phase: 6
       row: audits-and-mining
       status: active
     - id: mine-v1-harness
-      phase: 7
+      phase: 6
       row: audits-and-mining
       status: active
     - id: apply-nate-jones-skill
-      phase: 7
+      phase: 6
       row: audits-and-mining
       status: active
     - id: mine-claude-code
-      phase: 7
+      phase: 6
+      row: audits-and-mining
+      status: active
+    - id: specialist-quality-validation
+      phase: 6
       row: audits-and-mining
       status: active
     - id: memetic-algorithms-research
-      phase: 7
+      phase: 6
       row: exploratory-research
       status: active
   edges:
-    # Phase 1 → Phase 2
-    - from: quick-harness-fixes
-      to: ideation-and-review-ux
-      type: inferred
-      reason: "foundational — hook reliability before skill UX changes"
-    - from: quick-harness-fixes
-      to: quality-and-rules
-      type: inferred
-      reason: "foundational — hook infrastructure stable before new enforcement"
-    - from: skill-quality-guards
-      to: ideation-and-review-ux
-      type: inferred
-      reason: "foundational — guardrails before broader skill edits"
-    - from: model-routing
-      to: specialist-overhaul
-      type: inferred
-      reason: "merge-implication — routing config affects specialist templates"
-    # Phase 2 → Phase 3
-    - from: specialist-overhaul
+    - from: model-routing-and-specialists
       to: parallel-agent-wiring
       type: inferred
-      reason: "foundational — specialist templates must work before agent dispatch uses them"
-    - from: ideation-and-review-ux
+      reason: "foundational — specialist modes and model routing before agent dispatch"
+    - from: infra-bug-fixes
       to: parallel-agent-wiring
       type: inferred
-      reason: "foundational — skills/implement.md stability before orchestration changes"
-    - from: quality-and-rules
-      to: parallel-agent-wiring
+      reason: "foundational — CLI resolution must work before orchestration"
+    - from: infra-bug-fixes
+      to: script-safety
       type: inferred
-      reason: "foundational — enforcement layer in place before agent orchestration"
-    # Phase 3 → Phase 4
+      reason: "foundational — gate-check fix before adding new enforcement"
     - from: parallel-agent-wiring
       to: todo-pipeline
       type: inferred
-      reason: "merge-implication — agent wiring stabilizes skills/ before command layer changes"
-    # Phase 4 → Phase 5
+      reason: "merge-implication — skills/ stable before command layer changes"
     - from: todo-pipeline
       to: infra-cleanup
       type: inferred
@@ -191,192 +142,126 @@ dependency_graph:
     - from: todo-pipeline
       to: cli-architecture
       type: inferred
-      reason: "merge-implication — command experience informs CLI architecture decisions"
-    # Phase 5 → Phase 6
+      reason: "merge-implication — command experience informs CLI architecture"
+    - from: script-safety
+      to: infra-cleanup
+      type: inferred
+      reason: "foundational — access restrictions before restructure"
     - from: cli-architecture
       to: almanac-and-seeds
       type: inferred
-      reason: "foundational — CLI architecture (Go vs shell) gates where to build new features"
+      reason: "foundational — CLI architecture gates where to build new features"
     - from: cli-architecture
       to: harness-lifecycle-ux
       type: inferred
-      reason: "foundational — CLI decisions gate verb rename (sow/reap) and status line"
+      reason: "foundational — CLI decisions gate verb rename and status line"
     - from: infra-cleanup
       to: context-patterns
       type: inferred
-      reason: "foundational — folder structure stable before knowledge architecture redesign"
+      reason: "foundational — folder structure stable before knowledge architecture"
   waves:
     - wave: 1
       todos:
-        - stop-hook-false-positives
-        - skill-loading-visible-internals
-        - claude-md-docs-routing
-        - guard-against-horizontal-slices
-        - research-source-guidance
-        - sonnet-model-routing
-    - wave: 2
-      todos:
-        - specialist-encoded-reasoning
-        - specialist-templates-from-team-plan-not-enforced-d
+        - per-step-model-routing
         - specialist-expansion
-        - interactive-ideation-checkpoints
-        - fresh-session-review
-        - quality-enforcement-expansion
-        - rules-strategy
-    - wave: 3
+        - consumer-project-furrow-root
+        - gate-check-hook-excluded-steps
+        - specialist-templates-from-team-plan-not-enforced-d
+    - wave: 2
       todos:
         - parallel-agent-orchestration-adoption
         - worktree-reintegration-summary
         - user-action-integration
-    - wave: 4
+        - script-access-restrictions
+    - wave: 3
       todos:
         - brain-dump-triage-command
         - todo-context-references
         - roadmap-todo-integration
         - research-documentation-detection
         - research-methodology-design
-    - wave: 5
+    - wave: 4
       todos:
         - work-folder-structure-and-cleanup
-        - script-access-restrictions
         - cli-architecture-overhaul
-    - wave: 6
+    - wave: 5
       todos:
         - almanac-graph-primitives
         - seeds-concept
         - design-pattern-context-construction
         - harness-lifecycle-ux
-    - wave: 7
+    - wave: 6
       todos:
         - adapters-audit
         - mine-v1-harness
         - apply-nate-jones-skill
         - mine-claude-code
+        - specialist-quality-validation
         - memetic-algorithms-research
   cycles: []
 conflict_zones:
-  - phase: 2
-    file_pattern: "skills/implement.md"
-    work_units: [specialist-overhaul, ideation-and-review-ux]
+  - phase: 1
+    file_pattern: "specialists/, skills/implement.md"
+    work_units: [model-routing-and-specialists, infra-bug-fixes]
     severity: low
-    mitigation: "coordinate merge order — specialist-overhaul merges first"
+    mitigation: "model-routing-and-specialists merges first"
   - phase: 2
-    file_pattern: "skills/shared/"
-    work_units: [ideation-and-review-ux, quality-and-rules]
-    severity: low
-    mitigation: "different files within shared/ — low actual overlap"
-  - phase: 5
     file_pattern: "bin/frw.d/hooks/, bin/frw.d/scripts/"
+    work_units: [parallel-agent-wiring, script-safety]
+    severity: low
+    mitigation: "different files — parallel-agent-wiring touches skills/, script-safety touches bin/"
+  - phase: 4
+    file_pattern: "bin/rws, bin/frw.d/scripts/"
     work_units: [infra-cleanup, cli-architecture]
     severity: medium
     mitigation: "infra-cleanup merges first, cli-architecture rebases"
-  - phase: 6
+  - phase: 5
     file_pattern: "references/, skills/"
     work_units: [almanac-and-seeds, context-patterns]
     severity: low
-    mitigation: "different subdirectories — low actual overlap"
+    mitigation: "different subdirectories"
 phases:
   - number: 1
-    title: "Foundational Fixes & Guards"
-    status: done
-    rationale: "Small-effort, high-impact fixes with no file overlaps. Front-loads hook reliability and skill guardrails before larger refactors."
-    parallelism: "quick-harness-fixes || skill-quality-guards || model-routing"
-    rows:
-      - branch: work/quick-harness-fixes
-        description: "Hook false positives, skill loading internals, CLAUDE.md docs routing"
-        todos:
-          - stop-hook-false-positives
-          - skill-loading-visible-internals
-          - claude-md-docs-routing
-        estimated_sessions: 2
-        key_files:
-          - bin/frw.d/hooks/validate-summary.sh
-          - bin/frw.d/hooks/stop-ideation.sh
-          - bin/frw.d/lib/validate.sh
-          - bin/rws
-          - .claude/CLAUDE.md
-        conflict_risk: none
-        completed_at: null
-      - branch: work/skill-quality-guards
-        description: "Decomposition guardrails and research source guidance"
-        todos:
-          - guard-against-horizontal-slices
-          - research-source-guidance
-        estimated_sessions: 1
-        key_files:
-          - skills/decompose.md
-          - skills/shared/red-flags.md
-          - evals/dimensions/decompose.yaml
-          - skills/research.md
-          - templates/research-sources.md
-        conflict_risk: none
-        completed_at: null
-      - branch: work/model-routing
-        description: "Sonnet for on-rails tasks, Opus for reasoning"
-        todos:
-          - sonnet-model-routing
-        estimated_sessions: 1
-        key_files:
-          - specialists/
-          - skills/implement.md
-          - skills/shared/context-isolation.md
-        conflict_risk: none
-        completed_at: null
-  - number: 2
-    title: "Specialist, Enforcement & Rules"
+    title: "Token Optimization & Infrastructure Fixes"
     status: planned
-    rationale: "Builds the quality/enforcement/specialist layer on top of Phase 1 guardrails. Three parallel rows targeting different file domains."
-    parallelism: "specialist-overhaul || ideation-and-review-ux || quality-and-rules"
+    rationale: "Critical token optimization must land first — orchestrator/step-agent architecture saves 40-60% cost. Model routing needs step-specific specialist modes (coupled design). Bug fixes unblock reliable CLI operation in consumer projects."
+    parallelism: "model-routing-and-specialists || infra-bug-fixes"
     rows:
-      - branch: work/specialist-overhaul
-        description: "Encoded reasoning, template enforcement, step-specific modes, new domains"
+      - branch: work/model-routing-and-specialists
+        description: "Orchestrator + step agent architecture, collaborate/execute split, specialist step modes"
         todos:
-          - specialist-encoded-reasoning
-          - specialist-templates-from-team-plan-not-enforced-d
+          - per-step-model-routing
           - specialist-expansion
         estimated_sessions: 3
         key_files:
+          - skills/
           - specialists/
-          - references/specialist-template.md
-          - skills/implement.md
-          - .furrow/almanac/rationale.yaml
+          - skills/shared/context-isolation.md
+          - bin/frw.d/scripts/launch-phase.sh
+          - bin/rws
         conflict_risk: low
         completed_at: null
-      - branch: work/ideation-and-review-ux
-        description: "Interactive ideation checkpoints and fresh-session review"
+      - branch: work/infra-bug-fixes
+        description: "FURROW_ROOT resolution, gate-check excluded steps, specialist template enforcement"
         todos:
-          - interactive-ideation-checkpoints
-          - fresh-session-review
-        estimated_sessions: 3
-        key_files:
-          - skills/ideate.md
-          - skills/research.md
-          - skills/plan.md
-          - skills/spec.md
-          - skills/shared/
-          - skills/review.md
-          - commands/review.md
-        conflict_risk: low
-        completed_at: null
-      - branch: work/quality-and-rules
-        description: "PostToolUse hooks, test cases from spec, naming guidance, rules strategy"
-        todos:
-          - quality-enforcement-expansion
-          - rules-strategy
+          - consumer-project-furrow-root
+          - gate-check-hook-excluded-steps
+          - specialist-templates-from-team-plan-not-enforced-d
         estimated_sessions: 2
         key_files:
-          - .claude/settings.json
-          - .claude/rules/
-          - skills/spec.md
-          - bin/frw.d/hooks/
-          - install.sh
-        conflict_risk: none
+          - bin/frw
+          - bin/rws
+          - bin/sds
+          - bin/alm
+          - bin/frw.d/hooks/gate-check.sh
+          - skills/implement.md
+        conflict_risk: low
         completed_at: null
-  - number: 3
-    title: "Agent Orchestration"
+  - number: 2
+    title: "Agent Orchestration & Enforcement"
     status: planned
-    rationale: "Agent dispatch requires stable specialist templates (Phase 2) and model routing (Phase 1). Single row avoids skills/implement.md conflicts."
-    parallelism: none
+    rationale: "Agent dispatch requires stable specialist templates and model routing from Phase 1. Script restrictions add enforcement before infrastructure restructure."
+    parallelism: "parallel-agent-wiring || script-safety"
     rows:
       - branch: work/parallel-agent-wiring
         description: "Parallel agent adoption, worktree summaries, user action integration"
@@ -391,7 +276,17 @@ phases:
           - bin/rws
         conflict_risk: none
         completed_at: null
-  - number: 4
+      - branch: work/script-safety
+        description: "Restrict direct access to internal/dependency scripts"
+        todos:
+          - script-access-restrictions
+        estimated_sessions: 2
+        key_files:
+          - bin/frw.d/scripts/
+          - bin/frw.d/hooks/
+        conflict_risk: none
+        completed_at: null
+  - number: 3
     title: "Command Pipeline"
     status: planned
     rationale: "Command layer changes after agent wiring stabilizes skills/. Research methodology is independent but logically grouped."
@@ -410,7 +305,6 @@ phases:
           - commands/work-todos.md
           - commands/triage.md
           - commands/next.md
-          - commands/lib/promote-components.sh
           - bin/alm
           - skills/review.md
         conflict_risk: none
@@ -425,24 +319,21 @@ phases:
           - templates/research-sources.md
         conflict_risk: none
         completed_at: null
-  - number: 5
+  - number: 4
     title: "Infrastructure & CLI Strategy"
     status: planned
     rationale: "CLI architecture decision (Go vs shell, modularization) must resolve before building new almanac features or renaming verbs. Infra cleanup stabilizes folder structure."
     parallelism: "infra-cleanup || cli-architecture"
     rows:
       - branch: work/infra-cleanup
-        description: ".furrow/rows/ structure and script access restrictions"
+        description: ".furrow/rows/ structure to prevent unbounded growth"
         todos:
           - work-folder-structure-and-cleanup
-          - script-access-restrictions
         estimated_sessions: 2
         key_files:
           - bin/rws
           - commands/archive.md
           - references/row-layout.md
-          - bin/frw.d/scripts/
-          - bin/frw.d/hooks/
         conflict_risk: none
         completed_at: null
       - branch: work/cli-architecture
@@ -457,20 +348,21 @@ phases:
           - bin/frw.d/scripts/
         conflict_risk: medium
         completed_at: null
-  - number: 6
+  - number: 5
     title: "Knowledge Architecture & Harness Identity"
     status: planned
-    rationale: "Almanac graph primitives + seeds are deeply coupled (seeds = graph nodes). Lifecycle UX (sow/reap, status line) depends on CLI strategy from Phase 5. Context patterns are independent."
+    rationale: "Almanac graph + seeds are deeply coupled (seeds = graph nodes, sds = graph engine). Lifecycle UX depends on CLI strategy from Phase 4. Context patterns are independent."
     parallelism: "almanac-and-seeds || context-patterns || harness-lifecycle-ux"
     rows:
       - branch: work/almanac-and-seeds
-        description: "First-class dependency graph in almanac, seeds as graph nodes with dependency wiring"
+        description: "First-class seed graph, within-row + cross-row work management, almanac integration"
         todos:
           - almanac-graph-primitives
           - seeds-concept
         estimated_sessions: 5
         key_files:
           - bin/alm
+          - bin/sds
           - .furrow/almanac/
           - skills/
           - references/
@@ -500,22 +392,25 @@ phases:
           - .claude/settings.json
         conflict_risk: none
         completed_at: null
-  - number: 7
+  - number: 6
     title: "Audits & Exploration"
     status: planned
-    rationale: "Low-urgency research and audit items with no production dependencies. Insights from mining can feed back into earlier phases."
+    rationale: "Low-urgency research and audit items with no production dependencies. Insights feed back into earlier work."
     parallelism: "audits-and-mining || exploratory-research"
     rows:
       - branch: work/audits-and-mining
-        description: "Adapters audit, mine v1 harness, apply external patterns, mine Claude Code"
+        description: "Adapters audit, mine v1 harness, apply external patterns, mine Claude Code, specialist quality validation"
         todos:
           - adapters-audit
           - mine-v1-harness
           - apply-nate-jones-skill
           - mine-claude-code
-        estimated_sessions: 3
+          - specialist-quality-validation
+        estimated_sessions: 4
         key_files:
           - adapters/
+          - evals/
+          - references/specialist-template.md
         conflict_risk: none
         completed_at: null
       - branch: work/exploratory-research
