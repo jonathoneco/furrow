@@ -1,0 +1,84 @@
+{
+  "deliverable": "transition-simplification",
+  "reviewer": "transition-reviewer",
+  "cross_model": false,
+  "timestamp": "2026-04-07T15:30:00Z",
+  "phase_a": {
+    "verdict": "pass",
+    "findings": [
+      {
+        "criterion": "rws transition is a single command: rws transition <name> --outcome pass --decided-by manual --evidence '...'",
+        "result": "pass",
+        "evidence": "rws_transition() at bin/rws:1361-1520 accepts positional args: <name> <outcome> <decided_by> <evidence> [conditions_json]. Usage enforced at line 1362-1364. No --request/--confirm flag parsing anywhere in the function."
+      },
+      {
+        "criterion": "Single command records gate, validates artifacts, checks gate_policy, validates nonce (if evaluated), advances step, and syncs seed — atomically",
+        "result": "pass",
+        "evidence": "Function executes 9 sequential steps: (1) record_gate, (2) validate_step_artifacts, (3) gate_policy enforcement via read_gate_policy, (4) verdict nonce validation for evaluated gates, (5) fail handling, (6) wave conflict check, (6b) validate_summary, (7) regenerate_summary, (8) advance_step, (9) sync_seed_status. All in a single invocation."
+      },
+      {
+        "criterion": "--request and --confirm phases removed — no intermediate pending_approval state",
+        "result": "pass",
+        "evidence": "No --request or --confirm in bin/rws argument parsing. pending_approval absent from schemas/state.schema.json step_status enum (only: not_started, in_progress, completed, blocked). Also absent from bin/frw.d/lib/validate.sh and bin/frw.d/scripts/update-state.sh validation logic."
+      },
+      {
+        "criterion": "All step skills updated to use the single-command transition instead of the two-phase ceremony",
+        "result": "pass",
+        "evidence": "All 7 skills checked. ideate.md:59, research.md:51, plan.md:57, spec.md:53, decompose.md:53, implement.md:71 all use 'rws transition <name> pass manual \"<evidence summary>\"'. review.md correctly uses archive flow (final step, no forward transition)."
+      },
+      {
+        "criterion": "Gate policy enforcement (supervised requires decided_by=manual, etc.) preserved in the single command",
+        "result": "pass",
+        "evidence": "Lines 1413-1433: case statement on gate_policy. supervised requires decided_by=manual (exit EXIT_POLICY otherwise). delegated requires manual or evaluated. autonomous accepts all. EXIT_POLICY=6 is the designated exit code."
+      }
+    ]
+  },
+  "phase_b": {
+    "verdict": "pass",
+    "dimensions": {
+      "correctness": {
+        "score": "pass",
+        "notes": "rws_transition() implements all AC requirements. Gate recording happens before validation (line 1391 comment confirms intentional design: gate always persisted even if later checks fail). Fail path correctly resets step_status to in_progress and increments corrections for implement/review steps. Cannot advance past review step (line 1386-1389). Boundary computation is correct using steps_sequence index math."
+      },
+      "error_handling": {
+        "score": "pass",
+        "notes": "Minimum arg count checked (line 1362). Each operation has explicit error handling with descriptive stderr messages: record_gate failure (EXIT_SUB_FAILED), artifact validation failure (EXIT_SUB_FAILED), policy violation (EXIT_POLICY), nonce mismatch (EXIT_SUB_FAILED), advance_step failure (EXIT_SUB_FAILED), and final-step guard (EXIT_VALIDATION). Summary validation failure also blocks with clear guidance message."
+      },
+      "security": {
+        "score": "pass",
+        "notes": "No secrets in code. Nonce validation (lines 1436-1472) prevents stale or forged verdicts. Gate policy enforcement prevents escalation (e.g., agent cannot self-advance in supervised mode). No shell injection vectors — all args are passed through jq or used as file path components after kebab-case validation upstream."
+      },
+      "api_contract": {
+        "score": "pass",
+        "notes": "Command syntax 'rws transition <name> <outcome> <decided_by> <evidence>' matches what all 7 step skills reference. Integration test at tests/integration/test-rws.sh:130 uses the same syntax: 'rws transition test-row pass manual \"test evidence\"'."
+      },
+      "test_coverage": {
+        "score": "pass",
+        "notes": "test_transition() at tests/integration/test-rws.sh:121-143 tests: (1) single-command syntax, (2) step advancement to research, (3) seed status sync to researching. Tests the happy path. Could benefit from additional negative tests (policy violation, final-step guard, fail outcome) but existing coverage validates the core contract."
+      },
+      "maintainability": {
+        "score": "pass",
+        "notes": "Function is well-structured with numbered steps (1-9), clear comments, and modular delegation to helper functions (record_gate, validate_step_artifacts, read_gate_policy, advance_step, sync_seed_status). Each helper is independently defined and testable. The gate-check hook (gate-check.sh) correctly explains why it returns 0 for all transitions — the validation is inside rws_transition() itself."
+      }
+    }
+  },
+  "cross_cutting": [
+    {
+      "file": ".claude/rules/cli-mediation.md",
+      "line": 11,
+      "issue": "Stale reference: 'rws transition --request ...' should be 'rws transition <name> <outcome> <decided_by> <evidence>'. This file is outside the deliverable's file_ownership but is an always-loaded ambient rule that directly instructs agents on transition syntax. Agents will see incorrect command format.",
+      "severity": "low",
+      "in_ownership": false
+    },
+    {
+      "file": "specialists/api-designer.md",
+      "line": 24,
+      "issue": "Stale reference: 'rws transition --request' in Idempotency awareness bullet. The example still describes the old two-phase command. Outside file_ownership but will confuse the api-designer specialist.",
+      "severity": "low",
+      "in_ownership": false
+    }
+  ],
+  "overall": "pass",
+  "corrections": 0,
+  "summary": "The transition-simplification deliverable fully meets all 5 acceptance criteria. rws_transition() is a clean single-command implementation that atomically records the gate, validates artifacts, enforces gate policy, validates verdict nonces, advances the step, and syncs seed status. The two-phase --request/--confirm ceremony and pending_approval state have been completely removed from all owned files. All 7 step skills reference the correct single-command syntax. Two stale references to the old syntax exist outside the deliverable's file_ownership (.claude/rules/cli-mediation.md and specialists/api-designer.md) — these are non-blocking but should be cleaned up in a separate pass."
+}

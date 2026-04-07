@@ -16,6 +16,12 @@ model_default: opus
 - `overall` is `pass` only when both phases pass.
 - Read `references/review-methodology.md` and `references/eval-dimensions.md`.
 
+### Step-Level Specialist Modifier
+When working with a specialist during review, emphasize acceptance criteria
+verification, anti-pattern detection per the specialist's table, and quality
+dimension coverage. The specialist's reasoning patterns apply to review
+judgments: what to check, what constitutes a violation, what quality bar to hold.
+
 ## Shared References
 - `skills/shared/red-flags.md` — before any verdict
 - `skills/shared/eval-protocol.md` — evaluator guidelines
@@ -54,6 +60,14 @@ Before completing review:
 4. Wait for user response. Do NOT proceed without explicit approval.
 5. On "yes": proceed with archive per `/furrow:archive` command.
 6. On "no": ask what needs to change, address feedback, return to step 2.
+
+### Consent Isolation
+Each question requiring user input is an independent decision — a "yes" to
+one question does NOT carry over to subsequent questions. Archive approval,
+TODO extraction, learning promotion, and any other user-facing decisions are
+separate consent gates. Do not interpret prior user responses as approval for
+unrelated subsequent decisions (e.g., "yes to archive" does not mean "yes to
+skip TODOs" or "yes to promote learnings").
 
 ## Learnings
 Append reusable insights to `.furrow/rows/{name}/learnings.jsonl`.

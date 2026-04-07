@@ -447,3 +447,18 @@ components:
   - path: specialists/merge-specialist.md
     exists_because: "Claude Code does not natively provide domain-specific agent priming for merge strategy"
     delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"
+  - path: specialists/frontend-designer.md
+    exists_because: "Claude Code does not natively provide domain-specific agent priming for frontend architecture"
+    delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"
+  - path: specialists/css-specialist.md
+    exists_because: "Claude Code does not natively provide domain-specific agent priming for CSS systems design"
+    delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"
+  - path: specialists/accessibility-auditor.md
+    exists_because: "Claude Code does not natively provide domain-specific agent priming for accessibility auditing"
+    delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"
+  - path: specialists/prompt-engineer.md
+    exists_because: "Claude Code does not natively provide domain-specific agent priming for prompt engineering"
+    delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"
+  - path: specialists/technical-writer.md
+    exists_because: "Claude Code does not natively provide domain-specific agent priming for technical documentation"
+    delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"

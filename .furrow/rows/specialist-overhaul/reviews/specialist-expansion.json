@@ -1,0 +1,64 @@
+{
+  "deliverable": "specialist-expansion",
+  "reviewer": "expansion-reviewer",
+  "cross_model": false,
+  "timestamp": "2026-04-07T15:30:00Z",
+  "phase_a": {
+    "verdict": "pass",
+    "acceptance_criteria": [
+      {
+        "criterion": "New frontend/design specialists created: frontend-designer.md, css-specialist.md, accessibility-auditor.md",
+        "met": true,
+        "evidence": "All three files exist at specialists/frontend-designer.md (53 lines), specialists/css-specialist.md (51 lines), specialists/accessibility-auditor.md (53 lines)"
+      },
+      {
+        "criterion": "New strategic specialists created: prompt-engineer.md, technical-writer.md",
+        "met": true,
+        "evidence": "Both files exist at specialists/prompt-engineer.md (53 lines), specialists/technical-writer.md (51 lines)"
+      },
+      {
+        "criterion": "All new specialists follow the template standard exactly — frontmatter, reasoning patterns, quality criteria, anti-patterns, context requirements",
+        "met": true,
+        "evidence": "All 5 files have correct YAML frontmatter (name, description, type: specialist, model_hint), and all required sections: Domain Expertise, How This Specialist Reasons (5-6 patterns each), When NOT to Use (names alternatives), Overlap Boundaries (names siblings), Quality Criteria, Anti-Patterns (4 rows each in table format), Context Requirements (Required + Helpful bullets). All under 80-line budget."
+      },
+      {
+        "criterion": "All new specialists registered in specialists/_meta.yaml with rationale entries in rationale.yaml",
+        "met": true,
+        "evidence": "_meta.yaml lines 67-85 contain entries for all 5 new specialists with file references and descriptions. rationale.yaml lines 442-456 contain exists_because/delete_when entries for all 5."
+      },
+      {
+        "criterion": "harness-engineer.md context requirements explicitly reference rationale.yaml for self-grounding",
+        "met": true,
+        "evidence": "harness-engineer.md line 61: 'Required: .furrow/almanac/rationale.yaml — consult before adding, modifying, or deleting components; verify exists_because justification and delete_when conditions'"
+      },
+      {
+        "criterion": "New specialists have domain-specific reasoning patterns, not generic role descriptions",
+        "met": true,
+        "evidence": "All 5 specialists encode actionable decision frameworks: frontend-designer uses latency class thresholds (<100ms/<300ms/>300ms), rendering strategy decision tree (per-deploy/per-request/per-user). css-specialist uses algorithm selection (grid vs flexbox vs flow), specificity budget metaphor with cascade layers. accessibility-auditor uses semantic-HTML-first heuristic with ARIA-as-repair, contrast ratio hard constraints (4.5:1/3:1). prompt-engineer maps instruction types to Furrow context layers (ambient/step/specialist), defines failure mode taxonomy (collision/gradient/decay/drift). technical-writer maps Diataxis modes to Furrow directories (references=reference, docs=explanation, skills=how-to)."
+      }
+    ]
+  },
+  "phase_b": {
+    "correctness": {
+      "score": "good",
+      "notes": "All reasoning patterns pass the encoded reasoning litmus test — removing them would change agent behavior. prompt-engineer and technical-writer are particularly strong with Furrow-specific grounding (context layers, gate evaluators, step sequence). Minor concern: the three frontend specialists (frontend-designer, css-specialist, accessibility-auditor) contain no Furrow-specific references in reasoning patterns or anti-patterns. The template exempts only 'language specialists' from the project-grounding requirement; these are domain specialists, not language specialists. In practice this is acceptable since the project does not have a frontend — grounding them to Furrow would be artificial — but it is a technical non-conformance with the template's normative requirements."
+    },
+    "maintainability": {
+      "score": "good",
+      "notes": "All files are well under the 80-line budget (51-53 lines each). Consistent structure makes bulk updates straightforward. Overlap Boundaries sections create a clear cross-reference network between the frontend trio and between the strategic pair."
+    },
+    "api_contract": {
+      "score": "good",
+      "notes": "All 5 files follow identical section structure matching the template. Frontmatter is consistent. model_hint values are reasonable: sonnet for frontend-designer, css-specialist, technical-writer; opus for accessibility-auditor and prompt-engineer. The opus choice for accessibility-auditor is debatable (WCAG/WAI-ARIA work is well-scoped, suggesting sonnet), but this is a minor judgment call."
+    },
+    "encoded_reasoning_quality": {
+      "score": "good",
+      "notes": "No restated best practices detected. Every reasoning pattern encodes a specific decision the model would not make by default: latency class assignment before implementation (frontend-designer), algorithm-first layout selection over property-guessing (css-specialist), ARIA-as-repair not ARIA-as-default (accessibility-auditor), structural constraint over behavioral instruction (prompt-engineer), Diataxis mode discipline with per-document classification (technical-writer). Anti-pattern tables provide clear Pattern/Wrong/Instead columns with actionable alternatives."
+    }
+  },
+  "overall": {
+    "verdict": "pass",
+    "summary": "All 6 acceptance criteria are met. Five new specialist files exist, follow the template standard, are registered in _meta.yaml and rationale.yaml, and contain domain-specific encoded reasoning. harness-engineer.md has the required rationale.yaml reference. One minor non-conformance noted: the three frontend specialists lack Furrow-specific project grounding per the template's normative requirements (which exempt only language specialists), but this is pragmatically appropriate since the project has no frontend code to ground them to.",
+    "corrections": 0
+  }
+}

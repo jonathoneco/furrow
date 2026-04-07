@@ -1,0 +1,39 @@
+{
+  "gate_type": "post_step",
+  "step": "decompose",
+  "verdict": "PASS",
+  "nonce": "8ded442d0863c1f3c3454603f3ebc325",
+  "dimensions": [
+    {
+      "name": "granularity",
+      "verdict": "PASS",
+      "evidence": "All 6 deliverables are single-sentence describable: gate-check-hook-fix (fix regex + check function in one hook file), specialist-reasoning-upgrade (audit and upgrade 15 specialists against template standard), review-consent-isolation (add consent isolation to skills/review.md), specialist-expansion (write 5 new specialists from research designs), enforcement-wiring (add specialist loading enforcement to 3 skill files), transition-simplification (collapse --request/--confirm into single command + update 7 step skills). Each is implementable in a single focused session."
+    },
+    {
+      "name": "parallelism",
+      "verdict": "PASS",
+      "evidence": "Wave 1 parallelizes gate-check-hook-fix and specialist-reasoning-upgrade (no file overlap). Wave 2 parallelizes review-consent-isolation and specialist-expansion (no file overlap). Wave 3 (enforcement-wiring) is sequential because it shares skills/review.md with wave 2's review-consent-isolation. Wave 4 (transition-simplification) is sequential because it touches files modified in waves 2 and 3. review-consent-isolation could theoretically be in wave 1 (no file overlap), but the team-plan justifies thematic grouping and the impact on critical path is negligible."
+    },
+    {
+      "name": "coverage",
+      "verdict": "PASS",
+      "evidence": "All 6 deliverables from definition.yaml are present in plan.json across 4 waves: gate-check-hook-fix (wave 1), specialist-reasoning-upgrade (wave 1), review-consent-isolation (wave 2), specialist-expansion (wave 2), enforcement-wiring (wave 3), transition-simplification (wave 4). Every AC from the definition has a corresponding deliverable assignment."
+    },
+    {
+      "name": "ownership-clarity",
+      "verdict": "PASS",
+      "evidence": "Within each wave, file_ownership globs are non-overlapping. Wave 1: bin/frw.d/hooks/gate-check.sh vs specialists/*.md + references/specialist-template.md. Wave 2: skills/review.md vs new specialist files + _meta.yaml + rationale.yaml + harness-engineer.md. Wave 3: skills/implement.md + skills/spec.md + skills/review.md (single deliverable). Wave 4: bin/rws + all skills/*.md (single deliverable). Cross-wave overlaps (skills/review.md in waves 2, 3, 4; specialists/_meta.yaml in waves 1 definition + wave 2) are resolved by wave ordering."
+    },
+    {
+      "name": "vertical-slicing",
+      "verdict": "PASS",
+      "evidence": "Each deliverable produces testable behavior or verifiable artifacts: gate-check-hook-fix (blocked transitions now succeed), specialist-reasoning-upgrade (upgraded specialist files verifiable against template standard), review-consent-isolation (consent isolation behavior in review step), specialist-expansion (5 new specialist files with _meta.yaml registration), enforcement-wiring (hard-stop on missing specialist loading), transition-simplification (single-command transitions replace two-phase ceremony)."
+    },
+    {
+      "name": "seed-sync",
+      "verdict": "PASS",
+      "evidence": "seed_id=furrow-fed8, seed status=\"decomposing\", current step=\"decompose\", expected status per mapping=\"decomposing\". Match confirmed. Seed is not closed (closed_at: null)."
+    }
+  ],
+  "evaluated_at": "2026-04-06T22:05:00Z"
+}
