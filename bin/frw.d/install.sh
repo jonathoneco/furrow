@@ -504,12 +504,17 @@ Run \`/furrow:doctor\` to check health. Run \`install.sh --check\` to verify ins
     echo "  note: no ~/.local/bin or ~/bin on PATH — add project bin/ to PATH manually"
   fi
 
-  # --- 8. Gitignore Furrow-managed symlinks ---
+  # --- 8. Gitignore Furrow-managed symlinks (skip for self-install) ---
   echo ""
   echo "--- Gitignore ---"
-  _gitignore="$_proj_root/.gitignore"
-  _marker="# furrow:managed"
-  _furrow_ignores="$_marker
+  _proj_root_abs="$(cd "$_proj_root" && pwd)"
+  _furrow_root_abs="$(cd "$FURROW_ROOT" && pwd)"
+  if [ "$_proj_root_abs" = "$_furrow_root_abs" ]; then
+    _skip ".gitignore (self-install: Furrow source repo owns these files)"
+  else
+    _gitignore="$_proj_root/.gitignore"
+    _marker="# furrow:managed"
+    _furrow_ignores="$_marker
 skills
 schemas
 evals
@@ -526,12 +531,13 @@ bin/alm
 .claude/rules/cli-mediation.md
 .claude/CLAUDE.md"
 
-  if [ -f "$_gitignore" ] && grep -q "$_marker" "$_gitignore" 2>/dev/null; then
-    _skip ".gitignore already has Furrow entries"
-  else
-    echo "" >> "$_gitignore"
-    echo "$_furrow_ignores" >> "$_gitignore"
-    _ok ".gitignore updated with Furrow-managed paths"
+    if [ -f "$_gitignore" ] && grep -q "$_marker" "$_gitignore" 2>/dev/null; then
+      _skip ".gitignore already has Furrow entries"
+    else
+      echo "" >> "$_gitignore"
+      echo "$_furrow_ignores" >> "$_gitignore"
+      _ok ".gitignore updated with Furrow-managed paths"
+    fi
   fi
 
   # --- Summary ---

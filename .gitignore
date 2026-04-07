@@ -14,20 +14,3 @@ __pycache__/
 *.swp
 *.swo
 *~
-
-# furrow:managed
-skills
-schemas
-evals
-specialists
-references
-adapters
-templates
-bin/sds
-bin/rws
-bin/alm
-.claude/commands/furrow:*
-.claude/commands/specialist:*
-.claude/commands/lib/
-.claude/rules/cli-mediation.md
-.claude/CLAUDE.md
