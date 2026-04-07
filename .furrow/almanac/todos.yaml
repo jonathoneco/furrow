@@ -1039,7 +1039,7 @@
     - skills/spec.md
     - bin/frw.d/hooks/
     - references/
-  status: active
+  status: done
 # --- Standalone: Rules Strategy ---
 - id: rules-strategy
   title: "Rules strategy — harness-scoped vs project-scoped .claude/rules/"
@@ -1068,7 +1068,7 @@
   files_touched:
     - .claude/rules/
     - install.sh
-  status: active
+  status: done
 # --- Standalone: Mine V1 Harness ---
 - id: mine-v1-harness
   title: "Mine v1 harness for learnings, insights, and research"

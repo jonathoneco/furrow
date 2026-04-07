@@ -21,6 +21,12 @@ dimensions:
     fail_criteria: "A contradiction exists between spec sections or with upstream artifacts"
     evidence_format: "Quote both sides of the contradiction"
 
+  - name: "test-scenario-coverage"
+    definition: "Whether test scenarios adequately exemplify the acceptance criteria"
+    pass_criteria: "Every non-trivial AC has at least one scenario with WHEN/THEN and a verification command. Trivially testable ACs may omit scenarios."
+    fail_criteria: "A non-trivial AC has no test scenario, or a scenario is vague (no observable outcome or verification command)"
+    evidence_format: "Name the AC missing a scenario, or quote the vague scenario"
+
   - name: "implementability"
     definition: "Whether a developer could implement from the spec without further clarification"
     pass_criteria: "Spec includes interface contracts, file locations, and behavior descriptions sufficient to begin implementation"

@@ -1,18 +1,19 @@
-# stop-ideation.sh — Validate section-by-section interaction during ideation
+# stop-ideation.sh — Validate definition completeness during ideation
 #
 # Hook: Stop (matcher: empty)
-# Checks the ideation agent presented definition sections
-# individually rather than batch-approving the entire definition.
+# Validates that definition.yaml has all required fields as a proxy for
+# section-by-section ideation completeness. Hooks cannot read conversation
+# history, so field presence is the enforcement mechanism.
 #
-# Checks for section markers: <!-- ideation:section:{name} -->
-# Required markers: objective, deliverables, context-pointers, constraints, gate-policy
+# Required fields: objective, deliverables (>=1), context_pointers (>=1),
+#   constraints, gate_policy
 #
-# In supervised/delegated mode: all 5 markers must be present.
-# In autonomous mode: marker check is skipped (evaluator validates instead).
+# In supervised/delegated mode: all fields must be present.
+# In autonomous mode: check is skipped (evaluator validates instead).
 #
 # Return codes:
 #   0 — valid (or not in ideation step, or autonomous mode)
-#   1 — missing section markers
+#   2 — missing required fields (blocking)
 
 hook_stop_ideation() {
   work_dir="$(find_focused_row)"
@@ -40,16 +41,48 @@ hook_stop_ideation() {
     return 0
   fi
 
-  # --- check for section markers in conversation context ---
-  # This hook validates that the agent emitted section markers.
-  # Since hooks cannot inspect conversation history directly, this
-  # checks if the definition.yaml has been written (proxy for completion).
-  # The actual marker enforcement is advisory via the skill instructions.
+  # --- validate definition.yaml has all required fields ---
+  # Hooks cannot read conversation history, so we validate the
+  # definition file as a proxy for ideation completeness.
 
   if [ ! -f "${def_file}" ]; then
     # Definition not yet written — ideation still in progress, no error
     return 0
   fi
 
-  echo "Ideation section markers validated"
+  if ! command -v yq > /dev/null 2>&1; then
+    echo "yq not available — skipping definition field validation" >&2
+    return 0
+  fi
+
+  missing=""
+
+  # Check scalar fields
+  for field in objective gate_policy; do
+    val="$(yq -r ".${field} // \"\"" "${def_file}" 2>/dev/null)" || val=""
+    if [ -z "${val}" ]; then
+      missing="${missing}  - ${field}\n"
+    fi
+  done
+
+  # Check array fields have >= 1 entry
+  for field in deliverables context_pointers; do
+    count="$(yq -r ".${field} | length" "${def_file}" 2>/dev/null)" || count="0"
+    if [ "${count}" -lt 1 ] 2>/dev/null; then
+      missing="${missing}  - ${field} (need >= 1 entry)\n"
+    fi
+  done
+
+  # Check constraints (should exist, can be scalar or array)
+  constraints="$(yq -r '.constraints // ""' "${def_file}" 2>/dev/null)" || constraints=""
+  if [ -z "${constraints}" ] || [ "${constraints}" = "null" ]; then
+    missing="${missing}  - constraints\n"
+  fi
+
+  if [ -n "${missing}" ]; then
+    printf "Ideation incomplete — definition.yaml missing required fields:\n%b" "${missing}" >&2
+    return 2
+  fi
+
+  return 0
 }

@@ -1060,6 +1060,9 @@ ${_usm_content}"
 
   mv "$_usm_tmp" "$_usm_summary_file"
 
+  # Update state.json timestamp to reflect summary change
+  update_state "$_usm_name" "." > /dev/null 2>&1 || true
+
   echo "Updated ${_usm_display} in summary.md"
 }
 
@@ -1652,6 +1655,11 @@ rws_complete_deliverable() {
   # Update state
   _cd_jq=".deliverables[\"${_cd_deliv}\"] = {\"status\":\"completed\",\"wave\":${_cd_wave},\"corrections\":0}"
   update_state "$_cd_name" "$_cd_jq"
+
+  # Regenerate summary to reflect deliverable completion
+  regenerate_summary "$_cd_name" || {
+    echo "Warning: summary regeneration failed" >&2
+  }
 
   echo "Deliverable completed: $_cd_deliv (wave $_cd_wave)"
 }
