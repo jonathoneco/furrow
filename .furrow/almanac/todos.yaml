@@ -1341,3 +1341,362 @@
   files_touched:
     - "bin/frw.d/hooks/gate-check.sh"
   status: active
+# --- Brain Dump 2: 2026-04-07 ---
+- id: ambient-context-promotion
+  title: "Ambient context promotion system — row→project→global knowledge graduation"
+  context: |
+    Learnings sit in row artifacts and never graduate. The harness needs a promotion
+    system across three scopes: row→project (CLAUDE.md, skills, furrow.yaml),
+    project→global (~/.claude/CLAUDE.md, shared rules, ~/.config/furrow/),
+    harness→harness (rationale.yaml, specialist templates).
+
+    Different promotions happen through different triggers: ad-hoc (todos created
+    during work), hindsight (reviewing decision logs post-row), automated (post-review
+    learnings promotion). Decision journaling captures reasoning for all significant
+    choices — not just disagreements — creating a decision log that informs future
+    triage and priority discovery.
+
+    Project manifest = rationale.yaml for consumer projects. Rather than denormalizing
+    state, explore whether a single "living docs" system can unify rationale, learnings,
+    and manifest. This requires deep exploration — different promotion types need
+    different mechanics.
+  work_needed: |
+    - Enumerate all promotion types and their natural triggers (ad-hoc, hindsight, automated, post-review)
+    - Design decision journaling: format, storage, when to capture, how to query
+    - Design promotion mechanics for each scope (row→project, project→global, harness→harness)
+    - Define project manifest format (rationale.yaml for consumer projects via frw install)
+    - Explore unified "living docs" system vs separate mechanisms per scope
+    - Wire alm promote (or equivalent) with configurable targets
+    - Consider ~/.config/furrow/ as the global promotion target
+  references:
+    - .furrow/almanac/rationale.yaml
+    - commands/lib/promote-learnings.sh
+    - commands/lib/promote-components.sh
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: medium
+  impact: high
+  effort: large
+  files_touched:
+    - .furrow/almanac/
+    - bin/alm
+    - commands/lib/
+  status: active
+- id: dual-review-and-specialist-delegation
+  title: "Dual-review at all steps + intent-based specialist auto-delegation"
+  context: |
+    Two coupled improvements:
+    1. Extend dual-reviewer protocol (fresh subagent + codex cross-model) to plan
+       and spec steps, not just review and ideate.
+    2. Intent-based specialist auto-delegation: the harness should infer which specialist
+       to load from the action context. If the user says "merge xyz", delegate to
+       merge-specialist. If spec'ing an LLM feature, load LLM specialist. Currently
+       specialists are planned in decompose but not enforced or auto-selected.
+       The mechanism should support a wide surface but ultimately be based on intent —
+       is there a specialist for this action/job? If so, use it.
+
+    New specialists needed: LLM/AI application specialist (per Kapil's feedback —
+    context window budgeting, structured output, retrieval strategies, multimodal
+    handling), test-driven specialist (thinks test-first).
+  work_needed: |
+    - Add dual-reviewer protocol to skills/plan.md and skills/spec.md
+    - Design intent-based specialist matching: how does the harness detect which specialist applies?
+    - Consider: definition.yaml tags, action keywords, file patterns, explicit user hints
+    - Create specialists/llm-specialist.md with AI application reasoning patterns
+    - Create specialists/test-driven-specialist.md with test-first reasoning patterns
+    - Wire specialist auto-loading into step skills (not just decompose/implement)
+    - Update references/specialist-template.md with auto-delegation conventions
+  references:
+    - skills/review.md
+    - skills/ideate.md
+    - skills/plan.md
+    - skills/spec.md
+    - specialists/
+    - references/specialist-template.md
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: medium
+  impact: high
+  effort: medium
+  files_touched:
+    - skills/plan.md
+    - skills/spec.md
+    - specialists/
+    - references/specialist-template.md
+  status: active
+- id: spike-row-mode
+  title: "Spike row mode — implementation-flavored research with throwaway prototypes"
+  context: |
+    Sometimes work requires a quick prototype to catch unexpected considerations or
+    clarify design/intent/constraints. These are messy and exploratory but highly
+    informative of what the real design should look like. A spike is an implementation
+    version of a research-row.
+
+    Key properties: fixed time-box, output is a decision not a deliverable, throwaway
+    code is expected, reduces uncertainty. Same 7-step enforcement (the strength of
+    Furrow), but scope narrows:
+    - Ideate: "what question does this spike answer?"
+    - Research + Plan: "fastest path to a working prototype"
+    - Spec: acceptance criteria = "we know enough when we can demonstrate X"
+    - Implement: throwaway code + findings document
+    - Review: did we answer the question? (not code quality)
+
+    Fallow (passive code slop detection) is related but separate — stays exploratory.
+    Row preparation (lighter pre-row investigation) is concerning because it weakens
+    enforcement. Spikes preserve enforcement while narrowing scope.
+  work_needed: |
+    - Design mode: spike in definition.yaml (alongside mode: code and mode: research)
+    - Define spike-specific gate criteria per step (question-focused, not artifact-focused)
+    - Add spike dimension files to evals/dimensions/
+    - Define time-box mechanism (session count? wall clock? honor system?)
+    - Design how spike findings feed into subsequent real row's ideation
+    - Consider spike-specific specialist modifier (exploratory mindset vs production quality)
+    - Prototype with a real spike to validate the pattern
+  references:
+    - skills/
+    - evals/dimensions/
+    - references/definition-shape.md
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: low
+  impact: high
+  effort: medium
+  files_touched:
+    - skills/
+    - evals/dimensions/
+    - references/definition-shape.md
+  status: active
+- id: triage-and-braindump-ideation
+  title: "Ideation loops in triage and brain dump commands"
+  context: |
+    Both /furrow:triage and the brain dump command should include back-and-forth
+    ideation before mechanical processing. This is the collaborate pattern from the
+    model routing TODO applied to planning commands.
+
+    Triage ideation: before grouping, ask about priorities, surface unclear items,
+    identify hidden dependencies, challenge assumptions about ordering, create
+    clarity where it's lacking.
+
+    Brain dump ideation: organize → ask clarifying questions → consolidate →
+    iterate back and forth → THEN create TODOs. Not mechanical TODO extraction.
+  work_needed: |
+    - Update commands/triage.md to add a collaboration step before phase grouping
+    - Create a brain dump command (commands/brain-dump.md or extend work-todos.md)
+    - Define the ideation protocol for both: what questions to ask, when to stop iterating
+    - Consider reusing the shared collaboration protocol from ideation steps
+    - Ensure the commands don't just extract TODOs mechanically
+  references:
+    - commands/triage.md
+    - commands/work-todos.md
+    - skills/ideate.md
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: medium
+  impact: high
+  effort: medium
+  files_touched:
+    - commands/triage.md
+    - commands/work-todos.md
+  status: active
+- id: furrow-next-phase-lifecycle
+  title: "furrow:next as full phase lifecycle — merge, update roadmap, handoff, launch"
+  context: |
+    /furrow:next currently only generates handoff prompts and offers to launch sessions
+    (steps 3-4). It should handle the full phase transition lifecycle:
+    1. Merge completed worktrees from previous phase (delegate to merge specialist)
+    2. Update roadmap status (mark phase done, update counts)
+    3. Generate handoff prompts for next phase
+    4. Launch sessions via frw launch-phase
+
+    Also: source_todo field exists in state.json/definition.yaml but /furrow:next
+    doesn't use it when generating handoff prompts. Wire it in for TODO traceability.
+  work_needed: |
+    - Add pre-launch phase: detect completed worktrees from previous phase
+    - Delegate merging to merge-specialist via frw launch-phase or a new frw merge-phase
+    - Auto-update roadmap.yaml and roadmap.md after merging (mark phase done, bump counts)
+    - Wire source_todo into handoff prompt generation
+    - Handle merge conflicts gracefully (present to user, don't auto-resolve)
+    - Update commands/next.md with the full lifecycle
+  references:
+    - commands/next.md
+    - bin/frw.d/scripts/launch-phase.sh
+    - bin/frw.d/scripts/merge-to-main.sh
+    - specialists/merge-specialist.md
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: medium
+  impact: high
+  effort: medium
+  files_touched:
+    - commands/next.md
+    - bin/frw.d/scripts/launch-phase.sh
+    - bin/frw.d/scripts/merge-to-main.sh
+  status: active
+- id: sprint-inspired-planning
+  title: "Sprint-inspired work planning — retros, velocity, multi-row coordination, observability"
+  context: |
+    Borrow sprint concepts as reasoning tools for work planning (not literal sprints):
+    - Phase retros: after each phase, capture what worked, what didn't, what to change
+    - Velocity signals: sessions is the wrong metric (most rows take one session).
+      Need better signals — perhaps token usage, deliverable count, correction count.
+    - Multi-row coordination: parallel workstreams need to coordinate on shared schema,
+      API contracts, data model changes (Kapil's feedback)
+    - Observability: "understand at a glance what's been done, what's blocked, what
+      decisions were made" across multi-session rows and compaction events (Kapil)
+    - Context budget: strategies for interconnected codebases where 300 lines of
+      injected context doesn't capture cross-cutting concerns (Kapil)
+
+    NOT implementing: quick-start path / step skipping. Furrow's strength comes from
+    enforcement; weakening it undermines the value proposition.
+  work_needed: |
+    - Design phase retro format and where it lives (almanac? roadmap companion?)
+    - Explore better velocity metrics than session count
+    - Design multi-row coordination primitives (shared contracts, cross-row seeds)
+    - Improve observability: rws status enhancements, summary.md quality after compaction
+    - Research context budget strategies for interconnected codebases
+    - Incorporate into /furrow:triage as optional retro step
+  references:
+    - .furrow/almanac/roadmap.yaml
+    - commands/triage.md
+    - skills/work-context.md
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: low
+  impact: high
+  effort: large
+  files_touched:
+    - .furrow/almanac/
+    - commands/triage.md
+    - bin/rws
+  status: active
+- id: collaborative-surfaces
+  title: "Document-based collaboration — markdown + comment threading, Notion integration"
+  context: |
+    Longer-term vision for collaboration surfaces beyond the chat stream. Work
+    back-and-forth happens on a shared document where the user comments and the
+    agent iterates on the document.
+
+    Two surfaces:
+    - Surface 1: Claude Code + local markdown file with comment markers. Agent
+      listens for comments and iterates on the document.
+    - Surface 2: Notion + hosted agent with threaded comments.
+
+    Research Antigravity's approach (markdown interface with comment threading that
+    the model responds to by iterating on the document).
+
+    The user is already working this way informally (copying outputs, annotating
+    with inline comments). Early version could formalize the markdown comment pattern.
+    Depends on orchestrator architecture landing first.
+  work_needed: |
+    - Research Antigravity and similar doc-collaboration approaches
+    - Design markdown comment protocol (comment markers, agent response conventions)
+    - Prototype early version: markdown file with comment markers in Claude Code
+    - Evaluate Notion API for threaded comment listening + document editing
+    - Define how this integrates with the orchestrator collaborate phase
+    - Consider Agent SDK adapter for the Notion-hosted surface
+  references:
+    - skills/ideate.md
+    - adapters/agent-sdk/
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: low
+  impact: medium
+  effort: large
+  files_touched:
+    - skills/
+    - adapters/
+  status: active
+- id: config-cleanup
+  title: "Configuration cleanup — move furrow.yaml, add ~/.config/furrow/, wire source_todo"
+  context: |
+    Three config issues:
+    1. furrow.yaml lives in .claude/ but it's Furrow config, not Claude Code config.
+       Move to .furrow/furrow.yaml.
+    2. ~/.config/furrow/ for cross-project config: global defaults, shared specialists,
+       promotion targets. Lightens per-project install load.
+    3. source_todo field exists in state.json/definition.yaml but /furrow:next doesn't
+       use it in handoff prompts. Wire it in for traceability.
+  work_needed: |
+    - Move furrow.yaml from .claude/ to .furrow/
+    - Update all references to furrow.yaml path (bin/frw, install.sh, skills, commands)
+    - Design ~/.config/furrow/ structure (global defaults, shared config)
+    - Update frw install to read global config as fallback
+    - Wire source_todo into /furrow:next handoff prompt generation
+    - Migration path for existing installs
+  references:
+    - .claude/furrow.yaml
+    - bin/frw.d/install.sh
+    - commands/next.md
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: medium
+  impact: medium
+  effort: small
+  files_touched:
+    - .claude/furrow.yaml
+    - bin/frw.d/install.sh
+    - bin/frw
+    - commands/next.md
+  status: active
+- id: blocking-stop-hooks
+  title: "Blocking stop hooks + auto-TODO on harness errors"
+  context: |
+    Stop hooks currently exit 0 with stderr text — the model may not act on advisory
+    output. The quality-and-rules branch added blocking behavior to PreToolUse hooks
+    and rules, but stop hooks were NOT converted to blocking (verified: validate-summary.sh
+    and stop-ideation.sh have no exit 2 paths).
+
+    Additionally, when a hook or CLI fails in a consumer project, there's no mechanism
+    to auto-create a TODO in Furrow's almanac with the error context. This requires
+    user confirmation to describe the issue but the pipeline should be automated.
+  work_needed: |
+    - Convert stop hooks (validate-summary.sh, stop-ideation.sh) to exit 2 for real issues
+    - Define which stop hook conditions are blocking vs advisory
+    - Design auto-TODO pipeline: hook failure → structured error → user confirms → TODO created
+    - Wire into alm or a new frw error-report command
+    - Test that blocking stop hooks actually prevent session end in Claude Code
+  references:
+    - bin/frw.d/hooks/validate-summary.sh
+    - bin/frw.d/hooks/stop-ideation.sh
+    - bin/alm
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: medium
+  impact: medium
+  effort: small
+  files_touched:
+    - bin/frw.d/hooks/validate-summary.sh
+    - bin/frw.d/hooks/stop-ideation.sh
+  status: active
+- id: furrow-tui-dashboard
+  title: "Furrow TUI / agent-dashboard integration"
+  context: |
+    Terminal UI for monitoring: active rows, step progress, agent status, seed graph,
+    token usage. Could integrate with the existing agent-dashboard project at
+    ../agent-dashboard. Pie in the sky but addresses the observability gap
+    (Kapil: "understand at a glance what's been done, what's blocked, what decisions
+    were made").
+  work_needed: |
+    - Evaluate agent-dashboard for Furrow integration points
+    - Design TUI layout: row status, step progress, agent tree, seed graph
+    - Consider rws status --tui as the entry point
+    - Explore whether this is a separate tool or an extension of agent-dashboard
+  references:
+    - bin/rws
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: low
+  impact: medium
+  effort: large
+  files_touched: []
+  status: active
