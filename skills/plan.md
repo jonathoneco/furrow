@@ -37,6 +37,21 @@ Record decisions using `skills/shared/decision-format.md`. Don't assume — ask.
 
 Mid-step iteration is expected; `step_status` remains `in_progress` throughout.
 
+### Step-Level Specialist Modifier
+When working with a specialist during planning, emphasize architectural framing
+over implementation detail. The specialist should reason about component boundaries,
+dependency direction, and trade-off analysis. Prefer options analysis (A vs B
+with trade-offs stated) over prescriptive solutions. The specialist's domain
+expertise applies to architecture decisions: what interfaces exist, what coupling
+to accept, what patterns to follow.
+
+## Agent Dispatch Metadata
+- **Dispatch pattern**: Optional — codebase exploration agent for architecture investigation
+- **Agent model**: sonnet (structured codebase reading, not architectural reasoning)
+- **Context to agent**: Exploration question, file/symbol targets, research findings summary
+- **Context excluded**: Trade-off discussions, risk tolerance decisions
+- **Returns**: Codebase findings (file structures, patterns, dependencies)
+
 ## Shared References
 Read these when relevant to your current action:
 - `skills/shared/red-flags.md` — before finalizing plan

@@ -25,6 +25,13 @@ verification, anti-pattern detection per the specialist's table, and quality
 dimension coverage. The specialist's reasoning patterns apply to review
 judgments: what to check, what constitutes a violation, what quality bar to hold.
 
+## Agent Dispatch Metadata
+- **Dispatch pattern**: Phase B isolated evaluators (fresh Claude + cross-model)
+- **Agent model**: opus (quality judgment requires deep reasoning)
+- **Context to agent**: Review prompt template, artifact paths, eval dimensions ONLY
+- **Context excluded**: summary.md, state.json, conversation history, CLAUDE.md (generator-evaluator separation)
+- **Returns**: Per-deliverable review verdict with dimension scores
+
 ## Shared References
 - `skills/shared/red-flags.md` — before any verdict
 - `skills/shared/eval-protocol.md` — evaluator guidelines

@@ -48,6 +48,13 @@ correctness, testability, and adherence to the spec over exploratory design.
 The specialist's reasoning patterns apply to implementation decisions: which
 pattern to use, how to structure the code, what anti-patterns to avoid.
 
+## Agent Dispatch Metadata
+- **Dispatch pattern**: Specialist agents per deliverable per wave (plan.json-driven)
+- **Agent model**: Per specialist model_hint (see references/model-routing.md)
+- **Context to agent**: Specialist template, spec for deliverable, file ownership globs, summary.md, definition.yaml ACs. Curate per specialist Context Requirements.
+- **Context excluded**: Other waves' WIP, orchestrator conversation, state.json
+- **Returns**: Implemented code/artifacts within file_ownership scope
+
 ## Team Planning
 Write `team-plan.md` if not created during decompose. Ownership: each
 specialist works ONLY within `plan.json` globs (no overlap within a wave).

@@ -118,6 +118,27 @@ belongs where. This prevents duplicate or contradictory guidance.
 5. Specialist works within its file ownership boundaries.
 6. `review` step evaluates the specialist's output.
 
+## Step-Level Mode Overlays
+
+Step skills include a `### Step-Level Specialist Modifier` section that adjusts how
+specialists reason during that step. The overlay does not change the specialist's
+domain — it shifts emphasis:
+
+| Step | Emphasis | De-emphasis |
+|------|----------|-------------|
+| research | Investigation breadth, source triangulation | Single-approach depth |
+| plan | Architectural framing, trade-off analysis | Implementation detail |
+| spec | Contract completeness, boundary definition | Implementation pragmatism |
+| decompose | Wave strategy, dependency ordering | Implementation detail |
+| implement | Incremental correctness, testability | Exploratory design |
+| review | AC verification, anti-pattern detection | Implementation alternatives |
+
+Mode overlays interact with model_hint: an opus specialist retains its opus model
+regardless of step. The overlay changes reasoning emphasis, not model selection.
+
+When authoring a new specialist, you do NOT need to write step-specific content.
+The step skills own the mode overlays. The specialist owns domain reasoning.
+
 ## Naming Convention
 
 Specialist types use kebab-case: `api-designer`, `auth-specialist`,

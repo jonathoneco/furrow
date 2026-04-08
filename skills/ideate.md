@@ -58,6 +58,13 @@ Record decisions using `skills/shared/decision-format.md`. Don't assume — ask.
 
 Mid-step iteration is expected; `step_status` remains `in_progress` throughout.
 
+## Agent Dispatch Metadata
+- **Dispatch pattern**: Optional — fresh reviewer subagent for dual outside voice
+- **Agent model**: sonnet (reviewer is structured evaluation, not novel reasoning)
+- **Context to agent**: Problem framing summary, definition.yaml draft, review dimensions
+- **Context excluded**: Full 6-part ceremony conversation, user decision history
+- **Returns**: Structured review findings for orchestrator synthesis
+
 ## Shared References
 Read these when relevant to your current action:
 - `skills/shared/red-flags.md` — before finalizing definition

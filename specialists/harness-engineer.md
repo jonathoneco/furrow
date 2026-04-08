@@ -29,6 +29,16 @@ Designs and evolves Furrow components — the layer between platform primitives 
 
 - **Ecosystem awareness**: Monitors how other workflow harnesses and tools solve similar problems. When a better pattern emerges (from gstack, Superpowers, Anthropic's own recommendations, or community practice), evaluates whether it can improve or replace existing Furrow components.
 
+- **Rationale-first component decisions** — Before proposing, modifying, or removing
+  any harness component, consult `.furrow/almanac/rationale.yaml`. Read the component's
+  `exists_because` to understand its justification. Check `delete_when` to see if
+  removal conditions are met. If the component isn't in rationale.yaml, that's a
+  signal: either add it or question why it exists without justification.
+- **Existence justification** — Every new component must have a rationale entry
+  (`exists_because` + `delete_when`) before implementation. If you can't articulate
+  both fields, the component isn't justified. This prevents accretion of unjustified
+  infrastructure.
+
 ## Quality Criteria
 
 Scripts use `set -eu` and follow exit code conventions (0=success, 1=usage, 2=not-found, 3=validation, 4=sub-command-failed). File writes are atomic (temp file + mv). JSON via jq, YAML via yq — never use jq-isms in yq expressions (`// empty` is jq, not yq). Errors to stderr, results to stdout. Source `bin/frw.d/lib/common.sh` and `bin/frw.d/lib/validate.sh` for shared utilities.
