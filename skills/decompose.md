@@ -17,6 +17,18 @@ model_default: sonnet
 - Read `summary.md` for spec context.
 - Prefer vertical slices (each deliverable is independently testable). See red-flags.md and the `vertical-slicing` eval dimension.
 
+### Step-Level Specialist Modifier
+When working with a specialist during decomposition, emphasize wave strategy,
+dependency ordering, and file ownership scoping. The specialist should reason
+about parallelism opportunities and minimize cross-deliverable coupling. The
+specialist's domain expertise applies to scope decisions: what belongs together,
+what can run concurrently, what order minimizes rework.
+
+## Agent Dispatch Metadata
+- **Dispatch pattern**: None — orchestrator writes plan.json and team-plan.md directly
+- **Agent model**: N/A
+- **Rationale**: Decomposition is a small coordination task that reads specs and produces a wave map. Dispatching an agent adds overhead without value.
+
 ## Shared References
 - `skills/shared/red-flags.md` — before finalizing decomposition
 - `skills/shared/git-conventions.md` — before any commit

@@ -43,6 +43,13 @@ Record decisions using `skills/shared/decision-format.md`. Don't assume — ask.
 
 Mid-step iteration is expected; `step_status` remains `in_progress` throughout.
 
+## Agent Dispatch Metadata
+- **Dispatch pattern**: Parallel agents per component (multi-deliverable)
+- **Agent model**: sonnet (structured spec writing from plan decisions)
+- **Context to agent**: Plan decisions for this component, definition.yaml ACs, relevant research findings, specialist template (if assigned)
+- **Context excluded**: Other components' specs, plan trade-off discussions
+- **Returns**: Component spec with refined ACs and test scenarios
+
 ## Shared References
 Read these when relevant to your current action:
 - `skills/shared/red-flags.md` — before finalizing specs

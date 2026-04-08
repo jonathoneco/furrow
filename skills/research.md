@@ -38,6 +38,20 @@ Record decisions using `skills/shared/decision-format.md`. Don't assume — ask.
 
 Mid-step iteration is expected; `step_status` remains `in_progress` throughout.
 
+### Step-Level Specialist Modifier
+When working with a specialist during research, emphasize investigation breadth
+and source triangulation over depth in any single approach. The specialist should
+identify what is unknown and what claims require primary source verification.
+The specialist's domain expertise applies to knowing where to look and what to
+distrust in secondary sources.
+
+## Agent Dispatch Metadata
+- **Dispatch pattern**: Parallel agents per research topic
+- **Agent model**: opus (multi-source investigation requires deep reasoning)
+- **Context to agent**: Research question, definition.yaml deliverable names, source hierarchy rules, summary.md context from ideation
+- **Context excluded**: Source-trust decisions from other topics, user validation conversations
+- **Returns**: Per-topic research document with Sources Consulted section
+
 ## Shared References
 Read these when relevant to your current action:
 - `skills/shared/red-flags.md` — before concluding research

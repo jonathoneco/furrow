@@ -53,3 +53,22 @@ Between waves:
 ## Anti-Pattern: Context Leakage
 
 Never pass the lead agent's full conversation to a sub-agent. The lead's context contains decision-making, exploration, and dead ends that are noise for the specialist. Curate, do not copy.
+
+## Orchestrator/Agent Boundary
+
+The orchestrator session and step agents have distinct roles:
+
+- **Orchestrator** (main session): owns user collaboration, step transitions,
+  and dispatch decisions. Runs at opus. Reads `skills/orchestrator.md`.
+- **Step agents** (dispatched): own execution — producing artifacts, writing code,
+  investigating topics. Run at the model specified by dispatch table. Read step
+  skill as standalone instructions.
+
+The boundary rule: the orchestrator does not produce deliverable artifacts.
+It dispatches agents who produce them. The orchestrator presents results to the
+user, iterates on decisions, and dispatches again if needed.
+
+Step agents do not:
+- Reference the orchestrator skill or dispatch protocol
+- Know they were dispatched (they execute step instructions as if they are the session)
+- Access the orchestrator's conversation history or decision-making context
