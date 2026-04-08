@@ -1,0 +1,64 @@
+objective: |
+  Implement orchestrator + step agent architecture with collaborate/execute split,
+  per-step model routing (Opus for reasoning, Sonnet for execution, specialist
+  hints as override), and specialist step mode overlays. The orchestrator stays
+  Opus and owns all user collaboration — it never produces artifacts directly.
+  Step agents do the execution work, receiving curated context and mode directives.
+
+deliverables:
+  - name: orchestrator-architecture
+    acceptance_criteria:
+      - "skills/orchestrator.md created: dispatch loop, collaboration protocol, context curation, no-artifact-production boundary"
+      - "skills/shared/context-isolation.md updated: orchestrator/agent boundary, context flow spec, what crosses and what doesn't"
+      - "All 7 step skills audited: inline collaboration removed, agent dispatch metadata added, model routing specified"
+      - "references/model-routing.md created: model resolution order, per-step model rationale, override rules"
+      - "Orchestrator defines multi-round dispatch/receive within steps (not one-shot)"
+      - "Orchestrator explicitly blocked from inline step work — no implementing findings, no artifact production"
+      - "Step skills work standalone when loaded into dispatched agents (no orchestrator-session dependencies)"
+    specialist: systems-architect
+    file_ownership:
+      - "skills/orchestrator.md"
+      - "skills/shared/context-isolation.md"
+      - "references/model-routing.md"
+
+  - name: specialist-step-modes
+    acceptance_criteria:
+      - "Each step skill dispatching specialists includes a mode overlay section with step-appropriate reasoning directives"
+      - "Mode overlays are per-step generics (~5-6 total), not per-specialist-per-step"
+      - "specialists/harness-engineer.md updated: references rationale.yaml for first-principles Furrow reasoning"
+      - "references/specialist-template.md updated: documents mode overlay convention and model hint interaction"
+      - "specialists/_meta.yaml audited: model_hint values consistent with new routing architecture"
+    specialist: harness-engineer
+    depends_on: [orchestrator-architecture]
+    file_ownership:
+      - "specialists/harness-engineer.md"
+      - "references/specialist-template.md"
+      - "specialists/_meta.yaml"
+
+context_pointers:
+  - path: skills/shared/context-isolation.md
+    note: "Current isolation rules — primary edit target"
+  - path: skills/
+    note: "All 7 step skills — audit and refactor"
+  - path: specialists/
+    note: "21 specialists + _meta.yaml — audit model_hint"
+  - path: specialists/harness-engineer.md
+    note: "Rationale grounding target"
+  - path: references/specialist-template.md
+    note: "Template documentation update"
+  - path: .furrow/almanac/rationale.yaml
+    note: "Source for harness-engineer grounding"
+  - path: bin/frw.d/scripts/launch-phase.sh
+    note: "Verify no model routing conflicts"
+  - path: .furrow/almanac/todos.yaml
+    note: "Source TODOs: per-step-model-routing, specialist-expansion"
+
+constraints:
+  - "Orchestrator must never produce deliverable artifacts directly — no-file-writes boundary"
+  - "Mode overlays are per-step generics, not per-specialist-per-step (max ~6 overlays)"
+  - "Static model routing via step defaults + specialist hints — no dynamic complexity analysis"
+  - "Step skills must work standalone when loaded into dispatched agents (no session dependencies)"
+  - "Existing specialist content (domain reasoning, anti-patterns) is not modified — only model_hint audit"
+  - "Context budget: orchestrator.md <= 100 lines, mode overlays <= 15 lines per step"
+
+gate_policy: supervised

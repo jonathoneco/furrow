@@ -1,0 +1,90 @@
+{
+  "name": "model-routing-and-specialists",
+  "title": "Orchestrator + step agent architecture, collaborate/execute split, specialist step modes",
+  "description": "Orchestrator + step agent architecture, collaborate/execute split, specialist step modes",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "orchestrator-architecture": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "specialist-step-modes": {
+      "status": "completed",
+      "wave": 2,
+      "corrections": 0
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Definition validated. Orchestrator+step-agent architecture with collaborate/execute split, per-step model routing, specialist mode overlays. Fresh-context review raised 5 concerns — all addressed in definition constraints. User approved all sections.",
+      "timestamp": "2026-04-08T14:58:46Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Research complete: 4 parallel agents produced research/ directory with step-skill-audit.md, dispatch-patterns.md, model-routing-audit.md, downstream-effects.md, synthesis.md. All ideation open questions resolved. Model routing consistent (no changes needed). Collaborate/execute split mapped per step. Implement.md dispatch pattern identified as generalizable template. Mode overlays needed for 3 steps (plan/spec/decompose). No infrastructure changes required.",
+      "timestamp": "2026-04-08T16:12:09Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Plan complete: 5 architecture decisions (AD-1 through AD-5), plan.json with 2 waves (orchestrator-architecture → specialist-step-modes), team-plan.md with coordination strategy. Option A approved (lean orchestrator.md + reference doc).",
+      "timestamp": "2026-04-08T17:19:02Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Specs complete: 2 implementation-ready specs in specs/ directory. orchestrator-architecture: 4 artifacts with exact content drafts (orchestrator.md, context-isolation.md, model-routing.md, 7 step skill refactors). specialist-step-modes: 4 artifacts (3 new mode overlays, harness-engineer grounding, specialist-template.md update, _meta.yaml audit). All with insertion points, test scenarios, refined ACs.",
+      "timestamp": "2026-04-08T17:27:38Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Decompose complete: plan.json validated with 2 sequential waves. Wave 1: orchestrator-architecture (systems-architect, opus, 10 files). Wave 2: specialist-step-modes (harness-engineer, sonnet, 6 files). File ownership adjusted for wave 2 mode overlay writes. Inspection gate defined between waves.",
+      "timestamp": "2026-04-08T17:29:09Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Implementation complete: Wave 1 (orchestrator-architecture) produced orchestrator.md (70 lines), context-isolation.md updated, model-routing.md (41 lines), 7 step skills with Agent Dispatch Metadata. Wave 2 (specialist-step-modes) added 3 mode overlays, 2 harness-engineer reasoning patterns, specialist-template.md docs, _meta.yaml audit passed. All ACs verified.",
+      "timestamp": "2026-04-08T17:40:41Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Implementation committed (35c2275): 12 files, 230 insertions. 2 new files (orchestrator.md, model-routing.md), 10 modified. Wave 1 + Wave 2 both complete, all ACs verified.",
+      "timestamp": "2026-04-08T17:41:45Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/model-routing-and-specialists",
+  "mode": "code",
+  "base_commit": "b81314da9d2627eb20f63d4fda6d2de96ec26373",
+  "seed_id": "furrow-2547",
+  "epic_seed_id": null,
+  "created_at": "2026-04-07T21:03:47Z",
+  "updated_at": "2026-04-08T17:49:11Z",
+  "archived_at": "2026-04-08T17:49:11Z",
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}

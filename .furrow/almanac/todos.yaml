@@ -931,7 +931,7 @@
   depends_on:
     - specialist-encoded-reasoning # inferred: foundational — format/reasoning first, then expand
     - sonnet-model-routing # inferred: merge-implication — model routing affects specialist design
-  status: active
+  status: done
 # --- Bundle C: Almanac Graph Primitives ---
 - id: almanac-graph-primitives
   title: "Almanac calls seeds for graph management — triage, roadmap, and planning consume the seed graph"
@@ -1250,7 +1250,7 @@
     - specialists/
     - bin/frw.d/scripts/launch-phase.sh
     - bin/rws
-  status: active
+  status: done
 # --- Standalone: Specialist Quality Validation ---
 - id: specialist-quality-validation
   title: "Establish a validation mechanism for specialist template quality"
