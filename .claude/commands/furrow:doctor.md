@@ -1,1 +1,1 @@
-../../commands/doctor.md
+../../../furrow/commands/doctor.md

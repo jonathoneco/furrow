@@ -1,1 +1,1 @@
-../../commands/checkpoint.md
+../../../furrow/commands/checkpoint.md

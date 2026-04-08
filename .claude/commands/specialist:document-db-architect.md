@@ -1,1 +1,1 @@
-../../specialists/document-db-architect.md
+../../../furrow/specialists/document-db-architect.md

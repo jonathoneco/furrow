@@ -1,1 +1,1 @@
-../../specialists/typescript-specialist.md
+../../../furrow/specialists/typescript-specialist.md

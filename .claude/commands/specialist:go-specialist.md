@@ -1,1 +1,1 @@
-../../specialists/go-specialist.md
+../../../furrow/specialists/go-specialist.md

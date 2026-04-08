@@ -1,1 +1,1 @@
-../../commands/reground.md
+../../../furrow/commands/reground.md

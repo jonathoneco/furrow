@@ -1,1 +1,1 @@
-../../../commands/lib/promote-learnings.sh
+../../../../furrow/commands/lib/promote-learnings.sh

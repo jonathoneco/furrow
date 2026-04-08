@@ -1,1 +1,1 @@
-../../commands/next.md
+../../../furrow/commands/next.md

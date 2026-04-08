@@ -1,1 +1,1 @@
-../../specialists/migration-strategist.md
+../../../furrow/specialists/migration-strategist.md
