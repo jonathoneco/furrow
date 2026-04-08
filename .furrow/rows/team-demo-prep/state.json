@@ -2,8 +2,8 @@
   "name": "team-demo-prep",
   "title": "Prepare demo folder and script for team demo of tmux and furrow workflows",
   "description": "Prepare demo folder and script for team demo of tmux and furrow workflows",
-  "step": "implement",
-  "step_status": "not_started",
+  "step": "review",
+  "step_status": "completed",
   "steps_sequence": [
     "ideate",
     "research",
@@ -74,6 +74,13 @@
       "decided_by": "manual",
       "evidence": "Implementation complete. 2/2 deliverables done. DEMO.md created with full outline. Pre-staged outputs captured. All ACs verified.",
       "timestamp": "2026-04-08T16:22:32Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Implementation complete. 2/2 deliverables. Committed as d594160.",
+      "timestamp": "2026-04-08T16:22:46Z"
     }
   ],
   "force_stop_at": null,
@@ -83,8 +90,8 @@
   "seed_id": "furrow-461a",
   "epic_seed_id": null,
   "created_at": "2026-04-07T21:36:02Z",
-  "updated_at": "2026-04-08T16:22:32Z",
-  "archived_at": null,
+  "updated_at": "2026-04-08T17:04:42Z",
+  "archived_at": "2026-04-08T17:04:42Z",
   "source_todo": null,
   "gate_policy_init": "supervised"
 }

@@ -4,7 +4,7 @@
 Prepare a 10-minute team demo of the development environment (tmux integrations + furrow workflow) using this repo's real state, with a structured demo script and pre-staged outputs so sequential operations don't require live waiting.
 
 ## Current State
-Step: implement | Status: not_started
+Step: review | Status: completed
 Deliverables: 2/2
 Mode: code
 
@@ -23,18 +23,22 @@ Mode: code
 - **plan->spec**: pass — Plan complete with plan.json. Two waves: wave 1 demo-script (DEMO.md), wave 2 pre-staged-outputs (.furrow/demo/). Sequential execution, single specialist.
 - **spec->decompose**: pass — Specs complete. demo-script: 5 ACs with test scenarios. pre-staged-outputs: 3 ACs with verification commands. No open questions.
 - **decompose->implement**: pass — Decompose complete. plan.json: 2 waves sequential. team-plan.md: single agent, no parallel dispatch. Wave 1: DEMO.md, Wave 2: pre-staged outputs.
+- **implement->review**: pass — Implementation complete. 2/2 deliverables done. DEMO.md created with full outline. Pre-staged outputs captured. All ACs verified.
+- **implement->review**: pass — Implementation complete. 2/2 deliverables. Committed as d594160.
 
 ## Context Budget
 Measurement unavailable
 
 ## Key Findings
-- DEMO.md created at project root with full 10-min demo outline
-- Pre-staged furrow:next output saved to .furrow/demo/next-prompt.txt
-- roadmap.md verified (204 lines), todos.yaml verified with target todo
-- All ACs verified: prep checklist (3 items), keybindings, commands, narrative framing
-- Note: alm next has a bug (.work_units vs .rows in jq) — output was manually constructed from roadmap.yaml data
+- Phase A: all artifact checks pass for both deliverables
+- Phase B: demo-script PASS_WITH_NOTES (roadmap cat bounded with head -40, fixed), pre-staged-outputs PASS
+- All ACs verified, file paths and keybindings confirmed accurate
+- One fix applied: bounded roadmap.md display to prevent scroll during demo
+
 ## Open Questions
 (none)
+
 ## Recommendations
-- Rehearse once with stopwatch before the demo
-- Consider filing a bug for alm next .work_units/.rows mismatch
+- Rehearse once with timer before the demo
+- Consider filing a bug for alm next .work_units/.rows field mismatch
+- Scroll through DEMO.md once to get comfortable with the flow
