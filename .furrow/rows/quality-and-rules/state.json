@@ -1,0 +1,110 @@
+{
+  "name": "quality-and-rules",
+  "title": "PostToolUse hooks, test cases from spec, naming guidance, and rules strategy",
+  "description": "PostToolUse hooks, test cases from spec, naming guidance, and rules strategy",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "stop-hook-exit-codes": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "cli-post-actions": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "harness-rules": {
+      "status": "completed",
+      "wave": 2,
+      "corrections": 0
+    },
+    "rules-strategy-doc": {
+      "status": "completed",
+      "wave": 2,
+      "corrections": 0
+    },
+    "spec-test-scenarios": {
+      "status": "completed",
+      "wave": 3,
+      "corrections": 0
+    },
+    "row-naming-guidance": {
+      "status": "completed",
+      "wave": 3,
+      "corrections": 0
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Definition validated, cross-model review complete, all gate dimensions PASS",
+      "timestamp": "2026-04-06T20:51:19Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Research complete — all ideation questions resolved, implementation points identified, 2 remaining open questions for plan step",
+      "timestamp": "2026-04-06T20:56:16Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Plan complete — 3-wave execution, 5 architecture decisions, all questions resolved, plan.json written",
+      "timestamp": "2026-04-06T20:58:20Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "6 specs written with refined ACs, test scenarios, implementation notes, and dependency tracking",
+      "timestamp": "2026-04-06T21:01:37Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Decomposition complete — plan.json verified, team-plan.md written, 3 waves with no file overlap",
+      "timestamp": "2026-04-06T21:03:11Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 6 deliverables implemented, 0 corrections, ambient budget at 114/120 lines",
+      "timestamp": "2026-04-06T21:09:31Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 6 deliverables implemented and committed (9a4ba60), 0 corrections",
+      "timestamp": "2026-04-06T21:09:59Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/quality-and-rules",
+  "mode": "code",
+  "base_commit": "ffef8768ff910b2c8a45c2dce3b5197959ea47df",
+  "seed_id": "furrow-94b3",
+  "epic_seed_id": null,
+  "created_at": "2026-04-06T19:55:41Z",
+  "updated_at": "2026-04-06T21:29:13Z",
+  "archived_at": "2026-04-06T21:29:13Z",
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}

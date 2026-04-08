@@ -1,0 +1,28 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": ["demo-script"],
+      "assignments": {
+        "demo-script": {
+          "specialist": "docs-writer",
+          "file_ownership": ["DEMO.md"],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 2,
+      "deliverables": ["pre-staged-outputs"],
+      "assignments": {
+        "pre-staged-outputs": {
+          "specialist": "docs-writer",
+          "file_ownership": [".furrow/demo/**"],
+          "skills": []
+        }
+      }
+    }
+  ],
+  "created_at": "2026-04-08T15:10:00Z",
+  "created_by": "agent"
+}

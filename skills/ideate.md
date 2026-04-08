@@ -13,6 +13,11 @@ model_default: sonnet
 Run the 6-part ceremony in order:
 
 1. **Brainstorm** — explore dimensions of the problem. Surface at least 3 angles.
+   When naming the row, choose an **outcome-oriented** name (max 40 chars):
+   - Single focus: verb-noun (`add-rate-limiting`, `fix-timestamp-drift`)
+   - Bundles: noun-and-noun (`guards-and-source-hierarchy`, `hooks-and-naming`)
+   - Good: `isolated-gate-evaluation`, `default-supervised-gating`, `namespace-rename`
+   - Bad: `research-e2e`, `todos-workflow`, `roadmap-process` (too vague)
 2. **Premise challenge** — apply three-layer analysis: conventional wisdom, search
    for prior art in the codebase, first-principles reasoning.
 3. **Questions before research** — surface design decisions as named options
@@ -37,6 +42,22 @@ Mode adaptations:
 - **Delegated**: agent self-answers decisions; user approves final definition.
 - **Autonomous**: evaluator validates instead of human; escalates on failure.
 
+## Collaboration Protocol
+
+Record decisions using `skills/shared/decision-format.md`. Don't assume — ask.
+
+**Decision categories** for ideation:
+- **Scope boundaries** — what's in vs out of this work
+- **Success criteria** — what "done" looks like concretely
+- **Constraint priorities** — which constraints are hard vs soft/negotiable
+
+**High-value question examples** (ask these, not "does this look right?"):
+- "I see two framings — {X} (scope-limited) and {Y} (scope-expanded). Which aligns with your intent?"
+- "Is {constraint} a hard requirement or negotiable if it conflicts with {goal}?"
+- "What does 'done' look like — {concrete outcome A} or {concrete outcome B}?"
+
+Mid-step iteration is expected; `step_status` remains `in_progress` throughout.
+
 ## Shared References
 Read these when relevant to your current action:
 - `skills/shared/red-flags.md` — before finalizing definition
@@ -57,9 +78,8 @@ Before requesting a step transition:
 2. Present work to user per `skills/shared/summary-protocol.md`.
 3. Ask explicitly: "**Ready to advance to research?** Yes / No"
 4. Wait for user response. Do NOT proceed without explicit approval.
-5. On "yes": call `rws transition --request` with `decided_by=manual`.
-6. After --request succeeds: call `rws transition --confirm`.
-7. On "no": ask what needs to change, address feedback, return to step 2.
+5. On "yes": call `rws transition <name> pass manual "<evidence summary>"`.
+6. On "no": ask what needs to change, address feedback, return to step 2.
 
 ## Learnings
 When you discover a reusable insight (pattern, pitfall, preference, convention,

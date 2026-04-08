@@ -22,6 +22,22 @@ model_default: opus
   Version-specific, behavior-specific, or config-specific claims require primary source verification.
 - Claims about external software that cannot be verified against a primary source must be flagged as **unverified**.
 
+## Collaboration Protocol
+
+Record decisions using `skills/shared/decision-format.md`. Don't assume — ask.
+
+**Decision categories** for research:
+- **Source trust** — which sources to rely on when findings conflict
+- **Finding validation** — whether findings match the user's domain knowledge
+- **Coverage sufficiency** — when to stop researching and move on
+
+**High-value question examples** (ask these, not "does this look right?"):
+- "Source A says {X}, Source B says {Y}. Which should we trust for this project?"
+- "Does this finding match your domain experience, or should I dig deeper into {area}?"
+- "I've covered {areas}. Is there a dimension I'm missing, or is this sufficient?"
+
+Mid-step iteration is expected; `step_status` remains `in_progress` throughout.
+
 ## Shared References
 Read these when relevant to your current action:
 - `skills/shared/red-flags.md` — before concluding research
@@ -48,9 +64,8 @@ Before requesting a step transition:
 2. Present work to user per `skills/shared/summary-protocol.md`.
 3. Ask explicitly: "**Ready to advance to plan?** Yes / No"
 4. Wait for user response. Do NOT proceed without explicit approval.
-5. On "yes": call `rws transition --request` with `decided_by=manual`.
-6. After --request succeeds: call `rws transition --confirm`.
-7. On "no": ask what needs to change, address feedback, return to step 2.
+5. On "yes": call `rws transition <name> pass manual "<evidence summary>"`.
+6. On "no": ask what needs to change, address feedback, return to step 2.
 
 ## Learnings
 When you discover a reusable insight (pattern, pitfall, preference, convention,

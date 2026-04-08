@@ -1,1 +1,1 @@
-../../commands/furrow.md
+../../../furrow/commands/meta.md

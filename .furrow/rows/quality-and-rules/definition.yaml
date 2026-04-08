@@ -1,0 +1,84 @@
+objective: >
+  Strengthen Furrow's quality enforcement by: (1) fixing stop hook exit codes
+  to use blocking returns so agents must address validation failures,
+  (2) making CLI commands self-maintaining with post-action timestamp updates
+  and summary regeneration, (3) adding test scenario identification to the
+  spec template, (4) establishing harness rules for step sequence and CLI
+  mediation expansion, (5) documenting the rules strategy for invariant
+  placement across enforcement layers, and (6) adding row naming guidance
+  to the ideation skill.
+
+gate_policy: supervised
+
+deliverables:
+  - name: stop-hook-exit-codes
+    acceptance_criteria:
+      - All stop hooks return exit 2 on validation failure
+      - Agent is blocked and forced to address the failure before conversation ends
+      - Existing skip/pass logic (exit 0) unchanged
+
+  - name: cli-post-actions
+    acceptance_criteria:
+      - rws complete-deliverable regenerates summary after marking deliverable complete
+      - updated_at is refreshed by rws transition, rws complete-deliverable, and rws update-summary
+      - No timestamp drift — updated_at reflects the last meaningful state change
+
+  - name: spec-test-scenarios
+    acceptance_criteria:
+      - templates/spec.md has a Test Scenarios section
+      - skills/spec.md instructs agent to produce test scenarios per deliverable
+      - Scenarios supplement ACs, not replace them
+      - evals/dimensions/spec.yaml evaluates test scenario quality
+
+  - name: harness-rules
+    acceptance_criteria:
+      - step-sequence.md rule documents valid step order and transition constraints
+      - CLI mediation coverage expanded to include summary section ownership
+      - Rules are harness-scoped and travel via install.sh symlinks
+      - install.sh correctly symlinks new rules
+
+  - name: rules-strategy-doc
+    acceptance_criteria:
+      - Strategy document in references/ or docs/
+      - Covers the enforcement taxonomy with examples
+      - Includes CLAUDE.md vs rules persistence research findings
+      - Decision criteria — would violating this break the harness workflow?
+
+  - name: row-naming-guidance
+    acceptance_criteria:
+      - skills/ideate.md has naming guidance in the brainstorm section
+      - Covers outcome over area, verb-noun for singles, noun-and-noun for bundles
+      - Includes concrete good/bad examples from actual rows
+
+context_pointers:
+  - path: bin/frw.d/hooks/validate-summary.sh
+    note: "Stop hook — exit code fix target"
+  - path: bin/frw.d/hooks/stop-ideation.sh
+    note: "Stop hook — exit code fix target"
+  - path: bin/frw.d/hooks/work-check.sh
+    note: "Stop hook — exit code fix target"
+  - path: bin/rws
+    note: "CLI post-actions — complete-deliverable, transition, update-summary"
+  - path: skills/spec.md
+    note: "Test scenarios addition"
+  - path: templates/spec.md
+    note: "Test scenarios template section"
+  - path: evals/dimensions/spec.yaml
+    note: "Test scenario eval dimension"
+  - path: .claude/rules/cli-mediation.md
+    note: "Expand or companion rule for summary ownership"
+  - path: .claude/rules/
+    note: "New step-sequence.md rule"
+  - path: install.sh
+    note: "Rules symlink management"
+  - path: skills/ideate.md
+    note: "Row naming guidance"
+  - path: .claude/settings.json
+    note: "Hook exit code semantics reference"
+
+constraints:
+  - Stop hook exit code changes must not break existing skip logic (exit 0 paths)
+  - CLI post-actions must be idempotent (calling regenerate-summary twice produces same result)
+  - Rules files must stay under ambient context budget (<=120 lines total for CLAUDE.md + rules)
+  - No new PostToolUse hooks — enforcement stays in PreToolUse and Stop layers
+  - Test scenarios in spec are supplementary to ACs, not a replacement

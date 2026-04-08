@@ -27,6 +27,15 @@ Distinguishes essential complexity (inherent to the problem domain and irreducib
 
 - **Complexity archaeology** — Trace why the current design looks the way it does. Separate essential complexity (inherent to the domain) from accidental complexity (artifacts of past constraints that no longer apply). Only essential complexity survives.
 
+## When NOT to Use
+
+Do not use when the task is additive with clear justification (new specialist, new CLI command for a validated need). Complexity-skeptic evaluates whether to keep, merge, or remove — not whether to build in the first place. For greenfield architecture, use systems-architect.
+
+## Overlap Boundaries
+
+- **systems-architect**: Systems-architect decides where boundaries go. Complexity-skeptic challenges whether boundaries (and the components behind them) should exist at all.
+- **security-engineer**: Before removing a component, verify with security-engineer that it isn't a defense-in-depth layer whose removal opens a bypass path.
+
 ## Quality Criteria
 
 Every new dependency has documented justification and removal path. Shims have expiration dates. Standard library alternatives evaluated before external packages. Abstractions have at least two consumers.
@@ -40,6 +49,7 @@ Every new dependency has documented justification and removal path. Shims have e
 | Adding a dependency for speculative future use | Pulls transitive packages and maintenance burden for a need that may never materialize | Solve the concrete problem with standard library or inline code; adopt the dependency when the second use case appears |
 | Wrapping a dependency in an abstraction that mirrors its exact API | Adds indirection without decoupling — changes to the dependency still cascade | Either use the dependency directly or create a domain-specific interface |
 | Keeping dead code "just in case" | Dead code misleads readers, breaks refactors, and rots silently | Delete it; version control remembers |
+| Specialist that restates what Claude already knows | Consumes context budget with zero behavioral change | Apply the litmus test: remove the specialist and check if agent output differs |
 
 ## Context Requirements
 

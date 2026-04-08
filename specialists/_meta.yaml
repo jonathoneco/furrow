@@ -1,6 +1,85 @@
 # specialists/ directory — reusable domain expert definitions
 # See .furrow/almanac/rationale.yaml for component rationale.
 
+api-designer:
+  file: api-designer.md
+  description: "HTTP API design — resource modeling, error handling, backward compatibility"
+
+cli-designer:
+  file: cli-designer.md
+  description: "CLI design — progressive disclosure, Unix composability, destructive operation gates, terminal UX"
+
+complexity-skeptic:
+  file: complexity-skeptic.md
+  description: "Evaluates every dependency, shim, and abstraction as a liability — argues for simplicity and removal"
+
+document-db-architect:
+  file: document-db-architect.md
+  description: "Document database modeling, denormalization-by-design, schema evolution, and consistency tradeoffs"
+
+go-specialist:
+  file: go-specialist.md
+  description: "Go idioms, concurrency patterns, interface design, and error propagation strategy"
+
+harness-engineer:
+  file: harness-engineer.md
+  description: "Workflow harness infrastructure — shell scripts, hooks, schemas, validation pipelines"
+
 merge-specialist:
   file: merge-specialist.md
   description: "Merge strategy, conflict detection, and post-merge validation for Furrow workflows"
+
+migration-strategist:
+  file: migration-strategist.md
+  description: "Evolves running systems without downtime or data loss — expand-contract discipline"
+
+python-specialist:
+  file: python-specialist.md
+  description: "Pythonic patterns, protocol-based design, dependency management, and runtime safety"
+  note: "General-purpose language specialist (not project-grounded). Project has Python in adapters/agent-sdk/ but specialist serves any Python project."
+
+relational-db-architect:
+  file: relational-db-architect.md
+  description: "Relational schema design, normalization, constraint modeling, migration safety"
+
+security-engineer:
+  file: security-engineer.md
+  description: "Threat modeling for workflow harness integrity — state corruption, hook bypass, trust boundaries"
+
+shell-specialist:
+  file: shell-specialist.md
+  description: "Non-harness shell scripting — install scripts, integration tests, command libraries"
+  note: "Kept as standalone (11 non-harness scripts in project). Boundary: harness-engineer owns bin/frw.d/ etc; shell-specialist owns install.sh, tests/integration/, commands/lib/."
+
+systems-architect:
+  file: systems-architect.md
+  description: "Component boundaries, dependency direction, coupling/cohesion trade-offs"
+
+test-engineer:
+  file: test-engineer.md
+  description: "Test design, coverage analysis, edge case identification, gate-aligned test planning"
+
+typescript-specialist:
+  file: typescript-specialist.md
+  description: "TypeScript type system design, narrowing patterns, module boundaries, runtime/compile-time separation"
+  note: "General-purpose language specialist (not project-grounded). Project does not use TypeScript but specialist serves any TS project."
+
+frontend-designer:
+  file: frontend-designer.md
+  description: "Rendering strategy, hydration cost, state colocation, and interaction design — framework-agnostic"
+
+css-specialist:
+  file: css-specialist.md
+  description: "Algorithm-first layout selection, specificity budgeting, compositing awareness, and defensive styling"
+
+accessibility-auditor:
+  file: accessibility-auditor.md
+  description: "Semantic HTML first, ARIA as repair, focus management architecture, and announcement strategy"
+
+prompt-engineer:
+  file: prompt-engineer.md
+  description: "Structural constraint over behavioral instruction, failure mode prediction, and instruction placement strategy"
+
+technical-writer:
+  file: technical-writer.md
+  description: "Diataxis mode discipline, progressive disclosure, maintenance-cost awareness, and audience calibration"

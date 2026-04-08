@@ -1,0 +1,35 @@
+{
+  "gate_type": "post_step",
+  "step": "research",
+  "nonce": "6e75a30a93eaeb589d04752b40efd701",
+  "verdict": "PASS",
+  "dimensions": [
+    {
+      "name": "coverage",
+      "verdict": "PASS",
+      "evidence": "All 6 deliverables from definition.yaml have dedicated research documents: gate-check-hook-fix.md, transition-simplification.md, review-consent-isolation.md, enforcement-wiring.md, specialist-reasoning-upgrade.md, specialist-expansion.md. Synthesis document confirms all 6 with readiness assessment."
+    },
+    {
+      "name": "evidence-basis",
+      "verdict": "PASS",
+      "evidence": "Every research document includes a Sources Consulted table with tier classifications. Codebase claims cite specific paths and line numbers: bin/frw.d/hooks/gate-check.sh regex, bin/rws lines 1361-1560, common.sh:87 has_passing_gate(), skills/implement.md lines 25-33. Two tertiary sources (WAI-ARIA, Diataxis) cited for background frameworks, not codebase facts."
+    },
+    {
+      "name": "specificity",
+      "verdict": "PASS",
+      "evidence": "Most specific: gate-check-hook-fix quotes exact regex 's/.*rws +transition +([^ ]*).*/\\1/p' and proposed fix regex, names common.sh:87 has_passing_gate(), traces exact failure path. Least specific: transition-simplification acknowledges 'What step-modifier language works? Research defers to implementation' as explicit deferral. All documents include file paths, line numbers, and function names."
+    },
+    {
+      "name": "contradiction-check",
+      "verdict": "PASS",
+      "evidence": "One potential tension: gate-check-hook-fix proposes fixing the hook while transition-simplification suggests hook may become redundant post-simplification. Explicitly reconciled in transition-simplification: 'Decide if gate-check hook is still needed post-simplification' and execution order puts hook fix first. No unacknowledged contradictions found."
+    },
+    {
+      "name": "seed-sync",
+      "verdict": "PASS",
+      "evidence": "seed_id: furrow-fed8, seed status: researching, row step: research. Expected mapping: research -> researching. Match confirmed. Seed is not closed (closed_at: null)."
+    }
+  ],
+  "summary": "All 5 dimensions pass — research covers all 6 deliverables with specific evidence, consistent findings, and synchronized seed status.",
+  "evaluated_at": "2026-04-06T21:30:00Z"
+}

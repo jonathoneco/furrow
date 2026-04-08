@@ -15,13 +15,16 @@ hook_auto_install() {
   done
   [ -n "$_config" ] || return 0
 
-  # Quick check — if it passes, we're done
+  # Quick check — if it passes, we're done (quiet mode suppresses output)
   if frw install --check . >/dev/null 2>&1; then
     return 0
   fi
 
-  # Auto-heal
+  # Auto-heal — re-run full install to pick up new commands, specialists, rules
   echo "[furrow] Installation drift detected, auto-repairing..." >&2
-  frw install --project . >/dev/null 2>&1
-  echo "[furrow] Installation repaired." >&2
+  if frw install --project . >/dev/null 2>&1; then
+    echo "[furrow] Installation repaired." >&2
+  else
+    echo "[furrow] Auto-repair failed. Run 'frw install --project .' manually." >&2
+  fi
 }

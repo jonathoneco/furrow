@@ -80,6 +80,13 @@ _relpath() {
 symlink() {
   _src="$1"
   _dst="$2"
+  _src_path="$(cd "$(dirname "$_src")" && pwd)/$(basename "$_src")"
+  _dst_path="$(cd "$(dirname "$_dst")" && pwd)/$(basename "$_dst")"
+  if [ "$_src_path" = "$_dst_path" ]; then
+    _skip "$_dst (source and destination are the same path)"
+    return 0
+  fi
+
   if [ -L "$_dst" ]; then
     _existing="$(_canonicalize "$_dst")"
     _expected="$(_canonicalize "$_src")"
@@ -105,70 +112,141 @@ symlink() {
 
 _frw_install_check() {
   _target="$1"
-  echo "=== Furrow Installation Check ==="
-  echo "Target: $_target"
+  _quiet="${2:-}"  # pass "quiet" to suppress output (for auto-install)
+  _proj_root="$(dirname "$_target")"
   errors=0
 
-  # Commands (namespaced)
-  echo ""
-  echo "--- Commands ---"
+  _log() { [ "$_quiet" = "quiet" ] || echo "$1"; }
+
+  _log "=== Furrow Installation Check ==="
+  _log "Target: $_target"
+  _log "Furrow: $FURROW_ROOT"
+
+  # Commands (namespaced) — check ALL expected commands exist
+  _log ""
+  _log "--- Commands ---"
   for cmd in "$FURROW_ROOT"/commands/*.md; do
     [ -f "$cmd" ] || continue
     _basename="$(basename "$cmd" .md)"
-    if [ -L "$_target/commands/${PREFIX}:${_basename}.md" ]; then
-      _ok "commands/${PREFIX}:${_basename}.md"
+    _expected="$_target/commands/${PREFIX}:${_basename}.md"
+    if [ -L "$_expected" ]; then
+      _existing="$(_canonicalize "$_expected")"
+      _src="$(_canonicalize "$cmd")"
+      if [ "$_existing" = "$_src" ]; then
+        [ "$_quiet" = "quiet" ] || _ok "commands/${PREFIX}:${_basename}.md"
+      else
+        [ "$_quiet" = "quiet" ] || _fail "commands/${PREFIX}:${_basename}.md points to wrong target"
+        errors=$((errors + 1))
+      fi
     else
-      _fail "commands/${PREFIX}:${_basename}.md not linked"
+      [ "$_quiet" = "quiet" ] || _fail "commands/${PREFIX}:${_basename}.md not linked"
+      errors=$((errors + 1))
+    fi
+  done
+
+  # Specialists — check ALL expected specialists exist
+  _log ""
+  _log "--- Specialists ---"
+  for spec in "$FURROW_ROOT"/specialists/*.md; do
+    [ -f "$spec" ] || continue
+    _basename="$(basename "$spec" .md)"
+    case "$_basename" in _*) continue ;; esac
+    _expected="$_target/commands/specialist:${_basename}.md"
+    if [ -L "$_expected" ]; then
+      _existing="$(_canonicalize "$_expected")"
+      _src="$(_canonicalize "$spec")"
+      if [ "$_existing" = "$_src" ]; then
+        [ "$_quiet" = "quiet" ] || _ok "specialist:${_basename}.md"
+      else
+        [ "$_quiet" = "quiet" ] || _fail "specialist:${_basename}.md points to wrong target"
+        errors=$((errors + 1))
+      fi
+    else
+      [ "$_quiet" = "quiet" ] || _fail "specialist:${_basename}.md not linked"
       errors=$((errors + 1))
     fi
   done
 
   # Hooks — check for frw hook pattern
-  echo ""
-  echo "--- Hooks ---"
+  _log ""
+  _log "--- Hooks ---"
   if [ -f "$_target/settings.json" ] && grep -q "frw hook state-guard" "$_target/settings.json" 2>/dev/null; then
-    _ok "settings.json has Furrow hooks"
+    [ "$_quiet" = "quiet" ] || _ok "settings.json has Furrow hooks"
   else
-    _fail "settings.json missing Furrow hooks"
+    [ "$_quiet" = "quiet" ] || _fail "settings.json missing Furrow hooks"
     errors=$((errors + 1))
   fi
 
-  # Rules
-  echo ""
-  echo "--- Rules ---"
-  if [ -f "$_target/rules/cli-mediation.md" ]; then
-    _ok "rules/cli-mediation.md"
+  # Rules — check ALL expected rules exist
+  _log ""
+  _log "--- Rules ---"
+  _furrow_claude="$(cd "$FURROW_ROOT/.claude" 2>/dev/null && pwd)"
+  _target_abs="$(cd "$_target" 2>/dev/null && pwd)"
+  if [ "$_furrow_claude" != "$_target_abs" ]; then
+    for rule in "$FURROW_ROOT"/.claude/rules/*.md; do
+      [ -f "$rule" ] || continue
+      _name="$(basename "$rule")"
+      if [ -L "$_target/rules/$_name" ]; then
+        [ "$_quiet" = "quiet" ] || _ok "rules/$_name"
+      else
+        [ "$_quiet" = "quiet" ] || _fail "rules/$_name not linked"
+        errors=$((errors + 1))
+      fi
+    done
   else
-    _fail "rules/cli-mediation.md not found"
-    errors=$((errors + 1))
+    [ "$_quiet" = "quiet" ] || _skip "rules/ (self-install)"
   fi
 
   # CLAUDE.md
-  echo ""
-  echo "--- CLAUDE.md ---"
+  _log ""
+  _log "--- CLAUDE.md ---"
   if [ -f "$_target/CLAUDE.md" ] && grep -q "furrow:start" "$_target/CLAUDE.md" 2>/dev/null; then
-    _ok "CLAUDE.md has Furrow activation"
+    [ "$_quiet" = "quiet" ] || _ok "CLAUDE.md has Furrow activation"
   else
-    _fail "CLAUDE.md missing Furrow activation"
+    [ "$_quiet" = "quiet" ] || _fail "CLAUDE.md missing Furrow activation"
     errors=$((errors + 1))
   fi
 
-  # Skills (check symlink to skills dir)
-  echo ""
-  echo "--- Skills ---"
-  if [ -L "$_target/../skills" ] || [ -d "$_target/../skills" ]; then
-    _ok "skills/ accessible"
+  # Root-level symlinks
+  _log ""
+  _log "--- Furrow directories ---"
+  for _dir in skills schemas evals specialists references adapters templates; do
+    _src="$FURROW_ROOT/$_dir"
+    _dst="$_proj_root/$_dir"
+    if [ ! -e "$_src" ]; then continue; fi
+    if [ -L "$_dst" ]; then
+      _existing="$(_canonicalize "$_dst")"
+      _expected_abs="$(_canonicalize "$_src")"
+      if [ "$_existing" = "$_expected_abs" ]; then
+        [ "$_quiet" = "quiet" ] || _ok "$_dir/"
+      else
+        [ "$_quiet" = "quiet" ] || _fail "$_dir/ points to wrong target"
+        errors=$((errors + 1))
+      fi
+    elif [ -d "$_dst" ]; then
+      [ "$_quiet" = "quiet" ] || _skip "$_dir/ (real directory, not symlink)"
+    else
+      [ "$_quiet" = "quiet" ] || _fail "$_dir/ not linked"
+      errors=$((errors + 1))
+    fi
+  done
+
+  # Gitignore
+  _log ""
+  _log "--- Gitignore ---"
+  if [ -f "$_proj_root/.gitignore" ] && grep -q "# furrow:managed" "$_proj_root/.gitignore" 2>/dev/null; then
+    [ "$_quiet" = "quiet" ] || _ok ".gitignore has Furrow entries"
   else
-    _fail "skills/ not accessible from project root"
+    [ "$_quiet" = "quiet" ] || _fail ".gitignore missing Furrow entries"
     errors=$((errors + 1))
   fi
 
-  echo ""
+  _log ""
   if [ "$errors" -eq 0 ]; then
-    echo "RESULT: INSTALLED"
+    _log "RESULT: INSTALLED"
     return 0
   else
-    echo "RESULT: NOT INSTALLED ($errors issues)"
+    _log "RESULT: NOT INSTALLED ($errors issues)"
     return 1
   fi
 }
@@ -426,12 +504,17 @@ Run \`/furrow:doctor\` to check health. Run \`install.sh --check\` to verify ins
     echo "  note: no ~/.local/bin or ~/bin on PATH — add project bin/ to PATH manually"
   fi
 
-  # --- 8. Gitignore Furrow-managed symlinks ---
+  # --- 8. Gitignore Furrow-managed symlinks (skip for self-install) ---
   echo ""
   echo "--- Gitignore ---"
-  _gitignore="$_proj_root/.gitignore"
-  _marker="# furrow:managed"
-  _furrow_ignores="$_marker
+  _proj_root_abs="$(cd "$_proj_root" && pwd)"
+  _furrow_root_abs="$(cd "$FURROW_ROOT" && pwd)"
+  if [ "$_proj_root_abs" = "$_furrow_root_abs" ]; then
+    _skip ".gitignore (self-install: Furrow source repo owns these files)"
+  else
+    _gitignore="$_proj_root/.gitignore"
+    _marker="# furrow:managed"
+    _furrow_ignores="$_marker
 skills
 schemas
 evals
@@ -448,12 +531,13 @@ bin/alm
 .claude/rules/cli-mediation.md
 .claude/CLAUDE.md"
 
-  if [ -f "$_gitignore" ] && grep -q "$_marker" "$_gitignore" 2>/dev/null; then
-    _skip ".gitignore already has Furrow entries"
-  else
-    echo "" >> "$_gitignore"
-    echo "$_furrow_ignores" >> "$_gitignore"
-    _ok ".gitignore updated with Furrow-managed paths"
+    if [ -f "$_gitignore" ] && grep -q "$_marker" "$_gitignore" 2>/dev/null; then
+      _skip ".gitignore already has Furrow entries"
+    else
+      echo "" >> "$_gitignore"
+      echo "$_furrow_ignores" >> "$_gitignore"
+      _ok ".gitignore updated with Furrow-managed paths"
+    fi
   fi
 
   # --- Summary ---

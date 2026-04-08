@@ -1,0 +1,51 @@
+=== Phase 1: Token Optimization & Infrastructure Fixes ===
+
+Two parallel rows. Launch in separate tmux sessions or worktrees.
+
+---
+
+Start with: /furrow:work model-routing-and-specialists
+
+### Scope
+Parallel deliverables on branch `work/model-routing-and-specialists`.
+See .furrow/almanac/roadmap.yaml Phase 1 for rationale and ordering.
+
+Orchestrator + step agent architecture, collaborate/execute split, specialist step modes.
+
+Source TODOs in .furrow/almanac/todos.yaml (read `context` and `work_needed` for full detail):
+- per-step-model-routing — Per-step model routing with orchestrator/step agent architecture
+- specialist-expansion — Expand specialist coverage with new domain specialists
+
+### Key files
+- skills/ — step skill definitions
+- specialists/ — specialist templates
+- skills/shared/context-isolation.md — agent dispatch patterns
+- bin/frw.d/scripts/launch-phase.sh — phase launcher
+- bin/rws — row management CLI
+
+Estimated sessions: 3
+
+---
+
+Start with: /furrow:work infra-fixes
+
+### Scope
+Parallel deliverables on branch `work/infra-fixes`.
+See .furrow/almanac/roadmap.yaml Phase 1 for rationale and ordering.
+
+FURROW_ROOT resolution, gate-check fix, template enforcement, config move, blocking stop hooks.
+
+Source TODOs in .furrow/almanac/todos.yaml (read `context` and `work_needed` for full detail):
+- consumer-project-furrow-root — FURROW_ROOT resolution for consumer projects
+- gate-check-hook-excluded-steps — Gate-check hook excluded steps bug
+- specialist-templates-from-team-plan-not-enforced-d — Specialist template enforcement gap
+- config-cleanup — Configuration file location cleanup
+- blocking-stop-hooks — Stop hooks that block incorrectly
+
+### Key files
+- bin/frw, bin/rws, bin/sds, bin/alm — CLI tools
+- bin/frw.d/hooks/ — hook scripts
+- .claude/furrow.yaml — project configuration
+- skills/implement.md — implementation step skill
+
+Estimated sessions: 2

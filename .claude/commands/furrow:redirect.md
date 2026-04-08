@@ -1,1 +1,1 @@
-../../commands/redirect.md
+../../../furrow/commands/redirect.md

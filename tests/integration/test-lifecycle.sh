@@ -100,12 +100,8 @@ test_transition_ideate_research() {
   # Write definition.yaml (needed for ideate->research artifact validation)
   _write_definition ".furrow/rows/lifecycle-row"
 
-  # Request transition
-  rws transition --request lifecycle-row pass manual "ideation complete"
-  assert_json_field "pending_approval after request" "$state_file" '.step_status' "pending_approval"
-
-  # Confirm transition
-  rws transition --confirm lifecycle-row
+  # Single-command transition (records gate, validates, and advances atomically)
+  rws transition lifecycle-row pass manual "ideation complete"
   assert_json_field "step is research" "$state_file" '.step' "research"
 
   # Verify seed synced to researching
@@ -168,9 +164,8 @@ Found relevant patterns.
 Proceed with implementation.
 MD
 
-  # Request and confirm transition
-  rws transition --request lifecycle-row pass manual "research complete"
-  rws transition --confirm lifecycle-row
+  # Single-command transition
+  rws transition lifecycle-row pass manual "research complete"
   assert_json_field "step is plan" "$state_file" '.step' "plan"
 
   # Verify seed synced to planning

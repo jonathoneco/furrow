@@ -1,0 +1,36 @@
+{
+  "gate_type": "post_step",
+  "step": "plan",
+  "row": "specialist-overhaul",
+  "nonce": "e9122afc6b366424abeff56389511307",
+  "overall_verdict": "PASS",
+  "summary": "All 5 dimensions pass. Plan covers all 6 deliverables across 4 waves with valid dependency ordering, concrete specialist assignments, research-grounded architecture decisions, and correct seed sync.",
+  "dimensions": [
+    {
+      "name": "coverage",
+      "verdict": "PASS",
+      "evidence": "All 6 deliverables from definition.yaml appear in exactly one wave of plan.json: gate-check-hook-fix (wave 1), specialist-reasoning-upgrade (wave 1), review-consent-isolation (wave 2), specialist-expansion (wave 2), enforcement-wiring (wave 3), transition-simplification (wave 4)."
+    },
+    {
+      "name": "feasibility",
+      "verdict": "PASS",
+      "evidence": "Dependency ordering valid: transition-simplification (wave 4) depends on gate-check-hook-fix (wave 1) — satisfied. All other deliverables have empty depends_on. File ownership within each wave has no overlap: wave 1 (bin/frw.d/hooks/gate-check.sh vs specialists/*.md + references/specialist-template.md), wave 2 (skills/review.md vs new specialist files + _meta.yaml + rationale.yaml + harness-engineer.md), waves 3-4 are single-deliverable. Cross-wave overlaps (skills/review.md in waves 2, 3, 4; _meta.yaml in waves 1, 2) resolved by sequential wave ordering."
+    },
+    {
+      "name": "specificity",
+      "verdict": "PASS",
+      "evidence": "All 6 assignments have both specialist type and at least one file_ownership glob: gate-check-hook-fix (harness-engineer, 1 file), specialist-reasoning-upgrade (complexity-skeptic, 2 globs), review-consent-isolation (harness-engineer, 1 file), specialist-expansion (systems-architect, 8 files), enforcement-wiring (harness-engineer, 3 files), transition-simplification (harness-engineer, 8 files)."
+    },
+    {
+      "name": "research-grounding",
+      "verdict": "PASS",
+      "evidence": "4 architecture decisions in team-plan.md, all with explicit Source citations. (1) 'Template standard update before specialist upgrades' cites research/specialist-reasoning-upgrade.md section 'Template Standard Gaps Found' — verified at line 41. (2) 'Gate-check hook cleanup in wave 4, not wave 1' cites research/gate-check-hook-fix.md section 'Fix' (verified line 42) and research/transition-simplification.md section 'Interaction with gate-check-hook-fix' (verified line 57). (3) 'specialist-expansion uses research designs directly' cites research/specialist-expansion.md section 'New Specialist Designs' (verified line 3). (4) 'Shell-specialist differentiation' cites research/specialist-reasoning-upgrade.md — content about shell-specialist WEAK rating and harness-engineer overlap verified at lines 19 and 36-37 (note: cited section heading 'Detailed Notes: WEAK Specialists: shell-specialist' is imprecise — actual headings are 'Audit Results' and 'Key Finding' — but the substantive finding is present and traceable)."
+    },
+    {
+      "name": "seed-sync",
+      "verdict": "PASS",
+      "evidence": "seed_id=furrow-fed8, seed status='planning' (from sds show --json), row step='plan' (from state.json). Expected mapping: plan -> planning. Seed is not closed (closed_at=null). Match confirmed."
+    }
+  ],
+  "evaluated_at": "2026-04-06T22:15:00Z"
+}

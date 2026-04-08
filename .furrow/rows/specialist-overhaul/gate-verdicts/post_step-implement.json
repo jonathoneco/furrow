@@ -1,0 +1,38 @@
+{
+  "gate_type": "post_step",
+  "step": "implement",
+  "nonce": "3977a98520c1dd30263d187495c40c59",
+  "overall": "pass",
+  "dimensions": [
+    {
+      "name": "correctness",
+      "verdict": "pass",
+      "evidence": "All 6 deliverable ACs verified against actual files. gate-check-hook-fix: hook returns 0 (no-op, correct for atomic transition design). transition-simplification: rws_transition() uses single command with 4 positional args — gate policy enforcement at lines 1414-1433, nonce validation at lines 1436-1472, no --request/--confirm found in bin/rws. review-consent-isolation: skills/review.md lines 52-59 contain 'Consent Isolation' section with explicit independence statement and anti-pattern documented. enforcement-wiring: skills/implement.md lines 24-50 'Specialist Loading (Mandatory)' with 'STOP — do not proceed' and 'This is a blocking requirement, not guidance'. specialist-reasoning-upgrade: all 15 original specialists present with project-specific reasoning patterns and actionable anti-pattern tables. specialist-expansion: 5 new specialists confirmed (frontend-designer.md, css-specialist.md, accessibility-auditor.md, prompt-engineer.md, technical-writer.md) present in specialists/ and registered in _meta.yaml."
+    },
+    {
+      "name": "test-coverage",
+      "verdict": "pass",
+      "evidence": "rws_transition() (primary new branching logic) tested in tests/integration/test-rws.sh test_transition() at line 121: single-command call at line 130, step advancement assertion at line 131, seed sync verification at lines 134-143. tests/integration/test-lifecycle.sh covers transition at lines 104 and 168. gate-check.sh has no branching (single return 0) — trivially covered. Specialist and skill files are prose/markdown with no branching logic requiring test coverage."
+    },
+    {
+      "name": "spec-compliance",
+      "verdict": "pass",
+      "evidence": "transition-simplification AC 'single command': implemented as rws transition <name> <outcome> <decided_by> <evidence> with no intermediate phases. All 7 step skills updated to single-command syntax: ideate.md:58, research.md:51, plan.md:58, spec.md:52, decompose.md:51, implement.md:65, review.md:49. enforcement-wiring AC 'hard stop not advisory': implement.md line 28 'STOP' and line 32 'blocking requirement, not guidance'. specialist-expansion AC 'harness-engineer.md context requirements explicitly reference rationale.yaml': harness-engineer.md line 61 'Required: .furrow/almanac/rationale.yaml — consult before adding, modifying, or deleting components'. All 5 new specialists have required template sections."
+    },
+    {
+      "name": "unplanned-changes",
+      "verdict": "pass",
+      "evidence": "All changed files fall within declared file_ownership globs: specialists/*.md (specialist-reasoning-upgrade, specialist-expansion), skills/*.md (enforcement-wiring, transition-simplification, review-consent-isolation), bin/rws (transition-simplification), bin/frw.d/hooks/gate-check.sh (gate-check-hook-fix), references/specialist-template.md (specialist-reasoning-upgrade), specialists/_meta.yaml (specialist-expansion), .furrow/almanac/rationale.yaml (specialist-expansion), tests/integration/test-*.sh (transition-simplification). bin/frw.d/lib/validate.sh and bin/frw.d/scripts/update-state.sh changed as supporting infrastructure for transition-simplification (harness-engineer deliverable scope). schemas/state.schema.json within transition-simplification ownership — pending_approval removed confirmed."
+    },
+    {
+      "name": "code-quality",
+      "verdict": "pass",
+      "evidence": "shellcheck bin/rws: no errors; warnings are pre-existing (SC2034 unused exit constants, SC3012 POSIX sh lexicographic comparison, SC2231 glob quoting). shellcheck bin/frw.d/hooks/gate-check.sh: SC2148 missing shebang is a pre-existing convention for sourced hook fragments. All specialists within 80-line budget (max: 64 lines for harness-engineer.md and merge-specialist.md). Specialists follow template format with all required sections. Markdown files consistent with existing style."
+    },
+    {
+      "name": "seed-sync",
+      "verdict": "pass",
+      "evidence": "seed_id: furrow-fed8. Row step: implement. sds show furrow-fed8 --json output: status='implementing', closed_at=null. Expected seed status for implement step: 'implementing'. Match confirmed. Seed exists, not closed, status matches mapping."
+    }
+  ]
+}

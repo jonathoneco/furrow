@@ -15,8 +15,33 @@ model_default: sonnet
 ## Step-Specific Rules
 - Every acceptance criterion from `definition.yaml` must be addressed.
 - Specs must be implementation-ready — no ambiguous requirements.
+- For each deliverable, produce test scenarios (WHEN/THEN + verification command)
+  that supplement the ACs. Trivially testable ACs may omit scenarios.
+  See `templates/spec.md` for the scenario format.
 - Ensure `skills/work-context.md` is loaded.
 - Read `summary.md` for plan context.
+
+### Step-Level Specialist Modifier
+When working with a specialist during spec, emphasize contract completeness,
+boundary definition, and constraint enumeration over implementation pragmatism.
+The specialist's reasoning patterns apply to specification decisions: what
+interfaces to define, what invariants to enforce, what edge cases to address.
+
+## Collaboration Protocol
+
+Record decisions using `skills/shared/decision-format.md`. Don't assume — ask.
+
+**Decision categories** for spec:
+- **Acceptance criteria precision** — how specific is "enough" to implement and test
+- **Edge case coverage** — which edge cases matter vs which are out of scope
+- **Testability approach** — how to verify each criterion (unit, integration, manual)
+
+**High-value question examples** (ask these, not "does this look right?"):
+- "Is '{criterion}' specific enough to test, or should I tighten it to {more specific version}?"
+- "Should we cover {edge case}, or is it out of scope for this work?"
+- "How should we verify this — unit test, integration test, or manual check?"
+
+Mid-step iteration is expected; `step_status` remains `in_progress` throughout.
 
 ## Shared References
 Read these when relevant to your current action:
@@ -43,9 +68,8 @@ Before requesting a step transition:
 2. Present work to user per `skills/shared/summary-protocol.md`.
 3. Ask explicitly: "**Ready to advance to decompose?** Yes / No"
 4. Wait for user response. Do NOT proceed without explicit approval.
-5. On "yes": call `rws transition --request` with `decided_by=manual`.
-6. After --request succeeds: call `rws transition --confirm`.
-7. On "no": ask what needs to change, address feedback, return to step 2.
+5. On "yes": call `rws transition <name> pass manual "<evidence summary>"`.
+6. On "no": ask what needs to change, address feedback, return to step 2.
 
 ## Learnings
 When you discover a reusable insight (pattern, pitfall, preference, convention,

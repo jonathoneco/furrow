@@ -44,7 +44,7 @@
     - "skills/spec.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-04T00:00:00Z"
+  updated_at: "2026-04-06T00:00:00Z"
   urgency: "medium"
   impact: "high"
   effort: "medium"
@@ -54,7 +54,7 @@
     - "skills/plan.md"
     - "skills/spec.md"
     - "skills/shared/"
-  status: active
+  status: done
 - id: stop-hook-false-positives
   title: "Handle stop hooks enforcing fluff requirements"
   context: |
@@ -107,27 +107,51 @@
   # Cluster: Seeds & Knowledge Flow
   status: active
 - id: seeds-concept
-  title: "Seeds as a structured knowledge reduction stage with dependency wiring"
+  title: "Seeds as the task management primitive — work graph, in-row tracking, and gating"
   context: |
-    After research, lay-of-the-land, ideas, designs, and considerations have been
-    challenged, consumed, and processed, we should reduce them into "seeds" — focused,
-    scoped artifacts that drive subsequent research, planning, and implementation.
-    A "seeding" stage would sit between broad exploration and focused execution,
-    producing compact context packages for downstream steps.
+    Seeds are the fundamental task management primitive for Furrow. They operate at
+    two levels:
 
-    Additionally, seeds need to subsume the dependency wiring role that beans played.
-    The current seeds concept is too shallow — it doesn't do the sort of dependency
-    graph construction and cross-seed relationship tracking that beans provided.
-    Seeds should be the nodes in a first-class dependency graph within the almanac.
-    See also: almanac-graph-primitives TODO for the graph infrastructure side.
+    1. **Cross-row work graph** — Seeds own the dependency graph: edges between work
+       items, dependency types (blocks, informs, requires, produces), ordering constraints,
+       and cascading implications. This subsumes what beans did and what alm triage
+       currently infers through LLM reasoning. The graph should be explicit and
+       deterministic, not reasoned about. Almanac (alm) calls seeds for graph queries
+       when doing triage, roadmapping, and planning — alm is the planning surface,
+       seeds are the graph engine.
+
+    2. **Within-row granular work management** — Seeds are used inside a row for
+       spec'ing and decomposition. During spec, work items become seeds with explicit
+       edges. During decompose, the seed graph determines wave ordering and parallelism.
+       Gate checks query seed status to verify preconditions are met before step
+       transitions. This replaces the current pattern where plan.json and definition.yaml
+       carry implicit dependency information.
+
+    Critically, these two levels share one graph. Within-row seeds can have edges to
+    cross-row seeds — a deliverable in row A might depend on a seed that originated
+    in row B, or produce a seed that feeds row C. sds owns this unified graph,
+    giving visibility into how granular in-flight work connects to the broader plan.
+
+    Additionally, seeds serve as knowledge reduction artifacts — after research and
+    exploration, broad findings are distilled into focused seeds that drive downstream
+    steps. But this is secondary to their role as the work graph primitive.
+
+    The sds CLI is the primary interface for all graph operations. Both alm
+    and rws delegate graph functionality to sds — alm for planning (triage,
+    roadmap), rws for row-level operations (gating, step transitions, wave
+    ordering, deliverable dependencies).
   work_needed: |
-    - Define the "seed" artifact format (compact context package with scope, constraints, open questions)
-    - Determine where seeding fits in the step sequence (post-research? post-plan?)
-    - Consider whether seeds replace or augment the current summary.md handoff
-    - Design how seeds get consumed by downstream steps (injected context? reference?)
-    - Design seed-to-seed dependency edges (replaces beans' dependency wiring)
-    - Define how seeds interact with the almanac graph primitives (see almanac-graph-primitives)
-    - Prototype with a research row to validate the pattern
+    - Define the seed data model: id, title, type, status, priority, edges, metadata
+    - Design edge types: blocks, depends-on, informs, produces, supersedes
+    - Define seed lifecycle: open → claimed → active (row) → closed
+    - Design how seeds spawn rows and how rows produce seeds
+    - Design within-row seed usage: spec creates seeds, decompose reads the graph for waves
+    - Wire gate checks to query seed status for precondition verification
+    - Integrate with sds CLI: sds should become the primary interface for graph operations
+    - Design how rws delegates to sds for step transitions, gating, and wave ordering
+    - Consider whether seeds replace plan.json's implicit dependency tracking
+    - Design cross-row ↔ within-row edge semantics (deliverable depends on external seed, row produces downstream seeds)
+    - Prototype with a multi-deliverable row to validate both levels and cross-row connections
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
   updated_at: "2026-04-02T00:00:00Z"
@@ -156,7 +180,7 @@
     - "references/specialist-template.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-04T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
   urgency: "medium"
   impact: "high"
   effort: "medium"
@@ -165,7 +189,7 @@
     - "references/specialist-template.md"
   depends_on:
     - sonnet-model-routing  # inferred: merge-implication — model routing affects specialist template design
-  status: active
+  status: done
 - id: research-documentation-detection
   title: "Detect when research output should be documentation instead"
   context: |
@@ -210,7 +234,7 @@
     - "skills/shared/gate-evaluator.md"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-06T00:00:00Z"
   urgency: "medium"
   impact: "high"
   effort: "medium"
@@ -218,7 +242,7 @@
     - "skills/review.md"
     - "skills/shared/eval-protocol.md"
     - "commands/review.md"
-  status: active
+  status: done
 - id: worktree-reintegration-summary
   title: "Produce summary for worktree reintegration"
   context: |
@@ -494,7 +518,7 @@
     - "commands/archive.md"
     - "references/row-layout.md"
   depends_on:
-    - brain-dump-triage-command  # inferred: merge-implication — command changes land before infra restructure
+    - brain-dump-triage-command # inferred: merge-implication — command changes land before infra restructure
   # Cluster: Integrations & Extensions
   status: active
 - id: beans-enforcement-integration
@@ -636,7 +660,7 @@
     - "skills/shared/context-isolation.md"
   depends_on:
     - specialist-expansion  # inferred: foundational — specialist templates must work before agent dispatch
-    - interactive-ideation-checkpoints  # inferred: foundational — skills/implement.md stability
+    - per-step-model-routing  # inferred: foundational — model routing must be in place before dispatch
   # Cluster: Advanced / Exploratory
   status: active
 - id: memetic-algorithms-research
@@ -785,7 +809,7 @@
     - "commands/"
     - "commands/work-todos.md"
   depends_on:
-    - parallel-agent-orchestration-adoption  # inferred: merge-implication — skills/ stable before command layer
+    - parallel-agent-orchestration-adoption # inferred: merge-implication — skills/ stable before command layer
   status: active
 - id: almanac-knowledge-subcommands-learn-rationale-docs
   title: Almanac knowledge subcommands (learn, rationale, docs, specialists, history)
@@ -871,7 +895,7 @@
     - bin/sds
     - bin/frw.d/scripts/
   depends_on:
-    - brain-dump-triage-command  # inferred: merge-implication — command experience informs CLI architecture
+    - brain-dump-triage-command # inferred: merge-implication — command experience informs CLI architecture
   status: active
 # --- Bundle B: Specialist Expansion ---
 - id: specialist-expansion
@@ -905,27 +929,32 @@
     - references/specialist-template.md
     - .furrow/almanac/rationale.yaml
   depends_on:
-    - specialist-encoded-reasoning  # inferred: foundational — format/reasoning first, then expand
-    - sonnet-model-routing  # inferred: merge-implication — model routing affects specialist design
+    - specialist-encoded-reasoning # inferred: foundational — format/reasoning first, then expand
+    - sonnet-model-routing # inferred: merge-implication — model routing affects specialist design
   status: active
 # --- Bundle C: Almanac Graph Primitives ---
 - id: almanac-graph-primitives
-  title: "First-class dependency graph in almanac — deterministic DAG over LLM reasoning"
+  title: "Almanac calls seeds for graph management — triage, roadmap, and planning consume the seed graph"
   context: |
-    Work planning and cascading should be deterministic and based on explicit data model
-    edges, not LLM reasoning about dependencies. alm triage already builds a dependency
-    graph, but it's triage output — not a first-class almanac primitive. The almanac should
-    own an explicit DAG where nodes are seeds/TODOs/rows and edges are typed relationships
-    (depends-on, blocks, informs, produces). This subsumes what beans did for dependency
-    wiring and makes planning deterministic. See also seeds-concept for the node side.
+    Almanac (alm) is the high-level work planning surface: TODO management, roadmapping,
+    documentation upkeep, learnings. It delegates graph management to seeds (sds) rather
+    than owning graph primitives itself. When alm triage needs dependency ordering, it
+    queries the seed graph. When alm roadmap needs phase grouping, it reads seed edges.
+
+    The responsibility split:
+    - **alm**: planning surface — TODOs, roadmap generation, knowledge lifecycle, docs
+    - **sds**: graph engine — nodes, edges, dependency types, queries, validation
+
+    This TODO covers wiring alm's planning operations to consume the seed graph instead
+    of inferring dependencies through LLM reasoning. alm triage, alm next, and roadmap
+    generation should all read from sds rather than reasoning about relationships.
   work_needed: |
-    - Design the graph data model (nodes: seeds/TODOs/rows, edges: typed relationships)
-    - Determine storage format (YAML adjacency list? JSONL edge list? embedded in todos.yaml?)
-    - Add alm subcommands: alm graph add-edge, alm graph show, alm graph validate
-    - Make alm triage consume the explicit graph rather than inferring dependencies
-    - Integrate with seeds — seeds become graph nodes with explicit edges
-    - Consider visualization (ASCII DAG, mermaid export)
-    - Ensure the graph survives row archival (edges to archived nodes preserved)
+    - Wire alm triage to query sds for dependency ordering instead of inferring
+    - Wire alm roadmap generation to read seed edges for phase grouping
+    - Add alm commands that delegate graph queries to sds (e.g., alm deps, alm critical-path)
+    - Ensure roadmap generation reads the explicit seed graph for phase ordering
+    - Consider visualization pass-through (alm renders, sds provides data)
+    - Design how alm surfaces seed graph state in roadmap.yaml and roadmap.md
   references:
     - bin/alm
     - .furrow/almanac/todos.yaml
@@ -940,7 +969,7 @@
     - bin/alm
     - .furrow/almanac/
   depends_on:
-    - cli-architecture-overhaul  # inferred: foundational — CLI architecture gates where to build features
+    - cli-architecture-overhaul # inferred: foundational — CLI architecture gates where to build features
   status: active
 # --- Bundle D: Harness Lifecycle UX ---
 - id: harness-lifecycle-ux
@@ -976,7 +1005,7 @@
     - install.sh
     - .claude/settings.json
   depends_on:
-    - cli-architecture-overhaul  # inferred: foundational — CLI decisions gate verb rename and status line
+    - cli-architecture-overhaul # inferred: foundational — CLI decisions gate verb rename and status line
   status: active
 # --- Bundle E: Quality & Enforcement Expansion ---
 - id: quality-enforcement-expansion
@@ -1010,7 +1039,7 @@
     - skills/spec.md
     - bin/frw.d/hooks/
     - references/
-  status: active
+  status: done
 # --- Standalone: Rules Strategy ---
 - id: rules-strategy
   title: "Rules strategy — harness-scoped vs project-scoped .claude/rules/"
@@ -1039,7 +1068,7 @@
   files_touched:
     - .claude/rules/
     - install.sh
-  status: active
+  status: done
 # --- Standalone: Mine V1 Harness ---
 - id: mine-v1-harness
   title: "Mine v1 harness for learnings, insights, and research"
@@ -1137,4 +1166,537 @@
   effort: small
   files_touched:
     - skills/research.md
+  status: active
+# --- Token Optimization ---
+- id: per-step-model-routing
+  title: "Per-step model routing — Opus for reasoning, Sonnet for execution, session-level switching"
+  context: |
+    Token burn rate is unsustainable — 15% of weekly usage in 3 hours on a Monday.
+    Not every step needs Opus. The step sequence has fundamentally different cognitive
+    demands: ideate/plan/review-synthesis need deep reasoning (Opus), while
+    research/spec/decompose/implement-agents are mostly following structured instructions
+    (Sonnet). Gate evaluators and Phase A artifact checks are formulaic (Sonnet).
+
+    Step model hints already exist in skill frontmatter (model_default), and specialist
+    templates have model_hint. But these only affect subagent spawning — the main session
+    always runs at whatever model it launched with. The real savings come from:
+    1. Launching sessions with the right model per step/row
+    2. Ensuring subagent model routing is actually followed (not ignored)
+    3. Recommending session breaks at step boundaries for model switching
+
+    Rough cost impact: research, spec, decompose, and implementation agents are the
+    bulk of work — routing these to Sonnet could save 40-60% of token cost.
+
+    Model mapping:
+    - ideate: Opus (creative reasoning, premise challenge)
+    - research: Sonnet (web search, doc reading, synthesis)
+    - plan: Opus (architecture decisions, tradeoff analysis)
+    - spec: Sonnet (structured writing from plan decisions)
+    - decompose: Sonnet (formulaic given plan)
+    - implement orchestrator: Opus, implement agents: Sonnet
+    - review Phase A: Sonnet (artifact checks), Phase B synthesis: Opus
+    - gate evaluators: Sonnet (structured rubric evaluation)
+
+    Preferred architecture: **orchestrator + step agents with collaborate/execute split**.
+    The main session stays Opus as a persistent orchestrator. Every step has two phases:
+
+    - **Collaborate** (inline, Opus) — orchestrator presents findings/drafts to user,
+      asks targeted questions, iterates until decisions are made. Collaboration never
+      leaves the orchestrator session — it's the orchestrator's core job.
+    - **Execute** (dispatched, Sonnet) — subagent does the heavy lifting with the
+      decisions already made: read docs, write specs, generate code, check artifacts.
+
+    The dispatch loop per step:
+    1. Orchestrator dispatches Sonnet agent → "do research on X, Y, Z"
+    2. Agent returns findings/artifacts
+    3. Orchestrator presents to user, collaborates, iterates
+    4. Orchestrator dispatches Sonnet agent → "write artifact based on these decisions"
+    5. Agent returns final artifact
+    6. Orchestrator presents for gate approval
+    7. Repeat collaborate/execute as needed within the step
+
+    Ideation runs fully inline (it's pure collaboration). Other steps sandwich Sonnet
+    execution between Opus collaboration rounds. Step skills split into two concerns:
+    execution instructions (for the subagent) and collaboration protocol (for the
+    orchestrator). This also solves context pollution — each step agent starts fresh
+    with only the context it needs.
+  work_needed: |
+    - Design the collaborate/execute split for each step skill
+    - Split step skills into: execution instructions (subagent) + collaboration protocol (orchestrator)
+    - Create orchestrator skill: dispatch loop, context curation, collaboration protocol
+    - Define what context the orchestrator passes to step agents (skill + summary + decisions)
+    - Define how step agent results flow back (artifact files, structured summary)
+    - Audit current model_default and model_hint usage — is it being respected?
+    - Wire Agent tool calls with explicit model parameter per step
+    - Handle multi-round collaborate/execute within a single step (research → discuss → refine → discuss)
+    - Ensure ideation runs fully inline (pure collaboration, no dispatch)
+    - Update skills/shared/context-isolation.md with orchestrator/step-agent boundary rules
+    - Measure before/after token usage on a representative row
+    - Deduplicate global/parent CLAUDE.md as a baseline optimization
+    - Consider hook consolidation (5 PreToolUse hooks per Write/Edit)
+  references:
+    - skills/implement.md
+    - skills/shared/context-isolation.md
+    - specialists/
+    - bin/frw.d/scripts/launch-phase.sh
+  source_type: brain-dump
+  created_at: "2026-04-06T00:00:00Z"
+  updated_at: "2026-04-06T00:00:00Z"
+  urgency: critical
+  impact: high
+  effort: medium
+  files_touched:
+    - skills/
+    - specialists/
+    - bin/frw.d/scripts/launch-phase.sh
+    - bin/rws
+  status: active
+# --- Standalone: Specialist Quality Validation ---
+- id: specialist-quality-validation
+  title: "Establish a validation mechanism for specialist template quality"
+  context: |
+    There is no way to measure whether a specialist template actually changes agent
+    behavior. An upgraded specialist may produce identical outputs to the original if
+    the model is insensitive to the prose differences. Without a quality signal, specialist
+    upgrades risk being effort without impact. Identified during specialist-overhaul
+    ideation cross-model review.
+  work_needed: |
+    - Define an eval dimension for specialist template effectiveness
+    - Design a minimal A/B test: dispatch the same deliverable with current vs upgraded specialist, compare outputs
+    - Consider a specialist eval gate that checks whether agent output reflects specialist reasoning patterns
+    - Add specialist quality metrics to the review step evaluation criteria
+  references:
+    - references/specialist-template.md
+    - evals/
+    - specialists/
+  source_work_unit: "specialist-overhaul"
+  source_type: open-question
+  created_at: "2026-04-06T00:00:00Z"
+  updated_at: "2026-04-06T00:00:00Z"
+  urgency: low
+  impact: high
+  effort: medium
+  files_touched:
+    - evals/
+    - references/specialist-template.md
+  status: active
+# --- Standalone: Consumer Project FURROW_ROOT Resolution ---
+- id: consumer-project-furrow-root
+  title: "frw/rws resolve FURROW_ROOT to install dir, not consumer project root"
+  context: |
+    When Furrow is installed via symlink (e.g., ~/.local/bin/frw -> ~/src/furrow/bin/frw)
+    and used from a consumer project (e.g., ~/src/wrangle/), frw line 9 resolves
+    FURROW_ROOT to the script's install directory (~/src/furrow/), not the consumer
+    project. Commands like `frw run-gate` then look for .furrow/rows/ in the wrong
+    location. Observed in wrangle-test-coverage-expansion session where the agent
+    called the absolute install path instead of the consumer project's relative bin/frw.
+    Using relative paths (bin/frw, bin/rws) from the consumer project works correctly
+    because script-relative resolution lands on the project root. The bug manifests
+    when agents discover the CLI via PATH or absolute install paths instead.
+  work_needed: |
+    - Change FURROW_ROOT resolution to walk up from $PWD looking for .furrow/ directory
+    - Fall back to script-relative resolution only if no .furrow/ found (running from Furrow source repo)
+    - Ensure rws, sds, alm all use the same resolution logic
+    - Update install.sh to document the consumer project contract
+    - Test: frw commands work when run from a consumer project directory
+  references:
+    - bin/frw (line 9, FURROW_ROOT resolution)
+    - bin/rws
+    - bin/sds
+    - bin/alm
+  source_work_unit: "specialist-overhaul"
+  source_type: open-question
+  created_at: "2026-04-06T00:00:00Z"
+  updated_at: "2026-04-06T00:00:00Z"
+  urgency: medium
+  impact: high
+  effort: medium
+  files_touched:
+    - bin/frw
+    - bin/rws
+    - bin/sds
+    - bin/alm
+  status: active
+# --- Standalone: Gate Check Hook Fix ---
+- id: gate-check-hook-excluded-steps
+  title: "gate-check hook blocks transitions for excluded steps (ideate/implement/review)"
+  context: |
+    The PreToolUse:Bash gate-check hook intercepts rws transition commands and
+    delegates to rws gate-check. For steps in the exclusion list (ideate, implement,
+    review), gate-check always returns exit 1 (by design — these steps can't be
+    skipped). But the hook interprets exit 1 as "gate failed" and blocks with exit 2.
+    Workaround: use frw update-state directly to advance the step.
+  work_needed: |
+    - Fix hook to check for a passing gate record in state.json instead of running the pre-step evaluator
+    - Or exempt excluded steps from the hook check
+  references:
+    - "bin/frw.d/hooks/gate-check.sh"
+    - "bin/rws (rws_gate_check function)"
+  source_type: "review-finding"
+  created_at: "2026-04-06T00:00:00Z"
+  updated_at: "2026-04-06T00:00:00Z"
+  urgency: "medium"
+  impact: "medium"
+  effort: "small"
+  files_touched:
+    - "bin/frw.d/hooks/gate-check.sh"
+  status: active
+# --- Brain Dump 2: 2026-04-07 ---
+- id: ambient-context-promotion
+  title: "Ambient context promotion system — row→project→global knowledge graduation"
+  context: |
+    Learnings sit in row artifacts and never graduate. The harness needs a promotion
+    system across three scopes: row→project (CLAUDE.md, skills, furrow.yaml),
+    project→global (~/.claude/CLAUDE.md, shared rules, ~/.config/furrow/),
+    harness→harness (rationale.yaml, specialist templates).
+
+    Different promotions happen through different triggers: ad-hoc (todos created
+    during work), hindsight (reviewing decision logs post-row), automated (post-review
+    learnings promotion). Decision journaling captures reasoning for all significant
+    choices — not just disagreements — creating a decision log that informs future
+    triage and priority discovery.
+
+    Project manifest = rationale.yaml for consumer projects. Rather than denormalizing
+    state, explore whether a single "living docs" system can unify rationale, learnings,
+    and manifest. This requires deep exploration — different promotion types need
+    different mechanics.
+  work_needed: |
+    - Enumerate all promotion types and their natural triggers (ad-hoc, hindsight, automated, post-review)
+    - Design decision journaling: format, storage, when to capture, how to query
+    - Design promotion mechanics for each scope (row→project, project→global, harness→harness)
+    - Define project manifest format (rationale.yaml for consumer projects via frw install)
+    - Explore unified "living docs" system vs separate mechanisms per scope
+    - Wire alm promote (or equivalent) with configurable targets
+    - Consider ~/.config/furrow/ as the global promotion target
+  references:
+    - .furrow/almanac/rationale.yaml
+    - commands/lib/promote-learnings.sh
+    - commands/lib/promote-components.sh
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: medium
+  impact: high
+  effort: large
+  files_touched:
+    - .furrow/almanac/
+    - bin/alm
+    - commands/lib/
+  status: active
+- id: dual-review-and-specialist-delegation
+  title: "Dual-review at all steps + intent-based specialist auto-delegation"
+  context: |
+    Two coupled improvements:
+    1. Extend dual-reviewer protocol (fresh subagent + codex cross-model) to plan
+       and spec steps, not just review and ideate.
+    2. Intent-based specialist auto-delegation: the harness should infer which specialist
+       to load from the action context. If the user says "merge xyz", delegate to
+       merge-specialist. If spec'ing an LLM feature, load LLM specialist. Currently
+       specialists are planned in decompose but not enforced or auto-selected.
+       The mechanism should support a wide surface but ultimately be based on intent —
+       is there a specialist for this action/job? If so, use it.
+
+    New specialists needed: LLM/AI application specialist (per Kapil's feedback —
+    context window budgeting, structured output, retrieval strategies, multimodal
+    handling), test-driven specialist (thinks test-first).
+  work_needed: |
+    - Add dual-reviewer protocol to skills/plan.md and skills/spec.md
+    - Design intent-based specialist matching: how does the harness detect which specialist applies?
+    - Consider: definition.yaml tags, action keywords, file patterns, explicit user hints
+    - Create specialists/llm-specialist.md with AI application reasoning patterns
+    - Create specialists/test-driven-specialist.md with test-first reasoning patterns
+    - Wire specialist auto-loading into step skills (not just decompose/implement)
+    - Update references/specialist-template.md with auto-delegation conventions
+  references:
+    - skills/review.md
+    - skills/ideate.md
+    - skills/plan.md
+    - skills/spec.md
+    - specialists/
+    - references/specialist-template.md
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: medium
+  impact: high
+  effort: medium
+  files_touched:
+    - skills/plan.md
+    - skills/spec.md
+    - specialists/
+    - references/specialist-template.md
+  status: active
+- id: spike-row-mode
+  title: "Spike row mode — implementation-flavored research with throwaway prototypes"
+  context: |
+    Sometimes work requires a quick prototype to catch unexpected considerations or
+    clarify design/intent/constraints. These are messy and exploratory but highly
+    informative of what the real design should look like. A spike is an implementation
+    version of a research-row.
+
+    Key properties: fixed time-box, output is a decision not a deliverable, throwaway
+    code is expected, reduces uncertainty. Same 7-step enforcement (the strength of
+    Furrow), but scope narrows:
+    - Ideate: "what question does this spike answer?"
+    - Research + Plan: "fastest path to a working prototype"
+    - Spec: acceptance criteria = "we know enough when we can demonstrate X"
+    - Implement: throwaway code + findings document
+    - Review: did we answer the question? (not code quality)
+
+    Fallow (passive code slop detection) is related but separate — stays exploratory.
+    Row preparation (lighter pre-row investigation) is concerning because it weakens
+    enforcement. Spikes preserve enforcement while narrowing scope.
+  work_needed: |
+    - Design mode: spike in definition.yaml (alongside mode: code and mode: research)
+    - Define spike-specific gate criteria per step (question-focused, not artifact-focused)
+    - Add spike dimension files to evals/dimensions/
+    - Define time-box mechanism (session count? wall clock? honor system?)
+    - Design how spike findings feed into subsequent real row's ideation
+    - Consider spike-specific specialist modifier (exploratory mindset vs production quality)
+    - Prototype with a real spike to validate the pattern
+  references:
+    - skills/
+    - evals/dimensions/
+    - references/definition-shape.md
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: low
+  impact: high
+  effort: medium
+  files_touched:
+    - skills/
+    - evals/dimensions/
+    - references/definition-shape.md
+  status: active
+- id: triage-and-braindump-ideation
+  title: "Ideation loops in triage and brain dump commands"
+  context: |
+    Both /furrow:triage and the brain dump command should include back-and-forth
+    ideation before mechanical processing. This is the collaborate pattern from the
+    model routing TODO applied to planning commands.
+
+    Triage ideation: before grouping, ask about priorities, surface unclear items,
+    identify hidden dependencies, challenge assumptions about ordering, create
+    clarity where it's lacking.
+
+    Brain dump ideation: organize → ask clarifying questions → consolidate →
+    iterate back and forth → THEN create TODOs. Not mechanical TODO extraction.
+  work_needed: |
+    - Update commands/triage.md to add a collaboration step before phase grouping
+    - Create a brain dump command (commands/brain-dump.md or extend work-todos.md)
+    - Define the ideation protocol for both: what questions to ask, when to stop iterating
+    - Consider reusing the shared collaboration protocol from ideation steps
+    - Ensure the commands don't just extract TODOs mechanically
+  references:
+    - commands/triage.md
+    - commands/work-todos.md
+    - skills/ideate.md
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: medium
+  impact: high
+  effort: medium
+  files_touched:
+    - commands/triage.md
+    - commands/work-todos.md
+  status: active
+- id: furrow-next-phase-lifecycle
+  title: "furrow:next as full phase lifecycle — merge, update roadmap, handoff, launch"
+  context: |
+    /furrow:next currently only generates handoff prompts and offers to launch sessions
+    (steps 3-4). It should handle the full phase transition lifecycle:
+    1. Merge completed worktrees from previous phase (delegate to merge specialist)
+    2. Update roadmap status (mark phase done, update counts)
+    3. Generate handoff prompts for next phase
+    4. Launch sessions via frw launch-phase
+
+    Also: source_todo field exists in state.json/definition.yaml but /furrow:next
+    doesn't use it when generating handoff prompts. Wire it in for TODO traceability.
+  work_needed: |
+    - Add pre-launch phase: detect completed worktrees from previous phase
+    - Delegate merging to merge-specialist via frw launch-phase or a new frw merge-phase
+    - Auto-update roadmap.yaml and roadmap.md after merging (mark phase done, bump counts)
+    - Wire source_todo into handoff prompt generation
+    - Handle merge conflicts gracefully (present to user, don't auto-resolve)
+    - Update commands/next.md with the full lifecycle
+  references:
+    - commands/next.md
+    - bin/frw.d/scripts/launch-phase.sh
+    - bin/frw.d/scripts/merge-to-main.sh
+    - specialists/merge-specialist.md
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: medium
+  impact: high
+  effort: medium
+  files_touched:
+    - commands/next.md
+    - bin/frw.d/scripts/launch-phase.sh
+    - bin/frw.d/scripts/merge-to-main.sh
+  status: active
+- id: sprint-inspired-planning
+  title: "Sprint-inspired work planning — retros, velocity, multi-row coordination, observability"
+  context: |
+    Borrow sprint concepts as reasoning tools for work planning (not literal sprints):
+    - Phase retros: after each phase, capture what worked, what didn't, what to change
+    - Velocity signals: sessions is the wrong metric (most rows take one session).
+      Need better signals — perhaps token usage, deliverable count, correction count.
+    - Multi-row coordination: parallel workstreams need to coordinate on shared schema,
+      API contracts, data model changes (Kapil's feedback)
+    - Observability: "understand at a glance what's been done, what's blocked, what
+      decisions were made" across multi-session rows and compaction events (Kapil)
+    - Context budget: strategies for interconnected codebases where 300 lines of
+      injected context doesn't capture cross-cutting concerns (Kapil)
+
+    NOT implementing: quick-start path / step skipping. Furrow's strength comes from
+    enforcement; weakening it undermines the value proposition.
+  work_needed: |
+    - Design phase retro format and where it lives (almanac? roadmap companion?)
+    - Explore better velocity metrics than session count
+    - Design multi-row coordination primitives (shared contracts, cross-row seeds)
+    - Improve observability: rws status enhancements, summary.md quality after compaction
+    - Research context budget strategies for interconnected codebases
+    - Incorporate into /furrow:triage as optional retro step
+  references:
+    - .furrow/almanac/roadmap.yaml
+    - commands/triage.md
+    - skills/work-context.md
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: low
+  impact: high
+  effort: large
+  files_touched:
+    - .furrow/almanac/
+    - commands/triage.md
+    - bin/rws
+  status: active
+- id: collaborative-surfaces
+  title: "Document-based collaboration — markdown + comment threading, Notion integration"
+  context: |
+    Longer-term vision for collaboration surfaces beyond the chat stream. Work
+    back-and-forth happens on a shared document where the user comments and the
+    agent iterates on the document.
+
+    Two surfaces:
+    - Surface 1: Claude Code + local markdown file with comment markers. Agent
+      listens for comments and iterates on the document.
+    - Surface 2: Notion + hosted agent with threaded comments.
+
+    Research Antigravity's approach (markdown interface with comment threading that
+    the model responds to by iterating on the document).
+
+    The user is already working this way informally (copying outputs, annotating
+    with inline comments). Early version could formalize the markdown comment pattern.
+    Depends on orchestrator architecture landing first.
+  work_needed: |
+    - Research Antigravity and similar doc-collaboration approaches
+    - Design markdown comment protocol (comment markers, agent response conventions)
+    - Prototype early version: markdown file with comment markers in Claude Code
+    - Evaluate Notion API for threaded comment listening + document editing
+    - Define how this integrates with the orchestrator collaborate phase
+    - Consider Agent SDK adapter for the Notion-hosted surface
+  references:
+    - skills/ideate.md
+    - adapters/agent-sdk/
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: low
+  impact: medium
+  effort: large
+  files_touched:
+    - skills/
+    - adapters/
+  status: active
+- id: config-cleanup
+  title: "Configuration cleanup — move furrow.yaml, add ~/.config/furrow/, wire source_todo"
+  context: |
+    Three config issues:
+    1. furrow.yaml lives in .claude/ but it's Furrow config, not Claude Code config.
+       Move to .furrow/furrow.yaml.
+    2. ~/.config/furrow/ for cross-project config: global defaults, shared specialists,
+       promotion targets. Lightens per-project install load.
+    3. source_todo field exists in state.json/definition.yaml but /furrow:next doesn't
+       use it in handoff prompts. Wire it in for traceability.
+  work_needed: |
+    - Move furrow.yaml from .claude/ to .furrow/
+    - Update all references to furrow.yaml path (bin/frw, install.sh, skills, commands)
+    - Design ~/.config/furrow/ structure (global defaults, shared config)
+    - Update frw install to read global config as fallback
+    - Wire source_todo into /furrow:next handoff prompt generation
+    - Migration path for existing installs
+  references:
+    - .claude/furrow.yaml
+    - bin/frw.d/install.sh
+    - commands/next.md
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: medium
+  impact: medium
+  effort: small
+  files_touched:
+    - .claude/furrow.yaml
+    - bin/frw.d/install.sh
+    - bin/frw
+    - commands/next.md
+  status: active
+- id: blocking-stop-hooks
+  title: "Blocking stop hooks + auto-TODO on harness errors"
+  context: |
+    Stop hooks currently exit 0 with stderr text — the model may not act on advisory
+    output. The quality-and-rules branch added blocking behavior to PreToolUse hooks
+    and rules, but stop hooks were NOT converted to blocking (verified: validate-summary.sh
+    and stop-ideation.sh have no exit 2 paths).
+
+    Additionally, when a hook or CLI fails in a consumer project, there's no mechanism
+    to auto-create a TODO in Furrow's almanac with the error context. This requires
+    user confirmation to describe the issue but the pipeline should be automated.
+  work_needed: |
+    - Convert stop hooks (validate-summary.sh, stop-ideation.sh) to exit 2 for real issues
+    - Define which stop hook conditions are blocking vs advisory
+    - Design auto-TODO pipeline: hook failure → structured error → user confirms → TODO created
+    - Wire into alm or a new frw error-report command
+    - Test that blocking stop hooks actually prevent session end in Claude Code
+  references:
+    - bin/frw.d/hooks/validate-summary.sh
+    - bin/frw.d/hooks/stop-ideation.sh
+    - bin/alm
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: medium
+  impact: medium
+  effort: small
+  files_touched:
+    - bin/frw.d/hooks/validate-summary.sh
+    - bin/frw.d/hooks/stop-ideation.sh
+  status: active
+- id: furrow-tui-dashboard
+  title: "Furrow TUI / agent-dashboard integration"
+  context: |
+    Terminal UI for monitoring: active rows, step progress, agent status, seed graph,
+    token usage. Could integrate with the existing agent-dashboard project at
+    ../agent-dashboard. Pie in the sky but addresses the observability gap
+    (Kapil: "understand at a glance what's been done, what's blocked, what decisions
+    were made").
+  work_needed: |
+    - Evaluate agent-dashboard for Furrow integration points
+    - Design TUI layout: row status, step progress, agent tree, seed graph
+    - Consider rws status --tui as the entry point
+    - Explore whether this is a separate tool or an extension of agent-dashboard
+  references:
+    - bin/rws
+  source_type: brain-dump
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: low
+  impact: medium
+  effort: large
+  files_touched: []
   status: active

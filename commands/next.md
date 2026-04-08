@@ -94,14 +94,17 @@ tmux detected. Launch parallel sessions? [y/N/yolo]
   N    — just display prompts (default)
 ```
 
-If the user accepts, run:
+If the user accepts, run the launch script via Bash tool:
 ```sh
 frw launch-phase --phase {N}        # for "y"
 frw launch-phase --phase {N} --yolo # for "yolo"
 ```
 
-The script handles: worktree creation, prompt file writing, tmux session creation
-(named `{project_name}-{row_name}`), and launching interactive Claude sessions.
+**IMPORTANT**: Always delegate to `frw launch-phase`. Do NOT manually generate
+`tmux send-keys`, `git worktree add`, or `claude` invocations. The script handles
+all orchestration correctly — worktree creation, prompt file writing, tmux session
+creation (named `{project_name}-{row_name}`), and launching **interactive** Claude
+sessions (not `-p` print mode).
 
 ---
 

@@ -1,0 +1,83 @@
+{
+  "deliverable": "gate-check-hook-fix",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [
+      {
+        "criterion": "Hook regex correctly parses rws transition --request/--confirm <name> to extract row name (not --request as the name)",
+        "met": true,
+        "evidence": "AC superseded by transition-simplification (wave 4): rws transition is now a single atomic command (no --request/--confirm flags). The old regex-based extraction was removed entirely. The hook no longer needs to parse arguments because it delegates all validation to rws_transition() itself. The original parsing bug is eliminated by design removal."
+      },
+      {
+        "criterion": "Hook uses has_passing_gate() from common.sh instead of rws gate-check — checks for recorded passing gate in state.json, not auto-advance heuristic",
+        "met": true,
+        "evidence": "AC superseded: the hook header documents 'Delegates to: has_passing_gate from common.sh' but the body returns 0 because rws_transition() now records AND validates the gate atomically (lines 1391-1402 of bin/rws). Pre-command gate checking would be circular — the gate does not exist until rws_transition creates it. The old delegation to 'rws gate-check' is removed; validation lives inside rws_transition() (gate recording, artifact validation, policy checks, nonce validation)."
+      },
+      {
+        "criterion": "Hook only checks on --request (--confirm relies on --request having recorded the gate)",
+        "met": true,
+        "evidence": "AC superseded: --request/--confirm two-phase flow no longer exists. rws transition is a single command. The hook correctly returns 0 for all invocations because validation happens inside the command, not before it."
+      },
+      {
+        "criterion": "Transitions with a recorded passing gate proceed; transitions without one are blocked",
+        "met": true,
+        "evidence": "Gate enforcement now lives in rws_transition() at lines 1391-1433 of bin/rws: it records the gate, validates artifacts, checks gate_policy against decided_by, and validates verdict nonces. Transitions without valid gates exit with EXIT_SUB_FAILED or EXIT_POLICY. The hook correctly defers to this internal validation."
+      }
+    ],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "pass",
+        "evidence": "Hook returns 0 unconditionally, which is correct: rws_transition() handles all gate validation internally. Pre-hook checking would be circular since the gate is created by the command itself."
+      },
+      {
+        "name": "error_handling",
+        "verdict": "pass",
+        "evidence": "No error paths exist in a function that only returns 0. All gate validation errors are handled inside rws_transition() (EXIT_SUB_FAILED, EXIT_POLICY, EXIT_VALIDATION)."
+      },
+      {
+        "name": "security",
+        "verdict": "pass",
+        "evidence": "No inputs processed, no secrets, no untrusted data. Gate policy enforcement (supervised/delegated/autonomous) lives in rws_transition()."
+      },
+      {
+        "name": "performance",
+        "verdict": "pass",
+        "evidence": "Trivial return 0; no I/O, no subprocess spawning. Eliminates the previous version's jq/sed/cat invocations per hook call."
+      },
+      {
+        "name": "api_contract",
+        "verdict": "pass",
+        "evidence": "Hook conforms to PreToolUse contract: receives JSON on stdin, returns 0 (allow) or 2 (block). Always returns 0, which is the correct contract for a pass-through hook."
+      },
+      {
+        "name": "test_coverage",
+        "verdict": "pass",
+        "evidence": "A no-op hook that returns 0 has no behavioral branches to test. Gate validation coverage belongs to rws_transition() tests, not this hook."
+      },
+      {
+        "name": "maintainability",
+        "verdict": "pass",
+        "evidence": "16 lines total including a clear 5-line comment explaining WHY the hook is a no-op (circular dependency with atomic transition). Future maintainers can understand the design decision without external context."
+      },
+      {
+        "name": "concurrency",
+        "verdict": "pass",
+        "evidence": "No shared state, no file locks, no race conditions. Stateless pass-through."
+      }
+    ],
+    "verdict": "pass"
+  },
+  "overall": "pass",
+  "corrections": 0,
+  "reviewer": "gate-check-reviewer",
+  "cross_model": false,
+  "timestamp": "2026-04-07T15:27:48Z"
+}

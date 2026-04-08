@@ -1,0 +1,27 @@
+{
+  "deliverable": "demo-script",
+  "phase_a": {
+    "verdict": "pass",
+    "checks": {
+      "artifact_exists": true,
+      "prep_checklist_items": 3,
+      "tmux_keybindings": 4,
+      "furrow_references": 10,
+      "narrative_framing": true
+    }
+  },
+  "phase_b": {
+    "verdict": "pass_with_notes",
+    "reviewers": ["fresh-claude"],
+    "findings": {
+      "completeness": "All topics covered — tmux and furrow sections both present",
+      "clarity": "Excellent — quoted talking points, copy-pasteable commands",
+      "time_budget": "Feasible with head-bounded cat commands",
+      "narrative": "Strong arc from environment to knowledge to process to action"
+    },
+    "notes": [
+      "Bounded roadmap.md cat with head -40 to prevent scroll (fixed)"
+    ]
+  },
+  "overall": "pass"
+}

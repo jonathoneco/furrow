@@ -10,18 +10,18 @@ context before making changes. See `.claude/rules/` for enforcement details.
 - Core files: `definition.yaml`, `state.json`, `summary.md`, `reviews/`
 - Identifiers: kebab-case. Schema fields: snake_case. Timestamps: ISO 8601.
 - `state.json` is Furrow-exclusive write — never edit directly.
-- Step sequence: ideate -> research -> plan -> spec -> decompose -> implement -> review
+- Step sequence: see `.claude/rules/step-sequence.md`
 
 ## Context Budget
 
 | Layer | Budget | Content |
 |-------|--------|---------|
-| Ambient | <=120 lines | This file + rules/ (always loaded) |
+| Ambient | <=150 lines | This file + rules/ (always loaded) |
 | Work | <=150 lines | `skills/work-context.md` (during active work) |
 | Step | <=50 lines | `skills/{step}.md` (per step, replaced at boundaries) |
 | Reference | ~600 lines | `references/` (on demand, NOT injected) |
 
-Total injected (ambient + work + step) must not exceed 320 lines.
+Total injected (ambient + work + step) must not exceed 350 lines.
 Each instruction appears in exactly one layer. Run `frw measure-context` to verify.
 
 ## Component Rationale
@@ -54,22 +54,7 @@ Conventional commits: feat:, fix:, chore:, docs:, refactor:, test:, infra:
 
 Installed from: this repository (self-hosted)
 
-| Command            | Purpose                                          |
-| ------------------ | ------------------------------------------------ |
-| /furrow:work       | Create or resume a row                           |
-| /furrow:status     | Show step, deliverable progress                  |
-| /furrow:checkpoint | Save session progress                            |
-| /furrow:review     | Run structured review                            |
-| /furrow:archive    | Archive completed work                           |
-| /furrow:reground   | Recover context after break                      |
-| /furrow:redirect   | Record dead end and pivot                        |
-| /work-todos        | Extract or create TODOs in todos.yaml            |
-| /furrow:triage     | Triage todos.yaml and generate ROADMAP.md        |
-| /furrow:next       | Generate handoff prompt(s) for next roadmap work |
-| /furrow:init       | Initialize Furrow in a new project               |
-| /furrow:doctor     | Check Furrow health                              |
-| /furrow:update     | Check configuration drift                        |
-| /furrow:meta       | Enter self-modification mode                     |
+Commands: see `references/furrow-commands.md`
 
 Run `/furrow:doctor` to check health. Run `install.sh --check` to verify installation.
 

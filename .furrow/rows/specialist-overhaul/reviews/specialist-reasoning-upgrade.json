@@ -1,0 +1,83 @@
+{
+  "deliverable": "specialist-reasoning-upgrade",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [
+      {
+        "criterion": "All 15 existing specialists audited against references/specialist-template.md standard",
+        "met": true,
+        "evidence": "All 15 original specialist files exist and were verified: api-designer, cli-designer, complexity-skeptic, document-db-architect, go-specialist, harness-engineer, merge-specialist, migration-strategist, python-specialist, relational-db-architect, security-engineer, shell-specialist, systems-architect, test-engineer, typescript-specialist. Each has frontmatter (name, description, type, model_hint), Domain Expertise, How This Specialist Reasons (6-8 patterns each), When NOT to Use, Quality Criteria, Anti-Patterns (4-6 rows each), and Context Requirements sections. 13 of 15 have Overlap Boundaries; python-specialist and typescript-specialist omit it per template allowance ('Omit if no overlap')."
+      },
+      {
+        "criterion": "Each specialist's reasoning patterns encode decision frameworks and project-specific conventions, not model defaults",
+        "met": true,
+        "evidence": "Sampled 10 specialists in depth. Project-grounded specialists (harness-engineer, security-engineer, shell-specialist, merge-specialist, test-engineer, document-db-architect, migration-strategist, api-designer, cli-designer, systems-architect) reference concrete Furrow files, tools, and conventions (state.json, rws/frw CLIs, plan.json, evals/gates/*.yaml, tests/integration/, rationale.yaml, etc.). Reasoning patterns encode specific decisions: e.g., security-engineer's 'CLI mediation as trust boundary' traces mutations through update-state.sh; test-engineer's 'gate-aligned test design' maps tests to definition.yaml acceptance criteria; harness-engineer's 'enforcement spectrum' ranks structural > event-driven > advisory. Language specialists (python-specialist, typescript-specialist) are exempt from project-grounding per template but still encode genuine decision frameworks (e.g., 'Protocol when interface, ABC when behavior', 'discriminated union over optional fields'). Minor note: complexity-skeptic has zero Furrow-specific references in its reasoning patterns, though its anti-pattern table includes one project-relevant row about context budget. Passes on balance since the anti-pattern satisfies the 'at least one reasoning pattern or anti-pattern' requirement."
+      },
+      {
+        "criterion": "Anti-pattern tables have actionable 'Do This Instead' column with project-specific alternatives",
+        "met": true,
+        "evidence": "All 15 specialists have 3-column anti-pattern tables (Pattern | Why It's Wrong | Do This Instead) with 4-6 data rows each (minimum requirement: 3). 'Do This Instead' entries are actionable and specific: e.g., security-engineer recommends 'Use rws or frw CLI commands' instead of direct jq edits; harness-engineer recommends 'Use []? operator' instead of '// empty' yq-ism; shell-specialist recommends 'Call frw/rws CLI commands; request new subcommands if needed' instead of sourcing harness internals. Language specialists provide language-specific alternatives without project references (acceptable per exemption)."
+      },
+      {
+        "criterion": "Language-reference content (syntax reminders, stdlib listings) removed or replaced with opinionated conventions",
+        "met": true,
+        "evidence": "No specialist contains syntax tutorials, stdlib listings, or 'how to write a for loop' content. go-specialist encodes Go decisions (interface discovery at consumer, zero-value readiness, error chain narration) without restating Go syntax. python-specialist encodes Protocol vs ABC decisions, generator-as-memory-contract, and import-graph-as-architecture without Python language tutorials. typescript-specialist encodes discriminated-union-over-optional-fields, satisfies-over-as, and strict-mode-as-floor without TS syntax reference. All content passes the template's litmus test: 'would Claude follow this advice anyway without the specialist?' — these are genuine decision frameworks, not restated best practices."
+      },
+      {
+        "criterion": "references/specialist-template.md updated with encoded reasoning guidance if audit reveals standard gaps",
+        "met": true,
+        "evidence": "Template was updated with: (1) model_hint field in frontmatter example, (2) 'When NOT to Use' section requirement, (3) 'Overlap Boundaries' section requirement, (4) 'Normative Requirements' section with Project Grounding, Encoded Reasoning vs. Restated Best Practice (including litmus test), Anti-Pattern Minimum (>=3 rows, >=1 project-specific), When NOT to Use requirement, Overlap Boundaries declaration, and model_hint Rationale. (5) Size Budget section (80 lines max). These additions codify the audit findings as enforceable standards."
+      },
+      {
+        "criterion": "specialists/_meta.yaml registry updated for any structural changes",
+        "met": true,
+        "evidence": "_meta.yaml contains entries for all 15 original specialists with file references, descriptions, and notes where appropriate. python-specialist and typescript-specialist have 'note' fields marking them as general-purpose language specialists not project-grounded. shell-specialist has a 'note' field documenting the boundary with harness-engineer and justifying its existence (11 non-harness scripts). Registry also includes 5 new specialists from the specialist-expansion deliverable (frontend-designer, css-specialist, accessibility-auditor, prompt-engineer, technical-writer)."
+      }
+    ],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "Correctness",
+        "verdict": "pass",
+        "evidence": "All 15 specialists follow the template structure exactly: YAML frontmatter with name/description/type/model_hint, then Domain Expertise, How This Specialist Reasons (bold-name bullets, 6-8 patterns), When NOT to Use (naming alternatives), Overlap Boundaries (where applicable), Quality Criteria, Anti-Patterns (3-column table, 4-6 rows), Context Requirements (Required + Helpful bullets). model_hint values are appropriate: opus for multi-step reasoning roles (security-engineer, systems-architect, complexity-skeptic), sonnet for well-scoped execution roles."
+      },
+      {
+        "name": "Maintainability",
+        "verdict": "pass",
+        "evidence": "All specialists are under 80 lines (range: 49-64 lines). Largest are harness-engineer (64) and merge-specialist (64), well within budget. Concise prose with no redundancy between sections. Each section serves a distinct purpose without overlapping content."
+      },
+      {
+        "name": "API contract (structural consistency)",
+        "verdict": "pass",
+        "evidence": "Consistent frontmatter schema across all 15 files. Section ordering is uniform. Anti-pattern tables use identical column headers. Context Requirements use consistent Required/Helpful bullet formatting. When NOT to Use sections consistently name alternative specialists. Overlap Boundaries consistently name the sibling and state what belongs where."
+      },
+      {
+        "name": "Test coverage",
+        "verdict": "N/A",
+        "evidence": "Prose templates — no runtime behavior to test."
+      },
+      {
+        "name": "Encoded reasoning (complexity-skeptic lens)",
+        "verdict": "pass",
+        "evidence": "Applied the template's litmus test ('would Claude follow this advice anyway?') to sampled specialists. Strong examples of encoded reasoning: security-engineer's 'hook that exits 0 on error fails open' with specific file paths; shell-specialist's 'non-harness scripts call CLIs, never source harness internals' with explicit boundary; harness-engineer's 'yq vs jq syntax distinction' catching a specific recurring bug; merge-specialist's 'no-ff merge as traceability' with specific commit format; test-engineer's 'gate-aligned test design' mapping tests to definition.yaml criteria. One concern: complexity-skeptic itself has no Furrow-specific reasoning patterns (only one project-relevant anti-pattern row). This is acceptable per the 'at least one reasoning pattern OR anti-pattern' requirement but is the weakest specialist on project grounding."
+      },
+      {
+        "name": "Anti-pattern actionability (complexity-skeptic lens)",
+        "verdict": "pass",
+        "evidence": "All 'Do This Instead' cells provide concrete alternatives, not vague advice. Project-grounded specialists reference specific tools, file paths, or conventions in alternatives. Examples: 'Use rws or frw CLI commands for all state mutations' (security-engineer), 'Use []? operator or || var=\"\" fallback' (harness-engineer), 'Call frw/rws CLI commands; request new subcommands if needed' (shell-specialist), 'Group by acceptance criterion from definition.yaml' (test-engineer). No 'consider' or 'evaluate' weasel-word alternatives found."
+      }
+    ],
+    "verdict": "pass"
+  },
+  "overall": "pass",
+  "corrections": 0,
+  "reviewer": "specialist-reasoning-reviewer",
+  "cross_model": false,
+  "timestamp": "2026-04-07T15:30:00Z"
+}

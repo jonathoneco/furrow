@@ -16,6 +16,7 @@ Specialist definitions live in `specialists/{name}.md`:
 name: "{specialist-name}"
 description: "{one-line domain description}"
 type: specialist
+model_hint: sonnet  # valid: sonnet | opus | haiku
 ---
 
 # {Specialist Name} Specialist
@@ -26,6 +27,14 @@ type: specialist
 ## How This Specialist Reasons
 {5-8 reasoning patterns as bold-name bullets with 2-4 sentences each}
 
+## When NOT to Use
+{At least one scenario where this specialist is the wrong choice, naming
+the better alternative (another specialist or no specialist).}
+
+## Overlap Boundaries
+{When this specialist shares domain surface with another, declare the boundary.
+Name the sibling specialist and state what belongs where. Omit if no overlap.}
+
 ## Quality Criteria
 {Domain-specific quality expectations — prose paragraph}
 
@@ -35,6 +44,62 @@ type: specialist
 ## Context Requirements
 {Required + Helpful bullet lists}
 ```
+
+## Normative Requirements
+
+### Project Grounding
+
+Every specialist MUST contain at least one reasoning pattern or anti-pattern
+that references a concrete project convention, file path, tool, or workflow.
+Generic domain knowledge alone is insufficient — the specialist must encode
+decisions specific to this project's context so the agent behaves differently
+than it would with no specialist loaded.
+
+Exception: language specialists (e.g., python-specialist, typescript-specialist)
+that exist for general reuse across projects are exempt from the project-grounding
+requirement. They must still pass the encoded reasoning test below.
+
+### Encoded Reasoning vs. Restated Best Practice
+
+A reasoning pattern is **encoded reasoning** if it meets ALL of:
+- It encodes a decision the model would not make by default
+- It references a specific tradeoff, threshold, or heuristic ("prefer X over Y
+  when Z", not "consider X")
+- Removing it from the specialist would change the agent's output on a task
+
+A reasoning pattern is **restated best practice** if ANY of:
+- It restates general domain knowledge the model already has (e.g., "quote
+  shell variables", "use parameterized queries", "prefer composition over
+  inheritance")
+- It uses vague language without actionable specifics
+- The model would follow the same advice without the specialist loaded
+
+**Litmus test**: Ask "would Claude follow this advice anyway without the
+specialist?" If yes, it is restated best practice — rewrite or remove it.
+
+### Anti-Pattern Minimum
+
+Every specialist must have at least 3 rows in the anti-pattern table. At least
+1 row must be project-specific (referencing a Furrow convention, tool, or file
+path) unless the specialist is a general-purpose language specialist.
+
+### When NOT to Use
+
+Every specialist must declare at least one scenario where it is the wrong
+choice, naming the better alternative (another specialist or no specialist).
+
+### Overlap Boundaries
+
+When two specialists share domain surface, each must declare its boundary in
+an "Overlap Boundaries" section. The section names the sibling and states what
+belongs where. This prevents duplicate or contradictory guidance.
+
+### model_hint Rationale
+
+- `opus`: Multi-step reasoning across large contexts, novel problem-solving,
+  cross-component architectural decisions
+- `sonnet`: Well-scoped execution within established patterns, single-domain work
+- `haiku`: Reserved for trivial boilerplate tasks (currently no specialists qualify)
 
 ## How Specialists Are Used
 
@@ -61,8 +126,8 @@ Specialist types use kebab-case: `api-designer`, `auth-specialist`,
 The name primes the agent's behavior. Choose names that match the domain
 expertise needed, not generic process roles.
 
-## Context Budget
+## Size Budget
 
-Specialist templates are read on demand (reference layer). They are NOT counted
-against the 300-line injected budget. Keep templates concise but complete
-enough for the agent to operate independently.
+Specialist templates must not exceed 80 lines (including frontmatter).
+They are read on demand (reference layer) and NOT counted against the
+300-line injected budget.

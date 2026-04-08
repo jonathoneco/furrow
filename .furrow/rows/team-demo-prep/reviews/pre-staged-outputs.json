@@ -1,0 +1,23 @@
+{
+  "deliverable": "pre-staged-outputs",
+  "phase_a": {
+    "verdict": "pass",
+    "checks": {
+      "next_prompt_exists": true,
+      "work_commands": 2,
+      "roadmap_lines": 204,
+      "target_todo_active": true
+    }
+  },
+  "phase_b": {
+    "verdict": "pass",
+    "reviewers": ["fresh-claude"],
+    "findings": {
+      "completeness": "Two handoff prompts with scope, TODOs, and key files",
+      "usefulness": "Compelling — shows parallel rows with distinct scopes",
+      "accuracy": "All TODO IDs and file paths verified"
+    },
+    "notes": []
+  },
+  "overall": "pass"
+}

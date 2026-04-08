@@ -1,1 +1,1 @@
-../../specialists/python-specialist.md
+../../../furrow/specialists/python-specialist.md

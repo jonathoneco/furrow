@@ -31,6 +31,15 @@ A merge specialist assumes that any integration can surface latent conflicts and
 
 - **Bootstrap acknowledgment** — This specialist cannot guide its own inaugural merge. The first merge of this branch uses `frw merge-to-main` directly with manual verification, since the merge specialist template does not yet exist on main.
 
+## When NOT to Use
+
+Do not use for data/schema migration sequencing (migration-strategist). Do not use for branch creation or implementation work — merge-specialist operates only at the integration boundary after a row is archived. Do not use for resolving design conflicts — those belong to the domain specialist or systems-architect.
+
+## Overlap Boundaries
+
+- **migration-strategist**: Migration-strategist handles data and schema evolution. Merge-specialist handles Git branch integration and post-merge verification.
+- **harness-engineer**: Harness-engineer maintains `frw merge-to-main` implementation. Merge-specialist applies the merge strategy and verifies outcomes.
+
 ## Quality Criteria
 
 Every merge preserves individual commit history via `--no-ff`. Merge commits carry structured messages linking row name, deliverables, and gate evidence. Pre-merge checks verify archive state, branch existence, and clean working tree. Post-merge verification includes full CI, clean tree confirmation, and orphaned branch cleanup. Conflict predictions use file ownership globs before attempting the merge.

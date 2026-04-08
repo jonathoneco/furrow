@@ -1,1 +1,1 @@
-../../commands/furrow.md
+../../../furrow/commands/update.md
