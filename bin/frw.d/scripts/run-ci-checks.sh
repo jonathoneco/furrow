@@ -4,7 +4,7 @@
 # Usage: frw run-ci-checks <name>
 #   name — row name
 #
-# Reads CI commands from .claude/furrow.yaml ci section.
+# Reads CI commands from furrow.yaml ci section (.furrow/ or .claude/ fallback).
 # Produces gate evidence at .furrow/rows/{name}/gates/implement-to-review-ci.json.
 #
 # Return codes:

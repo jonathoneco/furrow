@@ -42,10 +42,20 @@ frw_cross_model_review() {
   work_dir="${PROJECT_ROOT}/.furrow/rows/${name}"
   state_file="${work_dir}/state.json"
   definition_file="${work_dir}/definition.yaml"
-  furrow_config="${PROJECT_ROOT}/.claude/furrow.yaml"
+  furrow_config=""
+  for _candidate in "${PROJECT_ROOT}/.furrow/furrow.yaml" "${PROJECT_ROOT}/.claude/furrow.yaml"; do
+    if [ -f "$_candidate" ]; then
+      furrow_config="$_candidate"
+      break
+    fi
+  done
 
   # --- 1. Read cross-model provider ---
 
+  if [ -z "$furrow_config" ]; then
+    echo "Cross-model review skipped: no furrow.yaml found" >&2
+    return 1
+  fi
   provider="$(yq -r '.cross_model.provider // ""' "$furrow_config")"
   if [ -z "$provider" ]; then
     echo "Cross-model review skipped: no provider configured" >&2
@@ -232,12 +242,21 @@ Output as JSON: {\"dimensions\": [{\"name\": \"...\", \"verdict\": \"...\", \"ev
 _cross_model_ideation() {
   name="$1"
   work_dir="${PROJECT_ROOT}/.furrow/rows/${name}"
-  state_file="${work_dir}/state.json"
   definition_file="${work_dir}/definition.yaml"
   summary_file="${work_dir}/summary.md"
-  furrow_config="${PROJECT_ROOT}/.claude/furrow.yaml"
+  furrow_config=""
+  for _candidate in "${PROJECT_ROOT}/.furrow/furrow.yaml" "${PROJECT_ROOT}/.claude/furrow.yaml"; do
+    if [ -f "$_candidate" ]; then
+      furrow_config="$_candidate"
+      break
+    fi
+  done
 
   # --- 1. Read cross-model provider ---
+  if [ -z "$furrow_config" ]; then
+    echo "Cross-model review skipped: no furrow.yaml found" >&2
+    return 1
+  fi
   provider="$(yq -r '.cross_model.provider // ""' "$furrow_config")"
   if [ -z "$provider" ]; then
     echo "Cross-model review skipped: no provider configured" >&2
