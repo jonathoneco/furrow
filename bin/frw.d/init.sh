@@ -50,15 +50,15 @@ frw_init() {
   fi
 
   # --- 3. Config ---
-  if [ -f ".claude/furrow.yaml" ]; then
-    echo "  [SKIP] .claude/furrow.yaml (exists)"
+  if [ -f ".furrow/furrow.yaml" ]; then
+    echo "  [SKIP] .furrow/furrow.yaml (exists)"
   else
-    mkdir -p ".claude"
-    cp "$FURROW_ROOT/.claude/furrow.yaml" ".claude/furrow.yaml"
+    mkdir -p ".furrow"
+    cp "$FURROW_ROOT/.claude/furrow.yaml" ".furrow/furrow.yaml"
 
     # Auto-detect project name
     _proj_name="$(basename "$(pwd)" | tr '[:upper:]' '[:lower:]')"
-    sed -i "s|^  name: \"furrow\"|  name: \"${_proj_name}\"|" ".claude/furrow.yaml"
+    sed -i "s|^  name: \"furrow\"|  name: \"${_proj_name}\"|" ".furrow/furrow.yaml"
 
     # Auto-detect repo (owner/repo from git remote)
     _repo=""
@@ -80,7 +80,7 @@ frw_init() {
       _repo="${_repo%.git}"
     fi
     if [ -n "$_repo" ]; then
-      sed -i "s|^  repo: \"\"|  repo: \"${_repo}\"|" ".claude/furrow.yaml"
+      sed -i "s|^  repo: \"\"|  repo: \"${_repo}\"|" ".furrow/furrow.yaml"
     fi
 
     # Auto-detect language
@@ -93,16 +93,16 @@ frw_init() {
       _lang="python"
     fi
     if [ -n "$_lang" ]; then
-      sed -i "s|^  language: \"\"|  language: \"${_lang}\"|" ".claude/furrow.yaml"
+      sed -i "s|^  language: \"\"|  language: \"${_lang}\"|" ".furrow/furrow.yaml"
     fi
 
     # Set seeds prefix
     if [ -z "$_prefix" ]; then
       _prefix="$(basename "$(pwd)" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g')"
     fi
-    sed -i "s|^  prefix: \"\"|  prefix: \"${_prefix}\"|" ".claude/furrow.yaml"
+    sed -i "s|^  prefix: \"\"|  prefix: \"${_prefix}\"|" ".furrow/furrow.yaml"
 
-    echo "  [OK]   .claude/furrow.yaml created"
-    echo "  Review .claude/furrow.yaml and fill in remaining fields"
+    echo "  [OK]   .furrow/furrow.yaml created"
+    echo "  Review .furrow/furrow.yaml and fill in remaining fields"
   fi
 }

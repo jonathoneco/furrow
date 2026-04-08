@@ -43,8 +43,15 @@ hook_correction_limit() {
   # --- read correction limit from furrow.yaml ---
 
   limit=3
-  if [ -f ".claude/furrow.yaml" ] && command -v yq > /dev/null 2>&1; then
-    limit="$(yq -r '.defaults.correction_limit // 3' ".claude/furrow.yaml" 2>/dev/null)" || limit=3
+  _furrow_yaml=""
+  for _candidate in .furrow/furrow.yaml .claude/furrow.yaml; do
+    if [ -f "$_candidate" ]; then
+      _furrow_yaml="$_candidate"
+      break
+    fi
+  done
+  if [ -n "$_furrow_yaml" ] && command -v yq > /dev/null 2>&1; then
+    limit="$(yq -r '.defaults.correction_limit // 3' "$_furrow_yaml" 2>/dev/null)" || limit=3
   fi
 
   # --- require plan.json to map files to deliverables ---

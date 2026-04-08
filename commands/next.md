@@ -33,6 +33,12 @@ For each TODO ID in the row(s):
 - Read its `context` and `work_needed` from `.furrow/almanac/todos.yaml`
 - Read its `depends_on`, `files_touched`
 
+### 3b. Read Row Source TODO
+
+For each row, check if `.furrow/rows/{name}/state.json` exists.
+If it does, read the `source_todo` field. If `source_todo` is non-null,
+include it in the handoff prompt (see step 5).
+
 ### 4. Check for Active Rows
 
 Run `rws list` to find any active `.furrow/rows/*/state.json`.
@@ -54,6 +60,9 @@ See **.furrow/almanac/roadmap.yaml Phase {N}** for rationale and ordering.
 
 Source TODOs in `.furrow/almanac/todos.yaml` (read `context` and `work_needed` for full detail):
 {For each TODO: `{id}` — {title}}
+
+{If state.json exists for this row and source_todo is non-null:}
+Source TODO: {source_todo} (see .furrow/almanac/todos.yaml)
 
 ### Key files
 {Deduplicated files_touched from all TODOs in this row}

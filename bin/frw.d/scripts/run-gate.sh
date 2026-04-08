@@ -36,7 +36,7 @@ frw_run_gate() {
       ;;
   esac
 
-  work_dir="${FURROW_ROOT}/.furrow/rows/${name}"
+  work_dir="${PROJECT_ROOT}/.furrow/rows/${name}"
   state_file="${work_dir}/state.json"
   def_file="${work_dir}/definition.yaml"
 

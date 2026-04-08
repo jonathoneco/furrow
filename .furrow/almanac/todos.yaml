@@ -1628,6 +1628,9 @@
     - Update all references to furrow.yaml path (bin/frw, install.sh, skills, commands)
     - Design ~/.config/furrow/ structure (global defaults, shared config)
     - Update frw install to read global config as fallback
+    - Revisit FURROW_ROOT/PROJECT_ROOT resolution when adding global config — the resolution
+      chain becomes PROJECT_ROOT (.furrow/) → ~/.config/furrow/ → FURROW_ROOT (install dir),
+      and the split introduced in infra-fixes needs to account for this third tier
     - Wire source_todo into /furrow:next handoff prompt generation
     - Migration path for existing installs
   references:
@@ -1676,6 +1679,31 @@
   files_touched:
     - bin/frw.d/hooks/validate-summary.sh
     - bin/frw.d/hooks/stop-ideation.sh
+  status: active
+- id: specialist-template-warning-escalation
+  title: "Escalate specialist template warnings to structured observability"
+  context: |
+    During infra-fixes ideation, specialist template enforcement was scoped as
+    warn-and-proceed (warn if template missing, still dispatch agent). The warnings
+    go to stderr but aren't captured, tracked, or surfaced post-session. Need a
+    mechanism to make these warnings observable — either via learnings, auto-TODO,
+    or a post-session summary of skipped specialist templates.
+  work_needed: |
+    - Design how specialist template warnings are captured (log file, structured output, summary section)
+    - Consider integration with the auto-TODO pipeline when it exists
+    - Evaluate whether warnings should escalate to hard blocks after a configurable threshold
+  references:
+    - skills/implement.md
+    - specialists/
+  source_type: ideation-decision
+  source_work_unit: infra-fixes
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: low
+  impact: medium
+  effort: small
+  files_touched:
+    - skills/implement.md
   status: active
 - id: furrow-tui-dashboard
   title: "Furrow TUI / agent-dashboard integration"

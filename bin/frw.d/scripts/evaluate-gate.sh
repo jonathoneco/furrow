@@ -25,7 +25,7 @@ frw_evaluate_gate() {
   evaluator_verdict="$3"
 
   # Read gate_policy from definition.yaml, default to "supervised"
-  definition_file="${FURROW_ROOT}/.furrow/rows/${name}/definition.yaml"
+  definition_file="${PROJECT_ROOT}/.furrow/rows/${name}/definition.yaml"
   if [ -f "$definition_file" ] && command -v yq > /dev/null 2>&1; then
     gate_policy="$(yq -r '.gate_policy // "supervised"' "$definition_file")" || gate_policy="supervised"
   else

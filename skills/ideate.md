@@ -25,7 +25,7 @@ Run the 6-part ceremony in order:
    Emit `<!-- ideation:section:{name} -->` before each decision block.
 4. **Dual outside voice** — run both reviewers in parallel:
    a. Fresh same-model subagent (isolated context) for problem framing review.
-   b. Cross-model review via `frw cross-model-review` if `cross_model.provider`
+   b. Cross-model review via `frw cross-model-review <name> --ideation` if `cross_model.provider`
       is configured in `furrow.yaml`. If absent, skip cross-model.
    Synthesize findings from both. Record in gate evidence.
 5. **Section-by-section approval** — build `definition.yaml` incrementally. Present

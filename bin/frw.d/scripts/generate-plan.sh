@@ -26,8 +26,8 @@ frw_generate_plan() {
   fi
 
   name="$1"
-  def_file="$FURROW_ROOT/.furrow/rows/${name}/definition.yaml"
-  plan_file="$FURROW_ROOT/.furrow/rows/${name}/plan.json"
+  def_file="$PROJECT_ROOT/.furrow/rows/${name}/definition.yaml"
+  plan_file="$PROJECT_ROOT/.furrow/rows/${name}/plan.json"
 
   if [ ! -f "$def_file" ]; then
     echo "Error: definition.yaml not found: $def_file" >&2
@@ -207,6 +207,13 @@ print(json.dumps(output))
 
   mv "$tmp_file" "$plan_file"
   trap - EXIT
+
+  # Validate specialist template files exist
+  for _specialist in $(jq -r '.waves[].assignments[].specialist // empty' "$plan_file" 2>/dev/null | sort -u); do
+    if [ ! -f "${FURROW_ROOT}/specialists/${_specialist}.md" ]; then
+      echo "Warning: specialist template not found: specialists/${_specialist}.md" >&2
+    fi
+  done
 
   echo "Plan written: $plan_file"
   return 0

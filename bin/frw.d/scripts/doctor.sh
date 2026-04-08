@@ -15,7 +15,7 @@ frw_doctor() {
       *) ROOT="$arg" ;;
     esac
   done
-  ROOT="${ROOT:-$FURROW_ROOT}"
+  ROOT="${ROOT:-$PROJECT_ROOT}"
   failures=0
   warnings=0
 

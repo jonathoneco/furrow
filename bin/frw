@@ -8,6 +8,8 @@ set -eu
 SCRIPT_PATH="$(readlink -f "$0")"
 FURROW_ROOT="$(cd "$(dirname "$SCRIPT_PATH")" && cd .. && pwd)"
 export FURROW_ROOT
+PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
+export PROJECT_ROOT
 
 die() { printf 'frw: %s\n' "$1" >&2; exit 1; }
 
@@ -39,7 +41,8 @@ Gate pipeline:
   select-gate <name>
   select-dimensions <name>
   run-ci-checks <name>
-  cross-model-review <name> <deliverable>
+  cross-model-review <name> <deliv>  Run cross-model deliverable review
+  cross-model-review <name> --ideation  Run cross-model ideation review
 
 Code generation:
   generate-plan <name>        Build plan.json from definition.yaml
