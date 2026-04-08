@@ -847,7 +847,7 @@
     - Consider a pre-implement hook that warns if specialist templates are not being loaded
     - Update skills/implement.md to make specialist loading explicit and mandatory
   source_type: brain-dump
-  status: active
+  status: done
   created_at: "2026-04-03T04:37:52-04:00"
   updated_at: "2026-04-03T17:00:00Z"
   urgency: "medium"
@@ -1316,7 +1316,7 @@
     - bin/rws
     - bin/sds
     - bin/alm
-  status: active
+  status: done
 # --- Standalone: Gate Check Hook Fix ---
 - id: gate-check-hook-excluded-steps
   title: "gate-check hook blocks transitions for excluded steps (ideate/implement/review)"
@@ -1340,7 +1340,7 @@
   effort: "small"
   files_touched:
     - "bin/frw.d/hooks/gate-check.sh"
-  status: active
+  status: done
 # --- Brain Dump 2: 2026-04-07 ---
 - id: ambient-context-promotion
   title: "Ambient context promotion system — row→project→global knowledge graduation"
@@ -1649,6 +1649,12 @@
     - bin/frw
     - commands/next.md
   status: active
+  partial_completion: |
+    infra-fixes row completed items 1 and 3: furrow.yaml moved to .furrow/,
+    all references updated with candidate loop fallback, source_todo wired into
+    /furrow:next handoff prompts. Remaining: item 2 (~/.config/furrow/ design)
+    and FURROW_ROOT/PROJECT_ROOT resolution chain revisit — deferred to
+    ambient-promotion phase.
 - id: blocking-stop-hooks
   title: "Blocking stop hooks + auto-TODO on harness errors"
   context: |
@@ -1679,7 +1685,7 @@
   files_touched:
     - bin/frw.d/hooks/validate-summary.sh
     - bin/frw.d/hooks/stop-ideation.sh
-  status: active
+  status: done
 - id: specialist-template-warning-escalation
   title: "Escalate specialist template warnings to structured observability"
   context: |
