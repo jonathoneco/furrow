@@ -813,9 +813,9 @@ cmd_next() {
   phase_title=$(printf '%s' "$phase" | jq -r '.title // ("Phase " + (.number | tostring))')
   printf '=== %s ===\n\n' "$phase_title"
 
-  # Generate a handoff prompt for each work unit
-  printf '%s' "$phase" | jq -r '.work_units[]' 2>/dev/null | jq -r '
-    "Start with: `/work " + .branch_name + " — " + .description + "`\n" +
+  # Generate a handoff prompt for each row in the phase
+  printf '%s' "$phase" | jq -r '.rows[] |
+    "Start with: `/work " + .branch + " — " + .description + "`\n" +
     "Source TODOs: " + (.todos | join(", ")) + "\n" +
     "Key files: " + (if (.key_files | length) > 0 then (.key_files | join(", ")) else "(none specified)" end) + "\n"
   '
