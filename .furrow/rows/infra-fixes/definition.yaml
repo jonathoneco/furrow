@@ -1,0 +1,87 @@
+objective: >
+  Fix infrastructure gaps blocking reliable harness operation: introduce PROJECT_ROOT
+  for correct path resolution in consumer projects, enforce specialist template loading
+  during implementation, move furrow.yaml to its natural .furrow/ home with source_todo
+  wiring, and add ideation-mode cross-model review with correct codex invocation.
+
+deliverables:
+  - name: project-root-resolution
+    acceptance_criteria:
+      - "PROJECT_ROOT variable introduced and exported in frw, used by rws/sds/alm"
+      - "All FURROW_ROOT references audited — project-data refs use PROJECT_ROOT"
+      - "frw commands work correctly when invoked via PATH/symlink from a consumer project"
+      - "frw commands still work when run from the Furrow source repo itself"
+    specialist: shell-specialist
+    file_ownership:
+      - "bin/frw"
+      - "bin/rws"
+      - "bin/sds"
+      - "bin/alm"
+      - "bin/frw.d/**"
+
+  - name: specialist-template-enforcement
+    acceptance_criteria:
+      - "Agents dispatched during implement step receive their assigned specialist template"
+      - "Missing specialist template produces a warning on stderr"
+      - "skills/implement.md documents specialist loading as mandatory behavior"
+    specialist: harness-engineer
+    file_ownership:
+      - "skills/implement.md"
+
+  - name: config-move-and-source-todo
+    acceptance_criteria:
+      - "furrow.yaml lives in .furrow/furrow.yaml"
+      - "All references to .claude/furrow.yaml updated"
+      - "frw init and frw install create config in .furrow/"
+      - "source_todo from state.json appears in /furrow:next handoff prompts"
+    specialist: harness-engineer
+    depends_on:
+      - project-root-resolution
+    file_ownership:
+      - ".claude/furrow.yaml"
+      - "bin/frw.d/init.sh"
+      - "bin/frw.d/install.sh"
+      - "commands/next.md"
+
+  - name: cross-model-ideation-review
+    acceptance_criteria:
+      - "frw cross-model-review <name> --ideation produces a structured review"
+      - "codex invocation includes approval_policy=never to prevent interactive hang"
+      - "Script uses PROJECT_ROOT for project data paths"
+      - "skills/ideate.md documents frw cross-model-review <name> --ideation"
+    specialist: harness-engineer
+    depends_on:
+      - project-root-resolution
+    file_ownership:
+      - "bin/frw.d/scripts/cross-model-review.sh"
+      - "skills/ideate.md"
+
+context_pointers:
+  - path: bin/frw
+    note: "FURROW_ROOT definition (line 9), all module dispatch"
+  - path: bin/rws
+    note: "FURROW_ROOT/FURROW_YAML definitions, 1800+ line CLI"
+  - path: bin/frw.d/lib/common.sh
+    note: "find_focused_row, find_active_row — PWD-relative patterns"
+  - path: bin/frw.d/scripts/cross-model-review.sh
+    note: "Cross-model review script — ideation mode + FURROW_ROOT bugs"
+  - path: bin/frw.d/scripts/check-artifacts.sh
+    note: "Known FURROW_ROOT bug (line 32)"
+  - path: skills/implement.md
+    note: "Specialist template injection point"
+  - path: skills/ideate.md
+    note: "Cross-model review invocation reference"
+  - path: .claude/furrow.yaml
+    note: "Config file to move to .furrow/"
+  - path: commands/next.md
+    note: "Handoff prompt generation — source_todo wiring target"
+
+constraints:
+  - "FURROW_ROOT must continue to resolve Furrow's own code (hooks, scripts, schemas, specialists)"
+  - "PROJECT_ROOT must resolve to the consumer project root (where .furrow/ lives)"
+  - "Config move must not break existing consumer project installs — frw init/install create config in new location"
+  - "Specialist template enforcement is warn-and-proceed, not hard block"
+  - "No ~/.config/furrow/ design in this row — deferred to ambient-promotion"
+  - "No auto-TODO pipeline — deferred to command-pipeline phase"
+
+gate_policy: supervised

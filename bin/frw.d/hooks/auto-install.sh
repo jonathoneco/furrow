@@ -7,7 +7,7 @@
 hook_auto_install() {
   # Only run if this project has a furrow.yaml (i.e., Furrow is expected here)
   _config=""
-  for _candidate in .claude/furrow.yaml furrow.yaml; do
+  for _candidate in .furrow/furrow.yaml .claude/furrow.yaml furrow.yaml; do
     if [ -f "$_candidate" ]; then
       _config="$_candidate"
       break

@@ -16,7 +16,7 @@ Report each line of output to the user. If `frw init` exits non-zero, stop and s
 
 The project needs initialization if any of these are true:
 - `.furrow/seeds/seeds.jsonl` does not exist (sds not initialized)
-- `.claude/furrow.yaml` does not exist (no project config)
+- `.furrow/furrow.yaml` does not exist (no project config)
 
 ## What it does
 
@@ -24,7 +24,7 @@ The project needs initialization if any of these are true:
    - Derive prefix from directory name (lowercase, non-alphanumeric → dash).
    - Run `sds init --prefix "{prefix}"`.
 
-2. **Config**: If `.claude/furrow.yaml` does not exist:
+2. **Config**: If `.furrow/furrow.yaml` does not exist:
    - Detect stack from project files:
      - `go.mod` → language: go
      - `package.json` → language: typescript

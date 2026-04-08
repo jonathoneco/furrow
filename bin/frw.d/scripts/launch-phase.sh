@@ -29,7 +29,7 @@ command -v claude >/dev/null 2>&1 || { echo "error: claude is not installed" >&2
 
 # --- locate files ---
 furrow_yaml=""
-for candidate in .claude/furrow.yaml furrow.yaml; do
+for candidate in .furrow/furrow.yaml .claude/furrow.yaml furrow.yaml; do
   if [ -f "$candidate" ]; then
     furrow_yaml="$candidate"
     break

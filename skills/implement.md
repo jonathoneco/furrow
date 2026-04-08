@@ -22,15 +22,11 @@ model_default: sonnet
 - `skills/shared/summary-protocol.md` — before completing step
 
 ## Specialist Loading (Mandatory)
-Before starting implementation, validate that every deliverable's `specialist`
-field in `plan.json` references an existing file in `specialists/`. Surface
-any missing specialists as errors and STOP — do not proceed with unresolved
-specialist assignments.
-
-Before dispatching any agent for a deliverable, you MUST read and load the
+Before dispatching any agent for a deliverable, you MUST attempt to load the
 specialist template from `specialists/{specialist}.md` as assigned in plan.json.
-If the file does not exist, STOP and surface the error. This is a blocking
-requirement, not guidance.
+If the file does not exist, warn on stderr and proceed without it — this is
+degraded mode, not normal operation. Note the missing specialist in the
+deliverable's review evidence so the review step can flag it.
 
 Two consumption paths:
 - **Solo work**: invoke the specialist as a skill to load domain framing

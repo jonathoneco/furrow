@@ -4,7 +4,7 @@
 # Usage: frw run-ci-checks <name>
 #   name — row name
 #
-# Reads CI commands from .claude/furrow.yaml ci section.
+# Reads CI commands from furrow.yaml ci section (.furrow/ or .claude/ fallback).
 # Produces gate evidence at .furrow/rows/{name}/gates/implement-to-review-ci.json.
 #
 # Return codes:
@@ -22,12 +22,18 @@ frw_run_ci_checks() {
 
   name="$1"
 
-  work_dir="${FURROW_ROOT}/.furrow/rows/${name}"
+  work_dir="${PROJECT_ROOT}/.furrow/rows/${name}"
   gates_dir="${work_dir}/gates"
 
   # --- read CI config ---
 
-  furrow_config="${FURROW_ROOT}/.claude/furrow.yaml"
+  furrow_config=""
+  for _candidate in "${PROJECT_ROOT}/.furrow/furrow.yaml" "${PROJECT_ROOT}/.claude/furrow.yaml"; do
+    if [ -f "$_candidate" ]; then
+      furrow_config="$_candidate"
+      break
+    fi
+  done
   test_cmd=""
   lint_cmd=""
   build_cmd=""

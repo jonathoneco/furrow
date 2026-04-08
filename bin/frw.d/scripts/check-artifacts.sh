@@ -29,7 +29,7 @@ frw_check_artifacts() {
   name="$1"
   deliverable="$2"
 
-  work_dir="$FURROW_ROOT/.furrow/rows/${name}"
+  work_dir="$PROJECT_ROOT/.furrow/rows/${name}"
   state_file="${work_dir}/state.json"
   def_file="${work_dir}/definition.yaml"
   plan_file="${work_dir}/plan.json"

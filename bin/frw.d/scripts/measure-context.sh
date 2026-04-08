@@ -7,7 +7,7 @@
 frw_measure_context() {
   set -eu
 
-  ROOT="${1:-$FURROW_ROOT}"
+  ROOT="${1:-$PROJECT_ROOT}"
   errors=0
 
   # Count lines in a file (0 if missing)

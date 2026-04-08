@@ -847,7 +847,7 @@
     - Consider a pre-implement hook that warns if specialist templates are not being loaded
     - Update skills/implement.md to make specialist loading explicit and mandatory
   source_type: brain-dump
-  status: active
+  status: done
   created_at: "2026-04-03T04:37:52-04:00"
   updated_at: "2026-04-03T17:00:00Z"
   urgency: "medium"
@@ -1316,7 +1316,7 @@
     - bin/rws
     - bin/sds
     - bin/alm
-  status: active
+  status: done
 # --- Standalone: Gate Check Hook Fix ---
 - id: gate-check-hook-excluded-steps
   title: "gate-check hook blocks transitions for excluded steps (ideate/implement/review)"
@@ -1340,7 +1340,7 @@
   effort: "small"
   files_touched:
     - "bin/frw.d/hooks/gate-check.sh"
-  status: active
+  status: done
 # --- Brain Dump 2: 2026-04-07 ---
 - id: ambient-context-promotion
   title: "Ambient context promotion system — row→project→global knowledge graduation"
@@ -1628,6 +1628,9 @@
     - Update all references to furrow.yaml path (bin/frw, install.sh, skills, commands)
     - Design ~/.config/furrow/ structure (global defaults, shared config)
     - Update frw install to read global config as fallback
+    - Revisit FURROW_ROOT/PROJECT_ROOT resolution when adding global config — the resolution
+      chain becomes PROJECT_ROOT (.furrow/) → ~/.config/furrow/ → FURROW_ROOT (install dir),
+      and the split introduced in infra-fixes needs to account for this third tier
     - Wire source_todo into /furrow:next handoff prompt generation
     - Migration path for existing installs
   references:
@@ -1646,6 +1649,12 @@
     - bin/frw
     - commands/next.md
   status: active
+  partial_completion: |
+    infra-fixes row completed items 1 and 3: furrow.yaml moved to .furrow/,
+    all references updated with candidate loop fallback, source_todo wired into
+    /furrow:next handoff prompts. Remaining: item 2 (~/.config/furrow/ design)
+    and FURROW_ROOT/PROJECT_ROOT resolution chain revisit — deferred to
+    ambient-promotion phase.
 - id: blocking-stop-hooks
   title: "Blocking stop hooks + auto-TODO on harness errors"
   context: |
@@ -1676,6 +1685,31 @@
   files_touched:
     - bin/frw.d/hooks/validate-summary.sh
     - bin/frw.d/hooks/stop-ideation.sh
+  status: done
+- id: specialist-template-warning-escalation
+  title: "Escalate specialist template warnings to structured observability"
+  context: |
+    During infra-fixes ideation, specialist template enforcement was scoped as
+    warn-and-proceed (warn if template missing, still dispatch agent). The warnings
+    go to stderr but aren't captured, tracked, or surfaced post-session. Need a
+    mechanism to make these warnings observable — either via learnings, auto-TODO,
+    or a post-session summary of skipped specialist templates.
+  work_needed: |
+    - Design how specialist template warnings are captured (log file, structured output, summary section)
+    - Consider integration with the auto-TODO pipeline when it exists
+    - Evaluate whether warnings should escalate to hard blocks after a configurable threshold
+  references:
+    - skills/implement.md
+    - specialists/
+  source_type: ideation-decision
+  source_work_unit: infra-fixes
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: low
+  impact: medium
+  effort: small
+  files_touched:
+    - skills/implement.md
   status: active
 - id: furrow-tui-dashboard
   title: "Furrow TUI / agent-dashboard integration"

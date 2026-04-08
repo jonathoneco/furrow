@@ -31,7 +31,7 @@ Scan arguments in order:
 
 Any number of existing active tasks is fine — creating alongside them is expected.
 
-0. **Pre-flight**: If `.furrow/seeds/seeds.jsonl` or `.claude/furrow.yaml` does not exist,
+0. **Pre-flight**: If `.furrow/seeds/seeds.jsonl` or `.furrow/furrow.yaml` does not exist,
    run `frw init` first (see `commands/init.md`). Do not proceed until init completes.
 1. Derive `{name}` from description (kebab-case, max 40 chars).
 2. Run `rws init "{name}" --title "{description}"`.

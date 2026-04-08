@@ -385,7 +385,9 @@ frw_install() {
   echo ""
   echo "--- Config ---"
   _furrow_yaml="$FURROW_ROOT/.claude/furrow.yaml"
-  _target_yaml="$TARGET/furrow.yaml"
+  _furrow_dir="$(dirname "$TARGET")/.furrow"
+  ensure_dir "$_furrow_dir"
+  _target_yaml="$_furrow_dir/furrow.yaml"
   if [ -f "$_furrow_yaml" ] && [ ! -f "$_target_yaml" ]; then
     cp "$_furrow_yaml" "$_target_yaml"
     _ok "furrow.yaml template copied (edit for your project)"
@@ -548,6 +550,6 @@ bin/alm
   echo "Health check: /furrow:doctor (from within Claude Code)"
   echo ""
   echo "Next steps:"
-  echo "  1. Edit $TARGET/furrow.yaml with your project details"
+  echo "  1. Edit $_furrow_dir/furrow.yaml with your project details"
   echo "  2. Start a session and type /furrow:work to begin"
 }

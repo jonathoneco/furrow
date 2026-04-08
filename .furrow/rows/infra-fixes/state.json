@@ -1,0 +1,100 @@
+{
+  "name": "infra-fixes",
+  "title": "FURROW_ROOT resolution, gate-check fix, template enforcement, config move, blocking stop hooks",
+  "description": "FURROW_ROOT resolution, gate-check fix, template enforcement, config move, blocking stop hooks",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "project-root-resolution": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "specialist-template-enforcement": {
+      "status": "completed",
+      "wave": 2,
+      "corrections": 0
+    },
+    "config-move-and-source-todo": {
+      "status": "completed",
+      "wave": 2,
+      "corrections": 0
+    },
+    "cross-model-ideation-review": {
+      "status": "completed",
+      "wave": 2,
+      "corrections": 0
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Definition validated, dual outside voice (same-model + codex/gpt-5.4) completed, 4 deliverables confirmed, scope cuts approved",
+      "timestamp": "2026-04-07T21:41:16Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Research complete: 4 research files produced, all open questions resolved, FURROW_ROOT audit (11 bugs in 8 files), specialist gap narrower than expected, config move mapped (9 files), cross-model ideation designed",
+      "timestamp": "2026-04-08T16:03:10Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Plan complete: 2-wave execution, plan.json and team-plan.md produced, architecture decisions recorded, file ownership clean",
+      "timestamp": "2026-04-08T16:12:10Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "4 implementation-ready specs produced with interface contracts, refined ACs, test scenarios, and implementation notes",
+      "timestamp": "2026-04-08T16:16:28Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Decomposition validated: 2 waves, 4 deliverables, no file overlap within waves, model hints documented, coordination strategy clear",
+      "timestamp": "2026-04-08T16:22:22Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 4 deliverables implemented and verified: PROJECT_ROOT (11 fixes), specialist enforcement (warn+proceed), config move (9 files + source_todo), cross-model ideation (--ideation flag + codex fix)",
+      "timestamp": "2026-04-08T17:04:01Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 4 deliverables implemented, committed (3d41116), verified: zero FURROW_ROOT leaks, codex approval_policy fixed, doctor baseline unchanged",
+      "timestamp": "2026-04-08T17:05:03Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/infra-fixes",
+  "mode": "code",
+  "base_commit": "b81314da9d2627eb20f63d4fda6d2de96ec26373",
+  "seed_id": "furrow-2cab",
+  "epic_seed_id": null,
+  "created_at": "2026-04-07T21:03:57Z",
+  "updated_at": "2026-04-08T17:22:42Z",
+  "archived_at": "2026-04-08T17:22:42Z",
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}

@@ -48,7 +48,7 @@ setup_test_env() {
   mkdir -p "${TEST_DIR}/skills"
 
   # Create minimal furrow.yaml
-  cat > "${TEST_DIR}/.claude/furrow.yaml" << 'YAML'
+  cat > "${TEST_DIR}/.furrow/furrow.yaml" << 'YAML'
 defaults:
   mode: code
   gate_policy: supervised
@@ -90,9 +90,10 @@ setup_fixture() {
   export FIXTURE_DIR WORK_DIR
 }
 
-# Resolve Furrow root for legacy tests
+# Resolve roots for tests — install root and project root are the same in tests
 FURROW_ROOT="$PROJECT_ROOT"
 export FURROW_ROOT
+export PROJECT_ROOT
 
 # teardown_fixture
 #   Removes FIXTURE_DIR if set.
