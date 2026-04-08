@@ -1,1 +1,1 @@
-../../specialists/systems-architect.md
+../../../furrow/specialists/systems-architect.md

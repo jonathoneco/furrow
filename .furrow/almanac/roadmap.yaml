@@ -211,19 +211,65 @@ dependency_graph:
       reason: "foundational — CLI decisions gate verb rename and status line"
   waves:
     - wave: 1
-      todos: [per-step-model-routing, specialist-expansion, consumer-project-furrow-root, gate-check-hook-excluded-steps, specialist-templates-from-team-plan-not-enforced-d, config-cleanup, blocking-stop-hooks]
+      todos:
+        [
+          per-step-model-routing,
+          specialist-expansion,
+          consumer-project-furrow-root,
+          gate-check-hook-excluded-steps,
+          specialist-templates-from-team-plan-not-enforced-d,
+          config-cleanup,
+          blocking-stop-hooks,
+        ]
     - wave: 2
-      todos: [parallel-agent-orchestration-adoption, worktree-reintegration-summary, user-action-integration, dual-review-and-specialist-delegation, script-access-restrictions]
+      todos:
+        [
+          parallel-agent-orchestration-adoption,
+          worktree-reintegration-summary,
+          user-action-integration,
+          dual-review-and-specialist-delegation,
+          script-access-restrictions,
+        ]
     - wave: 3
-      todos: [brain-dump-triage-command, todo-context-references, roadmap-todo-integration, research-documentation-detection, triage-and-braindump-ideation, furrow-next-phase-lifecycle, research-methodology-design]
+      todos:
+        [
+          brain-dump-triage-command,
+          todo-context-references,
+          roadmap-todo-integration,
+          research-documentation-detection,
+          triage-and-braindump-ideation,
+          furrow-next-phase-lifecycle,
+          research-methodology-design,
+        ]
     - wave: 4
       todos: [work-folder-structure-and-cleanup, cli-architecture-overhaul]
     - wave: 5
-      todos: [almanac-graph-primitives, seeds-concept, ambient-context-promotion, design-pattern-context-construction]
+      todos:
+        [
+          almanac-graph-primitives,
+          seeds-concept,
+          ambient-context-promotion,
+          design-pattern-context-construction,
+        ]
     - wave: 6
-      todos: [harness-lifecycle-ux, collaborative-surfaces, sprint-inspired-planning, spike-row-mode]
+      todos:
+        [
+          harness-lifecycle-ux,
+          collaborative-surfaces,
+          sprint-inspired-planning,
+          spike-row-mode,
+        ]
     - wave: 7
-      todos: [adapters-audit, mine-v1-harness, apply-nate-jones-skill, mine-claude-code, specialist-quality-validation, memetic-algorithms-research, furrow-tui-dashboard]
+      todos:
+        [
+          adapters-audit,
+          mine-v1-harness,
+          apply-nate-jones-skill,
+          mine-claude-code,
+          specialist-quality-validation,
+          memetic-algorithms-research,
+          furrow-tui-dashboard,
+        ]
   cycles: []
 conflict_zones:
   - phase: 1
@@ -262,14 +308,37 @@ phases:
         description: "Orchestrator + step agent architecture, collaborate/execute split, specialist step modes"
         todos: [per-step-model-routing, specialist-expansion]
         estimated_sessions: 3
-        key_files: [skills/, specialists/, skills/shared/context-isolation.md, bin/frw.d/scripts/launch-phase.sh, bin/rws]
+        key_files:
+          [
+            skills/,
+            specialists/,
+            skills/shared/context-isolation.md,
+            bin/frw.d/scripts/launch-phase.sh,
+            bin/rws,
+          ]
         conflict_risk: low
         completed_at: null
       - branch: work/infra-fixes
         description: "FURROW_ROOT resolution, gate-check fix, template enforcement, config move, blocking stop hooks"
-        todos: [consumer-project-furrow-root, gate-check-hook-excluded-steps, specialist-templates-from-team-plan-not-enforced-d, config-cleanup, blocking-stop-hooks]
+        todos:
+          [
+            consumer-project-furrow-root,
+            gate-check-hook-excluded-steps,
+            specialist-templates-from-team-plan-not-enforced-d,
+            config-cleanup,
+            blocking-stop-hooks,
+          ]
         estimated_sessions: 2
-        key_files: [bin/frw, bin/rws, bin/sds, bin/alm, bin/frw.d/hooks/, .claude/furrow.yaml, skills/implement.md]
+        key_files:
+          [
+            bin/frw,
+            bin/rws,
+            bin/sds,
+            bin/alm,
+            bin/frw.d/hooks/,
+            .claude/furrow.yaml,
+            skills/implement.md,
+          ]
         conflict_risk: low
         completed_at: null
   - number: 2
@@ -280,16 +349,28 @@ phases:
     rows:
       - branch: work/parallel-agent-wiring
         description: "Parallel agent adoption, worktree summaries, user action integration"
-        todos: [parallel-agent-orchestration-adoption, worktree-reintegration-summary, user-action-integration]
+        todos:
+          [
+            parallel-agent-orchestration-adoption,
+            worktree-reintegration-summary,
+            user-action-integration,
+          ]
         estimated_sessions: 3
-        key_files: [skills/implement.md, skills/shared/context-isolation.md, bin/rws]
+        key_files:
+          [skills/implement.md, skills/shared/context-isolation.md, bin/rws]
         conflict_risk: none
         completed_at: null
       - branch: work/dual-review-delegation
         description: "Dual-review at plan/spec, intent-based specialist auto-delegation, new specialists"
         todos: [dual-review-and-specialist-delegation]
         estimated_sessions: 2
-        key_files: [skills/plan.md, skills/spec.md, specialists/, references/specialist-template.md]
+        key_files:
+          [
+            skills/plan.md,
+            skills/spec.md,
+            specialists/,
+            references/specialist-template.md,
+          ]
         conflict_risk: low
         completed_at: null
       - branch: work/script-safety
@@ -307,16 +388,41 @@ phases:
     rows:
       - branch: work/command-pipeline
         description: "Brain dump triage, TODO context refs, roadmap integration, research-to-docs detection"
-        todos: [brain-dump-triage-command, todo-context-references, roadmap-todo-integration, research-documentation-detection]
+        todos:
+          [
+            brain-dump-triage-command,
+            todo-context-references,
+            roadmap-todo-integration,
+            research-documentation-detection,
+          ]
         estimated_sessions: 3
-        key_files: [commands/, commands/work-todos.md, commands/triage.md, commands/next.md, bin/alm, skills/review.md]
+        key_files:
+          [
+            commands/,
+            commands/work-todos.md,
+            commands/triage.md,
+            commands/next.md,
+            bin/alm,
+            skills/review.md,
+          ]
         conflict_risk: low
         completed_at: null
       - branch: work/planning-ux
         description: "Triage + brain dump ideation, furrow:next phase lifecycle, research methodology"
-        todos: [triage-and-braindump-ideation, furrow-next-phase-lifecycle, research-methodology-design]
+        todos:
+          [
+            triage-and-braindump-ideation,
+            furrow-next-phase-lifecycle,
+            research-methodology-design,
+          ]
         estimated_sessions: 3
-        key_files: [commands/triage.md, commands/next.md, bin/frw.d/scripts/launch-phase.sh, skills/research.md]
+        key_files:
+          [
+            commands/triage.md,
+            commands/next.md,
+            bin/frw.d/scripts/launch-phase.sh,
+            skills/research.md,
+          ]
         conflict_risk: low
         completed_at: null
   - number: 4
@@ -390,7 +496,8 @@ phases:
         description: "Sprint-inspired planning (retros, velocity, multi-row coordination) + spike row mode"
         todos: [sprint-inspired-planning, spike-row-mode]
         estimated_sessions: 4
-        key_files: [skills/, evals/dimensions/, .furrow/almanac/, commands/triage.md]
+        key_files:
+          [skills/, evals/dimensions/, .furrow/almanac/, commands/triage.md]
         conflict_risk: none
         completed_at: null
   - number: 7
@@ -401,7 +508,14 @@ phases:
     rows:
       - branch: work/audits-and-mining
         description: "Adapters audit, mine v1 harness, apply external patterns, mine Claude Code, specialist quality"
-        todos: [adapters-audit, mine-v1-harness, apply-nate-jones-skill, mine-claude-code, specialist-quality-validation]
+        todos:
+          [
+            adapters-audit,
+            mine-v1-harness,
+            apply-nate-jones-skill,
+            mine-claude-code,
+            specialist-quality-validation,
+          ]
         estimated_sessions: 4
         key_files: [adapters/, evals/, references/specialist-template.md]
         conflict_risk: none

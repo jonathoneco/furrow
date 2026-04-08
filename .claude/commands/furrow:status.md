@@ -1,1 +1,1 @@
-../../commands/status.md
+../../../furrow/commands/status.md

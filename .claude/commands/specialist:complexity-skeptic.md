@@ -1,1 +1,1 @@
-../../specialists/complexity-skeptic.md
+../../../furrow/specialists/complexity-skeptic.md

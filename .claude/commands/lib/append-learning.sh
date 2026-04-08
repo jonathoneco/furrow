@@ -1,1 +1,1 @@
-../../../commands/lib/append-learning.sh
+../../../../furrow/commands/lib/append-learning.sh

@@ -1,1 +1,1 @@
-../../specialists/security-engineer.md
+../../../furrow/specialists/security-engineer.md

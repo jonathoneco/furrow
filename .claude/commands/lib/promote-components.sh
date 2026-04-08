@@ -1,1 +1,1 @@
-../../../commands/lib/promote-components.sh
+../../../../furrow/commands/lib/promote-components.sh

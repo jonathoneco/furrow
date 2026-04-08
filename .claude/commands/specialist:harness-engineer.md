@@ -1,1 +1,1 @@
-../../specialists/harness-engineer.md
+../../../furrow/specialists/harness-engineer.md
