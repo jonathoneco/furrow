@@ -1,1 +1,1 @@
-../../commands/triage.md
+../../../furrow/commands/triage.md

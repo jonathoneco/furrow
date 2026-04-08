@@ -1,0 +1,34 @@
+objective: "Prepare a 10-minute team demo of the development environment (tmux integrations + furrow workflow) using this repo's real state, with a structured demo script and pre-staged outputs so sequential operations don't require live waiting."
+
+deliverables:
+  - name: demo-script
+    acceptance_criteria:
+      - "DEMO.md exists at project root with structured 10-minute outline"
+      - "tmux section (~3min): sessionizer, lazygit, ranger, agent dashboard with exact commands"
+      - "furrow section (~7min): flow, knowledge accumulation, furrow:next with exact commands"
+      - "Includes prep checklist (font size, notifications, rehearsal reminder)"
+      - "Framed as a narrative ('I got a task, here's how I work on it'), not a feature tour"
+
+  - name: pre-staged-outputs
+    acceptance_criteria:
+      - "ROADMAP.md generated at project root via furrow:triage"
+      - "furrow:next output saved to a file for cat-during-demo"
+      - "One good todo item identified as the furrow:next target"
+    depends_on: [demo-script]
+
+context_pointers:
+  - path: .furrow/almanac/todos.yaml
+    note: "Existing todos — pick one for the furrow:next demo"
+  - path: .furrow/almanac/roadmap.yaml
+    note: "Existing roadmap data for triage generation"
+  - path: .furrow/almanac/rationale.yaml
+    note: "Almanac rationale entries to show during demo"
+  - path: .furrow/rows/
+    note: "28 existing rows — select 1-2 to show lifecycle"
+
+constraints:
+  - "10-minute total demo time budget"
+  - "No fake or fabricated state — use real project history"
+  - "Pre-stage anything that would require live waiting"
+
+gate_policy: supervised

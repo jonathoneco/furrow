@@ -1,0 +1,6 @@
+tmux new-window -dn claude
+tmux send-keys -t claude 'claude --dangerously-skip-permissions' c-M
+tmux send-keys -t claude '/furrow:meta' c-M
+tmux new-window -dn shell
+nvim DEMO.md
+clear

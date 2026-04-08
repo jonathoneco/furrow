@@ -1,1 +1,1 @@
-../../../commands/lib/validate-learning.sh
+../../../../furrow/commands/lib/validate-learning.sh

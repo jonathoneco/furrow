@@ -1,1 +1,1 @@
-../../commands/work.md
+../../../furrow/commands/work.md

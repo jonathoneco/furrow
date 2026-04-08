@@ -1,1 +1,1 @@
-../../specialists/cli-designer.md
+../../../furrow/specialists/cli-designer.md

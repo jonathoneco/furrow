@@ -1,1 +1,1 @@
-../../commands/init.md
+../../../furrow/commands/init.md

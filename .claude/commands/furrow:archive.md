@@ -1,1 +1,1 @@
-../../commands/archive.md
+../../../furrow/commands/archive.md
