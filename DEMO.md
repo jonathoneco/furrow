@@ -1,124 +1,255 @@
-# Team Demo: Dev Environment — Live Walkthrough
+# How to Use Furrow
 
-**Time budget**: ~10 minutes
-**Style**: Run everything live. Show don't tell.
+Furrow is a workflow harness for AI coding agents. It turns "fix this bug" into
+a structured process with tracked state, quality gates, and knowledge that
+accumulates across sessions.
 
-## Prep Checklist
+This document walks through actual usage — what you run, what happens, and why.
 
-- [ ] Increase terminal font size for screen share readability
-- [ ] Close Slack, email, notifications (`swaync` — dismiss all)
-- [ ] Start in a **different** tmux session (home or another project) — not this repo
-- [ ] Make sure `furrow-team-demo-prep` is NOT already open as a tmux session (kill it if so)
-- [ ] Archive the `team-demo-prep` row so there's no active row: `rws archive team-demo-prep`
-- [ ] Rehearse once with a stopwatch
+## Getting Started
 
----
+### Install
 
-## Part 1: tmux (~3 min)
-
-You're in some other tmux session. You just got a task to work on.
-
-### 1.1 Sessionizer — jump to the project
-
-```
-Ctrl+Space, Ctrl+s
+```sh
+git clone <repo> && cd furrow
+./install.sh                          # creates frw, rws, alm, sds symlinks
+frw install --project /path/to/yours  # installs into your project
 ```
 
-Type "furrow-team-demo" → select it. New tmux session created, you're in the project.
+This adds to your project: `.claude/` config, `skills/`, `specialists/`,
+`bin/` symlinks, `.furrow/` state directory, and hook registrations.
 
-> Point out: fuzzy search across ~/src, instant session creation. Show `Alt+j` to open Claude Code directly in this session.
-
-### 1.2 Lazygit
-
-```
-Ctrl+Space, g
-```
-
-Browse commit history. Show a few commits. Press `q`.
-
-### 1.3 Ranger
+### Start working
 
 ```
-Ctrl+Space, e
+/furrow:work "add rate limiting to the API"
 ```
 
-Navigate into `.furrow/` — show the structure. Navigate into `almanac/`. Press `q`.
+That's it. Furrow creates a **row** (a tracked unit of work) and starts
+guiding you through a 7-step sequence.
 
-### 1.4 Agent Dashboard
+## The 7 Steps
+
+Every row moves through these steps in order. No skipping.
 
 ```
-Ctrl+Space, Ctrl+f
+ideate → research → plan → spec → decompose → implement → review
 ```
 
-Show it. Explain what it displays when agents are running. Press `q`.
+### ideate — define the work
 
-**Transition**: "Now let me show you the system that makes AI-assisted development actually structured."
+The agent brainstorms dimensions of the problem, challenges your premises,
+then builds a `definition.yaml` collaboratively — objective, deliverables
+with acceptance criteria, constraints, gate policy.
 
----
+You answer questions (Option A/B/C), approve each section, and end up with
+a validated work contract.
 
-## Part 2: Furrow — live (~7 min)
+### research — investigate before building
 
-### 2.1 Quick knowledge layer tour (1 min)
+Parallel sub-agents search the codebase, check prior art, read docs.
+Produces `research.md` with sources cited by tier (primary > secondary >
+tertiary). Every claim links back to where it came from.
 
-Show the accumulated state that already exists:
+### plan — architecture decisions
+
+Synthesizes research into decisions and an execution strategy. If there are
+multiple deliverables, produces `plan.json` with wave assignments — what
+runs in parallel, what depends on what.
+
+### spec — implementation-ready specifications
+
+Each deliverable gets a spec with refined acceptance criteria and test
+scenarios (WHEN/THEN + verification command). No ambiguity — the
+implementing agent should be able to work from the spec alone.
+
+### decompose — break into executable waves
+
+Maps deliverables to waves with specialist assignments and file ownership
+boundaries. Wave 1 runs in parallel, wave 2 waits for wave 1, etc.
+Produces `team-plan.md` for multi-agent coordination.
+
+### implement — specialists execute
+
+Each deliverable is assigned a specialist (e.g., `go-specialist`,
+`api-designer`, `test-engineer`). Specialists work within their file
+ownership globs — no cross-specialist conflicts within a wave.
+
+20 specialist templates available: api-designer, cli-designer, go-specialist,
+python-specialist, security-engineer, systems-architect, test-engineer, etc.
+
+### review — structured two-phase evaluation
+
+- **Phase A**: Deterministic checks — artifacts exist, ACs met, planned files touched
+- **Phase B**: Fresh-session quality evaluation against dimension rubrics
+
+Both phases must pass. On failure, returns to implement.
+
+## Gates
+
+Between every step is a gate — a quality checkpoint that evaluates whether
+the step's work is sufficient to advance. Three policies:
+
+| Policy | Who decides | When to use |
+|--------|------------|-------------|
+| `supervised` | You approve each transition | Learning furrow, critical work |
+| `delegated` | Evaluator decides most gates | Day-to-day work |
+| `autonomous` | All gates auto-evaluated | Batch processing, CI |
+
+Gates can be **prechecked** — if a step adds no new information (e.g., a
+single-deliverable fix doesn't need a plan step), the gate auto-advances
+but still records the step in state.
+
+## The Knowledge Layer
+
+Furrow accumulates project knowledge across rows. This is what makes it
+compound over time instead of starting from zero each session.
+
+### todos.yaml — the structured backlog
+
+```yaml
+- id: add-rate-limiting
+  title: "Add rate limiting to public API"
+  context: |
+    Users are hitting the API with 1000+ req/min. No throttling exists.
+    The auth middleware at internal/middleware/auth.go is the insertion point.
+  work_needed: |
+    - Add token bucket middleware
+    - Configure per-endpoint limits
+    - Return 429 with Retry-After header
+  urgency: high
+  impact: high
+  effort: medium
+  status: active
+```
+
+Not just titles — full context for an AI agent to pick up and work on
+without asking "what does this mean?"
+
+### roadmap.yaml — dependency-ordered phases
+
+Generated by `/furrow:triage` from todos.yaml. Builds a dependency graph,
+groups TODOs into rows within phases, identifies conflict zones, and
+produces an execution plan.
+
+```
+/furrow:triage        # incremental update
+/furrow:triage --full # full regeneration
+```
+
+### rationale.yaml — why things exist
+
+Every component tracked with `exists_because` and `delete_when`:
+
+```yaml
+- path: skills/ideate.md
+  exists_because: "Claude Code has no native ideation ceremony for work definition"
+  delete_when: "Claude Code provides built-in work definition with structured ideation"
+```
+
+This prevents zombie code. When the `delete_when` condition is met, the
+component is removable.
+
+### learnings.jsonl — per-row insights
+
+Each row captures learnings as it works — patterns, pitfalls, conventions
+discovered. At archive time, learnings can be promoted to project-level
+knowledge.
+
+## Picking Up New Work
+
+```
+/furrow:next
+```
+
+Reads the roadmap, finds the next unstarted phase, and generates
+self-contained handoff prompts:
+
+```
+=== Token Optimization & Infrastructure Fixes ===
+
+Start with: /furrow:work model-routing-and-specialists
+Source TODOs: per-step-model-routing, specialist-expansion
+Key files: skills/, specialists/, bin/rws
+```
+
+Paste the `/furrow:work` command into a new session and you're running.
+For parallel rows, launch in separate tmux sessions.
+
+## CLI Tools
+
+Four CLI tools, each owning a domain:
+
+| CLI | Domain | Examples |
+|-----|--------|----------|
+| `frw` | Harness orchestration | `frw init`, `frw install`, `frw doctor`, `frw run-gate` |
+| `rws` | Row lifecycle | `rws init`, `rws status`, `rws transition`, `rws archive` |
+| `alm` | Almanac & planning | `alm triage`, `alm next`, `alm validate` |
+| `sds` | Seed tracking | `sds init`, `sds add`, `sds list`, `sds claim` |
+
+You mostly interact through `/furrow:*` slash commands in Claude Code.
+The CLIs are the machinery underneath.
+
+## What a Completed Row Looks Like
+
+```
+.furrow/rows/quality-and-rules/
+├── definition.yaml    # work contract: objective, deliverables, constraints
+├── state.json         # lifecycle: step, gates, deliverable status
+├── summary.md         # accumulated findings per step
+├── research.md        # investigation results with sources
+├── plan.json          # wave assignments and specialist mappings
+├── team-plan.md       # coordination strategy
+├── specs/             # implementation-ready specs per deliverable
+│   ├── stop-hook-exit-codes.md
+│   ├── cli-post-actions.md
+│   └── ...
+├── reviews/           # Phase A + B results per deliverable
+│   ├── stop-hook-exit-codes.json
+│   └── ...
+└── learnings.jsonl    # insights captured during work
+```
+
+This row had 6 deliverables across 3 parallel waves, went through all 7
+steps, and completed with zero corrections. Every gate transition has
+recorded evidence.
+
+## Configuration
+
+Project config lives in `.claude/furrow.yaml`:
+
+```yaml
+name: my-project
+repo: owner/repo
+language: go
+gate_policy: supervised    # default for new rows
+correction_limit: 3        # max fixes per deliverable before escalation
+cross_model:
+  provider: codex          # enables cross-model review (optional)
+ci:
+  test_command: "go test ./..."
+  lint_command: "golangci-lint run"
+```
+
+## Day-to-Day Commands
 
 ```bash
-head -40 .furrow/almanac/todos.yaml
+# Check what's active
+rws list                    # list all rows
+rws status                  # current row status
+
+# During work
+/furrow:status              # where am I, what's next
+/furrow:checkpoint          # save progress
+/furrow:redirect            # hit a dead end, pivot
+
+# Managing knowledge
+/furrow:work-todos          # extract TODOs from current work
+/furrow:triage              # regenerate roadmap from todos
+/furrow:next                # what should I work on next
+
+# Maintenance
+/furrow:doctor              # check installation health
+/furrow:update              # check for config drift
+/furrow:meta                # modify furrow itself
 ```
-
-> "Structured backlog — each TODO has full context, effort estimate, dependencies."
-
-```bash
-head -30 .furrow/almanac/rationale.yaml
-```
-
-> "Every component tracked with 'exists because' and 'delete when'."
-
-### 2.2 Run furrow:next live (1 min)
-
-```bash
-alm next
-```
-
-> "This reads the roadmap, finds the next unstarted phase, and generates handoff prompts. These are self-contained — I can paste them into a new session."
-
-Point out: branch names, source TODOs, key files. Two parallel rows in Phase 1.
-
-### 2.3 Launch /furrow:work live (5 min)
-
-Pick one of the rows from the furrow:next output. In the Claude Code session:
-
-```
-/furrow:work <description from the next output>
-```
-
-**What the audience sees live:**
-
-1. **Row initialization** — furrow creates the row directory, state.json, sets focus
-2. **Ideation starts** — the agent brainstorms dimensions of the problem, does a premise challenge
-3. **Interactive collaboration** — it asks you questions with Option A/B/C and a stated lean. You answer.
-4. **Definition building** — it assembles `definition.yaml` section by section, you approve each
-5. **Gate transition** — it validates the definition and asks to advance to research
-
-> Let it run through ideation naturally. Answer the questions as they come. This IS the demo — the audience is watching structured AI development happen in real time.
-
-**If time is tight**: After seeing ideation start and one round of questions, you can say "This continues through 7 steps — research, plan, spec, decompose, implement, review — each with gates and accumulated knowledge. Let me show you what a completed one looks like."
-
-Then quickly:
-```bash
-cat .furrow/rows/quality-and-rules/state.json | python3 -m json.tool
-```
-
-> "This one went all 7 steps. 6 deliverables, 3 parallel waves, zero corrections."
-
----
-
-## Closing
-
-> "tmux for fast movement, furrow for structured AI development where knowledge compounds. Questions?"
-
-## Fallbacks
-
-- **If ideation is slow**: Show the pre-staged output: `cat .furrow/demo/next-prompt.txt`
-- **If something breaks**: `cat .furrow/rows/quality-and-rules/state.json | python3 -m json.tool` — show a completed row instead
-- **If you run out of time**: Skip 2.1 (knowledge tour) and go straight to furrow:next → /work
