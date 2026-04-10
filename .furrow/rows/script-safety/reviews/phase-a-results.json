@@ -1,0 +1,58 @@
+{
+  "deliverable": "script-execution-guard",
+  "artifacts_present": true,
+  "acceptance_criteria": [
+    {
+      "criterion": "Hook file at bin/frw.d/hooks/script-guard.sh",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Registered in .claude/settings.json PreToolUse Bash matchers",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Blocks \"bash bin/frw.d/scripts/update-state.sh\" (exit 2)",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Blocks \"source bin/frw.d/lib/common.sh\" (exit 2)",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Allows \"cat bin/frw.d/scripts/update-state.sh\" (exit 0)",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Allows \"frw update-state ...\" (exit 0 — no frw.d/ in command)",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Integration test covering block and allow cases",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Documented in cli-architecture.md policy hooks table",
+      "met": true,
+      "evidence": "artifacts present"
+    }
+  ],
+  "seed_check": {
+    "pass": true,
+    "evidence": "Seed exists and is not closed: furrow-6719 (status=reviewing)"
+  },
+  "verdict": "pass",
+  "mode": "code",
+  "base_commit": "55e7d5d6c3cbb63871c39ba038a80e873516faf9",
+  "file_ownership": [
+    "bin/frw.d/hooks/script-guard.sh",
+    "tests/integration/test-script-guard.sh"
+  ],
+  "timestamp": "2026-04-10T09:52:59Z"
+}

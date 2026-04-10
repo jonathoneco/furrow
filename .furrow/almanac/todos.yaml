@@ -780,7 +780,7 @@
   files_touched:
     - "bin/frw.d/scripts/"
     - "bin/frw.d/hooks/"
-  status: active
+  status: done
 - id: cli-breakup-script-guard
   title: "Break up rws/alm/sds into frw.d/-style internal modules and extend script-guard"
   context: |
