@@ -421,6 +421,15 @@ Installed from: $FURROW_ROOT
 | /furrow:update | Check configuration drift |
 | /furrow:meta | Enter self-modification mode |
 
+## CLI Tools (separate executables — NOT frw subcommands)
+
+| CLI | Purpose |
+|-----|---------|
+| \`frw\` | Harness orchestration, hooks, scripts, doctor |
+| \`rws\` | Row lifecycle: init, transition, status, focus, summary |
+| \`alm\` | Almanac: todos, roadmap, rationale, learnings |
+| \`sds\` | Seed registry: init, track, status |
+
 Run \`/furrow:doctor\` to check health. Run \`install.sh --check\` to verify installation.
 <!-- furrow:end -->"
 

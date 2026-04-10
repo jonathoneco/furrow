@@ -243,6 +243,50 @@
     - "skills/shared/eval-protocol.md"
     - "commands/review.md"
   status: done
+- id: unified-isolated-review
+  title: "Unify Phase B and cross-model review into a single isolated-review script"
+  context: |
+    Phase A/B are evaluation *moments* (deterministic checks vs quality judgment).
+    Cross-model and claude-bare are isolation *strategies* for running Phase B.
+    Currently these are conflated: Phase B is described as "run claude -p --bare"
+    in the skill, cross-model-review.sh is a separate script, and the agent falls
+    back to subagents because there's no concrete CLI for Phase B invocation.
+
+    Design insight: cross-model-review.sh already does the full pattern (read state,
+    build prompt, invoke model, parse JSON, write review file). Phase B needs the
+    same machinery with a different provider. One script, multiple providers.
+
+    Supersedes the review-mechanism half of dual-review-and-specialist-delegation.
+    The fresh-session-review investigation (done) confirmed the approach.
+  work_needed: |
+    - Rename/generalize cross-model-review.sh to isolated-review.sh
+    - Add claude-bare provider: invokes `claude -p --bare` with the review prompt
+    - Phase B in skills/review.md calls `frw isolated-review` with claude-bare (mandatory)
+      plus configured cross_model.provider (optional) — two calls, same script
+    - Extend to all gated steps (ideate already does cross-model; plan/spec should too)
+    - Update skills/review.md, skills/ideate.md, commands/review.md
+    - Update skills/shared/eval-protocol.md Phase B description
+    - Write output to reviews/{deliverable}-{provider}.json per invocation
+    - Synthesize across all isolated reviewers, flag disagreements
+  references:
+    - "bin/frw.d/scripts/cross-model-review.sh"
+    - "skills/review.md"
+    - "skills/shared/eval-protocol.md"
+    - "skills/shared/gate-evaluator.md"
+    - "skills/ideate.md"
+  source_type: "discussion"
+  created_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-07T00:00:00Z"
+  urgency: medium
+  impact: high
+  effort: medium
+  files_touched:
+    - "bin/frw.d/scripts/cross-model-review.sh"
+    - "skills/review.md"
+    - "skills/ideate.md"
+    - "skills/shared/eval-protocol.md"
+    - "commands/review.md"
+  status: active
 - id: worktree-reintegration-summary
   title: "Produce summary for worktree reintegration"
   context: |
@@ -1383,37 +1427,40 @@
     - bin/alm
     - commands/lib/
   status: active
-- id: dual-review-and-specialist-delegation
-  title: "Dual-review at all steps + intent-based specialist auto-delegation"
+- id: specialist-auto-delegation
+  title: "Intent-based specialist auto-delegation"
   context: |
-    Two coupled improvements:
-    1. Extend dual-reviewer protocol (fresh subagent + codex cross-model) to plan
-       and spec steps, not just review and ideate.
-    2. Intent-based specialist auto-delegation: the harness should infer which specialist
-       to load from the action context. If the user says "merge xyz", delegate to
-       merge-specialist. If spec'ing an LLM feature, load LLM specialist. Currently
-       specialists are planned in decompose but not enforced or auto-selected.
-       The mechanism should support a wide surface but ultimately be based on intent —
-       is there a specialist for this action/job? If so, use it.
+    The harness should infer which specialist to load from the action context
+    at every step, not just decompose/implement. A go-specialist shapes ideation
+    differently than research differently than review. Currently specialists are
+    planned in decompose but not enforced or auto-selected at any step.
+
+    The mechanism should be intent-based: is there a specialist for this
+    action/job? If so, use it. Every step skill already has a "Step-Level
+    Specialist Modifier" section — the missing piece is automatic selection.
 
     New specialists needed: LLM/AI application specialist (per Kapil's feedback —
     context window budgeting, structured output, retrieval strategies, multimodal
     handling), test-driven specialist (thinks test-first).
+
+    Dual-review extension to all steps split out to unified-isolated-review.
   work_needed: |
-    - Add dual-reviewer protocol to skills/plan.md and skills/spec.md
     - Design intent-based specialist matching: how does the harness detect which specialist applies?
     - Consider: definition.yaml tags, action keywords, file patterns, explicit user hints
+    - Wire specialist auto-loading into every step skill (ideate through review)
     - Create specialists/llm-specialist.md with AI application reasoning patterns
     - Create specialists/test-driven-specialist.md with test-first reasoning patterns
-    - Wire specialist auto-loading into step skills (not just decompose/implement)
     - Update references/specialist-template.md with auto-delegation conventions
   references:
-    - skills/review.md
-    - skills/ideate.md
-    - skills/plan.md
-    - skills/spec.md
     - specialists/
     - references/specialist-template.md
+    - skills/ideate.md
+    - skills/research.md
+    - skills/plan.md
+    - skills/spec.md
+    - skills/decompose.md
+    - skills/implement.md
+    - skills/review.md
   source_type: brain-dump
   created_at: "2026-04-07T00:00:00Z"
   updated_at: "2026-04-07T00:00:00Z"
@@ -1421,10 +1468,10 @@
   impact: high
   effort: medium
   files_touched:
-    - skills/plan.md
-    - skills/spec.md
     - specialists/
     - references/specialist-template.md
+    - skills/implement.md
+    - skills/decompose.md
   status: active
 - id: spike-row-mode
   title: "Spike row mode — implementation-flavored research with throwaway prototypes"

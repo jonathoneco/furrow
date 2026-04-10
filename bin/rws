@@ -9,6 +9,14 @@ set -eu
 SCRIPT_PATH="$(readlink -f "$0")"
 FURROW_ROOT="$(cd "$(dirname "$SCRIPT_PATH")" && cd .. && pwd)"
 
+# Source shared library (provides extract_md_section, replace_md_section, etc.)
+_RWS_LIB="${FURROW_ROOT}/bin/frw.d/lib/common.sh"
+if [ -f "$_RWS_LIB" ]; then
+  # shellcheck source=bin/frw.d/lib/common.sh
+  . "$_RWS_LIB"
+fi
+unset _RWS_LIB
+
 # --- Exit codes ---
 
 EXIT_SUCCESS=0
@@ -1031,8 +1039,7 @@ update_summary() {
 
   # For append mode, extract existing section content and prepend it
   if [ "$_usm_replace" != "true" ]; then
-    _usm_existing="$(awk "/^## ${_usm_display}\$/{found=1; next} /^## /{if(found) exit} found{print}" "$_usm_summary_file")"
-    _usm_existing="$(echo "$_usm_existing" | sed '/^$/d')"
+    _usm_existing="$(extract_md_section "$_usm_summary_file" "$_usm_display")"
     if [ -n "$_usm_existing" ]; then
       _usm_content="${_usm_existing}
 ${_usm_content}"
@@ -1040,25 +1047,7 @@ ${_usm_content}"
   fi
 
   # Atomic rewrite: replace only the target section
-  _usm_tmp="${_usm_summary_file}.tmp.$$"
-
-  awk -v section="$_usm_display" -v new_content="$_usm_content" '
-    /^## / { if (header == section) { replacing=0 } }
-    /^## / { header=$0; sub(/^## /, "", header) }
-    header == section && !printed_new { print "## " section; printf "%s\n", new_content; printed_new=1; replacing=1; next }
-    replacing { next }
-    { print }
-  ' "$_usm_summary_file" > "$_usm_tmp"
-
-  # Validate temp file before replacing original
-  _usm_check="$(awk "/^## ${_usm_display}\$/{found=1; next} /^## /{if(found) exit} found && NF{print}" "$_usm_tmp")"
-  if [ -z "$_usm_check" ]; then
-    rm -f "$_usm_tmp"
-    echo "Validation failed: section '$_usm_display' has no non-empty lines after update" >&2
-    exit "$EXIT_VALIDATION"
-  fi
-
-  mv "$_usm_tmp" "$_usm_summary_file"
+  replace_md_section "$_usm_summary_file" "$_usm_display" "$_usm_content"
 
   # Update state.json timestamp to reflect summary change
   update_state "$_usm_name" "." > /dev/null 2>&1 || true
@@ -1119,6 +1108,155 @@ validate_summary() {
 
   if [ -n "$_vs_errors" ]; then
     printf "summary.md validation failed:\n%b" "$_vs_errors" >&2
+    return 1
+  fi
+
+  return 0
+}
+
+# ============================================================
+#  update_worktree_summary — update an agent-written worktree-summary section
+# ============================================================
+
+update_worktree_summary() {
+  _uwts_name="$1"
+  _uwts_section="$2"
+  _uwts_replace="${3:-false}"
+
+  _uwts_work_dir="$(resolve_row_dir "$_uwts_name")"
+  _uwts_summary_file="${_uwts_work_dir}/worktree-summary.md"
+
+  if [ ! -f "$_uwts_summary_file" ]; then
+    echo "worktree-summary.md not found: $_uwts_summary_file" >&2
+    exit "$EXIT_NOT_FOUND"
+  fi
+
+  # Map kebab-case section to display name
+  case "$_uwts_section" in
+    files-changed)  _uwts_display="Files Changed" ;;
+    decisions)      _uwts_display="Decisions" ;;
+    open-items)     _uwts_display="Open Items" ;;
+    test-results)   _uwts_display="Test Results" ;;
+    *)
+      echo "Invalid section: $_uwts_section (must be files-changed, decisions, open-items, or test-results)" >&2
+      exit "$EXIT_USAGE"
+      ;;
+  esac
+
+  # Reject if stdin is a TTY
+  if [ -t 0 ]; then
+    echo "Content must be piped via stdin (not a TTY)" >&2
+    exit "$EXIT_USAGE"
+  fi
+
+  # Read content from stdin, reject empty or whitespace-only
+  _uwts_content="$(cat)"
+
+  _uwts_trimmed="$(echo "$_uwts_content" | sed '/^[[:space:]]*$/d')"
+  if [ -z "$_uwts_trimmed" ]; then
+    echo "No substantive content provided on stdin (empty or whitespace-only)" >&2
+    exit "$EXIT_VALIDATION"
+  fi
+
+  # For append mode, extract existing section content and prepend it
+  if [ "$_uwts_replace" != "true" ]; then
+    _uwts_existing="$(extract_md_section "$_uwts_summary_file" "$_uwts_display")"
+    if [ -n "$_uwts_existing" ]; then
+      _uwts_content="${_uwts_existing}
+${_uwts_content}"
+    fi
+  fi
+
+  # Atomic rewrite: replace only the target section
+  replace_md_section "$_uwts_summary_file" "$_uwts_display" "$_uwts_content"
+
+  # Update state.json timestamp to reflect summary change
+  update_state "$_uwts_name" "." > /dev/null 2>&1 || true
+
+  echo "Updated ${_uwts_display} in worktree-summary.md"
+}
+
+# ============================================================
+#  regenerate_worktree_summary — regenerate worktree-summary.md skeleton
+# ============================================================
+
+regenerate_worktree_summary() {
+  _rwts_name="$1"
+
+  _rwts_work_dir="$(resolve_row_dir "$_rwts_name")"
+  _rwts_summary_file="${_rwts_work_dir}/worktree-summary.md"
+
+  # Preserve existing agent-written sections
+  _rwts_files_changed=""
+  _rwts_decisions=""
+  _rwts_open_items=""
+  _rwts_test_results=""
+
+  if [ -f "$_rwts_summary_file" ]; then
+    _rwts_files_changed="$(extract_md_section "$_rwts_summary_file" "Files Changed")"
+    _rwts_decisions="$(extract_md_section "$_rwts_summary_file" "Decisions")"
+    _rwts_open_items="$(extract_md_section "$_rwts_summary_file" "Open Items")"
+    _rwts_test_results="$(extract_md_section "$_rwts_summary_file" "Test Results")"
+  fi
+
+  # Write skeleton atomically
+  _rwts_tmp="${_rwts_summary_file}.tmp.$$"
+
+  cat > "$_rwts_tmp" << ENDWTS
+# Worktree Summary: ${_rwts_name}
+## Files Changed
+${_rwts_files_changed}
+## Decisions
+${_rwts_decisions}
+## Open Items
+${_rwts_open_items}
+## Test Results
+${_rwts_test_results}
+ENDWTS
+
+  mv "$_rwts_tmp" "$_rwts_summary_file"
+
+  echo "Worktree summary regenerated: $_rwts_summary_file"
+}
+
+# ============================================================
+#  validate_worktree_summary — worktree-summary section validation
+# ============================================================
+
+validate_worktree_summary() {
+  _vwts_name="$1"
+
+  _vwts_work_dir="$(resolve_row_dir "$_vwts_name")"
+  _vwts_summary_file="${_vwts_work_dir}/worktree-summary.md"
+
+  if [ ! -f "$_vwts_summary_file" ]; then
+    echo "worktree-summary.md not found: $_vwts_summary_file" >&2
+    return 1
+  fi
+
+  _vwts_errors=""
+
+  # Check all 4 sections present with >= 1 non-empty line
+  for _vwts_section in "Files Changed" "Decisions" "Open Items" "Test Results"; do
+    if ! grep -q "^## ${_vwts_section}$" "$_vwts_summary_file"; then
+      _vwts_errors="${_vwts_errors}Missing section: ${_vwts_section}\n"
+      continue
+    fi
+
+    _vwts_count="$(awk -v sec="$_vwts_section" '
+      $0 == "## " sec { found=1; next }
+      /^## /          { if (found) exit }
+      found && /[^ ]/ { count++ }
+      END             { print count+0 }
+    ' "$_vwts_summary_file")"
+
+    if [ "$_vwts_count" -lt 1 ]; then
+      _vwts_errors="${_vwts_errors}Section '${_vwts_section}' needs at least 1 non-empty line (has ${_vwts_count}).\n"
+    fi
+  done
+
+  if [ -n "$_vwts_errors" ]; then
+    printf "worktree-summary.md validation failed:\n%b" "$_vwts_errors" >&2
     return 1
   fi
 
@@ -2098,6 +2236,77 @@ rws_update_summary() {
 }
 
 # ============================================================
+#  Subcommand: update-worktree-summary
+# ============================================================
+
+rws_update_worktree_summary() {
+  _uwtsub_name=""
+  _uwtsub_section=""
+  _uwtsub_replace="false"
+
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --replace)
+        _uwtsub_replace="true"
+        shift
+        ;;
+      *)
+        if [ -z "$_uwtsub_section" ]; then
+          # Could be name or section — check if it's a valid section
+          case "$1" in
+            files-changed|decisions|open-items|test-results)
+              _uwtsub_section="$1"
+              ;;
+            *)
+              if [ -z "$_uwtsub_name" ]; then
+                _uwtsub_name="$1"
+              else
+                _uwtsub_section="$1"
+              fi
+              ;;
+          esac
+        fi
+        shift
+        ;;
+    esac
+  done
+
+  if [ -z "$_uwtsub_section" ]; then
+    die "Usage: rws update-worktree-summary [name] <section> [--replace]"
+  fi
+
+  _uwtsub_name="$(resolve_name "$_uwtsub_name")"
+  require_state "$_uwtsub_name" > /dev/null
+
+  update_worktree_summary "$_uwtsub_name" "$_uwtsub_section" "$_uwtsub_replace"
+}
+
+# ============================================================
+#  Subcommand: regenerate-worktree-summary
+# ============================================================
+
+rws_regenerate_worktree_summary() {
+  _rgwts_name="$(resolve_name "${1:-}")"
+  require_state "$_rgwts_name" > /dev/null
+  regenerate_worktree_summary "$_rgwts_name"
+}
+
+# ============================================================
+#  Subcommand: validate-worktree-summary
+# ============================================================
+
+rws_validate_worktree_summary() {
+  _vwtsub_name="$(resolve_name "${1:-}")"
+  require_state "$_vwtsub_name" > /dev/null
+
+  if ! validate_worktree_summary "$_vwtsub_name"; then
+    exit 1
+  fi
+
+  echo "Worktree summary valid."
+}
+
+# ============================================================
 #  Subcommand: help
 # ============================================================
 
@@ -2135,6 +2344,10 @@ Commands:
   validate-summary [name] [--step S]     Validate summary.md sections
   update-summary [name] <section> [--replace]
                                          Update an agent-written summary section
+  regenerate-worktree-summary [name]     Regenerate worktree-summary.md skeleton
+  validate-worktree-summary [name]       Validate worktree-summary.md sections
+  update-worktree-summary [name] <section> [--replace]
+                                         Update an agent-written worktree-summary section
 
   help                                   Show this help message
 
@@ -2173,6 +2386,9 @@ case "$cmd" in
   regenerate-summary) rws_regenerate_summary "$@" ;;
   validate-summary)   rws_validate_summary "$@" ;;
   update-summary)     rws_update_summary "$@" ;;
+  regenerate-worktree-summary) rws_regenerate_worktree_summary "$@" ;;
+  validate-worktree-summary)   rws_validate_worktree_summary "$@" ;;
+  update-worktree-summary)     rws_update_worktree_summary "$@" ;;
   help|--help|-h)     rws_help ;;
   *)                  echo "Unknown command: $cmd" >&2; rws_help >&2; exit 1 ;;
 esac

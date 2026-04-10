@@ -166,6 +166,9 @@ case "$cmd" in
   "")
     die "no command (try 'frw help')"
     ;;
+  rws|alm|sds)
+    die "'$cmd' is a separate CLI, not a frw subcommand — run '$cmd $*' directly"
+    ;;
   *)
     die "unknown command '$cmd' (try 'frw help')"
     ;;
