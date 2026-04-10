@@ -4,7 +4,7 @@
 Add dual-reviewer protocol (fresh subagent + cross-model) to plan and spec step gates, enable explicit specialist delegation at all steps via scenarios-based selection, create specialist-informed dual-review integration, and add llm-specialist and test-driven-specialist templates.
 
 ## Current State
-Step: implement | Status: not_started
+Step: review | Status: completed
 Deliverables: 2/2
 Mode: code
 
@@ -23,6 +23,8 @@ Mode: code
 - **spec->decompose**: pass — Specs complete: 2 deliverables with interface contracts, refined ACs (7+7), test scenarios (6+3), precise insertion points. All open questions resolved. Implementation-ready.
 - **decompose->implement**: pass — Decompose complete: plan.json finalized with 2 waves and file ownership. team-plan.md written with 4 groups in Wave 1, 3 tasks in Wave 2. Deliverables registered as not_started.
 - **implement->review**: pass — Decompose complete: plan.json finalized (2 waves, 11+3 files), team-plan.md written, deliverables registered as not_started. CLI gap noted (register-deliverable TODO added).
+- **implement->review**: pass — Implementation complete: 2/2 deliverables, 0 corrections. All 14 ACs verified. 13 files modified/created across 2 waves. Shell syntax validates, YAML parses, line limits respected.
+- **implement->review**: pass — Implementation complete: 2/2 deliverables, 0 corrections. 27 files, 1821 insertions. All 14 ACs verified.
 
 ## Context Budget
 Measurement unavailable
@@ -33,8 +35,10 @@ Measurement unavailable
 - Wave 2 (content): 2 new specialists created (llm-specialist 57 lines, test-driven-specialist 57 lines), both registered in _meta.yaml
 - Shell script syntax validates, YAML parses cleanly, all files under line limits
 - Zero corrections needed during implementation
+
 ## Open Questions
 - None
+
 ## Recommendations
 - Run frw measure-context to verify budget compliance after step skill changes
 - Test cross-model --plan/--spec with a real row before relying on it

@@ -2,8 +2,8 @@
   "name": "dual-review-delegation",
   "title": "Dual-review at plan/spec, intent-based specialist auto-delegation, new specialists",
   "description": "Dual-review at plan/spec, intent-based specialist auto-delegation, new specialists",
-  "step": "implement",
-  "step_status": "not_started",
+  "step": "review",
+  "step_status": "completed",
   "steps_sequence": [
     "ideate",
     "research",
@@ -74,6 +74,13 @@
       "decided_by": "manual",
       "evidence": "Implementation complete: 2/2 deliverables, 0 corrections. All 14 ACs verified. 13 files modified/created across 2 waves. Shell syntax validates, YAML parses, line limits respected.",
       "timestamp": "2026-04-10T09:36:43Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Implementation complete: 2/2 deliverables, 0 corrections. 27 files, 1821 insertions. All 14 ACs verified.",
+      "timestamp": "2026-04-10T09:37:30Z"
     }
   ],
   "force_stop_at": null,
@@ -83,8 +90,8 @@
   "seed_id": "furrow-8121",
   "epic_seed_id": null,
   "created_at": "2026-04-08T18:19:24Z",
-  "updated_at": "2026-04-10T09:36:43Z",
-  "archived_at": null,
+  "updated_at": "2026-04-10T09:57:59Z",
+  "archived_at": "2026-04-10T09:57:59Z",
   "source_todo": null,
   "gate_policy_init": "supervised"
 }

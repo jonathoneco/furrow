@@ -1425,7 +1425,7 @@
     - skills/spec.md
     - specialists/
     - references/specialist-template.md
-  status: active
+  status: done
 - id: spike-row-mode
   title: "Spike row mode — implementation-flavored research with throwaway prototypes"
   context: |
