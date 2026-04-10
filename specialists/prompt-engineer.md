@@ -33,6 +33,7 @@ Do not use for domain-specific content within prompts (use the relevant domain s
 
 - **harness-engineer**: Prompt-engineer owns instruction design principles (placement, structure, failure modes). Harness-engineer owns the infrastructure that delivers instructions (skills, hooks, context loading). When designing a new skill file, harness-engineer owns the file format and loading mechanism; prompt-engineer advises on instruction structure within the file.
 - **technical-writer**: Prompt-engineer owns instructions meant for model consumption. Technical-writer owns documentation meant for human consumption. When a document serves both (like CLAUDE.md), prompt-engineer advises on model-facing instruction structure.
+- **llm-specialist**: Prompt-engineer owns instruction structure (placement, constraints, failure modes). LLM-specialist owns application architecture (context budgets, retrieval pipelines, model selection, output schemas). When designing a gate evaluator: prompt-engineer advises on instruction structure; llm-specialist advises on token budget allocation.
 
 ## Quality Criteria
 
