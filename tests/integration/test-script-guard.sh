@@ -47,6 +47,14 @@ run_hook ". bin/frw.d/hooks/state-guard.sh" || _ec=$?
 assert_exit_code "blocks: . bin/frw.d/hooks/state-guard.sh" 2 "$_ec"
 
 _ec=0
+run_hook "bin/frw.d/scripts/update-state.sh" || _ec=$?
+assert_exit_code "blocks: direct path bin/frw.d/scripts/update-state.sh" 2 "$_ec"
+
+_ec=0
+run_hook "./bin/frw.d/scripts/update-state.sh" || _ec=$?
+assert_exit_code "blocks: ./bin/frw.d/scripts/update-state.sh" 2 "$_ec"
+
+_ec=0
 run_hook "echo foo && bash bin/frw.d/scripts/update-state.sh" || _ec=$?
 assert_exit_code "blocks: chained && bash frw.d/" 2 "$_ec"
 
@@ -57,6 +65,10 @@ assert_exit_code "blocks: chained ; bash frw.d/" 2 "$_ec"
 _ec=0
 run_hook "echo foo || sh bin/frw.d/scripts/run-gate.sh" || _ec=$?
 assert_exit_code "blocks: chained || sh frw.d/" 2 "$_ec"
+
+_ec=0
+run_hook "env bash bin/frw.d/scripts/update-state.sh" || _ec=$?
+assert_exit_code "blocks: env bash frw.d/" 2 "$_ec"
 
 # --- Tests: allowed commands (exit 0) ---
 
@@ -78,6 +90,14 @@ assert_exit_code "allows: head bin/frw.d/hooks/state-guard.sh" 0 "$_ec"
 _ec=0
 run_hook "ls bin/frw.d/scripts/" || _ec=$?
 assert_exit_code "allows: ls bin/frw.d/scripts/" 0 "$_ec"
+
+_ec=0
+run_hook "wc -l bin/frw.d/hooks/script-guard.sh" || _ec=$?
+assert_exit_code "allows: wc -l bin/frw.d/" 0 "$_ec"
+
+_ec=0
+run_hook "diff bin/frw.d/hooks/state-guard.sh bin/frw.d/hooks/verdict-guard.sh" || _ec=$?
+assert_exit_code "allows: diff bin/frw.d/" 0 "$_ec"
 
 _ec=0
 run_hook "frw update-state row-name step in_progress" || _ec=$?
