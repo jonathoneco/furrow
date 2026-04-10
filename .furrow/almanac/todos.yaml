@@ -781,6 +781,38 @@
     - "bin/frw.d/scripts/"
     - "bin/frw.d/hooks/"
   status: active
+- id: cli-breakup-script-guard
+  title: "Break up rws/alm/sds into frw.d/-style internal modules and extend script-guard"
+  context: |
+    Currently only frw dispatches to bin/frw.d/. The other CLIs (rws, alm, sds)
+    are monolithic scripts. When they're broken into internal modules (similar to
+    frw.d/scripts/), the script-guard.sh hook must be extended to cover those
+    new internal paths. The guard's frw.d/ substring match may already cover this
+    if modules land under frw.d/, but if a different directory structure is chosen
+    (e.g., rws.d/, alm.d/), the hook pattern needs updating.
+  work_needed: |
+    - Break rws, alm, sds into dispatcher + internal modules
+    - Choose directory structure (frw.d/ umbrella vs separate *.d/ dirs)
+    - Extend script-guard.sh to cover new internal module paths
+    - Update integration tests for expanded guard coverage
+  references:
+    - "bin/rws"
+    - "bin/alm"
+    - "bin/sds"
+    - "bin/frw.d/hooks/script-guard.sh"
+  source_work_unit: "script-safety"
+  source_type: "follow-up"
+  created_at: "2026-04-10T00:00:00Z"
+  updated_at: "2026-04-10T00:00:00Z"
+  urgency: "low"
+  impact: "medium"
+  effort: "large"
+  files_touched:
+    - "bin/rws"
+    - "bin/alm"
+    - "bin/sds"
+    - "bin/frw.d/hooks/script-guard.sh"
+  status: active
 - id: brain-dump-triage-command
   title: "Brain dump triage command to turn notes into actionable TODOs"
   context: |
