@@ -1734,3 +1734,64 @@
   effort: large
   files_touched: []
   status: active
+# --- Standalone: Gate Dimension Deduplication ---
+- id: gate-dimension-deduplication
+  title: "Extract shared gate dimensions (seed-sync, dual-review) into reusable definitions"
+  context: |
+    Gate YAML files (evals/gates/*.yaml) use additional_dimensions to add cross-cutting
+    concerns like seed-sync and dual-review. These dimensions are duplicated verbatim
+    across every gate file that needs them. Currently seed-sync appears in all 6 gate
+    files, and dual-review will appear in ideate, plan, and spec gates. The duplication
+    is manageable at 2-3 shared dimensions but will scale poorly if more are added.
+    Identified during dual-review-delegation planning.
+  work_needed: |
+    - Design a shared dimension definition mechanism (e.g., evals/dimensions/shared.yaml)
+    - Update gate evaluator to load shared dimensions alongside step-specific ones
+    - Migrate seed-sync and dual-review/cross-model to the shared definition
+    - Ensure gate YAML files remain readable as standalone contracts
+  references:
+    - evals/gates/
+    - evals/dimensions/
+    - skills/shared/gate-evaluator.md
+  source_work_unit: "dual-review-delegation"
+  source_type: open-question
+  created_at: "2026-04-10T00:00:00Z"
+  updated_at: "2026-04-10T00:00:00Z"
+  urgency: low
+  impact: medium
+  effort: small
+  files_touched:
+    - evals/gates/
+    - evals/dimensions/
+    - skills/shared/gate-evaluator.md
+  status: active
+# --- Standalone: Register-Deliverable CLI Gap ---
+- id: register-deliverable-command
+  title: "Add rws register-deliverable command — separate registration from completion"
+  context: |
+    The only way to register deliverables in state.json is `rws complete-deliverable`,
+    which sets status to "completed". At the decompose step, deliverables need to be
+    registered with status "not_started" and wave assignment, but there's no command for
+    this. The workaround is direct jq mutation of state.json, which violates the
+    CLI-mediated state mutation principle. Discovered during dual-review-delegation
+    decompose step.
+  work_needed: |
+    - Add `rws register-deliverable <name> <deliverable> [--wave N]` command
+    - Sets deliverable status to "not_started" with wave assignment and corrections 0
+    - If deliverable already registered, error (don't overwrite)
+    - Update complete-deliverable to require deliverable already be registered
+    - Consider: should decompose step auto-register from plan.json? (rws register-from-plan)
+  references:
+    - bin/rws
+    - skills/decompose.md
+    - .claude/rules/cli-mediation.md
+  source_work_unit: "dual-review-delegation"
+  source_type: open-question
+  created_at: "2026-04-10T00:00:00Z"
+  updated_at: "2026-04-10T00:00:00Z"
+  urgency: medium
+  impact: medium
+  effort: small
+  files_touched:
+    - bin/rws
+  status: active

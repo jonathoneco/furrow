@@ -71,6 +71,7 @@ Read these when relevant to your current action:
 - `skills/shared/learnings-protocol.md` — when capturing learnings
 - `skills/shared/git-conventions.md` — before any commit
 - `skills/shared/summary-protocol.md` — Open Questions only at this step
+- `skills/shared/specialist-delegation.md` — specialist selection and delegation protocol
 
 ## Step Mechanics
 Transition out: gate record `ideate->research` with outcome `pass` required.

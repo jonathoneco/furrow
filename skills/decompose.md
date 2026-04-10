@@ -35,6 +35,7 @@ what can run concurrently, what order minimizes rework.
 - `skills/shared/learnings-protocol.md` — when capturing learnings
 - `skills/shared/context-isolation.md` — when planning agent teams
 - `skills/shared/summary-protocol.md` — before completing step
+- `skills/shared/specialist-delegation.md` — specialist selection and delegation protocol
 
 ## Team Planning
 Write `team-plan.md` before dispatching sub-agents (>1 deliverable).

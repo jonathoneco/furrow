@@ -4,82 +4,264 @@
 api-designer:
   file: api-designer.md
   description: "HTTP API design — resource modeling, error handling, backward compatibility"
+  scenarios:
+    - When: "Adding or changing a CLI subcommand's argument or output format"
+      Use: "Backward compatibility calculus"
+    - When: "Designing error responses or exit code contracts for a new command"
+      Use: "Error contract rigor"
+    - When: "Deciding whether to nest a sub-resource or flatten it"
+      Use: "Resource boundary reasoning"
 
 cli-designer:
   file: cli-designer.md
   description: "CLI design — progressive disclosure, Unix composability, destructive operation gates, terminal UX"
+  scenarios:
+    - When: "Structuring a new CLI command's flags, positional args, and help text"
+      Use: "Progressive disclosure"
+    - When: "Adding a command that deletes or overwrites data"
+      Use: "Destructive operation gates"
+    - When: "Designing command output that scripts will consume"
+      Use: "Unix composability"
+    - When: "Improving error messages to guide the user toward recovery"
+      Use: "Error recovery guidance"
 
 complexity-skeptic:
   file: complexity-skeptic.md
   description: "Evaluates every dependency, shim, and abstraction as a liability — argues for simplicity and removal"
+  scenarios:
+    - When: "Evaluating whether to add an external dependency"
+      Use: "Adoption cost audit"
+    - When: "Reviewing a compatibility shim that has lingered past its original purpose"
+      Use: "Shim debt accounting"
+    - When: "Deciding between a clean replacement and another incremental patch"
+      Use: "Clean cut over gradual rot"
+    - When: "Investigating why a component exists and whether its constraints still apply"
+      Use: "Complexity archaeology"
 
 document-db-architect:
   file: document-db-architect.md
   description: "Document database modeling, denormalization-by-design, schema evolution, and consistency tradeoffs"
+  scenarios:
+    - When: "Deciding whether to embed a sub-object or store it in a separate file"
+      Use: "Embedding vs. referencing"
+    - When: "Adding a new field to state.json that must coexist with old-format rows"
+      Use: "Schema evolution with coexistence"
+    - When: "Choosing the shape of a new YAML/JSON document store"
+      Use: "Access-pattern-first modeling"
 
 go-specialist:
   file: go-specialist.md
   description: "Go idioms, concurrency patterns, interface design, and error propagation strategy"
+  scenarios:
+    - When: "Wrapping errors in a Go call chain and choosing between %w and %v"
+      Use: "Error chain narration"
+    - When: "Defining an interface for a dependency in Go"
+      Use: "Interface discovery at the consumer"
+    - When: "Adding a goroutine and ensuring it shuts down cleanly"
+      Use: "Goroutine lifecycle ownership"
 
 harness-engineer:
   file: harness-engineer.md
   description: "Workflow harness infrastructure — shell scripts, hooks, schemas, validation pipelines"
+  scenarios:
+    - When: "Deciding whether a behavior should be enforced by a hook, a validator, or prose"
+      Use: "Enforcement spectrum"
+    - When: "Adding or modifying a harness component in bin/frw.d/"
+      Use: "Rationale-first component decisions"
+    - When: "Noticing a recurring workaround that could become a structural enforcement"
+      Use: "Pattern mining"
+    - When: "Checking whether the platform has absorbed a capability Furrow currently provides"
+      Use: "Platform boundary awareness"
+    - When: "Improving developer experience by reducing ceremony in the step pipeline"
+      Use: "Friction as signal"
 
 merge-specialist:
   file: merge-specialist.md
   description: "Merge strategy, conflict detection, and post-merge validation for Furrow workflows"
+  scenarios:
+    - When: "Preparing to merge an archived row's branch into main"
+      Use: "Pre-merge readiness"
+    - When: "Predicting merge conflicts before attempting the merge"
+      Use: "Conflict detection as ownership audit"
+    - When: "Choosing between fast-forward and no-ff merge strategies"
+      Use: "No-ff merge as traceability"
 
 migration-strategist:
   file: migration-strategist.md
   description: "Evolves running systems without downtime or data loss — expand-contract discipline"
+  scenarios:
+    - When: "Renaming or restructuring a field in state.json while active rows exist"
+      Use: "Expand-contract discipline"
+    - When: "Sequencing a multi-step migration to minimize risk"
+      Use: "Rollback cost as ordering heuristic"
+    - When: "Defining when a dual-read migration window can be closed"
+      Use: "Dual-write/dual-read windows"
 
 python-specialist:
   file: python-specialist.md
   description: "Pythonic patterns, protocol-based design, dependency management, and runtime safety"
   note: "General-purpose language specialist (not project-grounded). Project has Python in adapters/agent-sdk/ but specialist serves any Python project."
+  scenarios:
+    - When: "Choosing between Protocol and ABC for a Python interface"
+      Use: "Protocol when interface, ABC when behavior"
+    - When: "Deciding whether to return a list or a generator from a Python function"
+      Use: "Generator as memory contract"
+    - When: "Placing runtime validation in a Python module"
+      Use: "Runtime validation at trust boundaries only"
 
 relational-db-architect:
   file: relational-db-architect.md
   description: "Relational schema design, normalization, constraint modeling, migration safety"
+  scenarios:
+    - When: "Modeling a business rule that could be a CHECK or FK constraint"
+      Use: "Constraint-first modeling"
+    - When: "Writing a schema migration that alters or drops a column"
+      Use: "Migration safety calculus"
+    - When: "Deciding whether to denormalize for query performance"
+      Use: "Normalization-then-justify"
 
 security-engineer:
   file: security-engineer.md
   description: "Threat modeling for workflow harness integrity — state corruption, hook bypass, trust boundaries"
+  scenarios:
+    - When: "Reviewing a code path that mutates state.json"
+      Use: "CLI mediation as trust boundary"
+    - When: "Auditing a hook for bypass paths or fail-open conditions"
+      Use: "Hook enforcement as defense in depth"
+    - When: "Evaluating whether a gate check verifies content or just existence"
+      Use: "Gate integrity"
 
 shell-specialist:
   file: shell-specialist.md
   description: "Non-harness shell scripting — install scripts, integration tests, command libraries"
   note: "Kept as standalone (11 non-harness scripts in project). Boundary: harness-engineer owns bin/frw.d/ etc; shell-specialist owns install.sh, tests/integration/, commands/lib/."
+  scenarios:
+    - When: "Modifying install.sh behavior or error messages"
+      Use: "Install script as first impression"
+    - When: "Writing or updating an integration test in tests/integration/"
+      Use: "Test script isolation"
+    - When: "A non-harness script needs functionality from the harness"
+      Use: "Harness CLI as interface"
 
 systems-architect:
   file: systems-architect.md
   description: "Component boundaries, dependency direction, coupling/cohesion trade-offs"
+  scenarios:
+    - When: "Deciding where to place a new module boundary"
+      Use: "Boundary tension test"
+    - When: "Reviewing a dependency that points outward instead of inward"
+      Use: "Dependency direction rule"
+    - When: "Evaluating whether to add a new architectural layer or indirection"
+      Use: "Complexity budget"
+    - When: "Checking whether a component boundary aligns with deliverable ownership"
+      Use: "Boundary-deliverable alignment"
+    - When: "Assessing whether the platform has absorbed a Furrow component's purpose"
+      Use: "Platform absorption tracking"
 
 test-engineer:
   file: test-engineer.md
   description: "Test design, coverage analysis, edge case identification, gate-aligned test planning"
+  scenarios:
+    - When: "Designing tests that provide evidence for gate review"
+      Use: "Gate-aligned test design"
+    - When: "Choosing between unit, integration, and E2E tests for a bug class"
+      Use: "Test boundary reasoning"
+    - When: "Naming tests so failures are self-documenting"
+      Use: "Test names as failure documentation"
+    - When: "Evaluating whether the test suite catches the right bug classes"
+      Use: "Coverage strategy over percentage"
 
 typescript-specialist:
   file: typescript-specialist.md
   description: "TypeScript type system design, narrowing patterns, module boundaries, runtime/compile-time separation"
   note: "General-purpose language specialist (not project-grounded). Project does not use TypeScript but specialist serves any TS project."
+  scenarios:
+    - When: "Modeling an object that can exist in mutually exclusive states"
+      Use: "Discriminated union over optional fields"
+    - When: "Validating external data (API responses, JSON.parse results) at runtime"
+      Use: "Runtime validation at the type erasure boundary"
+    - When: "Deciding what to export from a TypeScript module"
+      Use: "Module exports as contract boundary"
 
 frontend-designer:
   file: frontend-designer.md
   description: "Rendering strategy, hydration cost, state colocation, and interaction design — framework-agnostic"
+  scenarios:
+    - When: "Deciding whether to server-render, statically generate, or client-fetch content"
+      Use: "Rendering strategy selection"
+    - When: "Evaluating whether a component needs client-side JavaScript"
+      Use: "Hydration cost accounting"
+    - When: "Choosing where a piece of state should live in the component tree"
+      Use: "State colocation discipline"
+    - When: "Designing a feature that should work without JavaScript"
+      Use: "Progressive enhancement default"
 
 css-specialist:
   file: css-specialist.md
   description: "Algorithm-first layout selection, specificity budgeting, compositing awareness, and defensive styling"
+  scenarios:
+    - When: "Choosing between grid, flexbox, and flow layout for a component"
+      Use: "Algorithm-first layout selection"
+    - When: "Selecting CSS selectors and managing specificity across a stylesheet"
+      Use: "Specificity budget management"
+    - When: "Animating a UI element and choosing which CSS properties to animate"
+      Use: "Compositing layer awareness"
 
 accessibility-auditor:
   file: accessibility-auditor.md
   description: "Semantic HTML first, ARIA as repair, focus management architecture, and announcement strategy"
+  scenarios:
+    - When: "Deciding whether to use a native HTML element or add ARIA attributes"
+      Use: "Semantic HTML first, ARIA as repair"
+    - When: "Designing focus behavior when content appears or a modal opens"
+      Use: "Focus management architecture"
+    - When: "Choosing between live region updates and focus-based announcements"
+      Use: "Announcement strategy"
+    - When: "Implementing keyboard interactions for a custom widget"
+      Use: "Keyboard interaction patterns"
 
 prompt-engineer:
   file: prompt-engineer.md
   description: "Structural constraint over behavioral instruction, failure mode prediction, and instruction placement strategy"
+  scenarios:
+    - When: "Writing agent instructions and choosing between prose rules and structural constraints"
+      Use: "Structural constraint over behavioral instruction"
+    - When: "Deciding where to place instructions across Furrow context layers"
+      Use: "Instruction placement strategy"
+    - When: "Reviewing a prompt for ways the model might fail to comply"
+      Use: "Failure mode prediction"
+    - When: "Designing gate evaluation rubrics with score anchors"
+      Use: "Evaluation-aware design"
 
 technical-writer:
   file: technical-writer.md
   description: "Diataxis mode discipline, progressive disclosure, maintenance-cost awareness, and audience calibration"
+  scenarios:
+    - When: "Classifying a new document as tutorial, how-to, reference, or explanation"
+      Use: "Diataxis mode discipline"
+    - When: "Structuring a document so readers get value at every exit point"
+      Use: "Progressive disclosure architecture"
+    - When: "Deciding whether to list specific file names or describe a pattern structurally"
+      Use: "Maintenance-cost awareness"
+
+llm-specialist:
+  file: llm-specialist.md
+  description: "Context window budgeting, structured output design, retrieval strategy, and multimodal handling for AI/LLM applications"
+  scenarios:
+    - When: "Designing prompts or agent instructions that must fit within token budgets"
+      Use: "Context window budgeting and priority-based content allocation"
+    - When: "Building structured output schemas for LLM-generated content"
+      Use: "Output schema design and extraction reliability patterns"
+    - When: "Implementing retrieval-augmented generation or knowledge grounding"
+      Use: "Retrieval strategy selection and grounding verification"
+
+test-driven-specialist:
+  file: test-driven-specialist.md
+  description: "Test-first reasoning across all steps — AC-to-test mapping, verification design before implementation, edge case surfacing"
+  scenarios:
+    - When: "Defining acceptance criteria that need concrete verification methods"
+      Use: "AC-to-test mapping and verification-first criterion design"
+    - When: "Planning implementation order and wanting test coverage from the start"
+      Use: "Test-first sequencing and red-green-refactor reasoning"
+    - When: "Reviewing specs for testability gaps before implementation begins"
+      Use: "Testability audit and edge case surfacing"

@@ -56,6 +56,7 @@ Read these when relevant to your current action:
 - `skills/shared/learnings-protocol.md` — when capturing learnings
 - `skills/shared/context-isolation.md` — when dispatching spec sub-agents
 - `skills/shared/summary-protocol.md` — before completing step
+- `skills/shared/specialist-delegation.md` — specialist selection and delegation protocol
 
 ## Team Planning
 For multi-deliverable work, dispatch spec sub-agents per component. Read `skills/shared/context-isolation.md`.
@@ -68,6 +69,19 @@ Pre-step evaluator (`evals/gates/spec.yaml`): testability — are ACs specific e
 to implement without refinement? Per `skills/shared/gate-evaluator.md`.
 Next step expects: implementation-ready specs in `spec.md` or `specs/` with
 refined acceptance criteria per deliverable.
+
+## Dual-Reviewer Protocol
+Before requesting transition, run both reviewers in parallel:
+1. **Fresh Claude reviewer** — `claude -p --bare` with spec artifacts,
+   definition.yaml ACs, and `evals/dimensions/spec.yaml` dimensions.
+   Specialist template included if specialist was delegated during this step.
+   Receives: spec.md or specs/ directory, definition.yaml.
+   Excludes: summary.md, conversation history, state.json.
+2. **Cross-model reviewer** — `frw cross-model-review {name} --spec`
+   if `cross_model.provider` configured in `furrow.yaml`. Skip if absent.
+Synthesize findings: flag disagreements, note unique findings, record
+both sources in gate evidence. Address or explicitly reject all findings
+before requesting transition.
 
 ## Supervised Transition Protocol
 Before requesting a step transition:
