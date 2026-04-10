@@ -19,7 +19,7 @@ post_step:
       fail_criteria: "Seed not found, seed is closed, or seed status does not match expected status"
       evidence_format: "Quote seed_id, seed status, and current step; for FAIL show mismatch"
     - name: "dual-review"
-      definition: "Whether fresh-context and cross-model review evidence exists for the plan"
+      definition: "Whether fresh-context and cross-model review evidence exists for the spec"
       pass_criteria: "Evidence of fresh-context or cross-model review exists. Review findings were incorporated or explicitly rejected with rationale."
       fail_criteria: "No review evidence exists. Findings ignored without rationale."
       evidence_format: "Cite review source and disposition of findings"

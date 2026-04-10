@@ -249,19 +249,19 @@ llm-specialist:
   description: "Context window budgeting, structured output design, retrieval strategy, and multimodal handling for AI/LLM applications"
   scenarios:
     - When: "Designing prompts or agent instructions that must fit within token budgets"
-      Use: "Context window budgeting and priority-based content allocation"
+      Use: "Context window budgeting"
     - When: "Building structured output schemas for LLM-generated content"
-      Use: "Output schema design and extraction reliability patterns"
+      Use: "Structured output reliability"
     - When: "Implementing retrieval-augmented generation or knowledge grounding"
-      Use: "Retrieval strategy selection and grounding verification"
+      Use: "Retrieval strategy selection"
 
 test-driven-specialist:
   file: test-driven-specialist.md
   description: "Test-first reasoning across all steps — AC-to-test mapping, verification design before implementation, edge case surfacing"
   scenarios:
     - When: "Defining acceptance criteria that need concrete verification methods"
-      Use: "AC-to-test mapping and verification-first criterion design"
+      Use: "AC-to-test mapping"
     - When: "Planning implementation order and wanting test coverage from the start"
-      Use: "Test-first sequencing and red-green-refactor reasoning"
+      Use: "Test-first sequencing"
     - When: "Reviewing specs for testability gaps before implementation begins"
-      Use: "Testability audit and edge case surfacing"
+      Use: "Testability as design feedback"
