@@ -934,9 +934,9 @@ regenerate_summary() {
   _rs_recommendations=""
 
   if [ -f "$_rs_summary_file" ]; then
-    _rs_key_findings="$(awk '/^## Key Findings/{found=1; next} /^## /{if(found) exit} found{print}' "$_rs_summary_file")"
-    _rs_open_questions="$(awk '/^## Open Questions/{found=1; next} /^## /{if(found) exit} found{print}' "$_rs_summary_file")"
-    _rs_recommendations="$(awk '/^## Recommendations/{found=1; next} /^## /{if(found) exit} found{print}' "$_rs_summary_file")"
+    _rs_key_findings="$(extract_md_section "$_rs_summary_file" "Key Findings")"
+    _rs_open_questions="$(extract_md_section "$_rs_summary_file" "Open Questions")"
+    _rs_recommendations="$(extract_md_section "$_rs_summary_file" "Recommendations")"
   fi
 
   # Trim whitespace from preserved sections
@@ -946,6 +946,7 @@ regenerate_summary() {
 
   # Write summary atomically
   _rs_tmp="${_rs_summary_file}.tmp.$$"
+  trap 'rm -f "$_rs_tmp"' EXIT INT TERM
 
   cat > "$_rs_tmp" << ENDMD
 # ${_rs_title} -- Summary
@@ -978,6 +979,7 @@ ${_rs_recommendations}
 ENDMD
 
   mv "$_rs_tmp" "$_rs_summary_file"
+  trap - EXIT INT TERM
 
   # Validate all required sections present
   _rs_missing=""
@@ -1201,6 +1203,7 @@ regenerate_worktree_summary() {
 
   # Write skeleton atomically
   _rwts_tmp="${_rwts_summary_file}.tmp.$$"
+  trap 'rm -f "$_rwts_tmp"' EXIT INT TERM
 
   cat > "$_rwts_tmp" << ENDWTS
 # Worktree Summary: ${_rwts_name}
@@ -1215,6 +1218,24 @@ ${_rwts_test_results}
 ENDWTS
 
   mv "$_rwts_tmp" "$_rwts_summary_file"
+  trap - EXIT INT TERM
+
+  if [ ! -f "$_rwts_summary_file" ]; then
+    echo "Error: worktree-summary.md not found after write — mv failed" >&2
+    exit "$EXIT_SUB_FAILED"
+  fi
+
+  # Validate all required sections present
+  _rwts_missing=""
+  for _rwts_section in "Files Changed" "Decisions" "Open Items" "Test Results"; do
+    if ! grep -q "^## ${_rwts_section}$" "$_rwts_summary_file"; then
+      _rwts_missing="${_rwts_missing} ${_rwts_section}"
+    fi
+  done
+
+  if [ -n "$_rwts_missing" ]; then
+    echo "Warning: worktree-summary.md missing sections:${_rwts_missing}" >&2
+  fi
 
   echo "Worktree summary regenerated: $_rwts_summary_file"
 }
@@ -1549,6 +1570,10 @@ rws_transition() {
       echo "Transition blocked: $_tr_pending pending user action(s):" >&2
       jq -r '.pending_user_actions[] | select(.completed_at == null) | "  [PENDING] " + .id + " — " + .instructions' "$_tr_state_file" >&2
       exit 1
+    fi
+    _tr_ua_total="$(jq -r '.pending_user_actions | length' "$_tr_state_file" 2>/dev/null)" || _tr_ua_total=0
+    if [ "$_tr_ua_total" -gt 0 ]; then
+      _tr_evidence="${_tr_evidence} | user_actions: all ${_tr_ua_total} completed"
     fi
   fi
 
