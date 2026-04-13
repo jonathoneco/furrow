@@ -22,7 +22,7 @@ and advances without executing the step.
 Step agent signals completion (or step is next in sequence)
   |
   +- Phase A (deterministic, shell)
-  |   rws gate-check checks structural criteria:
+  |   rws transition checks structural criteria internally:
   |   - Deliverable count, dependencies, specialist diversity
   |   - Acceptance criteria presence and count
   |   - Mode-specific exclusions (research mode blocks research pre-step)
@@ -74,7 +74,7 @@ Each gate produces a record appended to `state.json.gates[]`:
 |-------|---------|-----------|
 | `manual` | Human reviewed and approved | supervised mode always; delegated mode for implement->review and review->archive |
 | `evaluated` | Isolated subagent evaluated, trust gradient auto-approved | delegated mode (most gates); autonomous mode (all gates) |
-| `prechecked` | Pre-step evaluation determined step not needed | Pre-step rws gate-check + evaluator agreed step is trivial |
+| `prechecked` | Pre-step evaluation determined step not needed | Pre-step check inside rws transition + evaluator agreed step is trivial |
 
 ## Trust Gradient
 

@@ -34,7 +34,7 @@ Use for invariants where:
 
 **Current rules**:
 - `cli-mediation.md` — state mutations through CLI only (backed by state-guard hook)
-- `step-sequence.md` — 7-step sequence, no skipping (backed by gate-check hook)
+- `step-sequence.md` — 7-step sequence, no skipping (enforced inside `rws transition` — step ordering and pending user action checks run before any advance)
 
 ### Hooks (settings.json)
 Use for enforcement that must be mechanical and universal:

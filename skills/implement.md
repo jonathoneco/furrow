@@ -48,6 +48,9 @@ plan.json has 1 deliverable?
 plan.json has >1 deliverable, ALL share the same specialist, ALL in wave 1?
   YES → SOLO execution with specialist skill loaded.
          Execute deliverables sequentially in the current agent.
+         NOTE: Branch 2 applies only when all deliverables are in wave 1.
+         Any plan with multiple waves falls through to branch 3 regardless
+         of specialist diversity.
 
 plan.json has >1 deliverable with DIFFERENT specialists OR >1 wave?
   YES → MULTI-AGENT dispatch.
@@ -60,6 +63,10 @@ No other paths exist. Every plan.json falls into exactly one branch.
 
 When dispatching a sub-agent for a deliverable, use this pattern. Every field
 shown is required — omitting any field is a dispatch error.
+
+> **Note**: The block below is pseudocode showing prompt composition structure,
+> not literal tool syntax. Substitute `{placeholders}` with actual values before
+> invoking the Agent tool.
 
 ```
 Agent(
@@ -129,22 +136,23 @@ Execute these steps in exact order. Do not skip or reorder.
 
 ## Wave Inspection Protocol
 
-Run after each wave completes, before launching the next wave. All checks are
-mandatory — a failure blocks the next wave.
+Run after each wave completes, before launching the next wave.
 
-### 1. Verify deliverable artifacts exist
+### 1. Verify deliverable artifacts exist (blocking)
 For each deliverable in the completed wave:
 - List the files matching its `file_ownership` globs.
 - Confirm at least one file was created or modified.
 - If no artifacts found: flag the deliverable as incomplete. Do not proceed to next wave.
+  **Step 1 failures block the next wave.**
 
-### 2. Check for file_ownership violations
+### 2. Check for file_ownership violations (non-blocking)
 - Run `git diff --name-only` for the wave's changes.
 - For each changed file, confirm it falls within exactly one deliverable's
   `file_ownership` globs for this wave.
 - A file changed outside all ownership globs is a violation. Log it as a
   warning in review evidence. It does not block the next wave but must be
   reported in the implement-to-review gate evidence.
+  **Step 2 violations are warnings, not blocks.**
 
 ### 3. Curate context for the next wave
 - For each deliverable in wave N+1, determine which wave N outputs it needs.

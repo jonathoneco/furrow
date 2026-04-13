@@ -118,7 +118,7 @@ CLIs, not in standalone scripts.
 
 | Former Hook | Disposition |
 |-------------|-------------|
-| gate-check | Folded into `rws transition` -- validates gates internally |
+| gate-check | Removed — gate enforcement (step ordering + pending user actions) happens inside `rws transition` itself |
 | summary-regen | Folded into `rws regenerate-summary` |
 | timestamp-update | Automatic in `rws` state updates |
 | transition-guard | Removed -- guarded scripts deleted |
@@ -137,7 +137,7 @@ hook scripts and call CLIs when they need harness data.
 | `validate-summary.sh` | Yes (`rws validate-summary`) | Validates summary structure |
 | `post-compact.sh` | No | Context recovery after message compaction |
 | `work-check.sh` | No | Session-end row state verification |
-| `gate-check.sh` | Yes (`rws gate-check`) | Delegates gate validation to rws |
+| ~~`gate-check.sh`~~ | Removed | Gate enforcement folded into `rws transition` |
 
 **Principle**: Domain logic belongs in CLIs; behavioral policies stay in hooks.
 
