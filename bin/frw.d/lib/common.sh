@@ -175,6 +175,7 @@ replace_md_section() {
   _rms_content="$3"
 
   _rms_tmp="${_rms_file}.tmp.$$"
+  trap 'rm -f "$_rms_tmp"' EXIT INT TERM
 
   awk -v section="$_rms_display" -v new_content="$_rms_content" '
     /^## / { if (header == section) { replacing=0 } }
@@ -192,11 +193,13 @@ replace_md_section() {
 
   if [ -z "$_rms_check" ]; then
     rm -f "$_rms_tmp"
+    trap - EXIT INT TERM
     printf "Validation failed: section '%s' has no non-empty lines after update\n" "$_rms_display" >&2
     exit 3
   fi
 
   mv "$_rms_tmp" "$_rms_file"
+  trap - EXIT INT TERM
 }
 
 # --- focus management ---
