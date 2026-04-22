@@ -1,0 +1,23 @@
+{
+  "deliverable": "migration-and-review-prompt",
+  "reviewers": ["phase-a-orchestrator", "phase-b-isolated-claude"],
+  "phase_a": {
+    "file_ownership": "PASS",
+    "acceptance_criteria": "PASS",
+    "evidence": "Commit 994f905 includes all 5 owned files atomically + rws-managed state.json/summary.md. re-evaluate-dispatch-enforcement removed from todos.yaml (0 matches). Observation exists and validates. decision-review removed from source_type enum. skills/review.md and summary-protocol.md updated. Only remaining decision-review reference in todos.yaml is in prose context of unrelated TODO."
+  },
+  "phase_b": {
+    "dimensions": [
+      {"name": "correctness", "verdict": "PASS", "evidence": "alm observe show prints all fields. alm validate both files clean. Schema enum tightened. Atomic single commit 994f905 includes all 5 owned files."},
+      {"name": "spec-compliance", "verdict": "PASS", "evidence": "Observation shape matches spec Target verbatim incl. options ids (instruction-sufficient, escalate-to-enforcement), acceptance_criteria, evidence_needed. created_at \"2026-04-09T00:00:00Z\" preserved verbatim. skills/review.md +2 lines (within ≤3 budget). summary-protocol.md +1 bullet (within ≤5 budget). Text matches spec verbatim."},
+      {"name": "code-quality", "verdict": "PASS", "evidence": "todos.schema.yaml diff is clean single-line deletion; remaining enum well-indented. observations.yaml transitions cleanly from [] to populated list with 2-space indent."},
+      {"name": "unplanned-changes", "verdict": "PASS", "evidence": "git show --name-only 994f905: 5 owned files + rws-managed state.json/summary.md only."},
+      {"name": "test-coverage", "verdict": "PASS", "evidence": "Final alm validate passes both files. Commit message narrates per-sub-step validate passing (observations add → todos remove → enum tighten), satisfying AC2 ordering invariant to the extent verifiable from atomic commit."}
+    ],
+    "overall": "PASS"
+  },
+  "overall": "PASS",
+  "notes": [
+    "Residual 'decision-review' string at todos.yaml:1965 is inside the `context` prose of an unrelated TODO (decision-review-todo-type) narrating this migration's history — not a schema reference. Commit message explicitly documents this."
+  ]
+}

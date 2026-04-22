@@ -1,0 +1,25 @@
+{
+  "deliverable": "archive-and-triage-integration",
+  "reviewers": ["phase-a-orchestrator", "phase-b-isolated-claude"],
+  "phase_a": {
+    "file_ownership": "PASS",
+    "acceptance_criteria": "PASS",
+    "evidence": "Commit 93e4f4b touches 4 files: commands/archive.md (owned), commands/triage.md (owned), bin/alm (owned), .furrow/almanac/roadmap.yaml (generated artifact side-effect, acceptable). Steps 1..11 in order with step 8 = Observations surface. Triage test probes confirm length=1 for seeded active-open, key absent when empty."
+  },
+  "phase_b": {
+    "dimensions": [
+      {"name": "correctness", "verdict": "PASS", "evidence": "archive.md step 8 invokes `alm observe on-archive \"{name}\"` at line 50. No defer/deferred usage. Non-empty probe: 3 seeded obs → yaml+json length=1, activation_reason 'manual: activated at 2026-04-22T00:00:00Z'. Empty: has(active_observations)=false."},
+      {"name": "spec-compliance", "verdict": "PASS", "evidence": "Step 8 text matches spec verbatim. Steps renumbered 8→9 rws archive, 9→10 regenerate, 10→11 git commit. triage.md lines 163-175 conditional active-observations block. cmd_triage reuses _observe_compute_activation from D2. Two placement deviations (roadmap key position, triage template block position) documented in commit message — semantic-equivalent."},
+      {"name": "code-quality", "verdict": "PASS", "evidence": "POSIX shell, sentinel-file pattern for subshell-scope handling, clean jq/yq separation, no jq-isms. Pre-existing non-atomic write to roadmap.yaml noted but predates D3 and is out of scope."},
+      {"name": "unplanned-changes", "verdict": "PASS", "evidence": "git show --stat 93e4f4b: archive.md +15/-3, triage.md +14, bin/alm +68, roadmap.yaml regenerated (acceptable artifact). No unplanned edits to rws archive, alm validate, or schemas."},
+      {"name": "test-coverage", "verdict": "PASS", "evidence": "Both paths probed (non-empty: active-only filter confirmed excluding pending and resolved; empty: key omitted). Manual activation_reason format verified end-to-end; row_archived and rows_since formats verified by code inspection (bin/alm:756-765)."}
+    ],
+    "overall": "PASS"
+  },
+  "overall": "PASS",
+  "notes": [
+    "Placement deviation 1: active_observations inserted between `deferred` and `handoff` in roadmap.yaml rather than 'after waves' (spec literal) — current roadmap shape has no top-level `waves` key.",
+    "Placement deviation 2: triage.md template block placed before repeating phase blocks rather than 'after phase table' — template has no separate phase table.",
+    "Both deviations documented in commit message and judged semantic-equivalent by the isolated reviewer."
+  ]
+}

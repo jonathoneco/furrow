@@ -1,7 +1,7 @@
 schema_version: "1.0"
 metadata:
   project: furrow
-  generated_at: "2026-04-22T15:40:44-04:00"
+  generated_at: "2026-04-22T16:21:36-04:00"
   total_phases: 4
   completed_phases: 0
 dependency_graph:
@@ -146,16 +146,20 @@ dependency_graph:
       label: Add effort_hint to specialists and step skills — decouple reasoning depth from model identity
       phase: 1
       status: active
-    - id: decision-review-todo-type
-      label: Design a 'decision review' TODO type for post-evidence re-examination
-      phase: 1
-      status: active
     - id: merge-process-skill
       label: Design a /furrow:merge skill — reconcile worktree branches back into main
       phase: 1
       status: active
     - id: install-architecture-overhaul
       label: Install architecture overhaul — self-hosting, symlink hygiene, commit safety
+      phase: 1
+      status: active
+    - id: fix-alm-next-iterate-work-units-not-rows
+      label: 'Fix alm next: iterate .work_units[] not .rows[]'
+      phase: 1
+      status: active
+    - id: alm-rationale-add-support-delete-when-flag
+      label: 'alm rationale add: support --delete-when flag'
       phase: 1
       status: active
   edges:
@@ -191,14 +195,15 @@ dependency_graph:
     - wave: 1
       todos:
         - adapters-audit
+        - alm-rationale-add-support-delete-when-flag
         - ambient-context-promotion
         - apply-nate-jones-skill
         - cli-breakup-script-guard
         - collaborative-surfaces
         - config-cleanup
-        - decision-review-todo-type
         - design-pattern-context-construction
         - effort-selection-alongside-model
+        - fix-alm-next-iterate-work-units-not-rows
         - furrow-next-phase-lifecycle
         - furrow-tui-dashboard
         - gate-dimension-deduplication
@@ -1056,6 +1061,15 @@ phases:
         conflict_risk: none
         completed_at: null
       - index: 2
+        branch_name: work/alm-rationale-add-support-delete-when-flag
+        description: alm-rationale-add-support-delete-when-flag
+        todos:
+          - alm-rationale-add-support-delete-when-flag
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 3
         branch_name: work/ambient-context-promotion
         description: ambient-context-promotion
         todos:
@@ -1064,7 +1078,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 3
+      - index: 4
         branch_name: work/apply-nate-jones-skill
         description: apply-nate-jones-skill
         todos:
@@ -1073,7 +1087,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 4
+      - index: 5
         branch_name: work/cli-breakup-script-guard
         description: cli-breakup-script-guard
         todos:
@@ -1082,7 +1096,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 5
+      - index: 6
         branch_name: work/collaborative-surfaces
         description: collaborative-surfaces
         todos:
@@ -1091,20 +1105,11 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 6
+      - index: 7
         branch_name: work/config-cleanup
         description: config-cleanup
         todos:
           - config-cleanup
-        depends_on: []
-        key_files: []
-        conflict_risk: none
-        completed_at: null
-      - index: 7
-        branch_name: work/decision-review-todo-type
-        description: decision-review-todo-type
-        todos:
-          - decision-review-todo-type
         depends_on: []
         key_files: []
         conflict_risk: none
@@ -1128,6 +1133,15 @@ phases:
         conflict_risk: none
         completed_at: null
       - index: 10
+        branch_name: work/fix-alm-next-iterate-work-units-not-rows
+        description: fix-alm-next-iterate-work-units-not-rows
+        todos:
+          - fix-alm-next-iterate-work-units-not-rows
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 11
         branch_name: work/furrow-next-phase-lifecycle
         description: furrow-next-phase-lifecycle
         todos:
@@ -1136,7 +1150,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 11
+      - index: 12
         branch_name: work/furrow-tui-dashboard
         description: furrow-tui-dashboard
         todos:
@@ -1145,7 +1159,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 12
+      - index: 13
         branch_name: work/gate-dimension-deduplication
         description: gate-dimension-deduplication
         todos:
@@ -1154,7 +1168,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 13
+      - index: 14
         branch_name: work/install-architecture-overhaul
         description: install-architecture-overhaul
         todos:
@@ -1163,7 +1177,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 14
+      - index: 15
         branch_name: work/memetic-algorithms-research
         description: memetic-algorithms-research
         todos:
@@ -1172,7 +1186,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 15
+      - index: 16
         branch_name: work/merge-process-skill
         description: merge-process-skill
         todos:
@@ -1181,7 +1195,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 16
+      - index: 17
         branch_name: work/mine-claude-code
         description: mine-claude-code
         todos:
@@ -1190,7 +1204,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 17
+      - index: 18
         branch_name: work/mine-v1-harness
         description: mine-v1-harness
         todos:
@@ -1199,7 +1213,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 18
+      - index: 19
         branch_name: work/parallel-agent-orchestration-adoption
         description: parallel-agent-orchestration-adoption
         todos:
@@ -1208,7 +1222,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 19
+      - index: 20
         branch_name: work/post-merge-watch-list
         description: post-merge-watch-list
         todos:
@@ -1217,7 +1231,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 20
+      - index: 21
         branch_name: work/register-deliverable-command
         description: register-deliverable-command
         todos:
@@ -1226,7 +1240,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 21
+      - index: 22
         branch_name: work/research-documentation-detection
         description: research-documentation-detection
         todos:
@@ -1235,7 +1249,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 22
+      - index: 23
         branch_name: work/research-methodology-design
         description: research-methodology-design
         todos:
@@ -1244,7 +1258,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 23
+      - index: 24
         branch_name: work/roadmap-todo-integration
         description: roadmap-todo-integration
         todos:
@@ -1253,7 +1267,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 24
+      - index: 25
         branch_name: work/seeds-concept
         description: seeds-concept
         todos:
@@ -1262,7 +1276,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 25
+      - index: 26
         branch_name: work/specialist-quality-validation
         description: specialist-quality-validation
         todos:
@@ -1271,7 +1285,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 26
+      - index: 27
         branch_name: work/specialist-template-warning-escalation
         description: specialist-template-warning-escalation
         todos:
@@ -1280,7 +1294,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 27
+      - index: 28
         branch_name: work/spike-row-mode
         description: spike-row-mode
         todos:
@@ -1289,7 +1303,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 28
+      - index: 29
         branch_name: work/sprint-inspired-planning
         description: sprint-inspired-planning
         todos:
@@ -1298,7 +1312,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 29
+      - index: 30
         branch_name: work/todo-context-references
         description: todo-context-references
         todos:
@@ -1307,7 +1321,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 30
+      - index: 31
         branch_name: work/triage-and-braindump-ideation
         description: triage-and-braindump-ideation
         todos:
@@ -1316,7 +1330,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 31
+      - index: 32
         branch_name: work/unified-isolated-review
         description: unified-isolated-review
         todos:
@@ -1325,7 +1339,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 32
+      - index: 33
         branch_name: work/user-action-integration
         description: user-action-integration
         todos:
@@ -1334,7 +1348,7 @@ phases:
         key_files: []
         conflict_risk: none
         completed_at: null
-      - index: 33
+      - index: 34
         branch_name: work/worktree-reintegration-summary
         description: worktree-reintegration-summary
         todos:

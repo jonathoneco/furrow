@@ -1953,28 +1953,6 @@
     - skills/
     - bin/frw.d/scripts/
   status: active
-- id: decision-review-todo-type
-  title: "Design a 'decision review' TODO type for post-evidence re-examination"
-  context: |
-    Current TODO framing is work-oriented (title, work_needed, effort). But some
-    follow-ups aren't work — they're review triggers: "after X ships, re-examine
-    whether decision Y was correct given new evidence." These don't have deliverables
-    or effort estimates in the traditional sense. They need: a trigger condition
-    (what must happen first), a review question (what to re-examine), and acceptance
-    criteria (how to decide the outcome). The current schema doesn't express this
-    cleanly — source_type: "decision-review" is a workaround, not a design.
-  work_needed: |
-    - Evaluate whether this is a new TODO type or a new source_type with additional fields
-    - Consider: trigger_condition, review_question, decision_options, evidence_needed
-    - Decide whether these live in todos.yaml or a separate review-triggers file
-    - Update alm triage to handle decision-review TODOs differently (surface when trigger met)
-  source_type: "brain-dump"
-  created_at: "2026-04-09T00:00:00Z"
-  updated_at: "2026-04-09T00:00:00Z"
-  urgency: "low"
-  impact: "medium"
-  effort: "medium"
-  status: active
 # --- Standalone: Merge-Process Skill ---
 - id: merge-process-skill
   title: "Design a /furrow:merge skill — reconcile worktree branches back into main"
@@ -2127,3 +2105,21 @@
     - bin/frw.d/lib/common.sh
     - .furrow/
   status: active
+- id: fix-alm-next-iterate-work-units-not-rows
+  title: 'Fix alm next: iterate .work_units[] not .rows[]'
+  context: cmd_next in bin/alm iterates `.rows[]` when reading .furrow/almanac/roadmap.yaml, but cmd_triage writes `.work_units[]` in that key. Running `alm next` against a current roadmap fails with a jq error. Pre-existing bug, discovered during post-ship-reexamination D3 implementation.
+  work_needed: Locate cmd_next in bin/alm. Change the jq/yq iteration from `.rows[]` to `.work_units[]`. Verify by running `bin/alm triage >/dev/null && bin/alm next` — should emit handoff prompts without jq errors. Check there are no other .rows[] references in cmd_next that need updating.
+  source_type: review-finding
+  status: active
+  created_at: "2026-04-22T16:20:25-04:00"
+  updated_at: "2026-04-22T16:20:25-04:00"
+  source_work_unit: post-ship-reexamination
+- id: alm-rationale-add-support-delete-when-flag
+  title: 'alm rationale add: support --delete-when flag'
+  context: alm rationale add <component> --reason <text> sets exists_because but has no flag to populate delete_when. The rationale schema allows both fields, and harness-engineer specialist guidance requires BOTH for every new component ("If you can't articulate both fields, the component isn't justified"). Without a --delete-when flag, users must fall back to direct yq edits, which defeats the purpose of CLI-mediated writes.
+  work_needed: 'Add `--delete-when <text>` flag to cmd_rationale_add in bin/alm. Make it optional (backward-compatible). When provided, emit the delete_when key on the new entry. Also accept it on existing entries (idempotent update). Verify via: alm rationale add test-x --reason R --delete-when W; alm rationale show test-x. Document in help output.'
+  source_type: review-finding
+  status: active
+  created_at: "2026-04-22T16:20:32-04:00"
+  updated_at: "2026-04-22T16:20:32-04:00"
+  source_work_unit: post-ship-reexamination
