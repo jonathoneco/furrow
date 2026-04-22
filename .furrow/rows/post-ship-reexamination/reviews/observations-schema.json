@@ -1,0 +1,20 @@
+{
+  "deliverable": "observations-schema",
+  "reviewers": ["phase-a-orchestrator", "phase-b-isolated-claude"],
+  "phase_a": {
+    "file_ownership": "PASS",
+    "acceptance_criteria": "PASS",
+    "evidence": "All 2 owned files present (adapters/shared/schemas/observations.schema.yaml, .furrow/almanac/observations.yaml). Schema well-formed (Draft202012Validator.check_schema). additionalProperties:false at items and triggered_by levels. kind/lifecycle/triggered_by.type enums correct."
+  },
+  "phase_b": {
+    "dimensions": [
+      {"name": "correctness", "verdict": "PASS", "evidence": "SCHEMA_WELL_FORMED via Draft202012Validator.check_schema. All 8 probes pass: empty, watch-min, dr-min, reject-row_merged, reject-rows_since-no-count, reject-watch-no-signal, reject-dr-no-question, reject-unknown-field."},
+      {"name": "spec-compliance", "verdict": "PASS", "evidence": "Every `if` clause carries `required: [<discriminator>]`: lines 66-67 (row_archived), 76-77 (rows_since), 87-88 (manual), 175-176 (watch), 225-226 (decision-review). additionalProperties:false at items (line 20) and triggered_by (line 38)."},
+      {"name": "code-quality", "verdict": "PASS", "evidence": "Top-level structure parallels todos.schema.yaml: leading comment + $schema draft 2020-12 + title/description/type:array/items. Same id pattern, 2-space indent, double-quoted strings, same enum format."},
+      {"name": "unplanned-changes", "verdict": "PASS", "evidence": "Commit 677da44 touches only D1-owned files + rws-managed state.json/summary.md."},
+      {"name": "test-coverage", "verdict": "PASS", "evidence": "Correctness probes cover all 8 spec-required validation scenarios at both positive and negative discriminator boundaries."}
+    ],
+    "overall": "PASS"
+  },
+  "overall": "PASS"
+}
