@@ -1,6 +1,6 @@
 # Roadmap
 
-> Last updated: 2026-04-22 | 7 phases, 0/7 complete | 39 active TODOs across 14 rows | Phase 1 parallelized: install-and-merge || post-ship-reexamination
+> Last updated: 2026-04-22 | 7 phases, 0/7 complete | 39 active TODOs across 15 rows | Phase 1 parallelized (install-and-merge || post-ship-reexamination); Phase 4 re-split by theme (triage-pipeline || roadmap-handoff || todo-and-research)
 
 ## Dependency DAG (active items only)
 
@@ -16,8 +16,9 @@ Phase 3 — Review & Specialist System                   │
   specialist-quality  ···                │             │
                                          ▼             ▼
 Phase 4 — Command Pipeline & Planning UX
-  command-pipeline  ~~ (merge-impl) ──────────┐
-  planning-ux  ~~ (merge-impl) ───────────────┤
+  triage-pipeline    ~~ (merge-impl) ─────────┐
+  roadmap-handoff    ~~ (merge-impl) ─────────┤
+  todo-and-research  ~~ (merge-impl) ─────────┤
                                               ▼
 Phase 5 — CLI Architecture & Folder Cleanup
   cli-architecture  ~~ (merge-impl) ──────────┐
@@ -110,28 +111,37 @@ Unify review machinery and raise specialist quality bar before downstream comman
 
 ## Phase 4 — Command Pipeline & Planning UX — PLANNED
 
-Command layer matures after agent wiring, reviews, and graph primitives stabilize. Planning UX shares `commands/` but different files.
+Command layer matures after agent wiring, reviews, and graph primitives stabilize. Re-split by theme (not by subsystem): each row owns a distinct file scope. Eliminates the latent cross-row conflict on `commands/triage.md` + `commands/next.md` that existed in the previous command-pipeline/planning-ux split.
 
-### work/command-pipeline (4 TODOs, ~3 sessions)
+**Parallelism**: `triage-pipeline || roadmap-handoff || todo-and-research`
+
+### work/triage-pipeline (2 TODOs, ~2 sessions)
 
 - `brain-dump-triage-command`
-- `todo-context-references`
+- `triage-and-braindump-ideation`
+
+- **Key files**: `commands/triage.md`, `commands/`, `skills/ideate.md`, `bin/alm`
+- **Conflict risk**: low
+- **Why together**: Both own the brain-dump → triage surface; pairing them means one design for the triage command + ideation ergonomics.
+
+### work/roadmap-handoff (2 TODOs, ~2 sessions)
+
 - `roadmap-todo-integration`
+- `furrow-next-phase-lifecycle`
+
+- **Key files**: `commands/next.md`, `commands/triage.md`, `templates/`, `templates/roadmap.md.tmpl`, `bin/frw.d/scripts/launch-phase.sh`, `.furrow/rows/`
+- **Conflict risk**: low
+- **Why together**: The roadmap → /furrow:next handoff pipeline. Roadmap-todo integration produces the handoff prompts; furrow-next consumes them. Same surface.
+
+### work/todo-and-research (3 TODOs, ~2 sessions)
+
+- `todo-context-references`
+- `research-methodology-design`
 - `research-documentation-detection`
 
-- **Key files**: `commands/`, `commands/work-todos.md`, `commands/triage.md`, `commands/next.md`, `bin/alm`, `skills/review.md`
+- **Key files**: `commands/work-todos.md`, `bin/alm`, `skills/research.md`, `commands/lib/promote-components.sh`, `skills/review.md`
 - **Conflict risk**: low
-- **Why together**: Command-surface changes for brain-dump, TODO, and roadmap flow — consolidate for atomic UX. (decision-review-todo-type moved to Phase 1 with post-merge-watch-list.)
-
-### work/planning-ux (3 TODOs, ~3 sessions)
-
-- `triage-and-braindump-ideation`
-- `furrow-next-phase-lifecycle`
-- `research-methodology-design`
-
-- **Key files**: `commands/triage.md`, `commands/next.md`, `bin/frw.d/scripts/launch-phase.sh`, `skills/research.md`
-- **Conflict risk**: low
-- **Why together**: Planning-loop ergonomics across triage, next-phase handoff, and research methodology.
+- **Why together**: TODO schema evolution + research-discipline work — both about "how structured artifacts produced during work get consumed later."
 
 ## Phase 5 — CLI Architecture & Folder Cleanup — PLANNED
 
@@ -234,8 +244,9 @@ git worktree add ../furrow-review-unification -b work/review-unification
 git worktree add ../furrow-specialist-quality -b work/specialist-quality
 
 # Phase 4 — Command Pipeline & Planning UX
-git worktree add ../furrow-command-pipeline -b work/command-pipeline
-git worktree add ../furrow-planning-ux -b work/planning-ux
+git worktree add ../furrow-triage-pipeline -b work/triage-pipeline
+git worktree add ../furrow-roadmap-handoff -b work/roadmap-handoff
+git worktree add ../furrow-todo-and-research -b work/todo-and-research
 
 # Phase 5 — CLI Architecture & Folder Cleanup
 git worktree add ../furrow-cli-architecture -b work/cli-architecture

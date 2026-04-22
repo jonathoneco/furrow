@@ -70,31 +70,31 @@ dependency_graph:
       status: active
     - id: brain-dump-triage-command
       phase: 4
-      row: command-pipeline
-      status: active
-    - id: todo-context-references
-      phase: 4
-      row: command-pipeline
-      status: active
-    - id: roadmap-todo-integration
-      phase: 4
-      row: command-pipeline
-      status: active
-    - id: research-documentation-detection
-      phase: 4
-      row: command-pipeline
+      row: triage-pipeline
       status: active
     - id: triage-and-braindump-ideation
       phase: 4
-      row: planning-ux
+      row: triage-pipeline
+      status: active
+    - id: roadmap-todo-integration
+      phase: 4
+      row: roadmap-handoff
       status: active
     - id: furrow-next-phase-lifecycle
       phase: 4
-      row: planning-ux
+      row: roadmap-handoff
+      status: active
+    - id: todo-context-references
+      phase: 4
+      row: todo-and-research
       status: active
     - id: research-methodology-design
       phase: 4
-      row: planning-ux
+      row: todo-and-research
+      status: active
+    - id: research-documentation-detection
+      phase: 4
+      row: todo-and-research
       status: active
     - id: cli-architecture-overhaul
       phase: 5
@@ -170,22 +170,30 @@ dependency_graph:
       type: inferred
       reason: "foundational — stable merge/install pipeline before structural graph work"
     - from: almanac-graph-and-promotion
-      to: command-pipeline
+      to: triage-pipeline
       type: inferred
-      reason: "merge-implication — command layer reads seed graph, almanac, and promoted context"
+      reason: "merge-implication — triage reads seed graph"
     - from: almanac-graph-and-promotion
-      to: planning-ux
+      to: roadmap-handoff
       type: inferred
-      reason: "merge-implication — planning commands depend on graph primitives"
+      reason: "merge-implication — roadmap/next surfaces promoted context"
+    - from: almanac-graph-and-promotion
+      to: todo-and-research
+      type: inferred
+      reason: "merge-implication — TODO schema + research read almanac"
     - from: almanac-graph-and-promotion
       to: sprint-and-spikes
       type: inferred
       reason: "foundational — seed graph before sprint/spike patterns"
     - from: review-unification
-      to: command-pipeline
+      to: todo-and-research
       type: inferred
-      reason: "merge-implication — review pipeline stable before command changes"
-    - from: command-pipeline
+      reason: "merge-implication — review pipeline stable before research-to-docs + schema work"
+    - from: triage-pipeline
+      to: cli-architecture
+      type: inferred
+      reason: "merge-implication — command experience informs CLI structure"
+    - from: roadmap-handoff
       to: cli-architecture
       type: inferred
       reason: "merge-implication — command experience informs CLI structure"
@@ -386,45 +394,53 @@ phases:
   - number: 4
     title: "Command Pipeline & Planning UX"
     status: planned
-    rationale: "Command layer matures after agent wiring, reviews, and graph primitives stabilize. Planning UX shares commands/ but different files."
-    parallelism: "command-pipeline || planning-ux"
+    rationale: "Command layer matures after agent wiring, reviews, and graph primitives stabilize. Re-split by theme (not by subsystem): each row owns a distinct file scope — triage-pipeline owns commands/triage.md, roadmap-handoff owns commands/next.md + templates/, todo-and-research owns TODO schema + research surface. Eliminates the latent cross-row conflict on commands/triage.md + commands/next.md that existed in the previous command-pipeline/planning-ux split."
+    parallelism: "triage-pipeline || roadmap-handoff || todo-and-research"
     rows:
-      - branch: work/command-pipeline
-        description: "Brain-dump triage command, TODO context refs, roadmap integration, research-to-docs detection"
-        todos:
-          [
-            brain-dump-triage-command,
-            todo-context-references,
-            roadmap-todo-integration,
-            research-documentation-detection,
-          ]
-        estimated_sessions: 3
+      - branch: work/triage-pipeline
+        description: "Brain-dump triage command + triage/brain-dump ideation ergonomics"
+        todos: [brain-dump-triage-command, triage-and-braindump-ideation]
+        estimated_sessions: 2
         key_files:
           [
-            commands/,
-            commands/work-todos.md,
             commands/triage.md,
-            commands/next.md,
+            commands/,
+            skills/ideate.md,
             bin/alm,
-            skills/review.md,
           ]
         conflict_risk: low
         completed_at: null
-      - branch: work/planning-ux
-        description: "Triage + brain-dump ideation, furrow:next phase lifecycle, research methodology"
-        todos:
-          [
-            triage-and-braindump-ideation,
-            furrow-next-phase-lifecycle,
-            research-methodology-design,
-          ]
-        estimated_sessions: 3
+      - branch: work/roadmap-handoff
+        description: "Roadmap integration + furrow:next phase lifecycle — the /roadmap → /next pipeline"
+        todos: [roadmap-todo-integration, furrow-next-phase-lifecycle]
+        estimated_sessions: 2
         key_files:
           [
-            commands/triage.md,
             commands/next.md,
+            commands/triage.md,
+            templates/,
+            templates/roadmap.md.tmpl,
             bin/frw.d/scripts/launch-phase.sh,
+            .furrow/rows/,
+          ]
+        conflict_risk: low
+        completed_at: null
+      - branch: work/todo-and-research
+        description: "TODO schema context refs + research methodology + research-to-docs detection"
+        todos:
+          [
+            todo-context-references,
+            research-methodology-design,
+            research-documentation-detection,
+          ]
+        estimated_sessions: 2
+        key_files:
+          [
+            commands/work-todos.md,
+            bin/alm,
             skills/research.md,
+            commands/lib/promote-components.sh,
+            skills/review.md,
           ]
         conflict_risk: low
         completed_at: null
