@@ -47,9 +47,18 @@ If not found: error with message indicating what is blocking archive.
    - If `source_todo` is not set or `.furrow/almanac/todos.yaml` has no matching entry, skip.
    - Validate `.furrow/almanac/todos.yaml` after any changes.
 
-8. Run `rws archive "{name}"` to set `state.json.archived_at` to current ISO 8601 timestamp.
-9. Regenerate final `summary.md` via `rws regenerate-summary "{name}"`.
-10. Git commit with message: `chore: archive {name}`.
+8. **Observations surface**: Run `alm observe on-archive "{name}"`.
+   - Displays any observations whose activation became `active` as a result
+     of this row's archival (e.g., row_archived triggers whose `row` matches,
+     or rows_since triggers whose count threshold just crossed).
+   - **Surface only** — does NOT auto-resolve or auto-dismiss. Users handle
+     each with `alm observe resolve <id> ...` or `alm observe dismiss <id> ...`
+     as separate explicit steps, outside /archive.
+   - If no observations activate, prints a single line and moves on.
+
+9. Run `rws archive "{name}"` to set `state.json.archived_at` to current ISO 8601 timestamp.
+10. Regenerate final `summary.md` via `rws regenerate-summary "{name}"`.
+11. Git commit with message: `chore: archive {name}`.
 
 ## Output
 

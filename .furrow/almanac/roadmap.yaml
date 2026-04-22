@@ -1,563 +1,1411 @@
-schema_version: "2.0"
+schema_version: "1.0"
 metadata:
   project: furrow
-  generated_at: "2026-04-22T00:00:00Z"
-  total_phases: 7
+  generated_at: "2026-04-22T15:40:44-04:00"
+  total_phases: 4
   completed_phases: 0
-  active_todos: 39
-  done_todos: 22
 dependency_graph:
   nodes:
-    - id: install-architecture-overhaul
+    - id: user-action-integration
+      label: Integration points for actions the user must take
       phase: 1
-      row: install-and-merge
-      status: active
-    - id: merge-process-skill
-      phase: 1
-      row: install-and-merge
-      status: active
-    - id: config-cleanup
-      phase: 1
-      row: install-and-merge
-      status: active
-    - id: worktree-reintegration-summary
-      phase: 1
-      row: install-and-merge
-      status: active
-    - id: post-merge-watch-list
-      phase: 1
-      row: post-ship-reexamination
-      status: active
-    - id: decision-review-todo-type
-      phase: 1
-      row: post-ship-reexamination
-      status: active
-    - id: almanac-graph-primitives
-      phase: 2
-      row: almanac-graph-and-promotion
       status: active
     - id: seeds-concept
-      phase: 2
-      row: almanac-graph-and-promotion
-      status: active
-    - id: ambient-context-promotion
-      phase: 2
-      row: almanac-graph-and-promotion
-      status: active
-    - id: unified-isolated-review
-      phase: 3
-      row: review-unification
-      status: active
-    - id: gate-dimension-deduplication
-      phase: 3
-      row: review-unification
-      status: active
-    - id: specialist-template-warning-escalation
-      phase: 3
-      row: specialist-quality
-      status: active
-    - id: specialist-quality-validation
-      phase: 3
-      row: specialist-quality
-      status: active
-    - id: apply-nate-jones-skill
-      phase: 3
-      row: specialist-quality
-      status: active
-    - id: effort-selection-alongside-model
-      phase: 3
-      row: specialist-quality
-      status: active
-    - id: brain-dump-triage-command
-      phase: 4
-      row: triage-pipeline
-      status: active
-    - id: triage-and-braindump-ideation
-      phase: 4
-      row: triage-pipeline
-      status: active
-    - id: roadmap-todo-integration
-      phase: 4
-      row: roadmap-handoff
-      status: active
-    - id: furrow-next-phase-lifecycle
-      phase: 4
-      row: roadmap-handoff
-      status: active
-    - id: todo-context-references
-      phase: 4
-      row: todo-and-research
-      status: active
-    - id: research-methodology-design
-      phase: 4
-      row: todo-and-research
+      label: Seeds as the task management primitive — work graph, in-row tracking, and gating
+      phase: 1
       status: active
     - id: research-documentation-detection
-      phase: 4
-      row: todo-and-research
+      label: Detect when research output should be documentation instead
+      phase: 1
       status: active
-    - id: cli-architecture-overhaul
-      phase: 5
-      row: cli-architecture
+    - id: unified-isolated-review
+      label: Unify Phase B and cross-model review into a single isolated-review script
+      phase: 1
       status: active
-    - id: cli-breakup-script-guard
-      phase: 5
-      row: cli-architecture
+    - id: worktree-reintegration-summary
+      label: Produce summary for worktree reintegration
+      phase: 1
       status: active
-    - id: register-deliverable-command
-      phase: 5
-      row: cli-architecture
+    - id: todo-context-references
+      label: TODOs with context references from dump and active sessions
+      phase: 1
       status: active
-    - id: work-folder-structure-and-cleanup
-      phase: 5
-      row: folder-structure
-      status: active
-    - id: parallel-agent-orchestration-adoption
-      phase: 6
-      row: orchestration-polish
-      status: active
-    - id: re-evaluate-dispatch-enforcement
-      phase: 6
-      row: orchestration-polish
-      status: active
-    - id: user-action-integration
-      phase: 6
-      row: orchestration-polish
-      status: active
-    - id: sprint-inspired-planning
-      phase: 6
-      row: sprint-and-spikes
-      status: active
-    - id: spike-row-mode
-      phase: 6
-      row: sprint-and-spikes
-      status: active
-    - id: harness-lifecycle-ux
-      phase: 6
-      row: harness-lifecycle-ux
-      status: active
-    - id: collaborative-surfaces
-      phase: 6
-      row: collaborative-surfaces
-      status: active
-    - id: adapters-audit
-      phase: 7
-      row: audits-and-mining
-      status: active
-    - id: mine-v1-harness
-      phase: 7
-      row: audits-and-mining
-      status: active
-    - id: mine-claude-code
-      phase: 7
-      row: audits-and-mining
-      status: active
-    - id: memetic-algorithms-research
-      phase: 7
-      row: exploratory-research
+    - id: roadmap-todo-integration
+      label: Roadmap provides tackling prompts and merges TODOs
+      phase: 1
       status: active
     - id: design-pattern-context-construction
-      phase: 7
-      row: exploratory-research
+      label: Context construction driven by design pattern thinking
+      phase: 1
+      status: active
+    - id: work-folder-structure-and-cleanup
+      label: Structure .furrow/rows/ to prevent unbounded growth
+      phase: 3
+      status: active
+    - id: mine-claude-code
+      label: Mine Claude Code for reusable patterns and capabilities
+      phase: 1
+      status: active
+    - id: parallel-agent-orchestration-adoption
+      label: Built-in team orchestration isn't being used — diagnose and fix
+      phase: 1
+      status: active
+    - id: memetic-algorithms-research
+      label: Research memetic algorithms for LLM orchestration
+      phase: 1
+      status: active
+    - id: cli-breakup-script-guard
+      label: Break up rws/alm/sds into frw.d/-style internal modules and extend script-guard
+      phase: 1
+      status: active
+    - id: brain-dump-triage-command
+      label: Brain dump triage command to turn notes into actionable TODOs
+      phase: 2
+      status: active
+    - id: cli-architecture-overhaul
+      label: CLI architecture overhaul — functionality over script routing, modularization, Go evaluation
+      phase: 3
+      status: active
+    - id: almanac-graph-primitives
+      label: Almanac calls seeds for graph management — triage, roadmap, and planning consume the seed graph
+      phase: 4
+      status: active
+    - id: harness-lifecycle-ux
+      label: Harness UX — sow/reap verbs, status line, installation/exploration skill
+      phase: 4
+      status: active
+    - id: mine-v1-harness
+      label: Mine v1 harness for learnings, insights, and research
+      phase: 1
+      status: active
+    - id: apply-nate-jones-skill
+      label: Apply Nate Jones harness skill patterns to Furrow
+      phase: 1
+      status: active
+    - id: adapters-audit
+      label: Adapters pass — check for atrophy, modularization decay, internal consistency
+      phase: 1
+      status: active
+    - id: research-methodology-design
+      label: Research methodology for systems design — beyond naive web search
+      phase: 1
+      status: active
+    - id: specialist-quality-validation
+      label: Establish a validation mechanism for specialist template quality
+      phase: 1
+      status: active
+    - id: ambient-context-promotion
+      label: Ambient context promotion system — row→project→global knowledge graduation
+      phase: 1
+      status: active
+    - id: spike-row-mode
+      label: Spike row mode — implementation-flavored research with throwaway prototypes
+      phase: 1
+      status: active
+    - id: triage-and-braindump-ideation
+      label: Ideation loops in triage and brain dump commands
+      phase: 1
+      status: active
+    - id: furrow-next-phase-lifecycle
+      label: furrow:next as full phase lifecycle — merge, update roadmap, handoff, launch
+      phase: 1
+      status: active
+    - id: sprint-inspired-planning
+      label: Sprint-inspired work planning — retros, velocity, multi-row coordination, observability
+      phase: 1
+      status: active
+    - id: collaborative-surfaces
+      label: Document-based collaboration — markdown + comment threading, Notion integration
+      phase: 1
+      status: active
+    - id: config-cleanup
+      label: Configuration cleanup — move furrow.yaml, add ~/.config/furrow/, wire source_todo
+      phase: 1
+      status: active
+    - id: specialist-template-warning-escalation
+      label: Escalate specialist template warnings to structured observability
+      phase: 1
       status: active
     - id: furrow-tui-dashboard
-      phase: 7
-      row: furrow-tui
+      label: Furrow TUI / agent-dashboard integration
+      phase: 1
+      status: active
+    - id: gate-dimension-deduplication
+      label: Extract shared gate dimensions (seed-sync, dual-review) into reusable definitions
+      phase: 1
+      status: active
+    - id: register-deliverable-command
+      label: Add rws register-deliverable command — separate registration from completion
+      phase: 1
+      status: active
+    - id: post-merge-watch-list
+      label: Post-merge watch-list — track behavioral signals to validate after rows merge
+      phase: 1
+      status: active
+    - id: effort-selection-alongside-model
+      label: Add effort_hint to specialists and step skills — decouple reasoning depth from model identity
+      phase: 1
+      status: active
+    - id: decision-review-todo-type
+      label: Design a 'decision review' TODO type for post-evidence re-examination
+      phase: 1
+      status: active
+    - id: merge-process-skill
+      label: Design a /furrow:merge skill — reconcile worktree branches back into main
+      phase: 1
+      status: active
+    - id: install-architecture-overhaul
+      label: Install architecture overhaul — self-hosting, symlink hygiene, commit safety
+      phase: 1
       status: active
   edges:
-    - from: install-and-merge
-      to: almanac-graph-and-promotion
-      type: inferred
-      reason: "foundational — stable merge/install pipeline before structural graph work"
-    - from: almanac-graph-and-promotion
-      to: triage-pipeline
-      type: inferred
-      reason: "merge-implication — triage reads seed graph"
-    - from: almanac-graph-and-promotion
-      to: roadmap-handoff
-      type: inferred
-      reason: "merge-implication — roadmap/next surfaces promoted context"
-    - from: almanac-graph-and-promotion
-      to: todo-and-research
-      type: inferred
-      reason: "merge-implication — TODO schema + research read almanac"
-    - from: almanac-graph-and-promotion
-      to: sprint-and-spikes
-      type: inferred
-      reason: "foundational — seed graph before sprint/spike patterns"
-    - from: review-unification
-      to: todo-and-research
-      type: inferred
-      reason: "merge-implication — review pipeline stable before research-to-docs + schema work"
-    - from: triage-pipeline
-      to: cli-architecture
-      type: inferred
-      reason: "merge-implication — command experience informs CLI structure"
-    - from: roadmap-handoff
-      to: cli-architecture
-      type: inferred
-      reason: "merge-implication — command experience informs CLI structure"
-    - from: cli-architecture
-      to: folder-structure
-      type: inferred
-      reason: "foundational — CLI boundaries before folder restructure"
-    - from: cli-architecture
-      to: harness-lifecycle-ux
-      type: inferred
-      reason: "foundational — CLI decisions gate verb rename and status line"
+    - from: work-folder-structure-and-cleanup
+      to: brain-dump-triage-command
+      kind: hard
+      reason: explicit depends_on
+    - from: parallel-agent-orchestration-adoption
+      to: specialist-expansion
+      kind: hard
+      reason: explicit depends_on
+    - from: parallel-agent-orchestration-adoption
+      to: per-step-model-routing
+      kind: hard
+      reason: explicit depends_on
+    - from: brain-dump-triage-command
+      to: parallel-agent-orchestration-adoption
+      kind: hard
+      reason: explicit depends_on
+    - from: cli-architecture-overhaul
+      to: brain-dump-triage-command
+      kind: hard
+      reason: explicit depends_on
+    - from: almanac-graph-primitives
+      to: cli-architecture-overhaul
+      kind: hard
+      reason: explicit depends_on
+    - from: harness-lifecycle-ux
+      to: cli-architecture-overhaul
+      kind: hard
+      reason: explicit depends_on
   waves:
     - wave: 1
       todos:
-        [
-          install-architecture-overhaul,
-          config-cleanup,
-          merge-process-skill,
-          post-merge-watch-list,
-          worktree-reintegration-summary,
-          decision-review-todo-type,
-        ]
+        - adapters-audit
+        - ambient-context-promotion
+        - apply-nate-jones-skill
+        - cli-breakup-script-guard
+        - collaborative-surfaces
+        - config-cleanup
+        - decision-review-todo-type
+        - design-pattern-context-construction
+        - effort-selection-alongside-model
+        - furrow-next-phase-lifecycle
+        - furrow-tui-dashboard
+        - gate-dimension-deduplication
+        - install-architecture-overhaul
+        - memetic-algorithms-research
+        - merge-process-skill
+        - mine-claude-code
+        - mine-v1-harness
+        - parallel-agent-orchestration-adoption
+        - post-merge-watch-list
+        - register-deliverable-command
+        - research-documentation-detection
+        - research-methodology-design
+        - roadmap-todo-integration
+        - seeds-concept
+        - specialist-quality-validation
+        - specialist-template-warning-escalation
+        - spike-row-mode
+        - sprint-inspired-planning
+        - todo-context-references
+        - triage-and-braindump-ideation
+        - unified-isolated-review
+        - user-action-integration
+        - worktree-reintegration-summary
     - wave: 2
-      todos: [almanac-graph-primitives, seeds-concept, ambient-context-promotion]
+      todos:
+        - brain-dump-triage-command
     - wave: 3
       todos:
-        [
-          unified-isolated-review,
-          gate-dimension-deduplication,
-          specialist-template-warning-escalation,
-          specialist-quality-validation,
-          apply-nate-jones-skill,
-          effort-selection-alongside-model,
-        ]
+        - cli-architecture-overhaul
+        - work-folder-structure-and-cleanup
     - wave: 4
       todos:
-        [
-          brain-dump-triage-command,
-          todo-context-references,
-          roadmap-todo-integration,
-          research-documentation-detection,
-          triage-and-braindump-ideation,
-          furrow-next-phase-lifecycle,
-          research-methodology-design,
-        ]
-    - wave: 5
-      todos:
-        [
-          cli-architecture-overhaul,
-          cli-breakup-script-guard,
-          register-deliverable-command,
-          work-folder-structure-and-cleanup,
-        ]
-    - wave: 6
-      todos:
-        [
-          parallel-agent-orchestration-adoption,
-          re-evaluate-dispatch-enforcement,
-          user-action-integration,
-          sprint-inspired-planning,
-          spike-row-mode,
-          harness-lifecycle-ux,
-          collaborative-surfaces,
-        ]
-    - wave: 7
-      todos:
-        [
-          adapters-audit,
-          mine-v1-harness,
-          mine-claude-code,
-          memetic-algorithms-research,
-          design-pattern-context-construction,
-          furrow-tui-dashboard,
-        ]
-  cycles: []
+        - almanac-graph-primitives
+        - harness-lifecycle-ux
 conflict_zones:
-  - phase: 5
-    file_pattern: "bin/rws, bin/frw.d/"
-    work_units: [cli-architecture, folder-structure]
-    severity: medium
-    mitigation: "cli-architecture merges first"
-  - phase: 6
-    file_pattern: "skills/, commands/"
-    work_units: [orchestration-polish, harness-lifecycle-ux]
+  - phase: 1
+    file_pattern: adapters/
+    work_units:
+      - adapters-audit
+      - collaborative-surfaces
     severity: low
-    mitigation: "different subsystems within shared dirs"
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/alm
+    work_units:
+      - ambient-context-promotion
+      - cli-breakup-script-guard
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: .furrow/, .furrow/almanac/
+    work_units:
+      - ambient-context-promotion
+      - install-architecture-overhaul
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: commands/, commands/lib/
+    work_units:
+      - ambient-context-promotion
+      - merge-process-skill
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: .furrow/almanac/, bin/alm
+    work_units:
+      - ambient-context-promotion
+      - post-merge-watch-list
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: commands/lib/, commands/lib/promote-components.sh
+    work_units:
+      - ambient-context-promotion
+      - research-documentation-detection
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: .furrow/almanac/
+    work_units:
+      - ambient-context-promotion
+      - sprint-inspired-planning
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/alm
+    work_units:
+      - ambient-context-promotion
+      - todo-context-references
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/frw, bin/frw.d/hooks/script-guard.sh
+    work_units:
+      - cli-breakup-script-guard
+      - config-cleanup
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/frw.d/hooks/, bin/frw.d/hooks/script-guard.sh
+    work_units:
+      - cli-breakup-script-guard
+      - install-architecture-overhaul
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/frw.d/hooks/, bin/frw.d/hooks/script-guard.sh
+    work_units:
+      - cli-breakup-script-guard
+      - merge-process-skill
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/alm
+    work_units:
+      - cli-breakup-script-guard
+      - post-merge-watch-list
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/rws
+    work_units:
+      - cli-breakup-script-guard
+      - register-deliverable-command
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/rws
+    work_units:
+      - cli-breakup-script-guard
+      - sprint-inspired-planning
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/alm
+    work_units:
+      - cli-breakup-script-guard
+      - todo-context-references
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/rws
+    work_units:
+      - cli-breakup-script-guard
+      - user-action-integration
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/
+    work_units:
+      - collaborative-surfaces
+      - effort-selection-alongside-model
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/shared/gate-evaluator.md
+    work_units:
+      - collaborative-surfaces
+      - gate-dimension-deduplication
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/implement.md, skills/shared/context-isolation.md
+    work_units:
+      - collaborative-surfaces
+      - parallel-agent-orchestration-adoption
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/
+    work_units:
+      - collaborative-surfaces
+      - post-merge-watch-list
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/review.md
+    work_units:
+      - collaborative-surfaces
+      - research-documentation-detection
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/research.md
+    work_units:
+      - collaborative-surfaces
+      - research-methodology-design
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/
+    work_units:
+      - collaborative-surfaces
+      - seeds-concept
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/implement.md
+    work_units:
+      - collaborative-surfaces
+      - specialist-template-warning-escalation
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/
+    work_units:
+      - collaborative-surfaces
+      - spike-row-mode
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/ideate.md, skills/review.md, skills/shared/eval-protocol.md
+    work_units:
+      - collaborative-surfaces
+      - unified-isolated-review
+    severity: high
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/shared/
+    work_units:
+      - collaborative-surfaces
+      - user-action-integration
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/implement.md, skills/shared/context-isolation.md
+    work_units:
+      - collaborative-surfaces
+      - worktree-reintegration-summary
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/frw, bin/frw.d/scripts/
+    work_units:
+      - config-cleanup
+      - effort-selection-alongside-model
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/frw, bin/frw.d/scripts/launch-phase.sh, bin/frw.d/scripts/merge-to-main.sh, commands/next.md
+    work_units:
+      - config-cleanup
+      - furrow-next-phase-lifecycle
+    severity: high
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/frw, bin/frw.d/hooks/, bin/frw.d/install.sh, bin/frw.d/lib/common.sh, bin/frw.d/scripts/, install.sh
+    work_units:
+      - config-cleanup
+      - install-architecture-overhaul
+    severity: high
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/frw, bin/frw.d/hooks/, bin/frw.d/scripts/, commands/, commands/next.md
+    work_units:
+      - config-cleanup
+      - merge-process-skill
+    severity: high
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: commands/next.md
+    work_units:
+      - config-cleanup
+      - roadmap-todo-integration
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/frw, bin/frw.d/scripts/cross-model-review.sh
+    work_units:
+      - config-cleanup
+      - unified-isolated-review
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: references/, references/specialist-template.md
+    work_units:
+      - design-pattern-context-construction
+      - effort-selection-alongside-model
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: references/
+    work_units:
+      - design-pattern-context-construction
+      - seeds-concept
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: references/, references/specialist-template.md
+    work_units:
+      - design-pattern-context-construction
+      - specialist-quality-validation
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: references/, references/definition-shape.md
+    work_units:
+      - design-pattern-context-construction
+      - spike-row-mode
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/frw.d/scripts/, bin/frw.d/scripts/launch-phase.sh, bin/frw.d/scripts/merge-to-main.sh
+    work_units:
+      - effort-selection-alongside-model
+      - furrow-next-phase-lifecycle
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/shared/gate-evaluator.md
+    work_units:
+      - effort-selection-alongside-model
+      - gate-dimension-deduplication
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/frw.d/scripts/
+    work_units:
+      - effort-selection-alongside-model
+      - install-architecture-overhaul
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/frw.d/scripts/
+    work_units:
+      - effort-selection-alongside-model
+      - merge-process-skill
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/implement.md, skills/shared/context-isolation.md
+    work_units:
+      - effort-selection-alongside-model
+      - parallel-agent-orchestration-adoption
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/
+    work_units:
+      - effort-selection-alongside-model
+      - post-merge-watch-list
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/review.md
+    work_units:
+      - effort-selection-alongside-model
+      - research-documentation-detection
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/research.md
+    work_units:
+      - effort-selection-alongside-model
+      - research-methodology-design
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: references/, references/specialist-template.md, skills/
+    work_units:
+      - effort-selection-alongside-model
+      - seeds-concept
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: references/specialist-template.md
+    work_units:
+      - effort-selection-alongside-model
+      - specialist-quality-validation
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/implement.md
+    work_units:
+      - effort-selection-alongside-model
+      - specialist-template-warning-escalation
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/
+    work_units:
+      - effort-selection-alongside-model
+      - spike-row-mode
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/frw.d/scripts/, bin/frw.d/scripts/cross-model-review.sh, skills/, skills/ideate.md, skills/review.md, skills/shared/eval-protocol.md
+    work_units:
+      - effort-selection-alongside-model
+      - unified-isolated-review
+    severity: high
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/shared/
+    work_units:
+      - effort-selection-alongside-model
+      - user-action-integration
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/implement.md, skills/shared/context-isolation.md
+    work_units:
+      - effort-selection-alongside-model
+      - worktree-reintegration-summary
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/frw.d/scripts/, bin/frw.d/scripts/launch-phase.sh, bin/frw.d/scripts/merge-to-main.sh
+    work_units:
+      - furrow-next-phase-lifecycle
+      - install-architecture-overhaul
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/frw.d/scripts/, bin/frw.d/scripts/launch-phase.sh, bin/frw.d/scripts/merge-to-main.sh, commands/, commands/next.md
+    work_units:
+      - furrow-next-phase-lifecycle
+      - merge-process-skill
+    severity: high
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: commands/next.md
+    work_units:
+      - furrow-next-phase-lifecycle
+      - roadmap-todo-integration
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/shared/gate-evaluator.md
+    work_units:
+      - gate-dimension-deduplication
+      - post-merge-watch-list
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/shared/gate-evaluator.md
+    work_units:
+      - gate-dimension-deduplication
+      - seeds-concept
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: evals/, evals/dimensions/, evals/gates/
+    work_units:
+      - gate-dimension-deduplication
+      - specialist-quality-validation
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: evals/dimensions/, skills/, skills/shared/gate-evaluator.md
+    work_units:
+      - gate-dimension-deduplication
+      - spike-row-mode
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/shared/, skills/shared/gate-evaluator.md
+    work_units:
+      - gate-dimension-deduplication
+      - user-action-integration
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/frw.d/hooks/, bin/frw.d/scripts/
+    work_units:
+      - install-architecture-overhaul
+      - merge-process-skill
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: .furrow/, .furrow/almanac/
+    work_units:
+      - install-architecture-overhaul
+      - post-merge-watch-list
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: .furrow/, .furrow/almanac/
+    work_units:
+      - install-architecture-overhaul
+      - sprint-inspired-planning
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/frw.d/scripts/, bin/frw.d/scripts/cross-model-review.sh
+    work_units:
+      - install-architecture-overhaul
+      - unified-isolated-review
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: commands/, commands/lib/promote-components.sh
+    work_units:
+      - merge-process-skill
+      - research-documentation-detection
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: commands/, commands/next.md, commands/triage.md
+    work_units:
+      - merge-process-skill
+      - roadmap-todo-integration
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: commands/, commands/triage.md
+    work_units:
+      - merge-process-skill
+      - sprint-inspired-planning
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: commands/, commands/work-todos.md
+    work_units:
+      - merge-process-skill
+      - todo-context-references
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: commands/, commands/triage.md, commands/work-todos.md
+    work_units:
+      - merge-process-skill
+      - triage-and-braindump-ideation
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/frw.d/scripts/, bin/frw.d/scripts/cross-model-review.sh, commands/, commands/review.md
+    work_units:
+      - merge-process-skill
+      - unified-isolated-review
+    severity: high
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/implement.md, skills/shared/context-isolation.md
+    work_units:
+      - parallel-agent-orchestration-adoption
+      - post-merge-watch-list
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/implement.md, skills/shared/context-isolation.md
+    work_units:
+      - parallel-agent-orchestration-adoption
+      - seeds-concept
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/implement.md
+    work_units:
+      - parallel-agent-orchestration-adoption
+      - specialist-template-warning-escalation
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/implement.md, skills/shared/context-isolation.md
+    work_units:
+      - parallel-agent-orchestration-adoption
+      - spike-row-mode
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/shared/, skills/shared/context-isolation.md
+    work_units:
+      - parallel-agent-orchestration-adoption
+      - user-action-integration
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/implement.md, skills/shared/context-isolation.md
+    work_units:
+      - parallel-agent-orchestration-adoption
+      - worktree-reintegration-summary
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/review.md
+    work_units:
+      - post-merge-watch-list
+      - research-documentation-detection
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/research.md
+    work_units:
+      - post-merge-watch-list
+      - research-methodology-design
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/
+    work_units:
+      - post-merge-watch-list
+      - seeds-concept
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/implement.md
+    work_units:
+      - post-merge-watch-list
+      - specialist-template-warning-escalation
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/
+    work_units:
+      - post-merge-watch-list
+      - spike-row-mode
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: .furrow/almanac/
+    work_units:
+      - post-merge-watch-list
+      - sprint-inspired-planning
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/alm
+    work_units:
+      - post-merge-watch-list
+      - todo-context-references
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/ideate.md, skills/review.md, skills/shared/eval-protocol.md
+    work_units:
+      - post-merge-watch-list
+      - unified-isolated-review
+    severity: high
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/shared/
+    work_units:
+      - post-merge-watch-list
+      - user-action-integration
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/implement.md, skills/shared/context-isolation.md
+    work_units:
+      - post-merge-watch-list
+      - worktree-reintegration-summary
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/rws
+    work_units:
+      - register-deliverable-command
+      - sprint-inspired-planning
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/rws
+    work_units:
+      - register-deliverable-command
+      - user-action-integration
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/review.md
+    work_units:
+      - research-documentation-detection
+      - seeds-concept
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/review.md
+    work_units:
+      - research-documentation-detection
+      - spike-row-mode
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/review.md
+    work_units:
+      - research-documentation-detection
+      - unified-isolated-review
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/research.md
+    work_units:
+      - research-methodology-design
+      - seeds-concept
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/research.md
+    work_units:
+      - research-methodology-design
+      - spike-row-mode
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: templates/, templates/roadmap.md.tmpl
+    work_units:
+      - roadmap-todo-integration
+      - seeds-concept
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: commands/triage.md
+    work_units:
+      - roadmap-todo-integration
+      - sprint-inspired-planning
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: commands/triage.md
+    work_units:
+      - roadmap-todo-integration
+      - triage-and-braindump-ideation
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: references/, references/specialist-template.md
+    work_units:
+      - seeds-concept
+      - specialist-quality-validation
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/implement.md
+    work_units:
+      - seeds-concept
+      - specialist-template-warning-escalation
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: references/, references/definition-shape.md, skills/
+    work_units:
+      - seeds-concept
+      - spike-row-mode
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/ideate.md, skills/review.md, skills/shared/eval-protocol.md
+    work_units:
+      - seeds-concept
+      - unified-isolated-review
+    severity: high
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/shared/
+    work_units:
+      - seeds-concept
+      - user-action-integration
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/implement.md, skills/shared/context-isolation.md
+    work_units:
+      - seeds-concept
+      - worktree-reintegration-summary
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: evals/, evals/dimensions/
+    work_units:
+      - specialist-quality-validation
+      - spike-row-mode
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/implement.md
+    work_units:
+      - specialist-template-warning-escalation
+      - spike-row-mode
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/implement.md
+    work_units:
+      - specialist-template-warning-escalation
+      - worktree-reintegration-summary
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/ideate.md, skills/review.md, skills/shared/eval-protocol.md
+    work_units:
+      - spike-row-mode
+      - unified-isolated-review
+    severity: high
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/shared/
+    work_units:
+      - spike-row-mode
+      - user-action-integration
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/, skills/implement.md, skills/shared/context-isolation.md
+    work_units:
+      - spike-row-mode
+      - worktree-reintegration-summary
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: commands/triage.md
+    work_units:
+      - sprint-inspired-planning
+      - triage-and-braindump-ideation
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: bin/rws
+    work_units:
+      - sprint-inspired-planning
+      - user-action-integration
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: commands/work-todos.md
+    work_units:
+      - todo-context-references
+      - triage-and-braindump-ideation
+    severity: low
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/shared/, skills/shared/eval-protocol.md
+    work_units:
+      - unified-isolated-review
+      - user-action-integration
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 1
+    file_pattern: skills/shared/, skills/shared/context-isolation.md
+    work_units:
+      - user-action-integration
+      - worktree-reintegration-summary
+    severity: medium
+    mitigation: sequential ordering
+  - phase: 3
+    file_pattern: bin/rws
+    work_units:
+      - cli-architecture-overhaul
+      - work-folder-structure-and-cleanup
+    severity: low
+    mitigation: sequential ordering
 phases:
   - number: 1
-    title: "Install & Merge Foundation"
+    title: Phase 1
     status: planned
-    rationale: "Recurring commit/merge issues across this repo and consumer projects. Two parallel rows: install-and-merge (install architecture + /furrow:merge skill + reintegration summary, all sharing bin/frw.d/ hook surface) and post-ship-reexamination (watch-list + decision-review TODO type — structurally decoupled primitive for post-evidence re-examination)."
-    parallelism: "install-and-merge || post-ship-reexamination"
-    rows:
-      - branch: work/install-and-merge
-        description: "Install architecture + ~/.config/furrow/ tier + /furrow:merge skill + worktree reintegration summary"
+    rationale: Wave 1 of dependency graph
+    work_units:
+      - index: 1
+        branch_name: work/adapters-audit
+        description: adapters-audit
         todos:
-          [
-            install-architecture-overhaul,
-            config-cleanup,
-            merge-process-skill,
-            worktree-reintegration-summary,
-          ]
-        estimated_sessions: 5
-        key_files:
-          [
-            install.sh,
-            bin/frw.d/install.sh,
-            bin/frw.d/scripts/launch-phase.sh,
-            bin/frw.d/hooks/,
-            bin/frw.d/lib/common.sh,
-            bin/frw,
-            commands/,
-            commands/next.md,
-            skills/implement.md,
-            skills/shared/context-isolation.md,
-            .furrow/,
-          ]
+          - adapters-audit
+        depends_on: []
+        key_files: []
         conflict_risk: none
         completed_at: null
-      - branch: work/post-ship-reexamination
-        description: "Almanac watch-list primitive + decision-review TODO schema type — structured post-evidence re-examination"
-        todos: [post-merge-watch-list, decision-review-todo-type]
-        estimated_sessions: 2
-        key_files:
-          [
-            .furrow/almanac/,
-            bin/alm,
-            schemas/todos.schema.yaml,
-            adapters/shared/schemas/todos.schema.yaml,
-            skills/review.md,
-            skills/shared/summary-protocol.md,
-          ]
+      - index: 2
+        branch_name: work/ambient-context-promotion
+        description: ambient-context-promotion
+        todos:
+          - ambient-context-promotion
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 3
+        branch_name: work/apply-nate-jones-skill
+        description: apply-nate-jones-skill
+        todos:
+          - apply-nate-jones-skill
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 4
+        branch_name: work/cli-breakup-script-guard
+        description: cli-breakup-script-guard
+        todos:
+          - cli-breakup-script-guard
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 5
+        branch_name: work/collaborative-surfaces
+        description: collaborative-surfaces
+        todos:
+          - collaborative-surfaces
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 6
+        branch_name: work/config-cleanup
+        description: config-cleanup
+        todos:
+          - config-cleanup
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 7
+        branch_name: work/decision-review-todo-type
+        description: decision-review-todo-type
+        todos:
+          - decision-review-todo-type
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 8
+        branch_name: work/design-pattern-context-construction
+        description: design-pattern-context-construction
+        todos:
+          - design-pattern-context-construction
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 9
+        branch_name: work/effort-selection-alongside-model
+        description: effort-selection-alongside-model
+        todos:
+          - effort-selection-alongside-model
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 10
+        branch_name: work/furrow-next-phase-lifecycle
+        description: furrow-next-phase-lifecycle
+        todos:
+          - furrow-next-phase-lifecycle
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 11
+        branch_name: work/furrow-tui-dashboard
+        description: furrow-tui-dashboard
+        todos:
+          - furrow-tui-dashboard
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 12
+        branch_name: work/gate-dimension-deduplication
+        description: gate-dimension-deduplication
+        todos:
+          - gate-dimension-deduplication
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 13
+        branch_name: work/install-architecture-overhaul
+        description: install-architecture-overhaul
+        todos:
+          - install-architecture-overhaul
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 14
+        branch_name: work/memetic-algorithms-research
+        description: memetic-algorithms-research
+        todos:
+          - memetic-algorithms-research
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 15
+        branch_name: work/merge-process-skill
+        description: merge-process-skill
+        todos:
+          - merge-process-skill
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 16
+        branch_name: work/mine-claude-code
+        description: mine-claude-code
+        todos:
+          - mine-claude-code
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 17
+        branch_name: work/mine-v1-harness
+        description: mine-v1-harness
+        todos:
+          - mine-v1-harness
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 18
+        branch_name: work/parallel-agent-orchestration-adoption
+        description: parallel-agent-orchestration-adoption
+        todos:
+          - parallel-agent-orchestration-adoption
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 19
+        branch_name: work/post-merge-watch-list
+        description: post-merge-watch-list
+        todos:
+          - post-merge-watch-list
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 20
+        branch_name: work/register-deliverable-command
+        description: register-deliverable-command
+        todos:
+          - register-deliverable-command
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 21
+        branch_name: work/research-documentation-detection
+        description: research-documentation-detection
+        todos:
+          - research-documentation-detection
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 22
+        branch_name: work/research-methodology-design
+        description: research-methodology-design
+        todos:
+          - research-methodology-design
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 23
+        branch_name: work/roadmap-todo-integration
+        description: roadmap-todo-integration
+        todos:
+          - roadmap-todo-integration
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 24
+        branch_name: work/seeds-concept
+        description: seeds-concept
+        todos:
+          - seeds-concept
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 25
+        branch_name: work/specialist-quality-validation
+        description: specialist-quality-validation
+        todos:
+          - specialist-quality-validation
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 26
+        branch_name: work/specialist-template-warning-escalation
+        description: specialist-template-warning-escalation
+        todos:
+          - specialist-template-warning-escalation
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 27
+        branch_name: work/spike-row-mode
+        description: spike-row-mode
+        todos:
+          - spike-row-mode
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 28
+        branch_name: work/sprint-inspired-planning
+        description: sprint-inspired-planning
+        todos:
+          - sprint-inspired-planning
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 29
+        branch_name: work/todo-context-references
+        description: todo-context-references
+        todos:
+          - todo-context-references
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 30
+        branch_name: work/triage-and-braindump-ideation
+        description: triage-and-braindump-ideation
+        todos:
+          - triage-and-braindump-ideation
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 31
+        branch_name: work/unified-isolated-review
+        description: unified-isolated-review
+        todos:
+          - unified-isolated-review
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 32
+        branch_name: work/user-action-integration
+        description: user-action-integration
+        todos:
+          - user-action-integration
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 33
+        branch_name: work/worktree-reintegration-summary
+        description: worktree-reintegration-summary
+        todos:
+          - worktree-reintegration-summary
+        depends_on: []
+        key_files: []
         conflict_risk: none
         completed_at: null
   - number: 2
-    title: "Almanac Graph, Seeds, and Promotion"
+    title: Phase 2
     status: planned
-    rationale: "Foundational graph primitives, seed concept, and the promotion system that graduates row-level knowledge up the tier chain. Consolidated into one row because the previous split (almanac-and-seeds || ambient-promotion) couldn't actually parallelize — both rewrite bin/alm and .furrow/almanac/, with mitigation already requiring sequential merge. Building them together means the graph design accommodates promotion from day 1."
-    parallelism: "almanac-graph-and-promotion (single row)"
-    rows:
-      - branch: work/almanac-graph-and-promotion
-        description: "First-class seed graph, seeds concept, and context promotion (row to project to global)"
-        todos: [almanac-graph-primitives, seeds-concept, ambient-context-promotion]
-        estimated_sessions: 7
-        key_files:
-          [
-            bin/alm,
-            bin/sds,
-            .furrow/almanac/,
-            skills/,
-            references/,
-            commands/lib/,
-          ]
+    rationale: Wave 2 of dependency graph
+    work_units:
+      - index: 1
+        branch_name: work/brain-dump-triage-command
+        description: brain-dump-triage-command
+        todos:
+          - brain-dump-triage-command
+        depends_on: []
+        key_files: []
         conflict_risk: none
         completed_at: null
   - number: 3
-    title: "Review & Specialist System"
+    title: Phase 3
     status: planned
-    rationale: "Unify review machinery and raise specialist quality bar before downstream command changes consume reviews and specialists."
-    parallelism: "review-unification || specialist-quality"
-    rows:
-      - branch: work/review-unification
-        description: "Unify Phase B and cross-model review into one script; dedupe shared gate dimensions"
-        todos: [unified-isolated-review, gate-dimension-deduplication]
-        estimated_sessions: 3
-        key_files:
-          [
-            bin/frw.d/scripts/cross-model-review.sh,
-            skills/review.md,
-            skills/ideate.md,
-            skills/shared/eval-protocol.md,
-            commands/review.md,
-            evals/gates/,
-            evals/dimensions/,
-          ]
-        conflict_risk: low
-        completed_at: null
-      - branch: work/specialist-quality
-        description: "Specialist warning escalation, quality validation, Nate Jones skill pattern, effort_hint frontmatter"
+    rationale: Wave 3 of dependency graph
+    work_units:
+      - index: 1
+        branch_name: work/cli-architecture-overhaul
+        description: cli-architecture-overhaul
         todos:
-          [
-            specialist-template-warning-escalation,
-            specialist-quality-validation,
-            apply-nate-jones-skill,
-            effort-selection-alongside-model,
-          ]
-        estimated_sessions: 4
-        key_files:
-          [
-            specialists/,
-            references/specialist-template.md,
-            skills/implement.md,
-            skills/,
-            bin/frw.d/scripts/,
-          ]
-        conflict_risk: low
+          - cli-architecture-overhaul
+        depends_on: []
+        key_files: []
+        conflict_risk: none
+        completed_at: null
+      - index: 2
+        branch_name: work/work-folder-structure-and-cleanup
+        description: work-folder-structure-and-cleanup
+        todos:
+          - work-folder-structure-and-cleanup
+        depends_on: []
+        key_files: []
+        conflict_risk: none
         completed_at: null
   - number: 4
-    title: "Command Pipeline & Planning UX"
+    title: Phase 4
     status: planned
-    rationale: "Command layer matures after agent wiring, reviews, and graph primitives stabilize. Re-split by theme (not by subsystem): each row owns a distinct file scope — triage-pipeline owns commands/triage.md, roadmap-handoff owns commands/next.md + templates/, todo-and-research owns TODO schema + research surface. Eliminates the latent cross-row conflict on commands/triage.md + commands/next.md that existed in the previous command-pipeline/planning-ux split."
-    parallelism: "triage-pipeline || roadmap-handoff || todo-and-research"
-    rows:
-      - branch: work/triage-pipeline
-        description: "Brain-dump triage command + triage/brain-dump ideation ergonomics"
-        todos: [brain-dump-triage-command, triage-and-braindump-ideation]
-        estimated_sessions: 2
-        key_files:
-          [
-            commands/triage.md,
-            commands/,
-            skills/ideate.md,
-            bin/alm,
-          ]
-        conflict_risk: low
-        completed_at: null
-      - branch: work/roadmap-handoff
-        description: "Roadmap integration + furrow:next phase lifecycle — the /roadmap → /next pipeline"
-        todos: [roadmap-todo-integration, furrow-next-phase-lifecycle]
-        estimated_sessions: 2
-        key_files:
-          [
-            commands/next.md,
-            commands/triage.md,
-            templates/,
-            templates/roadmap.md.tmpl,
-            bin/frw.d/scripts/launch-phase.sh,
-            .furrow/rows/,
-          ]
-        conflict_risk: low
-        completed_at: null
-      - branch: work/todo-and-research
-        description: "TODO schema context refs + research methodology + research-to-docs detection"
+    rationale: Wave 4 of dependency graph
+    work_units:
+      - index: 1
+        branch_name: work/almanac-graph-primitives
+        description: almanac-graph-primitives
         todos:
-          [
-            todo-context-references,
-            research-methodology-design,
-            research-documentation-detection,
-          ]
-        estimated_sessions: 2
-        key_files:
-          [
-            commands/work-todos.md,
-            bin/alm,
-            skills/research.md,
-            commands/lib/promote-components.sh,
-            skills/review.md,
-          ]
-        conflict_risk: low
-        completed_at: null
-  - number: 5
-    title: "CLI Architecture & Folder Cleanup"
-    status: planned
-    rationale: "CLI architecture decision gates downstream lifecycle UX. cli-architecture merges first to stabilize bin/ boundaries before folder restructure."
-    parallelism: "cli-architecture || folder-structure"
-    rows:
-      - branch: work/cli-architecture
-        description: "CLI architecture overhaul, script-guard breakup, register-deliverable CLI gap"
-        todos:
-          [
-            cli-architecture-overhaul,
-            cli-breakup-script-guard,
-            register-deliverable-command,
-          ]
-        estimated_sessions: 4
-        key_files:
-          [
-            bin/alm,
-            bin/rws,
-            bin/sds,
-            bin/frw.d/scripts/,
-            bin/frw.d/hooks/script-guard.sh,
-          ]
-        conflict_risk: medium
-        completed_at: null
-      - branch: work/folder-structure
-        description: ".furrow/rows/ structure to prevent unbounded growth"
-        todos: [work-folder-structure-and-cleanup]
-        estimated_sessions: 2
-        key_files:
-          [
-            bin/rws,
-            commands/archive.md,
-            references/row-layout.md,
-          ]
-        conflict_risk: low
-        completed_at: null
-  - number: 6
-    title: "Orchestration & Lifecycle"
-    status: planned
-    rationale: "Polish orchestration patterns, add sprint/spike modes, and land lifecycle-UX verb renames. Four rows run in parallel; mostly distinct subsystems."
-    parallelism: "orchestration-polish || sprint-and-spikes || harness-lifecycle-ux || collaborative-surfaces"
-    rows:
-      - branch: work/orchestration-polish
-        description: "Parallel agent adoption, dispatch-enforcement review, user-action lifecycle"
-        todos:
-          [
-            parallel-agent-orchestration-adoption,
-            re-evaluate-dispatch-enforcement,
-            user-action-integration,
-          ]
-        estimated_sessions: 2
-        key_files:
-          [
-            skills/implement.md,
-            skills/shared/context-isolation.md,
-            bin/rws,
-            skills/shared/user-actions.md,
-          ]
-        conflict_risk: low
-        completed_at: null
-      - branch: work/sprint-and-spikes
-        description: "Sprint-inspired planning (retros, velocity, multi-row coordination) + spike row mode"
-        todos: [sprint-inspired-planning, spike-row-mode]
-        estimated_sessions: 4
-        key_files:
-          [skills/, evals/dimensions/, .furrow/almanac/, commands/triage.md]
-        conflict_risk: low
-        completed_at: null
-      - branch: work/harness-lifecycle-ux
-        description: "sow/reap verbs, status line design, installation/exploration skill"
-        todos: [harness-lifecycle-ux]
-        estimated_sessions: 4
-        key_files: [commands/, skills/, install.sh, .claude/settings.json]
-        conflict_risk: low
-        completed_at: null
-      - branch: work/collaborative-surfaces
-        description: "Document-based collaboration — markdown + comment threading, Notion integration"
-        todos: [collaborative-surfaces]
-        estimated_sessions: 3
-        key_files: [skills/, adapters/]
+          - almanac-graph-primitives
+        depends_on: []
+        key_files: []
         conflict_risk: none
         completed_at: null
-  - number: 7
-    title: "Audits & Exploration"
-    status: planned
-    rationale: "Low-urgency items. Insights feed back into earlier work. TUI is aspirational."
-    parallelism: "audits-and-mining || exploratory-research || furrow-tui"
-    rows:
-      - branch: work/audits-and-mining
-        description: "Adapters audit, mine v1 harness, mine Claude Code"
-        todos: [adapters-audit, mine-v1-harness, mine-claude-code]
-        estimated_sessions: 4
-        key_files: [adapters/, evals/, references/specialist-template.md]
-        conflict_risk: none
-        completed_at: null
-      - branch: work/exploratory-research
-        description: "Memetic algorithms for LLM orchestration, design-pattern context construction"
-        todos: [memetic-algorithms-research, design-pattern-context-construction]
-        estimated_sessions: 3
-        key_files: [references/, docs/]
-        conflict_risk: none
-        completed_at: null
-      - branch: work/furrow-tui
-        description: "Furrow TUI / agent-dashboard integration"
-        todos: [furrow-tui-dashboard]
-        estimated_sessions: 3
+      - index: 2
+        branch_name: work/harness-lifecycle-ux
+        description: harness-lifecycle-ux
+        todos:
+          - harness-lifecycle-ux
+        depends_on: []
         key_files: []
         conflict_risk: none
         completed_at: null
 deferred: []
 handoff:
   template: |-
-    Start with: `/furrow:work {branch} — {description}`
-    Source TODOs in `.furrow/almanac/todos.yaml`: {todo_ids}
+    Start with: `/work {branch_name} — {description}`
+    Source TODOs: {todo_ids}
     Key files: {key_files}
-    See `.furrow/almanac/roadmap.yaml` Phase {phase} for rationale.

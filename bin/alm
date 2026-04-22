@@ -737,6 +737,63 @@ print(json.dumps(result))
   total_phases=$(printf '%s' "$phases" | jq 'length')
   completed_phases=$(printf '%s' "$phases" | jq '[.[] | select(.status == "done")] | length')
 
+  # Compute active_observations: open + activation == active. Additive key;
+  # omit entirely if empty to avoid diff noise for existing consumers.
+  active_obs_json="[]"
+  _obs_all=$(_observe_load_json)
+  if [ "$_obs_all" != "[]" ]; then
+    _obs_open=$(printf '%s' "$_obs_all" | jq -c '.[] | select(.lifecycle == "open")')
+    if [ -n "$_obs_open" ]; then
+      _ao_tmp=$(mktemp)
+      printf '[' > "$_ao_tmp"
+      _first=1
+      printf '%s\n' "$_obs_open" | while IFS= read -r _obs; do
+        [ -z "$_obs" ] && continue
+        _act=$(_observe_compute_activation "$_obs" "")
+        [ "$_act" = "active" ] || continue
+        _tt=$(printf '%s' "$_obs" | jq -r '.triggered_by.type')
+        case "$_tt" in
+          row_archived)
+            _row=$(printf '%s' "$_obs" | jq -r '.triggered_by.row')
+            _reason="row_archived: $_row"
+            ;;
+          rows_since)
+            _since=$(printf '%s' "$_obs" | jq -r '.triggered_by.since_row')
+            _target=$(printf '%s' "$_obs" | jq -r '.triggered_by.count')
+            _n=$(_observe_rows_since_count "$_obs")
+            _reason="rows_since: $_n/$_target rows archived since $_since"
+            ;;
+          manual)
+            _mts=$(printf '%s' "$_obs" | jq -r '.manual_activation_at // "unknown"')
+            _reason="manual: activated at $_mts"
+            ;;
+          *)
+            _reason="$_tt"
+            ;;
+        esac
+        _entry=$(jq -n \
+          --arg id "$(printf '%s' "$_obs" | jq -r '.id')" \
+          --arg kind "$(printf '%s' "$_obs" | jq -r '.kind')" \
+          --arg title "$(printf '%s' "$_obs" | jq -r '.title')" \
+          --arg reason "$_reason" \
+          '{id: $id, kind: $kind, title: $title, activation_reason: $reason}')
+        if [ "$_first" = "1" ]; then
+          printf '%s' "$_entry" >> "$_ao_tmp"
+          _first=0
+        else
+          printf ',%s' "$_entry" >> "$_ao_tmp"
+        fi
+        # Track that we wrote at least one entry via a sentinel file
+        : > "$_ao_tmp.nonempty"
+      done
+      printf ']' >> "$_ao_tmp"
+      if [ -f "$_ao_tmp.nonempty" ]; then
+        active_obs_json=$(cat "$_ao_tmp")
+      fi
+      rm -f "$_ao_tmp" "$_ao_tmp.nonempty"
+    fi
+  fi
+
   # Assemble roadmap
   roadmap=$(jq -n \
     --arg ts "$ts" \
@@ -762,6 +819,17 @@ print(json.dumps(result))
         template: "Start with: `/work {branch_name} — {description}`\nSource TODOs: {todo_ids}\nKey files: {key_files}"
       }
     }')
+
+  # Additive: inject active_observations only when non-empty.
+  # Placement: after `deferred`, before `handoff` (no top-level `waves` key exists
+  # in this roadmap shape; `deferred` is the nearest analog).
+  _ao_len=$(printf '%s' "$active_obs_json" | jq 'length')
+  if [ "$_ao_len" -gt 0 ]; then
+    roadmap=$(printf '%s' "$roadmap" | jq --argjson ao "$active_obs_json" '
+      {schema_version, metadata, dependency_graph, conflict_zones, phases, deferred, active_observations: $ao, handoff}
+    ')
+    analysis=$(printf '%s' "$analysis" | jq --argjson ao "$active_obs_json" '. + {active_observations: $ao}')
+  fi
 
   # Write roadmap.yaml
   printf '%s' "$roadmap" | yq -P '.' > "$ALM_ROADMAP"
