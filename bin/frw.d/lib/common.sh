@@ -109,6 +109,76 @@ replace_md_section() {
   trap - EXIT INT TERM
 }
 
+# --- config resolution (three-tier chain) ---
+
+# resolve_config_value KEY
+# KEY is a dotted path (e.g. "cross_model.provider").
+# Tier 1: $PROJECT_ROOT/.furrow/furrow.yaml
+# Tier 2: ${XDG_CONFIG_HOME:-$HOME/.config}/furrow/config.yaml
+# Tier 3: $FURROW_ROOT/.furrow/furrow.yaml (compiled-in default)
+# Output: resolved string value; exit 0 if found, exit 1 if unset everywhere.
+# No hardcoded ~/.config — XDG_CONFIG_HOME is always honored.
+resolve_config_value() {
+  _rcv_key="$1"
+
+  # Tier 1: project-local .furrow/furrow.yaml
+  if [ -f "${PROJECT_ROOT}/.furrow/furrow.yaml" ]; then
+    _rcv_v="$(yq -r ".${_rcv_key} // \"\"" "${PROJECT_ROOT}/.furrow/furrow.yaml" 2>/dev/null || true)"
+    [ -n "$_rcv_v" ] && [ "$_rcv_v" != "null" ] && { printf '%s\n' "$_rcv_v"; return 0; }
+  fi
+
+  # Tier 2: XDG global config (honors $XDG_CONFIG_HOME)
+  _rcv_xdg="${XDG_CONFIG_HOME:-${HOME}/.config}/furrow/config.yaml"
+  if [ -f "$_rcv_xdg" ]; then
+    _rcv_v="$(yq -r ".${_rcv_key} // \"\"" "$_rcv_xdg" 2>/dev/null || true)"
+    [ -n "$_rcv_v" ] && [ "$_rcv_v" != "null" ] && { printf '%s\n' "$_rcv_v"; return 0; }
+  fi
+
+  # Tier 3: compiled-in default under $FURROW_ROOT
+  if [ -f "${FURROW_ROOT}/.furrow/furrow.yaml" ]; then
+    _rcv_v="$(yq -r ".${_rcv_key} // \"\"" "${FURROW_ROOT}/.furrow/furrow.yaml" 2>/dev/null || true)"
+    [ -n "$_rcv_v" ] && [ "$_rcv_v" != "null" ] && { printf '%s\n' "$_rcv_v"; return 0; }
+  fi
+
+  return 1
+}
+
+# find_specialist NAME
+# NAME is the specialist slug (e.g. "harness-engineer"); no .md extension.
+# Precedence (first hit wins; no merging):
+#   1. $PROJECT_ROOT/specialists/{name}.md       — project-local override
+#   2. ${XDG_CONFIG_HOME:-$HOME/.config}/furrow/specialists/{name}.md — user global
+#   3. $FURROW_ROOT/specialists/{name}.md        — compiled-in
+# Output: absolute path to the specialist file; exit 0 if found, exit 1 if not.
+# Errors to stderr with [furrow:error] prefix.
+find_specialist() {
+  _fs_name="$1"
+
+  # Tier 1: project-local
+  _fs_proj="${PROJECT_ROOT}/specialists/${_fs_name}.md"
+  if [ -f "$_fs_proj" ]; then
+    printf '%s\n' "$_fs_proj"
+    return 0
+  fi
+
+  # Tier 2: XDG user-global
+  _fs_xdg="${XDG_CONFIG_HOME:-${HOME}/.config}/furrow/specialists/${_fs_name}.md"
+  if [ -f "$_fs_xdg" ]; then
+    printf '%s\n' "$_fs_xdg"
+    return 0
+  fi
+
+  # Tier 3: compiled-in
+  _fs_root="${FURROW_ROOT}/specialists/${_fs_name}.md"
+  if [ -f "$_fs_root" ]; then
+    printf '%s\n' "$_fs_root"
+    return 0
+  fi
+
+  log_error "specialist not found: ${_fs_name}"
+  return 1
+}
+
 # --- focus management ---
 
 # set_focus <name> — set the focused row
