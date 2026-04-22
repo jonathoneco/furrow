@@ -20,6 +20,10 @@ dependency_graph:
       phase: 1
       row: install-and-merge-foundation
       status: active
+    - id: config-cleanup
+      phase: 1
+      row: install-and-merge-foundation
+      status: active
     - id: almanac-graph-primitives
       phase: 2
       row: almanac-and-seeds
@@ -97,10 +101,6 @@ dependency_graph:
       row: cli-architecture
       status: active
     - id: work-folder-structure-and-cleanup
-      phase: 5
-      row: folder-structure
-      status: active
-    - id: config-cleanup
       phase: 5
       row: folder-structure
       status: active
@@ -207,7 +207,7 @@ dependency_graph:
       reason: "foundational — CLI decisions gate verb rename and status line"
   waves:
     - wave: 1
-      todos: [install-architecture-overhaul, merge-process-skill, post-merge-watch-list]
+      todos: [install-architecture-overhaul, merge-process-skill, post-merge-watch-list, config-cleanup]
     - wave: 2
       todos: [almanac-graph-primitives, seeds-concept, ambient-context-promotion]
     - wave: 3
@@ -238,7 +238,6 @@ dependency_graph:
           cli-breakup-script-guard,
           register-deliverable-command,
           work-folder-structure-and-cleanup,
-          config-cleanup,
         ]
     - wave: 6
       todos:
@@ -284,13 +283,19 @@ phases:
   - number: 1
     title: "Install & Merge Foundation"
     status: planned
-    rationale: "Recurring commit/merge issues across this repo and consumer projects. Stabilize the install & merge pipeline and post-merge validation before other work flows through them."
+    rationale: "Recurring commit/merge issues across this repo and consumer projects. One coherent install story: self-hosting hygiene, the ~/.config/furrow/ tier, merge-process skill, and post-merge validation. Folded config-cleanup in from Phase 5 because the 3-tier config resolution chain is inseparable from install-architecture decisions."
     parallelism: "install-and-merge-foundation (single row)"
     rows:
       - branch: work/install-and-merge-foundation
-        description: "Install architecture overhaul, merge-process skill, post-merge watch-list"
-        todos: [install-architecture-overhaul, merge-process-skill, post-merge-watch-list]
-        estimated_sessions: 4
+        description: "Install architecture overhaul, ~/.config/furrow/ tier, merge-process skill, post-merge watch-list"
+        todos:
+          [
+            install-architecture-overhaul,
+            config-cleanup,
+            merge-process-skill,
+            post-merge-watch-list,
+          ]
+        estimated_sessions: 5
         key_files:
           [
             install.sh,
@@ -298,7 +303,9 @@ phases:
             bin/frw.d/scripts/launch-phase.sh,
             bin/frw.d/hooks/,
             bin/frw.d/lib/common.sh,
+            bin/frw,
             commands/,
+            commands/next.md,
             .furrow/,
           ]
         conflict_risk: none
@@ -429,17 +436,16 @@ phases:
         conflict_risk: medium
         completed_at: null
       - branch: work/folder-structure
-        description: ".furrow/rows/ structure, config-cleanup (~/.config/furrow/, PROJECT_ROOT chain)"
-        todos: [work-folder-structure-and-cleanup, config-cleanup]
+        description: ".furrow/rows/ structure to prevent unbounded growth"
+        todos: [work-folder-structure-and-cleanup]
         estimated_sessions: 2
         key_files:
           [
             bin/rws,
             commands/archive.md,
             references/row-layout.md,
-            bin/frw.d/install.sh,
           ]
-        conflict_risk: medium
+        conflict_risk: low
         completed_at: null
   - number: 6
     title: "Orchestration & Lifecycle"

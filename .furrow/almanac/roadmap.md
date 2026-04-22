@@ -1,6 +1,6 @@
 # Roadmap
 
-> Last updated: 2026-04-22 | 7 phases, 0/7 complete | 39 active TODOs across 15 rows
+> Last updated: 2026-04-22 | 7 phases, 0/7 complete | 39 active TODOs across 15 rows | config-cleanup folded into Phase 1
 
 ## Dependency DAG (active items only)
 
@@ -48,17 +48,18 @@ Legend: `──` hard dep · `~~` inferred (foundational/merge) · `···` inde
 
 ## Phase 1 — Install & Merge Foundation — PLANNED
 
-Recurring commit/merge issues across this repo and consumer projects. Stabilize the install & merge pipeline and post-merge validation before other work flows through them.
+Recurring commit/merge issues across this repo and consumer projects. One coherent install story: self-hosting hygiene, the `~/.config/furrow/` tier, merge-process skill, and post-merge validation. Folded `config-cleanup` in from Phase 5 because the 3-tier config resolution chain is inseparable from install-architecture decisions.
 
-### work/install-and-merge-foundation (3 TODOs, ~4 sessions)
+### work/install-and-merge-foundation (4 TODOs, ~5 sessions)
 
 - `install-architecture-overhaul` — Install architecture overhaul — self-hosting, symlink hygiene, commit safety
+- `config-cleanup` — Configuration cleanup — ~/.config/furrow/ tier, 3-tier resolution chain, migration path
 - `merge-process-skill` — Design a /furrow:merge skill — reconcile worktree branches back into main
 - `post-merge-watch-list` — Post-merge watch-list — track behavioral signals to validate after rows merge
 
-- **Key files**: `install.sh`, `bin/frw.d/install.sh`, `bin/frw.d/scripts/launch-phase.sh`, `bin/frw.d/hooks/`, `bin/frw.d/lib/common.sh`, `commands/`, `.furrow/`
+- **Key files**: `install.sh`, `bin/frw.d/install.sh`, `bin/frw.d/scripts/launch-phase.sh`, `bin/frw.d/hooks/`, `bin/frw.d/lib/common.sh`, `bin/frw`, `commands/`, `commands/next.md`, `.furrow/`
 - **Conflict risk**: none
-- **Why together**: All three address the same structural pain — the install/merge/validate pipeline. Landing them on one branch keeps the self-hosting fixes coherent.
+- **Why together**: All four address the same structural pain — the install/config/merge/validate pipeline. Landing them on one branch keeps self-hosting, the 3-tier config chain, and merge hygiene coherent. `~/.config/furrow/` is arguably the cleanest answer to "install writes too many files into the project": if shared specialists and promotion targets live in `~/.config/furrow/`, consumers don't need to symlink them at all, eliminating half the broken-target symlink problem.
 
 ## Phase 2 — Almanac Graph & Seeds — PLANNED
 
@@ -144,14 +145,13 @@ CLI architecture decision gates downstream lifecycle UX. cli-architecture merges
 - **Conflict risk**: medium
 - **Why together**: All three restructure the CLI surface — overhauling architecture, breaking up the guard, and filling a command gap.
 
-### work/folder-structure (2 TODOs, ~2 sessions)
+### work/folder-structure (1 TODO, ~2 sessions)
 
 - `work-folder-structure-and-cleanup`
-- `config-cleanup`
 
-- **Key files**: `bin/rws`, `commands/archive.md`, `references/row-layout.md`, `bin/frw.d/install.sh`
-- **Conflict risk**: medium
-- **Why together**: Both restructure where things live (row folders + config paths).
+- **Key files**: `bin/rws`, `commands/archive.md`, `references/row-layout.md`
+- **Conflict risk**: low
+- **Why together**: Single-TODO row; focused on `.furrow/rows/` growth management. (config-cleanup moved to Phase 1 since it's fundamentally about install architecture.)
 
 ## Phase 6 — Orchestration & Lifecycle — PLANNED
 
