@@ -122,14 +122,14 @@ done
 
 # ----------------------------------------------------------------
 # Check 4: Rescue baseline drift
-rescue_script="${FURROW_ROOT}/bin/frw.d/scripts/rescue.sh"
+_frwd_scripts_dir="${FURROW_ROOT}/bin/frw.d/scripts"
+rescue_script="${_frwd_scripts_dir}/rescue.sh"
 if [ -f "$rescue_script" ]; then
-  if ! "$rescue_script" --baseline-check >/dev/null 2>&1; then
-    _rc=$?
-    if [ "$_rc" = "3" ]; then
-      printf '[furrow:error] baseline drift: common-minimal.sh has changed but rescue.sh bundled baseline was not refreshed\n' >&2
-      exit 3
-    fi
+  _baseline_rc=0
+  sh "$rescue_script" --baseline-check >/dev/null 2>&1 || _baseline_rc=$?
+  if [ "$_baseline_rc" = "3" ]; then
+    printf '[furrow:error] baseline drift: common-minimal.sh has changed but rescue.sh bundled baseline was not refreshed\n' >&2
+    exit 3
   fi
 fi
 
