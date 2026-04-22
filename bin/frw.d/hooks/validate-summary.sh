@@ -10,6 +10,9 @@
 #   0 — valid (or no active row, or auto-advanced)
 #   2 — validation failure (blocking)
 
+# shellcheck source=../lib/common-minimal.sh
+. "${FURROW_ROOT}/bin/frw.d/lib/common-minimal.sh"
+
 hook_validate_summary() {
   # Optional step argument for step-aware validation (called from rws transition)
   step_arg="${1:-}"

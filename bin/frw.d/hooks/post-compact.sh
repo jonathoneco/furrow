@@ -4,6 +4,9 @@
 # Outputs critical context to stdout for re-injection.
 # Return 0 on success, return 1 on state corruption.
 
+# shellcheck source=../lib/common-minimal.sh
+. "${FURROW_ROOT}/bin/frw.d/lib/common-minimal.sh"
+
 hook_post_compact() {
   work_dir="$(find_focused_row)"
 

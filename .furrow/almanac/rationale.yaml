@@ -462,3 +462,10 @@ components:
   - path: specialists/technical-writer.md
     exists_because: "Claude Code does not natively provide domain-specific agent priming for technical documentation"
     delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"
+
+# --- Architecture decisions ---
+decisions:
+  - id: common-sh-hook-cascade-split
+    decision: Split common.sh at line 168; hooks source common-minimal.sh only.
+    sources: [AD-1, research/r2-commonsh-split.md §4]
+    date: 2026-04-22

@@ -1,58 +1,20 @@
 #!/bin/sh
-# common.sh — Shared utility functions for Furrow hooks
+# common.sh — Broader helper library for Furrow scripts.
+# Sourced only by longer-running scripts (not hooks).
+# Hook-safe subset lives in common-minimal.sh.
 #
-# Sourced by hook scripts; not executed directly.
+# Sourced by frw dispatcher for non-hook commands; not executed directly.
 # Dependencies: jq, yq
 
 set -eu
 
-# --- logging ---
-
-log_warning() {
-  echo "[furrow:warning] $1" >&2
-}
-
-log_error() {
-  echo "[furrow:error] $1" >&2
-}
-
-# --- row discovery ---
-
-# find_active_row — find the active row directory
-# Returns the path to the active row directory (e.g., .furrow/rows/add-rate-limiting)
-# or empty string if none found.
-find_active_row() {
-  _best_dir=""
-  _best_ts=""
-
-  for _state_file in .furrow/rows/*/state.json; do
-    [ -f "$_state_file" ] || continue
-    _archived="$(jq -r '.archived_at // "null"' "$_state_file" 2>/dev/null)" || continue
-    if [ "$_archived" = "null" ]; then
-      _dir="$(dirname "$_state_file")"
-      _updated="$(jq -r '.updated_at // ""' "$_state_file" 2>/dev/null)" || _updated=""
-      if [ -z "$_best_dir" ] || { LC_ALL=C expr "$_updated" \> "$_best_ts" > /dev/null 2>&1; }; then
-        _best_dir="$_dir"
-        _best_ts="$_updated"
-      fi
-    fi
-  done
-
-  echo "$_best_dir"
-}
+# Pull in hook-safe subset (log_warning, log_error, find_active_row,
+# read_state_field, row_name, is_row_file, extract_row_from_path,
+# find_focused_row). Avoids duplication; hooks source common-minimal.sh directly.
+# shellcheck source=common-minimal.sh
+. "${FURROW_ROOT}/bin/frw.d/lib/common-minimal.sh"
 
 # --- state field accessors ---
-
-# read_state_field <path> <field> — extract a field from state.json using jq
-# Args:
-#   path  — path to state.json
-#   field — jq field expression (e.g., ".step", ".step_status")
-# Returns the raw value.
-read_state_field() {
-  _path="$1"
-  _field="$2"
-  jq -r "$_field" "$_path" 2>/dev/null
-}
 
 # read_definition_field <path> <field> — extract a field from definition.yaml using yq
 # Args:
@@ -93,61 +55,6 @@ has_passing_gate() {
   ' "$_state_path" 2>/dev/null)" || _count="0"
 
   [ "$_count" -gt 0 ]
-}
-
-# --- path helpers ---
-
-# row_name <work_dir> — extract the row name from its directory path
-row_name() {
-  basename "$1"
-}
-
-# is_row_file <path> — check if a path is inside a .furrow/rows/ directory
-is_row_file() {
-  case "$1" in
-    .furrow/rows/*|*/.furrow/rows/*) return 0 ;;
-    *) return 1 ;;
-  esac
-}
-
-# extract_row_from_path <file_path> — extract row directory from a file path
-# Returns the row directory (e.g., ".furrow/rows/my-unit") if path is inside
-# .furrow/rows/{name}/, or empty string if not a row path.
-extract_row_from_path() {
-  _path="$1"
-
-  # Normalize: strip everything up to and including .furrow/rows/ to get relative remainder
-  case "$_path" in
-    .furrow/rows/*)
-      _remainder="${_path#.furrow/rows/}"
-      ;;
-    */.furrow/rows/*)
-      _remainder="${_path#*/.furrow/rows/}"
-      ;;
-    *)
-      echo ""
-      return 0
-      ;;
-  esac
-
-  # Extract the row name (first path component)
-  _unit_name="${_remainder%%/*}"
-
-  # Skip non-row entries (dotfiles like .focused, _meta.yaml)
-  case "$_unit_name" in
-    .*|_*|"")
-      echo ""
-      return 0
-      ;;
-  esac
-
-  # Validate the row directory exists
-  if [ -f ".furrow/rows/${_unit_name}/state.json" ]; then
-    echo ".furrow/rows/${_unit_name}"
-  else
-    echo ""
-  fi
-  return 0
 }
 
 # --- markdown section helpers ---
@@ -203,28 +110,6 @@ replace_md_section() {
 }
 
 # --- focus management ---
-
-# find_focused_row — find the focused row directory
-# Reads .furrow/.focused (cache semantics), validates, falls back to
-# find_active_row() on invalid state. Never errors.
-find_focused_row() {
-  # Try .focused file first
-  if [ -f ".furrow/.focused" ]; then
-    _focused_name="$(cat ".furrow/.focused" 2>/dev/null)" || _focused_name=""
-    if [ -n "$_focused_name" ] && [ -f ".furrow/rows/${_focused_name}/state.json" ]; then
-      # Fail-open: jq failure treats row as not archived (permissive for reads)
-      _archived="$(jq -r '.archived_at // "null"' ".furrow/rows/${_focused_name}/state.json" 2>/dev/null)" || _archived="null"
-      if [ "$_archived" = "null" ]; then
-        echo ".furrow/rows/${_focused_name}"
-        return 0
-      fi
-    fi
-    log_warning "Stale .focused file (row: ${_focused_name:-empty}), falling back"
-  fi
-
-  # Fallback: most recently updated active row
-  find_active_row
-}
 
 # set_focus <name> — set the focused row
 # Returns 0 on success, 1 if row doesn't exist or is archived.

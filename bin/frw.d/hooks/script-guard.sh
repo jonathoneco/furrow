@@ -9,6 +9,9 @@
 # reference is preceded by a known read-only verb. This is safer than
 # trying to enumerate all execution verbs.
 
+# shellcheck source=../lib/common-minimal.sh
+. "${FURROW_ROOT}/bin/frw.d/lib/common-minimal.sh"
+
 hook_script_guard() {
   input="$(cat)"
 

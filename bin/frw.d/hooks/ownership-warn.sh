@@ -4,6 +4,9 @@
 # Receives JSON on stdin with tool_name and tool_input.
 # Advisory only — always returns 0.
 
+# shellcheck source=../lib/common-minimal.sh
+. "${FURROW_ROOT}/bin/frw.d/lib/common-minimal.sh"
+
 hook_ownership_warn() {
   input="$(cat)"
 
