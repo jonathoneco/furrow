@@ -56,7 +56,13 @@ Normalization:
   normalize-todos             Sort .furrow/almanac/todos.yaml by (created_at, id)
 
 Lifecycle:
-  merge-to-main <name>        Merge archived row branch to main
+  merge-to-main <name>        Merge archived row branch to main (legacy)
+  merge-audit <branch> <policy>  Phase 1: audit branch for contamination
+  merge-classify <merge_id>   Phase 2: classify commits safe/destructive/mixed
+  merge-resolve-plan <id>     Phase 3: generate resolution plan
+  merge-execute <merge_id>    Phase 4: execute approved plan
+  merge-verify <merge_id>     Phase 5: post-merge invariant checks
+  merge-sort-union <path> <key>  Sort-union JSONL/YAML for machine_mergeable
   migrate-to-furrow [--dry-run]
   upgrade [--check|--apply] [--from <path>]
   run-integration-tests [pattern]
@@ -153,6 +159,29 @@ case "$cmd" in
   merge-to-main)
     . "$FURROW_ROOT/bin/frw.d/scripts/merge-to-main.sh"
     frw_merge_to_main "$@"
+    ;;
+  merge-audit)
+    . "$FURROW_ROOT/bin/frw.d/scripts/merge-audit.sh"
+    frw_merge_audit "$@"
+    ;;
+  merge-classify)
+    . "$FURROW_ROOT/bin/frw.d/scripts/merge-classify.sh"
+    frw_merge_classify "$@"
+    ;;
+  merge-resolve-plan)
+    . "$FURROW_ROOT/bin/frw.d/scripts/merge-resolve-plan.sh"
+    frw_merge_resolve_plan "$@"
+    ;;
+  merge-execute)
+    . "$FURROW_ROOT/bin/frw.d/scripts/merge-execute.sh"
+    frw_merge_execute "$@"
+    ;;
+  merge-verify)
+    . "$FURROW_ROOT/bin/frw.d/scripts/merge-verify.sh"
+    frw_merge_verify "$@"
+    ;;
+  merge-sort-union)
+    exec "$FURROW_ROOT/bin/frw.d/scripts/merge-sort-union.sh" "$@"
     ;;
   migrate-to-furrow)
     . "$FURROW_ROOT/bin/frw.d/scripts/migrate-to-furrow.sh"
