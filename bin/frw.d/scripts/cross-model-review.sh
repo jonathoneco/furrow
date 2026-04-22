@@ -24,7 +24,7 @@ frw_cross_model_review() {
   if [ "$_ideation" = true ]; then
     # Ideation mode needs only the name
     if [ $# -lt 1 ]; then
-      echo "Usage: frw cross-model-review <name> --ideation" >&2
+      echo "Usage: frw cross-model-review --ideation <name>" >&2
       return 1
     fi
     # Delegate to ideation function and return

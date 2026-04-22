@@ -23,17 +23,18 @@ Run the 6-part ceremony in order:
 3. **Questions before research** — surface design decisions as named options
    (Option A/B/C) with a stated lean. Wait for user response in supervised mode.
    Emit `<!-- ideation:section:{name} -->` before each decision block.
-4. **Dual outside voice** — run both reviewers in parallel:
-   a. Fresh same-model subagent (isolated context) for problem framing review.
-   b. Cross-model review via `frw cross-model-review <name> --ideation` if `cross_model.provider`
-      is configured in `furrow.yaml`. If absent, skip cross-model.
-   Synthesize findings from both. Record in gate evidence.
-5. **Section-by-section approval** — build `definition.yaml` incrementally. Present
+4. **Section-by-section approval** — build `definition.yaml` incrementally. Present
    each section individually: objective, each deliverable, context pointers,
    constraints, gate policy. Emit section markers before each.
    If `state.json` has a non-null `source_todo`, include it in `definition.yaml`.
    If `state.json` has a non-null `gate_policy_init`, use it as the default for
    `gate_policy` in `definition.yaml` (user can override during approval).
+5. **Dual outside voice** — run both reviewers in parallel against the completed
+   `definition.yaml`:
+   a. Fresh same-model subagent (isolated context) for problem framing review.
+   b. Cross-model review via `frw cross-model-review --ideation <name>` if `cross_model.provider`
+      is configured in `furrow.yaml`. If absent, skip cross-model.
+   Synthesize findings from both. Record in gate evidence. Revise definition if needed.
 6. **Hard gate** — validate definition with `frw validate-definition`.
    Gate record required in `state.json` before advancing.
 
