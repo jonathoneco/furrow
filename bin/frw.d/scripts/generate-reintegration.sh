@@ -27,6 +27,10 @@ fi
 ROW_NAME="$1"
 FURROW_ROOT="$2"
 
+# FURROW_TEMPLATE_DIR: override for testing; defaults to the harness templates dir
+FURROW_TEMPLATE_DIR="${FURROW_TEMPLATE_DIR:-${FURROW_ROOT}/templates}"
+REINT_TEMPLATE="${FURROW_TEMPLATE_DIR}/reintegration.md.tmpl"
+
 ROWS_DIR="${FURROW_ROOT}/.furrow/rows"
 ROW_DIR="${ROWS_DIR}/${ROW_NAME}"
 STATE_FILE="${ROW_DIR}/state.json"
@@ -406,8 +410,16 @@ printf '%s' "$_reint_json" | jq --sort-keys '.' > "$_tmp_json" 2>/dev/null || {
 mv "$_tmp_json" "$REINT_JSON"
 
 # --- render markdown ---
-_md_content="$(printf '%s' "$_reint_json" | jq -r '
-  "<!-- reintegration:begin -->\n## Reintegration\n",
+# Load skeleton from template file; fall back to inline header if template missing.
+# The template supplies the opening scaffold (begin marker + section heading);
+# we strip its end marker and append data-driven content before re-adding the end marker.
+if [ -f "$REINT_TEMPLATE" ]; then
+  _tmpl_header="$(awk '/<!-- reintegration:end -->/{exit} {print}' "$REINT_TEMPLATE")"
+else
+  _tmpl_header="$(printf '<!-- reintegration:begin -->\n## Reintegration\n')"
+fi
+
+_md_content="$(printf '%s\n' "$_tmpl_header"; printf '%s' "$_reint_json" | jq -r '
   ("**Branch**: " + .branch + "  ·  **Range**: " + .base_sha + ".." + .head_sha + "  ·  Generated: " + .generated_at + "\n"),
   ("### Commits (" + (.commits | length | tostring) + ")"),
   (.commits[] | "- `" + .sha[0:7] + "` **" + .conventional_type + "** — " + .subject +
@@ -421,9 +433,8 @@ _md_content="$(printf '%s' "$_reint_json" | jq -r '
   (if (.open_items | length) == 0 then "- _No open items._" else .open_items[] | "- [" + .urgency + "] " + .title + (if .suggested_todo_id then " → `" + .suggested_todo_id + "`" else "" end) end),
   "\n### Test Results",
   ("- pass: **" + (.test_results.pass | tostring) + "**" + (if .test_results.evidence_path then " · evidence: `" + .test_results.evidence_path + "`" else "" end)),
-  (if .merge_hints.rescue_likely_needed == true then "\n> **Merge hint**: `frw rescue` may be needed after merge — this worktree touched common.sh." else empty end),
-  "<!-- reintegration:end -->"
-' 2>/dev/null)"
+  (if .merge_hints.rescue_likely_needed == true then "\n> **Merge hint**: `frw rescue` may be needed after merge — this worktree touched common.sh." else empty end)
+' 2>/dev/null; printf '<!-- reintegration:end -->\n')"
 
 # --- update summary.md with Reintegration section ---
 if [ -f "$SUMMARY_FILE" ]; then
