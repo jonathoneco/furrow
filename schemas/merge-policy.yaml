@@ -1,0 +1,63 @@
+# schemas/merge-policy.yaml
+#
+# Policy governing how /furrow:merge resolves file conflicts when landing a
+# worktree branch into main. Globs use fnmatch(3) semantics with the
+# following extensions:
+#   - "**" matches any path segments (including zero).
+#   - "*" does NOT cross "/" boundaries.
+#   - "?" matches a single non-"/" character.
+#   - Trailing "/*" matches direct children only.
+# Paths are matched relative to the repo root. First matching category wins,
+# evaluated in this order: protected -> machine_mergeable -> prefer_ours ->
+# always_delete_from_worktree_only.
+schema_version: "1.0"
+
+# NEVER auto-merged. On any conflict here, the merge plan records
+# "human-decides" and execute refuses to proceed without an edited plan.
+protected:
+  - path: "bin/alm"
+    reason: "Top-level CLI; worktree install flow turns it into a symlink."
+  - path: "bin/rws"
+    reason: "Top-level CLI; same risk as bin/alm."
+  - path: "bin/sds"
+    reason: "Top-level CLI; same risk as bin/alm."
+  - path: ".claude/rules/*"
+    reason: "Rules shouldn't be install-produced symlinks."
+  - path: "bin/frw.d/lib/common.sh"
+    reason: "Hook cascade — a bad merge here blocks every tool call until rescue."
+  - path: "bin/frw.d/lib/common-minimal.sh"
+    reason: "Hook-safe subset. Same concern."
+  - path: "schemas/*.json"
+    reason: "Breaking schema changes should go through a conscious review."
+  - path: "schemas/*.yaml"
+    reason: "Same."
+
+# Conflicts here are machine-resolved via the named strategy.
+machine_mergeable:
+  - path: ".furrow/seeds/seeds.jsonl"
+    strategy: "sort-by-id-union"
+    key: "id"
+    sort_tuple: ["created_at", "id"]
+  - path: ".furrow/almanac/todos.yaml"
+    strategy: "sort-by-id-union"
+    key: "id"
+    sort_tuple: ["created_at", "id"]
+
+# Default "prefer ours" (main wins) on conflict.
+prefer_ours:
+  - path: "bin/*.bak"
+    reason: "Install backups should never be in main."
+  - path: ".claude/rules/*.bak"
+    reason: "Same."
+  - path: ".gitignore"
+    condition: "diff is entirely under the '# furrow:managed' block"
+    reason: "Consumer-project gitignore additions don't belong in source repo."
+
+# Deleted on the merge-produced commit if they appear only on the worktree side.
+always_delete_from_worktree_only:
+  - "bin/*.bak"
+  - ".claude/rules/*.bak"
+  - "**/.bak"
+
+# Per-deliverable overrides (v1: unused; reserved for future).
+overrides: {}
