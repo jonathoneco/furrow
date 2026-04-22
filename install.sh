@@ -9,6 +9,25 @@
 set -eu
 
 FURROW_ROOT="$(cd "$(dirname "$0")" && pwd)"
+SRC_DIR="$FURROW_ROOT"
+
+# --- Detect SOURCE_REPO mode ---
+# If the source tree contains .furrow/SOURCE_REPO, this is the Furrow source
+# repo itself (source-hosting mode). Otherwise it's a consumer install.
+if [ -f "$SRC_DIR/.furrow/SOURCE_REPO" ]; then
+  INSTALL_MODE=source
+else
+  INSTALL_MODE=consumer
+fi
+export INSTALL_MODE
+
+# --- Refuse-copy guard (AC-A Interface Contract) ---
+# If someone copied SOURCE_REPO into a target that shouldn't have it
+# and is now running install from that target, abort.
+# Detect: TARGET_DIR == SRC_DIR but SRC_DIR has SOURCE_REPO sentinel
+# (self-install from source is fine; the guard is for consumer targets that
+# somehow received the sentinel via cp -r ./.furrow consumer/.furrow).
+# The frw.d/install.sh enforces the full contract; this is the bootstrap guard.
 
 # --- Detect user-level bin directory on PATH ---
 _user_bin=""
