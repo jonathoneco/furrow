@@ -211,7 +211,7 @@ EOF
   # Commit the merge
   _merge_sha=""
   _commit_exit=0
-  git -C "$PROJECT_ROOT" commit --no-edit -m "chore: merge $branch into main [merge-id: $_merge_id]" 2>/dev/null \
+  git -C "$PROJECT_ROOT" commit --no-edit -m "chore: merge $_branch into main [merge-id: $_merge_id]" 2>/dev/null \
     || { git -C "$PROJECT_ROOT" commit --no-edit 2>/dev/null; } \
     || _commit_exit=$?
 
