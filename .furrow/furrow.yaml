@@ -42,3 +42,8 @@ ci:
 
 seeds:
   prefix: ""    # Set during sds init
+
+# CI contamination and safety checks
+ci_commands:
+  - name: contamination-check
+    command: bin/frw.d/scripts/ci-contamination-check.sh --base origin/main
