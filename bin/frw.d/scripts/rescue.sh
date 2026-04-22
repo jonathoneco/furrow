@@ -123,7 +123,10 @@ _tmp_git="$(mktemp)"
 _tmp_bundled="$(mktemp)"
 trap 'rm -f "$_tmp_git" "$_tmp_bundled"' EXIT INT TERM
 
-_git_root="$(git rev-parse --show-toplevel 2>/dev/null)" || _git_root=""
+# Determine git root from the target file's directory (not cwd) so rescue
+# works correctly when invoked with --file pointing to a different repo.
+_target_dir="$(dirname "$target_file")"
+_git_root="$(git -C "$_target_dir" rev-parse --show-toplevel 2>/dev/null)" || _git_root=""
 if [ -n "$_git_root" ]; then
   case "$target_file" in
     /*) _rel_path="${target_file#${_git_root}/}" ;;
