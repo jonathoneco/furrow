@@ -3,7 +3,7 @@
   "title": "Almanac watch-list primitive + decision-review TODO schema type — structured post-evidence re-examination",
   "description": "Almanac watch-list primitive + decision-review TODO schema type — structured post-evidence re-examination",
   "step": "review",
-  "step_status": "not_started",
+  "step_status": "completed",
   "steps_sequence": [
     "ideate",
     "research",
@@ -86,8 +86,8 @@
   "seed_id": "furrow-182f",
   "epic_seed_id": null,
   "created_at": "2026-04-22T17:24:46Z",
-  "updated_at": "2026-04-22T20:03:48Z",
-  "archived_at": null,
+  "updated_at": "2026-04-22T20:25:18Z",
+  "archived_at": "2026-04-22T20:25:18Z",
   "source_todo": null,
   "gate_policy_init": "supervised"
 }
