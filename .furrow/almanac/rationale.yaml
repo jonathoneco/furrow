@@ -110,6 +110,16 @@ components:
   - path: bin/frw.d/scripts/validate-naming.sh
     exists_because: "Claude Code has no built-in naming convention enforcement for work artifacts"
     delete_when: "Claude Code provides native kebab-case and naming pattern validation"
+  # --- Config tier (wave-2 config-cleanup) ---
+  - path: docs/architecture/config-resolution.md
+    exists_because: "Three-tier config resolution (PROJECT_ROOT → XDG_CONFIG_HOME → FURROW_ROOT) is non-obvious; doc anchors AD-3 and XDG compliance requirement from constraints[4]"
+    delete_when: "Claude Code provides built-in multi-tier config resolution with documented precedence"
+  - path: bin/frw.d/scripts/upgrade.sh
+    exists_because: "Legacy installs store config at .claude/furrow.yaml; XDG migration must be idempotent and leave a symlink for back-compat callers; no platform primitive exists for this"
+    delete_when: "Claude Code provides built-in installation upgrade with XDG config migration"
+  - path: schemas/promotion-targets.schema.yaml
+    exists_because: "Promotion-targets registry is scaffolded now (Phase 1) and consumed in Phase 2; schema provides the stable contract and prevents ad-hoc YAML structure"
+    delete_when: "Phase 2 ambient-promotion is shipped and the schema graduates to a runtime-validated consumer"
   # --- Schemas ---
   - path: schemas/definition.schema.json
     exists_because: "JSON Schema validation of work definitions is not platform-native"
