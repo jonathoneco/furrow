@@ -140,7 +140,7 @@ test_no_loader_consumer_references() {
     local base
     base="$(basename "$file")"
     case "$base" in
-      upgrade.sh|doctor.sh) : ;;  # allowed
+      upgrade.sh|doctor.sh|install.sh) : ;;  # allowed: scaffolding writers and skip-check
       *)
         printf "  [unexpected] promotion-targets reference in %s: %s\n" "$base" "$ref_line" >&2
         forbidden_refs=$((forbidden_refs + 1))
