@@ -274,7 +274,7 @@
     - "skills/shared/eval-protocol.md"
     - "skills/shared/gate-evaluator.md"
     - "skills/ideate.md"
-  source_type: "discussion"
+  source_type: "brain-dump"
   created_at: "2026-04-07T00:00:00Z"
   updated_at: "2026-04-07T00:00:00Z"
   urgency: medium
@@ -845,7 +845,7 @@
     - "bin/sds"
     - "bin/frw.d/hooks/script-guard.sh"
   source_work_unit: "script-safety"
-  source_type: "follow-up"
+  source_type: "review-finding"
   created_at: "2026-04-10T00:00:00Z"
   updated_at: "2026-04-10T00:00:00Z"
   urgency: "low"
@@ -1702,15 +1702,17 @@
        promotion targets. Lightens per-project install load.
     3. source_todo field exists in state.json/definition.yaml but /furrow:next doesn't
        use it in handoff prompts. Wire it in for traceability.
+
+    Partial completion: infra-fixes row completed items 1 and 3 (furrow.yaml moved to
+    .furrow/, all references updated with candidate loop fallback, source_todo wired into
+    /furrow:next handoff prompts). Remaining: item 2 (~/.config/furrow/ design) and
+    FURROW_ROOT/PROJECT_ROOT resolution chain revisit — deferred to ambient-promotion phase.
   work_needed: |
-    - Move furrow.yaml from .claude/ to .furrow/
-    - Update all references to furrow.yaml path (bin/frw, install.sh, skills, commands)
     - Design ~/.config/furrow/ structure (global defaults, shared config)
     - Update frw install to read global config as fallback
     - Revisit FURROW_ROOT/PROJECT_ROOT resolution when adding global config — the resolution
       chain becomes PROJECT_ROOT (.furrow/) → ~/.config/furrow/ → FURROW_ROOT (install dir),
       and the split introduced in infra-fixes needs to account for this third tier
-    - Wire source_todo into /furrow:next handoff prompt generation
     - Migration path for existing installs
   references:
     - .claude/furrow.yaml
@@ -1728,12 +1730,6 @@
     - bin/frw
     - commands/next.md
   status: active
-  partial_completion: |
-    infra-fixes row completed items 1 and 3: furrow.yaml moved to .furrow/,
-    all references updated with candidate loop fallback, source_todo wired into
-    /furrow:next handoff prompts. Remaining: item 2 (~/.config/furrow/ design)
-    and FURROW_ROOT/PROJECT_ROOT resolution chain revisit — deferred to
-    ambient-promotion phase.
 - id: blocking-stop-hooks
   title: "Blocking stop hooks + auto-TODO on harness errors"
   context: |
@@ -1780,7 +1776,7 @@
   references:
     - skills/implement.md
     - specialists/
-  source_type: ideation-decision
+  source_type: review-finding
   source_work_unit: infra-fixes
   created_at: "2026-04-07T00:00:00Z"
   updated_at: "2026-04-07T00:00:00Z"
@@ -2142,7 +2138,7 @@
     - bin/frw.d/lib/common.sh
     - .furrow/seeds/seeds.jsonl
     - .furrow/almanac/todos.yaml
-  source_type: "meta-observation"
+  source_type: "brain-dump"
   created_at: "2026-04-22T00:00:00Z"
   updated_at: "2026-04-22T00:00:00Z"
   urgency: "high"
