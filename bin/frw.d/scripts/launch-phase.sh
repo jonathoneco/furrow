@@ -112,6 +112,12 @@ PROMPT
     echo "  Creating tmux session: $session_name"
     tmux new-session -d -s "$session_name" -c "$(cd "$worktree_dir" && pwd)"
     tmux send-keys -t "$session_name" "claude $yolo \"\$(cat $prompt_file)\"" Enter
+    # Hook: generate reintegration summary when the worktree's primary session ends.
+    # Runs out-of-band via tmux set-hook so the launcher itself remains non-blocking.
+    if [ "${FURROW_AUTO_REINTEGRATE:-1}" = "1" ]; then
+      tmux set-hook -t "$session_name" session-closed \
+        "run-shell 'cd \"$(cd "$worktree_dir" && pwd)\" && rws generate-reintegration \"$row_name\" >/dev/null 2>&1 || true'"
+    fi
   fi
 
   echo ""
