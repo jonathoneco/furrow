@@ -17,6 +17,10 @@
 
 set -eu
 
+# Source shared merge library (provides merge_validate_policy for belt-and-suspenders)
+_MSU_SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+. "${_MSU_SCRIPT_DIR}/merge-lib.sh"
+
 _die() { printf '[furrow:error] merge-sort-union: %s\n' "$1" >&2; exit "${2:-1}"; }
 
 [ $# -ge 2 ] || { printf 'Usage: merge-sort-union.sh <path> <key> [sort_fields...]\n' >&2; exit 1; }
