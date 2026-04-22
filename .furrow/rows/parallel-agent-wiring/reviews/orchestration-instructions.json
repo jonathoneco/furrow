@@ -1,0 +1,25 @@
+{
+  "deliverable": "orchestration-instructions",
+  "phase_a": "pass",
+  "phase_b": {
+    "dimensions": {
+      "clarity": {"score": 5, "rationale": "Decision tree uses explicit branch conditions with 'no other paths exist' closure. Thresholds unambiguous."},
+      "completeness": {"score": 5, "rationale": "All 5 ACs present with line references."},
+      "structural_vs_behavioral": {"score": 5, "rationale": "Heavily structural: ASCII decision tree, numbered checklist, decision table, code-block Agent() template."},
+      "copy_pasteability": {"score": 4, "rationale": "Clear {placeholder} syntax. Minor gap: Python-style triple-quoted prompt syntax may not match actual tool convention."},
+      "coherence": {"score": 5, "rationale": "Clean flow, consistent model resolution across both files, no contradictions."}
+    }
+  },
+  "overall": "pass",
+  "concerns": [
+    "Agent() example uses Python-style triple-quoted prompt syntax — consider noting it's pseudocode",
+    "Decision tree branch 2 ('same specialist, wave 1') edge cases — brief explanatory note would help",
+    "Wave inspection step 2 'warnings, not blocks' tension with intro 'a failure blocks the next wave'"
+  ],
+  "strengths": [
+    "'no other paths exist' closure eliminates ambiguity",
+    "Curation table converts fuzzy judgment into lookup",
+    "40% prompt-size budget is concrete and checkable",
+    "Model resolution consistent across files"
+  ]
+}
