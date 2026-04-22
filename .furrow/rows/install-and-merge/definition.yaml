@@ -1,0 +1,145 @@
+objective: >-
+  Establish install-artifact trust boundaries (self-hosting detection, XDG
+  state/config split, merge-conflict-resistant data files), produce the
+  /furrow:merge skill with a human-in-the-loop resolution plan, and formalize
+  worktree reintegration summaries so main sessions get a structured handoff.
+
+deliverables:
+  - name: install-architecture-overhaul
+    acceptance_criteria:
+      - "Source-repo detection: .furrow/SOURCE_REPO sentinel committed; install.sh and frw.d/install.sh branch behavior (skip symlink-to-source) when present. install.sh explicitly refuses to copy .furrow/SOURCE_REPO into consumer projects."
+      - "Committed symlinks under .claude/commands/specialist:*.md all resolve to ../../specialists/ (source-local), with an install-time validator that fails on unresolved targets."
+      - "XDG state layout: install artifacts (.bak, symlink staging, consumer-only .gitignore additions) written under $XDG_STATE_HOME/furrow/{repo-slug}/ (default ~/.local/state/furrow/). In-repo .furrow/ contains only project-owned state (rows, almanac, seeds)."
+      - "Pre-commit hook blocks: (a) type-change regular->symlink on bin/alm, bin/rws, bin/sds, .claude/rules/*; (b) any bin/*.bak in staged files."
+      - "Merge-conflict-resistant data files: seeds.jsonl and todos.yaml sort-by-id on every write, preserving jq-friendly one-object-per-line format for seeds; YAML list order deterministic for todos."
+      - "frw rescue subcommand LANDS HERE (not in merge-skill) in a standalone file that does NOT source common.sh — restores common.sh from HEAD or from a bundled baseline. Rescue must be present and tested BEFORE any common.sh restructuring in this deliverable (ordering invariant enforced by commit order + a smoke test)."
+      - "common.sh hook-cascade protection: split common.sh so a minimal never-conflict subset (version check, error helpers) is what hooks source; the broader helper library is sourced only by longer-running scripts. Choice and rationale recorded in rationale.yaml."
+      - "Legacy-install detection + idempotent upgrade: running install.sh on an existing pre-XDG install detects old artifact locations, migrates them, and records migration_version in $XDG_STATE_HOME/furrow/{repo-slug}/install-state.json. Re-running produces no additional changes (idempotency test)."
+      - "Integration tests cover: (a) self-hosting detection branches correctly in source repo vs consumer tempdir; (b) XDG paths honor $XDG_STATE_HOME override; (c) install.sh re-run idempotency; (d) pre-commit hooks actually block staged symlink-ifications and .bak files; (e) frw rescue recovers a broken common.sh in under 2s."
+      - "docs/architecture/self-hosting.md describes source-form vs installed-form, which paths differ, and the boundary enforcement points."
+    specialist: harness-engineer
+    file_ownership:
+      - "install.sh"
+      - "bin/frw.d/install.sh"
+      - "bin/frw.d/scripts/launch-phase.sh"
+      - "bin/frw.d/scripts/rescue.sh"
+      - "bin/frw.d/hooks/pre-commit-*.sh"
+      - "bin/frw.d/lib/common.sh"
+      - "bin/frw.d/lib/common-minimal.sh"
+      - ".claude/commands/specialist:*.md"
+      - ".furrow/SOURCE_REPO"
+      - "docs/architecture/self-hosting.md"
+      - "tests/integration/test-install-*.sh"
+      - "tests/integration/test-rescue.sh"
+
+  - name: config-cleanup
+    acceptance_criteria:
+      - "XDG config tier wired: ~/.config/furrow/config.yaml (XDG_CONFIG_HOME) holds global defaults — cross_model.provider, gate_policy default, preferred specialists."
+      - "~/.config/furrow/specialists/ supported as a shared specialists directory; project-local specialists/ take precedence, global is fallback."
+      - "promotion-targets.yaml registry SCAFFOLDING ONLY: a schema file (schemas/promotion-targets.schema.yaml) and an empty ~/.config/furrow/promotion-targets.yaml are produced; no loader/consumer logic in this deliverable. Phase 2 ambient-promotion lights it up."
+      - "Resolution chain documented and implemented: PROJECT_ROOT (.furrow/) -> XDG_CONFIG_HOME (~/.config/furrow/) -> FURROW_ROOT (install dir)."
+      - "FURROW_ROOT/PROJECT_ROOT resolver updated to accommodate the third tier; regression test confirms project overrides global overrides compiled-in, and $XDG_CONFIG_HOME override is honored."
+      - "source_todos (array) threaded end-to-end: schema extended from source_todo (singular) to source_todos: [id, ...]; /furrow:next handoff prompts include all listed ids when definition.yaml declares them. Back-compat: definitions using source_todo (singular) still validate and work."
+      - "Migration path for existing installs: frw upgrade subcommand detects old config locations (.claude/furrow.yaml, pre-XDG specialists/), moves/symlinks to new XDG paths, is idempotent, and records migration_version in install-state.json. Migration test fixture exercises the old→new transition end-to-end."
+    depends_on: [install-architecture-overhaul]
+    specialist: harness-engineer
+    file_ownership:
+      - "bin/frw.d/install.sh"
+      - "bin/frw.d/lib/common.sh"
+      - "bin/frw"
+      - "commands/next.md"
+      - ".furrow/furrow.yaml"
+      - "schemas/definition.schema.json"
+      - "schemas/state.schema.json"
+      - "docs/architecture/config-resolution.md"
+
+  - name: worktree-reintegration-summary
+    acceptance_criteria:
+      - "summary.md gains a '## Reintegration' section, delimited by <!-- reintegration:begin --> / <!-- reintegration:end --> markers, written via rws generate-reintegration (machine-generated; rws update-summary rejects 'reintegration' as a section name since the JSON is the source of truth)."
+      - "Formal section schema: schemas/reintegration.schema.json defines the required fields — files_changed (list of {path_glob, count}), decisions (list of {title, resolution, rationale}), open_items (carried forward to main), test_results ({pass: bool, evidence_path}), commits (list of {sha, subject, conventional_type}). Schema is the stable contract /furrow:merge consumes."
+      - "Auto-populated at worktree-complete: frw launch-phase on completion invokes rws generate-reintegration, which reads state.json, git log since branch point, and the latest review record to emit the section. Validated against the schema before writing."
+      - "/furrow:merge (deliverable 4) reads the reintegration section as its primary input for the handoff surfaced to the spawning session — schema is the interface contract, not prose."
+      - "Template added: templates/reintegration.md.tmpl for the initial section skeleton (used when worktree completes without prior content)."
+      - "Test: a synthetic worktree with known commits produces a reintegration section that validates against the schema and round-trips through rws update-summary without data loss."
+    depends_on: [install-architecture-overhaul]
+    specialist: harness-engineer
+    file_ownership:
+      - "skills/implement.md"
+      - "skills/shared/context-isolation.md"
+      - "bin/rws"
+      - "bin/frw.d/scripts/launch-phase.sh"
+      - "templates/reintegration.md.tmpl"
+      - "schemas/reintegration.schema.json"
+      - "tests/integration/test-reintegration.sh"
+
+  - name: merge-process-skill
+    acceptance_criteria:
+      - "New command commands/merge.md defines /furrow:merge with subphases: audit -> classify -> resolve-plan -> execute -> verify."
+      - "Audit phase: detects symlink-ification of protected files, overlapping commits between main and worktree, install-artifact additions, stale row/TODO references, common.sh syntax validity on both sides."
+      - "Classify phase: each worktree commit labeled safe / redundant-with-main / destructive / mixed. Output a machine-readable classification table (JSON + rendered markdown)."
+      - "Protected-file policy formalized: schemas/merge-policy.yaml lists file globs that are (a) NEVER auto-merged (bin/alm, bin/rws, bin/sds, .claude/rules/*, bin/frw.d/lib/common.sh), (b) machine-mergeable via sort-by-id (seeds.jsonl, todos.yaml), (c) prefer-ours by default (install-artifact globs). Policy file is repo-tracked."
+      - "Resolve-plan phase: produces a written conflict resolution plan per the policy (human-readable markdown + machine JSON). Human approves or edits the plan — no auto-overwrite of protected files."
+      - "Execute phase: applies the approved plan via standard git merge with the planned resolutions; aborts cleanly on deviation from plan (diff verifier)."
+      - "Post-merge verify: runs frw doctor, confirms no bin/ deletions, confirms all hooks parse, confirms seeds.jsonl/todos.yaml sort invariants hold, confirms frw rescue is still callable."
+      - "Script-guard hook heredoc false positive fixed: path-match logic ignores occurrences inside single-/double-quoted strings or heredocs (e.g., git commit messages mentioning frw.d/* no longer trip the guard). Regression test covers the prior failure modes."
+      - "Reintegration section (from worktree-reintegration-summary) consumed via its JSON schema as the primary handoff output when /furrow:merge lands — /furrow:merge is not free-form prose-parsing."
+      - "End-to-end test: a fixture repo with a simulated worktree (install-artifact contamination + feature commits + one protected-file conflict) runs through all five subphases; the produced plan, when applied, yields a clean main branch with hooks intact and doctor green."
+    depends_on:
+      - install-architecture-overhaul
+      - config-cleanup
+      - worktree-reintegration-summary
+    specialist: merge-specialist
+    file_ownership:
+      - "commands/merge.md"
+      - "bin/frw.d/scripts/merge-*.sh"
+      - "bin/frw.d/hooks/script-guard.sh"
+      - "bin/frw"
+      - "skills/shared/merge-protocol.md"
+      - "schemas/merge-policy.yaml"
+      - "tests/integration/test-merge-*.sh"
+
+context_pointers:
+  - path: install.sh
+    note: "Top-level install entry point — must gain self-hosting detection."
+  - path: bin/frw.d/install.sh
+    note: "Core install logic — symlink creation + artifact staging."
+  - path: bin/frw.d/scripts/launch-phase.sh
+    note: "Spawns worktrees; invokes install-style flow that currently dirties tracked files."
+  - path: bin/frw.d/hooks/
+    note: "Hook cascade; common.sh source point; script-guard heredoc issue."
+  - path: bin/frw.d/lib/common.sh
+    note: "Every hook sources this — single point of failure for tool use."
+  - path: .claude/commands/
+    note: "Contains broken specialist:*.md symlinks pointing outside the repo."
+  - path: .furrow/seeds/seeds.jsonl
+    note: "Append-ordered, conflict-prone; target for sort-by-id."
+  - path: .furrow/almanac/todos.yaml
+    note: "Same concern as seeds.jsonl."
+  - path: commands/next.md
+    note: "source_todos handoff plumbing target."
+  - path: skills/implement.md
+    note: "Worktree-complete hook point for reintegration summary generation."
+  - path: skills/shared/context-isolation.md
+    note: "Defines the worktree/main boundary — reintegration section sits adjacent."
+  - path: .furrow/almanac/roadmap.yaml
+    note: "Phase 1 context; install-and-merge runs in parallel with post-ship-reexamination."
+  - path: schemas/definition.schema.json
+    note: "Must be extended to support source_todos array."
+
+constraints:
+  - "Back-compat: existing installs must upgrade idempotently; no data loss on re-run of install.sh."
+  - "jq-friendly: seeds.jsonl remains one JSON object per line; sort must not reformat or wrap."
+  - "Hook-safe: no change to bin/frw.d/lib/common.sh should be able to lock every tool call (frw rescue lands in deliverable 1 BEFORE common.sh is restructured within that same deliverable — ordering is intra-deliverable and testable)."
+  - "No auto-overwrite of protected files during merge — human approves the resolution plan. Protected-file list lives in schemas/merge-policy.yaml."
+  - "XDG compliance: respect XDG_CONFIG_HOME and XDG_STATE_HOME env vars; fall back to ~/.config and ~/.local/state when unset."
+  - "Sentinel .furrow/SOURCE_REPO is committed in the source repo ONLY and NEVER in consumer repos (install.sh refuses to copy it)."
+  - "Portable shell: shell code must work with POSIX sh on both GNU and BSD userlands (sort, readlink, stat). Any bash-only use must be gated behind an explicit shebang."
+  - "Shard-per-id for todos (.furrow/almanac/todos.d/) was considered and deferred — sort-by-id chosen for this row. If sort-by-id still produces conflicts in practice, open a Phase 2+ TODO to revisit sharding (rationale recorded in rationale.yaml)."
+
+gate_policy: supervised
+
+source_todos:
+  - install-architecture-overhaul
+  - config-cleanup
+  - worktree-reintegration-summary
+  - merge-process-skill

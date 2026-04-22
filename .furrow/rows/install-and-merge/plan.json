@@ -1,0 +1,145 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": ["install-architecture-overhaul"],
+      "assignments": {
+        "install-architecture-overhaul": {
+          "specialist": "harness-engineer",
+          "consultants": ["shell-specialist", "complexity-skeptic", "test-engineer"],
+          "file_ownership": [
+            "install.sh",
+            "bin/frw.d/install.sh",
+            "bin/frw.d/scripts/launch-phase.sh",
+            "bin/frw.d/scripts/rescue.sh",
+            "bin/frw.d/hooks/pre-commit-*.sh",
+            "bin/frw.d/lib/common.sh",
+            "bin/frw.d/lib/common-minimal.sh",
+            ".claude/commands/specialist:*.md",
+            ".furrow/SOURCE_REPO",
+            "docs/architecture/self-hosting.md",
+            "tests/integration/test-install-*.sh",
+            "tests/integration/test-rescue.sh"
+          ],
+          "skills": ["specialist:harness-engineer", "specialist:shell-specialist"]
+        }
+      },
+      "internal_sequencing": [
+        "Foundation pass (additive-only, cannot break existing runtime):",
+        "  1a. Commit .furrow/SOURCE_REPO sentinel.",
+        "  1b. Repair 24 escaped specialist/rules symlinks to ../../specialists/ and ../../.claude/rules/.",
+        "  1c. Land bin/frw.d/lib/common-minimal.sh as a NEW file sourced by hooks; leave common.sh untouched.",
+        "  1d. Land bin/frw.d/scripts/rescue.sh (standalone, no common.sh source) with --apply + diagnose-only default. Bundled-baseline heredoc mirrors common-minimal.sh contents.",
+        "Foundation tests pass before enforcement:",
+        "  1e. tests/integration/test-rescue.sh validates (i) HEAD-path recovery, (ii) bundled-baseline-path recovery, (iii) rescue.sh sources no common.sh functions (grep assertion), (iv) bundled baseline diffs cleanly against common-minimal.sh (AD-2 drift check).",
+        "Enforcement pass (now safe because rescue exists):",
+        "  1f. Reduce bin/frw.d/lib/common.sh to exclude the functions moved to common-minimal.sh.",
+        "  1g. Land pre-commit hooks (type-change block + .bak block). Emit [furrow:warning] to stderr describing what was blocked (visible even when --no-verify bypasses the hook's exit code).",
+        "  1h. Add .bak patterns to install.sh gitignore bootstrap.",
+        "  1i. Wire .furrow/SOURCE_REPO branching in install.sh and bin/frw.d/install.sh.",
+        "  1j. Quarantine install artifacts to $XDG_STATE_HOME/furrow/{repo-slug}/ and write install-state.json.",
+        "  1k. Sort-by-id on write for seeds.jsonl (tuple: created_at, id) and todos.yaml (same tuple); LC_ALL=C locked.",
+        "  1l. Self-hosting detection; XDG override; install idempotency; pre-commit blocks; rescue smoke — all as integration tests.",
+        "  1m. CI contamination-check script added (per OQ-2): greps pushed diff for banned patterns (bin/alm|rws|sds as symlink, bin/*.bak, specialist:*.md targets escaping worktree). Wired to ci_commands in furrow.yaml.",
+        "  1n. test-precommit-bypass.sh asserts the [furrow:warning] fires on stderr under --no-verify (tests the accepted escape-hatch documentation trail per AD-9)."
+      ],
+      "scope_notes": [
+        "launch-phase.sh is listed in file_ownership for read-protection only; wave-1 does NOT modify it. All wave-1 edits target install-artifact surfaces (install.sh, frw.d/install.sh, hooks, lib/). See AD-8."
+      ]
+    },
+    {
+      "wave": 2,
+      "deliverables": ["config-cleanup", "worktree-reintegration-summary"],
+      "assignments": {
+        "config-cleanup": {
+          "specialist": "harness-engineer",
+          "consultants": ["shell-specialist", "complexity-skeptic"],
+          "file_ownership": [
+            "bin/frw.d/install.sh",
+            "bin/frw.d/lib/common.sh",
+            "bin/frw.d/lib/common-minimal.sh",
+            "bin/frw.d/scripts/upgrade.sh",
+            "bin/frw",
+            "commands/next.md",
+            ".furrow/furrow.yaml",
+            "schemas/definition.schema.json",
+            "schemas/state.schema.json",
+            "schemas/promotion-targets.schema.yaml",
+            "docs/architecture/config-resolution.md"
+          ],
+          "skills": ["specialist:harness-engineer"]
+        },
+        "worktree-reintegration-summary": {
+          "specialist": "harness-engineer",
+          "consultants": ["test-engineer"],
+          "file_ownership": [
+            "skills/implement.md",
+            "skills/shared/context-isolation.md",
+            "bin/rws",
+            "bin/frw.d/scripts/launch-phase.sh",
+            "bin/frw.d/scripts/generate-reintegration.sh",
+            "templates/reintegration.md.tmpl",
+            "schemas/reintegration.schema.json",
+            "tests/integration/test-reintegration.sh"
+          ],
+          "skills": ["specialist:harness-engineer"]
+        }
+      },
+      "parallel_safety": "File ownership disjoint: config-cleanup touches bin/frw dispatcher and schemas/definition+state+promotion-targets; reintegration-summary touches bin/rws and schemas/reintegration. Only overlap is docs, kept separate (self-hosting.md vs config-resolution.md vs implement.md). bin/frw.d/scripts/ is split per deliverable (upgrade.sh vs generate-reintegration.sh).",
+      "internal_sequencing": {
+        "config-cleanup": [
+          "  2a. Add resolve_config_value + find_specialist helpers to bin/frw.d/lib/common.sh (not common-minimal.sh); regression test in tests/integration/test-config-resolution.sh (AC-4, AC-5).",
+          "  2b. Document three-tier chain in docs/architecture/config-resolution.md (AC-4).",
+          "  2c. Land schemas/promotion-targets.schema.yaml + empty ~/.config/furrow/promotion-targets.yaml scaffolding (AC-3).",
+          "  2d. Land bin/frw.d/scripts/upgrade.sh + frw upgrade dispatcher case; includes idempotency + migration_version='1.0' write (AC-7).",
+          "  2e. Migration test fixture + tests/integration/test-upgrade-idempotency.sh + test-upgrade-migration.sh (AC-7).",
+          "  2f. Wire source_todos through schemas/state.schema.json init + commands/next.md handoff rendering; back-compat for legacy singular source_todo (AC-6).",
+          "  2g. Scenarios test-specialist-precedence.sh, test-promotion-targets-scaffolding.sh, test-resolver-exports.sh (AC-2, AC-3, AC-4)."
+        ],
+        "worktree-reintegration-summary": [
+          "  2h. Land schemas/reintegration.schema.json from spec §Interface-Contract.1 (AC-R2).",
+          "  2i. Land bin/frw.d/scripts/generate-reintegration.sh (jq-driven renderer per spec §5) + rws generate-reintegration + rws get-reintegration-json subcommands (AC-R3, AC-R4).",
+          "  2j. Extend rws validate-summary to accept ## Reintegration section and require both markers; reject rws update-summary reintegration (AC-R1).",
+          "  2k. Land templates/reintegration.md.tmpl (placeholder-free skeleton per AD-updated AC-R5).",
+          "  2l. Minimal edit to bin/frw.d/scripts/launch-phase.sh — single worktree-complete hook call (AC-R3, AD-8 — this is the first post-wave-1 touch).",
+          "  2m. tests/integration/test-reintegration.sh covering schema round-trip, synthetic worktree, install-artifact detection, rescue hint, merge-consumer contract, idempotency (AC-R6)."
+        ]
+      }
+    },
+    {
+      "wave": 3,
+      "deliverables": ["merge-process-skill"],
+      "assignments": {
+        "merge-process-skill": {
+          "specialist": "merge-specialist",
+          "consultants": ["shell-specialist", "test-engineer"],
+          "file_ownership": [
+            "commands/merge.md",
+            "bin/frw.d/scripts/merge-*.sh",
+            "bin/frw.d/hooks/script-guard.sh",
+            "bin/frw",
+            "skills/shared/merge-protocol.md",
+            "schemas/merge-policy.yaml",
+            "schemas/merge-policy.schema.json",
+            "tests/integration/test-merge-*.sh"
+          ],
+          "skills": ["specialist:merge-specialist", "specialist:shell-specialist"]
+        }
+      },
+      "internal_sequencing": [
+        "  3a. Land schemas/merge-policy.yaml (literal from spec §2) + schemas/merge-policy.schema.json validator (AC-4).",
+        "  3b. Land commands/merge.md with five-phase body + argument surface including --resume (AC-1).",
+        "  3c. Land bin/frw.d/scripts/merge-audit.sh (AC-2) + fixtures for R3 contamination commits.",
+        "  3d. Land bin/frw.d/scripts/merge-classify.sh (AC-3) + classify.json/classify.md emit.",
+        "  3e. Land bin/frw.d/scripts/merge-resolve-plan.sh (AC-5) + plan.json/plan.md with inputs_hash + approved:yes marker.",
+        "  3f. Land bin/frw.d/scripts/merge-execute.sh (AC-6) with deviation check + exit 8 on common.sh break.",
+        "  3g. Land bin/frw.d/scripts/merge-verify.sh (AC-7) reusing rws validate-sort-invariant (wave-1) and rescue.sh --baseline-check.",
+        "  3h. Fix bin/frw.d/hooks/script-guard.sh heredoc false positive via shell tokenizer (AC-8).",
+        "  3i. Wire merge-audit to rws get-reintegration-json (wave-2); no summary.md prose parsing (AC-9).",
+        "  3j. End-to-end test — tests/integration/test-merge-e2e.sh drives contamination fixture through all 5 phases (AC-10)."
+      ]
+    }
+  ],
+  "created_at": "2026-04-22T18:05:00Z",
+  "created_by": "plan-step"
+}

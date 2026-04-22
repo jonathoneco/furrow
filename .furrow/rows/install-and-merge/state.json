@@ -1,0 +1,79 @@
+{
+  "name": "install-and-merge",
+  "title": "Install architecture + ~/.config/furrow/ tier + /furrow:merge skill + worktree reintegration summary",
+  "description": "Install architecture + ~/.config/furrow/ tier + /furrow:merge skill + worktree reintegration summary",
+  "step": "implement",
+  "step_status": "not_started",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {},
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Definition: 4 deliverables / 33 ACs / 8 constraints; schema-validated. Dual outside-voice: same-model (revise) + codex cross-model (questionable, 5 revisions). All revisions applied: frw rescue moved to deliverable 1, test ACs added to all four, migration safety with install-state.json, promotion-targets scaffolding-only, protected-file policy formalized, reintegration schema-backed, sharded-todos rejection recorded, source_todos back-compat. Schema extended: source_todos array supported.",
+      "timestamp": "2026-04-22T17:48:37Z"
+    },
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Post-revision validation: schema-valid after source-repo schema mirror. Dual outside-voice synthesized; three convergent revisions applied (frw rescue ordering to deliverable 1, test ACs on all four, migration-safety explicit). Boundary-crossing to mirror schema into source repo logged as learning — exact phenomenon this row fixes.",
+      "timestamp": "2026-04-22T17:50:54Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "5 research files + synthesis.md produced. All 4 ideation open questions resolved (common.sh split=line 168, legacy-install heuristic validated, frw upgrade top-level, shard-deferred). 4 new plan-step open questions surfaced. Live evidence in R3 confirms the problem (24 escaped symlinks, bin CLIs are symlinks, 5 untracked .bak). R4 external prior art (brew/nix/git templates) feeds rescue design. R5 designs merge-policy.yaml and reintegration.schema.json shapes.",
+      "timestamp": "2026-04-22T17:59:40Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "plan.json (3 waves, 14 sub-steps in wave-1), team-plan.md (specialists + 3 consultants + handoff contracts), architecture-decisions.md (AD-1..AD-9 with research-file citations). All 4 open questions resolved. Dual review: fresh same-model pass (3 concerns applied as AD-8/AD-9 + sub-steps 1m/1n); codex cross-model pass on re-run after citation fixes (4/4 dimensions green).",
+      "timestamp": "2026-04-22T18:14:40Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "4 component specs written (~2100 lines), refined ACs + scenarios per template. Dual review 2 rounds: fresh revise (5 concerns) + codex fail (4 dimensions) consolidated to 13 concrete issues; all 13 resolved. Final fixes: AC-G function count 7->8, AC-R5 placeholder wording, gate_policy naming, migration_version string-typed, rescue exit codes unified (2/3/4), --keep-legacy + migration_chain removed, rws validate-sort-invariant added to wave-1 interface, /furrow:merge --resume documented, jq-only template engine, repo-slug normalization. Definition.yaml AC-1 reworded to match spec; re-validated.",
+      "timestamp": "2026-04-22T18:42:45Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "4 component specs renamed to match deliverable names; dual-review 2 rounds closed 13 concrete issues (unified migration_version string, rescue exit codes, removed scope-creep fields, added validate-sort-invariant/--resume/AC-2/3/4 scenarios/AC-1 scenario, jq-only template, repo-slug normalization). Definition.yaml AC-1 reworded to match spec; re-validated.",
+      "timestamp": "2026-04-22T18:43:25Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Decompose produced 26-task enumeration across 3 waves; plan.json extended with internal_sequencing for waves 2 (2a-2m) and 3 (3a-3j) to match wave-1's pre-existing 1a-1n. team-plan.md extended with dispatch plan + sizing rubric + vertical-slicing verification. File ownership disjoint within parallel wave 2 re-confirmed.",
+      "timestamp": "2026-04-22T18:46:11Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/install-and-merge",
+  "mode": "code",
+  "base_commit": "a284525186feabbfeef383e1ab304303310d33f9",
+  "seed_id": "furrow-b0f2",
+  "epic_seed_id": null,
+  "created_at": "2026-04-22T17:24:42Z",
+  "updated_at": "2026-04-22T18:46:34Z",
+  "archived_at": null,
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}
