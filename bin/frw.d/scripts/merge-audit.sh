@@ -303,7 +303,7 @@ $_branch_commits
 EOF
 
   # ---------------------------------------------------------------------------
-  # 5. Detect stale references (todos.yaml ids not in roadmap.yaml)
+  # 5. Detect stale references (todos.yaml ids not in roadmap.yaml + stale rows)
   # ---------------------------------------------------------------------------
   _stale_todos="[]"
   _stale_rows="[]"
@@ -320,6 +320,118 @@ EOF
       fi
     done
   fi
+
+  # ---------------------------------------------------------------------------
+  # 5b. Detect stale row references in worktree commits
+  #   A row reference is stale when:
+  #     (a) the referenced row directory no longer exists, OR
+  #     (b) the row is archived (state.json.archived_at is not null), OR
+  #     (c) the commit message mentions a row name that has no directory
+  # ---------------------------------------------------------------------------
+  _rows_dir="${PROJECT_ROOT}/.furrow/rows"
+
+  # Collect all worktree commit SHAs and their messages
+  _branch_commit_list="$(git -C "$PROJECT_ROOT" log --pretty=format:'%H %s' "${_base_sha}..${_head_sha}" 2>/dev/null || true)"
+
+  # Helper: check if a row name is live (exists and not archived)
+  # Returns: "live", "archived", or "missing"
+  _row_status() {
+    _rname="$1"
+    _rdir="${_rows_dir}/${_rname}"
+    if [ ! -d "$_rdir" ]; then
+      printf 'missing'
+      return
+    fi
+    _rstate="${_rdir}/state.json"
+    if [ -f "$_rstate" ]; then
+      _archived_at="$(jq -r '.archived_at // "null"' "$_rstate" 2>/dev/null || printf 'null')"
+      if [ "$_archived_at" != "null" ] && [ -n "$_archived_at" ]; then
+        printf 'archived'
+        return
+      fi
+    fi
+    printf 'live'
+  }
+
+  # Track already-flagged row names to avoid duplicates
+  _seen_stale_rows=""
+
+  # --- Pass A: file path references in diff (commits that touch .furrow/rows/<name>/) ---
+  while IFS= read -r _cline; do
+    [ -z "$_cline" ] && continue
+    _csha="$(printf '%s' "$_cline" | awk '{print $1}')"
+
+    # Get files touched by this commit
+    _commit_files="$(git -C "$PROJECT_ROOT" diff-tree --no-commit-id -r --name-only "$_csha" 2>/dev/null || true)"
+
+    for _cf in $_commit_files; do
+      # Look for .furrow/rows/<name>/ pattern
+      case "$_cf" in
+        .furrow/rows/*/*)
+          # Extract row name (third component)
+          _rname="$(printf '%s' "$_cf" | sed 's|\.furrow/rows/||; s|/.*||')"
+          [ -z "$_rname" ] && continue
+
+          # Skip already-flagged row names
+          _already_seen=0
+          for _sr in $_seen_stale_rows; do
+            [ "$_sr" = "$_rname" ] && _already_seen=1 && break
+          done
+          [ "$_already_seen" -eq 1 ] && continue
+
+          _rstatus="$(_row_status "$_rname")"
+          if [ "$_rstatus" != "live" ]; then
+            _reason="row directory $([ "$_rstatus" = "missing" ] && echo 'does not exist' || echo 'is archived')"
+            _sr_entry="$(jq -n \
+              --arg row_name "$_rname" \
+              --arg reason "$_reason" \
+              --arg referenced_by_commit "$_csha" \
+              '{row_name: $row_name, reason: $reason, referenced_by_commit: $referenced_by_commit}')"
+            _stale_rows="$(printf '%s' "$_stale_rows" | jq --argjson e "$_sr_entry" '. + [$e]')"
+            _seen_stale_rows="${_seen_stale_rows} ${_rname}"
+          fi
+          ;;
+      esac
+    done
+  done <<EOF2
+$_branch_commit_list
+EOF2
+
+  # --- Pass B: commit message mentions of row names ---
+  while IFS= read -r _cline; do
+    [ -z "$_cline" ] && continue
+    _csha="$(printf '%s' "$_cline" | awk '{print $1}')"
+    _cmsg="$(git -C "$PROJECT_ROOT" log -1 --pretty=format:'%B' "$_csha" 2>/dev/null || true)"
+
+    # Extract row-like names from commit message (work/<name> or just kebab names after "row" keyword)
+    # Look for patterns: work/<name>, row/<name>, row: <name>, .furrow/rows/<name>
+    _mentioned_rows="$(printf '%s' "$_cmsg" | grep -oE '(work/|\.furrow/rows/)[a-z0-9][a-z0-9-]*' 2>/dev/null | sed 's|work/||; s|\.furrow/rows/||' | sort -u || true)"
+
+    for _rname in $_mentioned_rows; do
+      [ -z "$_rname" ] && continue
+
+      # Skip already-flagged row names
+      _already_seen=0
+      for _sr in $_seen_stale_rows; do
+        [ "$_sr" = "$_rname" ] && _already_seen=1 && break
+      done
+      [ "$_already_seen" -eq 1 ] && continue
+
+      _rstatus="$(_row_status "$_rname")"
+      if [ "$_rstatus" != "live" ]; then
+        _reason="row mentioned in commit message but $([ "$_rstatus" = "missing" ] && echo 'directory does not exist' || echo 'is archived')"
+        _sr_entry="$(jq -n \
+          --arg row_name "$_rname" \
+          --arg reason "$_reason" \
+          --arg referenced_by_commit "$_csha" \
+          '{row_name: $row_name, reason: $reason, referenced_by_commit: $referenced_by_commit}')"
+        _stale_rows="$(printf '%s' "$_stale_rows" | jq --argjson e "$_sr_entry" '. + [$e]')"
+        _seen_stale_rows="${_seen_stale_rows} ${_rname}"
+      fi
+    done
+  done <<EOF3
+$_branch_commit_list
+EOF3
 
   # ---------------------------------------------------------------------------
   # 6. common.sh syntax validity on both sides
@@ -380,6 +492,12 @@ EOF
   _n_stale_todos="$(printf '%s' "$_stale_todos" | jq 'length')"
   if [ "$_n_stale_todos" -gt 0 ]; then
     _bl="{\"type\":\"stale_references\",\"message\":\"$_n_stale_todos stale todo id(s) not referenced in roadmap.yaml\"}"
+    _blockers="$(printf '%s' "$_blockers" | jq --argjson e "$_bl" '. + [$e]')"
+  fi
+
+  _n_stale_rows="$(printf '%s' "$_stale_rows" | jq 'length')"
+  if [ "$_n_stale_rows" -gt 0 ]; then
+    _bl="{\"type\":\"stale_row_references\",\"message\":\"$_n_stale_rows stale row reference(s) — commits touch or mention rows that are missing or archived\"}"
     _blockers="$(printf '%s' "$_blockers" | jq --argjson e "$_bl" '. + [$e]')"
   fi
 
