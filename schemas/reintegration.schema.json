@@ -1,0 +1,298 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://furrow.dev/schemas/reintegration.schema.json",
+  "title": "Worktree Reintegration Summary",
+  "description": "Structured handoff from a completed worktree to the main session. Produced by `rws generate-reintegration`; consumed by `/furrow:merge` as the sole interface contract. JSON is source of truth; markdown in summary.md is a rendered view.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "row_name",
+    "branch",
+    "base_sha",
+    "head_sha",
+    "generated_at",
+    "commits",
+    "files_changed",
+    "decisions",
+    "open_items",
+    "test_results"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "description": "Bump on breaking contract changes; `/furrow:merge` refuses unknown versions."
+    },
+    "row_name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+      "maxLength": 64,
+      "description": "Kebab-case row identifier, matching .furrow/rows/<name>/."
+    },
+    "branch": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._/-]+$",
+      "maxLength": 128,
+      "description": "Git branch name (e.g., work/install-and-merge)."
+    },
+    "base_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{7,40}$",
+      "description": "Commit sha where the branch diverged from main (git merge-base)."
+    },
+    "head_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{7,40}$",
+      "description": "Tip of the worktree branch at generation time."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp of generation. Drives idempotency: re-generation overwrites if timestamp differs."
+    },
+    "commits": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["sha", "subject", "conventional_type"],
+        "additionalProperties": false,
+        "properties": {
+          "sha": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{7,40}$",
+            "description": "Full or abbreviated commit SHA."
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "First line of the commit message."
+          },
+          "conventional_type": {
+            "type": "string",
+            "enum": ["feat", "fix", "chore", "docs", "refactor", "test", "infra", "merge", "revert"],
+            "description": "First token before ':' in the commit subject. `merge`/`revert` are recognized variants."
+          },
+          "install_artifact_risk": {
+            "type": "string",
+            "enum": ["none", "low", "medium", "high"],
+            "default": "none",
+            "description": "Worktree's self-assessment of install-artifact contamination. Feeds /furrow:merge classify phase. Elevated to `high` automatically when any touched path matches an `install-artifact` glob (bin/*.bak, .claude/rules/*.bak) or a protected glob from merge-policy.yaml."
+          }
+        }
+      },
+      "description": "Non-merge commits on the branch since base_sha.",
+      "examples": [
+        [
+          {
+            "sha": "deadbeef",
+            "subject": "feat: add reintegration schema",
+            "conventional_type": "feat",
+            "install_artifact_risk": "none"
+          }
+        ]
+      ]
+    },
+    "files_changed": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path_glob", "count", "category"],
+        "additionalProperties": false,
+        "properties": {
+          "path_glob": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Glob or exact path summarizing one category of touched files."
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Number of distinct files matching the glob."
+          },
+          "category": {
+            "type": "string",
+            "enum": ["source", "test", "doc", "config", "schema", "install-artifact"],
+            "description": "Categorization per R3. `install-artifact` is a hard signal for /furrow:merge to propose prefer-ours."
+          }
+        }
+      },
+      "description": "Files changed grouped by category.",
+      "examples": [
+        [
+          {
+            "path_glob": "schemas/reintegration.schema.json",
+            "count": 1,
+            "category": "schema"
+          },
+          {
+            "path_glob": "bin/rws",
+            "count": 1,
+            "category": "source"
+          }
+        ]
+      ]
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["title", "resolution", "rationale"],
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "description": "Short decision title."
+          },
+          "resolution": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What was decided."
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Why this resolution was chosen."
+          },
+          "ideation_section": {
+            "type": "string",
+            "pattern": "^ideation:section:[a-z0-9-]+$",
+            "description": "Ties back to the <!-- ideation:section:<id> --> marker in summary.md so reviewers can trace resolution -> debate."
+          }
+        }
+      },
+      "description": "Key architectural or process decisions made during the worktree.",
+      "examples": [
+        [
+          {
+            "title": "JSON is source of truth",
+            "resolution": "Render markdown from JSON",
+            "rationale": "Machine consumers don't parse prose.",
+            "ideation_section": "ideation:section:json-vs-markdown"
+          }
+        ]
+      ]
+    },
+    "open_items": {
+      "type": "array",
+      "description": "Items the main session must resolve after merge.",
+      "items": {
+        "type": "object",
+        "required": ["title", "urgency"],
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Short description of the open item."
+          },
+          "urgency": {
+            "type": "string",
+            "enum": ["low", "medium", "high"],
+            "description": "Priority for the main session to address this item."
+          },
+          "suggested_todo_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "description": "Optional: id to create in todos.yaml during /furrow:merge execute phase."
+          }
+        }
+      },
+      "examples": [
+        [
+          {
+            "title": "Extend schema v1.1 for per-file diff stats",
+            "urgency": "low"
+          }
+        ]
+      ]
+    },
+    "test_results": {
+      "type": "object",
+      "required": ["pass"],
+      "additionalProperties": false,
+      "properties": {
+        "pass": {
+          "type": "boolean",
+          "description": "True iff all tests passed at the time of generation."
+        },
+        "evidence_path": {
+          "type": "string",
+          "description": "Relative path under .furrow/rows/<name>/ to the review/test log."
+        },
+        "skipped": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Test names or categories skipped."
+        }
+      },
+      "description": "Summary of test results from the most recent review record.",
+      "examples": [
+        {
+          "pass": true,
+          "evidence_path": "reviews/2026-04-22T19-00.md"
+        }
+      ]
+    },
+    "merge_hints": {
+      "type": "object",
+      "description": "Optional advisory flags for /furrow:merge. Always produced (may be empty object).",
+      "additionalProperties": false,
+      "properties": {
+        "expected_conflicts": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "File paths expected to conflict during merge."
+        },
+        "rescue_likely_needed": {
+          "type": "boolean",
+          "description": "True iff any commit touched bin/frw.d/lib/common.sh or bin/frw.d/lib/common-minimal.sh."
+        }
+      },
+      "examples": [
+        {
+          "expected_conflicts": [],
+          "rescue_likely_needed": false
+        }
+      ]
+    }
+  },
+  "examples": [
+    {
+      "schema_version": "1.0",
+      "row_name": "install-and-merge",
+      "branch": "work/install-and-merge",
+      "base_sha": "a284525",
+      "head_sha": "deadbeefcafe",
+      "generated_at": "2026-04-22T19:00:00Z",
+      "commits": [
+        {
+          "sha": "deadbeef",
+          "subject": "feat: add reintegration schema",
+          "conventional_type": "feat",
+          "install_artifact_risk": "none"
+        }
+      ],
+      "files_changed": [
+        { "path_glob": "schemas/reintegration.schema.json", "count": 1, "category": "schema" },
+        { "path_glob": "bin/rws", "count": 1, "category": "source" }
+      ],
+      "decisions": [
+        {
+          "title": "JSON is source of truth",
+          "resolution": "Render markdown from JSON",
+          "rationale": "Machine consumers don't parse prose.",
+          "ideation_section": "ideation:section:json-vs-markdown"
+        }
+      ],
+      "open_items": [
+        { "title": "Extend schema v1.1 for per-file diff stats", "urgency": "low" }
+      ],
+      "test_results": { "pass": true, "evidence_path": "reviews/2026-04-22T19-00.md" },
+      "merge_hints": { "expected_conflicts": [], "rescue_likely_needed": false }
+    }
+  ]
+}
