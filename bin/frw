@@ -58,6 +58,7 @@ Normalization:
 Lifecycle:
   merge-to-main <name>        Merge archived row branch to main
   migrate-to-furrow [--dry-run]
+  upgrade [--check|--apply] [--from <path>]
   run-integration-tests [pattern]
 
 Info:
@@ -156,6 +157,11 @@ case "$cmd" in
   migrate-to-furrow)
     . "$FURROW_ROOT/bin/frw.d/scripts/migrate-to-furrow.sh"
     frw_migrate_to_furrow "$@"
+    ;;
+  upgrade)
+    . "$FURROW_ROOT/bin/frw.d/lib/common-minimal.sh"
+    . "$FURROW_ROOT/bin/frw.d/scripts/upgrade.sh"
+    frw_upgrade "$@"
     ;;
   run-integration-tests)
     exec /bin/bash -c '. "$1/bin/frw.d/scripts/run-integration-tests.sh" && frw_run_integration_tests "${@:2}"' _ "$FURROW_ROOT" "$@"
