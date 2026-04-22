@@ -1,0 +1,47 @@
+{
+  "deliverable": "config-cleanup",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "fail",
+        "evidence": "AC-7 is not fully met: `bin/frw.d/scripts/upgrade.sh` only migrates `.claude/furrow.yaml` and scaffolds `promotion-targets.yaml`; a fixture with legacy `.claude/specialists/legacy.md` leaves no `XDG_CONFIG_HOME/furrow/specialists/*` after `frw upgrade --apply`."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "pass",
+        "evidence": "New config-cleanup paths are exercised by focused integration tests that all passed: `test-config-resolution.sh`, `test-specialist-precedence.sh`, `test-promotion-targets-scaffolding.sh`, `test-source-todos-handoff.sh`, `test-upgrade-migration.sh`, `test-upgrade-idempotency.sh`, `test-install-xdg-override.sh`, and `test-legacy-migration.sh`."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "fail",
+        "evidence": "The spec requires `source_todo` and `source_todos` to be mutually exclusive, but `bin/frw validate-definition` accepts a definition containing both fields (`definition.yaml is valid`), so the interface contract is not enforced."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "fail",
+        "evidence": "`config-cleanup` ownership in `definition.yaml`/`plan.json` does not include `install.sh`, `tests/fixtures/make-legacy-install.sh`, or the `tests/integration/test-upgrade-*.sh` files, yet those files changed and no deliverable-specific ownership exception is recorded."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "fail",
+        "evidence": "Linting is not clean: `shellcheck` exits 1 on the changed surfaces, including SC2097/SC2098 in `tests/integration/test-promotion-targets-scaffolding.sh`, `test-upgrade-migration.sh`, and `test-upgrade-idempotency.sh`, plus SC2129 in `bin/frw.d/install.sh`."
+      }
+    ],
+    "verdict": "fail"
+  },
+  "overall": "fail",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-22T22:00:38Z"
+}

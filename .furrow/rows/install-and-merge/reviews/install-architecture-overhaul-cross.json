@@ -1,0 +1,47 @@
+{
+  "deliverable": "install-architecture-overhaul",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "fail",
+        "evidence": "Core wave-1 integration tests passed, but the XDG-state AC is not fully met: `bin/frw.d/install.sh` still appends consumer install-artifact entries directly to the project `.gitignore` (`bin/frw.d/install.sh:790-803`) instead of keeping those consumer-only artifacts under `$XDG_STATE_HOME/furrow/{repo-slug}/`."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "pass",
+        "evidence": "All major new branchy surfaces in wave 1 have dedicated integration coverage: install mode/source-copy/XDG/idempotency (`test-install-*`), rescue (`test-rescue.sh`), hook split/blocking (`test-hook-cascade.sh`, `test-precommit-*`), sort invariants (`test-sort-*`), legacy migration (`test-legacy-migration.sh`), and CI contamination (`test-ci-contamination.sh`)."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "fail",
+        "evidence": "The deliverable diverges from the stated XDG layout contract by mutating repo-local `.gitignore` for consumer installs (`bin/frw.d/install.sh:790-803`), which conflicts with the acceptance criterion that consumer-only install artifacts live under XDG state."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "fail",
+        "evidence": "Wave-1 commits touched many files outside the declared `file_ownership` globs, including `bin/frw`, `bin/alm`, `bin/sds`, `.gitignore`, 12 non-precommit hooks, normalize scripts, and several integration tests (`git diff --name-only 31d3401^..5ef805a`), so the ownership contract is incomplete."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "fail",
+        "evidence": "`shellcheck` on the deliverable shell surfaces exits 1 with errors, including SC2148 on multiple touched hook scripts lacking a shebang (`bin/frw.d/hooks/correction-limit.sh`, `gate-check.sh`, `ownership-warn.sh`, `post-compact.sh`, `script-guard.sh`, `state-guard.sh`, `stop-ideation.sh`, `validate-definition.sh`, `validate-summary.sh`, `verdict-guard.sh`, `work-check.sh`)."
+      }
+    ],
+    "verdict": "fail"
+  },
+  "overall": "fail",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-22T21:17:42Z"
+}
