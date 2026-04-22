@@ -1,0 +1,311 @@
+objective: >-
+  Ship a first-class `observations` primitive to the almanac that captures
+  post-ship re-examination signals. A stratified schema
+  (`kind: watch | decision-review`) lives at
+  `.furrow/almanac/observations.yaml`, validated, with a pull-model trigger
+  system (MVP types: `row_archived`, `rows_since`, `manual`). Lifecycle
+  state is persisted (`open | resolved | dismissed`); activation state
+  (`active | pending`) is COMPUTED from archive history, never stored.
+  `alm observe` CLI supports the full lifecycle; `alm validate` covers
+  observations.yaml; `/archive` and `alm triage` surface active
+  observations; the review step prompts for new observations; the existing
+  `re-evaluate-dispatch-enforcement` TODO migrates to an observation and
+  the `decision-review` workaround is removed from `todos.schema.yaml`.
+
+gate_policy: supervised
+mode: code
+
+deliverables:
+  - name: observations-schema
+    acceptance_criteria:
+      - >-
+        `adapters/shared/schemas/observations.schema.yaml` exists with
+        `additionalProperties: false`, mirroring the YAML-JSON-Schema style
+        of `todos.schema.yaml`.
+      - >-
+        Schema stratifies by `kind` (enum: `watch`, `decision-review`)
+        using `oneOf`/`if-then` discriminator so each kind enforces its
+        own required-field profile.
+      - >-
+        Common required fields on every observation: `id` (kebab-case),
+        `kind`, `title`, `triggered_by`, `lifecycle`, `created_at`,
+        `updated_at`.
+      - >-
+        `lifecycle` is persisted state, enum: `open`, `resolved`,
+        `dismissed`. It does NOT represent trigger activation; activation
+        (`active | pending`) is computed at query time from archive
+        history and is never stored on the observation.
+      - >-
+        `kind: watch` additionally requires `signal` (what to observe).
+        `resolution` (optional) is populated only when
+        `lifecycle == resolved`; shape
+        `{outcome: pass|fail|inconclusive, note?, resolved_at}`.
+      - >-
+        `kind: decision-review` additionally requires `question`,
+        `options` (array of `{id, label}`), `acceptance_criteria`.
+        Optional `evidence_needed` (array of strings). `resolution`
+        (optional) populated only when `lifecycle == resolved`; shape
+        `{option_id, rationale, resolved_at}`.
+      - >-
+        `triggered_by` is a discriminated union on `type`:
+        `{type: row_archived, row}`, `{type: rows_since, since_row,
+        count}`, `{type: manual}`. Schema MUST reject any other type
+        value — `after_date`, `row_merged`, and other types are NOT
+        accepted.
+      - >-
+        Schema description for `rows_since` states the exact activation
+        predicate: activates when
+        `count(rows r where r.archived_at > since_row.archived_at) >= count`;
+        pending if `since_row` is not yet archived. `count` is an
+        integer >= 1.
+      - >-
+        Observations validation lives where todos validation lives today:
+        inline in `bin/alm:cmd_validate` (either extended in place or
+        split into `cmd_validate_todos` + `cmd_validate_observations`
+        dispatched by a thin `cmd_validate`), preserving the
+        `cmd_validate "<path>"` signature used by `cmd_add` and
+        `cmd_triage`. No separate shell script under
+        `bin/frw.d/scripts/` is created for observations.
+      - >-
+        `.furrow/almanac/observations.yaml` exists and validates (empty
+        list `[]` is acceptable initial content).
+    file_ownership:
+      - "adapters/shared/schemas/observations.schema.yaml"
+      - ".furrow/almanac/observations.yaml"
+
+  - name: alm-observe-cli
+    acceptance_criteria:
+      - >-
+        `bin/alm` grows an `observe` subcommand dispatching to verbs:
+        `add`, `list`, `show`, `resolve`, `dismiss`, `activate`,
+        `on-archive`.
+      - >-
+        `alm observe add` accepts flag-driven input (kind, title, trigger
+        fields, and either `signal` for watch or
+        `question`+`options`+`acceptance_criteria` for decision-review);
+        initializes `lifecycle: open`; validates before writing.
+      - >-
+        `alm observe list` supports
+        `--active | --pending | --resolved | --dismissed | --all` and
+        `--kind watch | decision-review`. Default: `--active`. Active
+        filter requires `lifecycle == open` AND computed activation
+        `active`.
+      - >-
+        Computed activation uses the pull model: `rows_since` activates
+        iff the baseline row's `state.json.archived_at` is non-null AND
+        `count(rows r where r.archived_at > baseline.archived_at) >= count`.
+        `row_archived` activates iff the named row's `archived_at` is
+        non-null. `manual` activates iff `alm observe activate` has been
+        called (which sets a `manual_activation_at` timestamp — the only
+        trigger-state field permitted on the observation).
+      - >-
+        `alm observe show <id>` displays all fields, lifecycle, computed
+        activation status, and — for `rows_since` — how many qualifying
+        rows have archived so far vs the target count.
+      - >-
+        `alm observe resolve <id> ...` is valid ONLY when current
+        `lifecycle == open`. For `kind: watch` accepts
+        `--outcome pass|fail|inconclusive` and optional `--note`. For
+        `kind: decision-review` accepts `--option <id>` and
+        `--rationale <text>`. Sets `lifecycle: resolved`, populates
+        `resolution`, updates `updated_at`.
+      - >-
+        `alm observe dismiss <id> [--reason <text>]` is valid ONLY when
+        current `lifecycle == open`. Sets `lifecycle: dismissed`, stores
+        optional reason in a dismissal note, updates `updated_at`.
+      - >-
+        `alm observe activate <id>` sets `manual_activation_at` to the
+        current ISO 8601 timestamp. Only meaningful for
+        `triggered_by.type == manual`; errors for other types.
+      - >-
+        `alm observe on-archive <row>` is idempotent and stateless: it
+        queries active observations whose trigger just became satisfied
+        by `<row>`'s archival (via recomputation from archive history)
+        and prints a human-readable block. NO observation state is
+        mutated.
+      - >-
+        `alm validate` (existing top-level verb) ALSO validates
+        `.furrow/almanac/observations.yaml` against the observations
+        schema. Exit non-zero on either file failing.
+      - >-
+        `bin/alm` top-level help lists `observe` with a one-line
+        description.
+      - >-
+        Validation failure in `add` surfaces the schema error and does
+        NOT write a partial entry.
+    depends_on:
+      - observations-schema
+    file_ownership:
+      - "bin/alm"
+
+  - name: archive-and-triage-integration
+    acceptance_criteria:
+      - >-
+        `commands/archive.md` is updated so `/archive` invokes
+        `alm observe on-archive "<name>"` after TODO pruning. Observations
+        are surfaced for the user's awareness only; resolution or
+        dismissal is always a separate explicit `alm observe
+        resolve|dismiss` action. The word "defer" is NOT used (no
+        deferred state exists).
+      - >-
+        `alm triage` output includes an "Active Observations" section
+        listing observations where
+        `lifecycle == open AND computed_activation == active`, with id,
+        kind, title, and activation reason. Section is omitted when the
+        list is empty.
+      - >-
+        `commands/archive.md` explicitly documents that observations are
+        NOT auto-resolved — the on-archive step is surface-only.
+      - >-
+        Integration does NOT require /furrow:merge to exist. Trigger is
+        `state.json.archived_at` on row state only.
+    depends_on:
+      - alm-observe-cli
+    file_ownership:
+      - "commands/archive.md"
+      - "bin/alm"
+
+  - name: migration-and-review-prompt
+    acceptance_criteria:
+      - >-
+        `re-evaluate-dispatch-enforcement` is migrated from
+        `.furrow/almanac/todos.yaml` to a `kind: decision-review` entry in
+        `.furrow/almanac/observations.yaml`, preserving trigger semantics
+        via `triggered_by: {type: rows_since, since_row:
+        parallel-agent-wiring, count: 3}`, with `lifecycle: open`.
+      - >-
+        Migration executes in this exact order (in a single commit):
+        (1) add migrated entry to `observations.yaml` and run
+        `alm validate` (must pass);
+        (2) remove original entry from `todos.yaml` and run
+        `alm validate` (must pass with `decision-review` still in enum);
+        (3) remove `decision-review` from the `source_type` enum in
+        `adapters/shared/schemas/todos.schema.yaml` and run
+        `alm validate` (must pass).
+      - >-
+        `todos.yaml` still validates cleanly after the enum removal (no
+        orphan `decision-review` references anywhere).
+      - >-
+        The migrated observation validates against
+        `observations.schema.yaml`.
+      - >-
+        `skills/review.md` includes a short prompt at review step:
+        "Are any decisions here conditional on post-ship evidence? If
+        yes, record an observation via `alm observe add`."
+      - >-
+        `skills/shared/summary-protocol.md` mentions observations
+        alongside open-questions / learnings as a channel for post-ship
+        follow-up.
+    depends_on:
+      - alm-observe-cli
+    file_ownership:
+      - ".furrow/almanac/todos.yaml"
+      - ".furrow/almanac/observations.yaml"
+      - "adapters/shared/schemas/todos.schema.yaml"
+      - "skills/review.md"
+      - "skills/shared/summary-protocol.md"
+
+context_pointers:
+  - path: ".furrow/almanac/todos.yaml"
+    note: >-
+      Source TODO: `post-merge-watch-list` motivates the watch kind.
+      Source TODO: `decision-review-todo-type` motivates the
+      decision-review kind. Live example
+      `re-evaluate-dispatch-enforcement` at line ~1956 is the D4
+      migration target.
+
+  - path: "adapters/shared/schemas/todos.schema.yaml"
+    note: >-
+      Sibling schema. Follow its YAML-JSON-Schema conventions:
+      `additionalProperties: false`, enums for controlled vocabularies,
+      kebab-case id pattern, ISO 8601 timestamps. Also where the
+      `decision-review` source_type enum value is removed in D4.
+
+  - path: "bin/alm"
+    symbols:
+      - "cmd_validate"
+    note: >-
+      CLI to extend. Read subcommand dispatch pattern (lines ~1476,
+      ~1505) and the existing `cmd_validate` (line ~827) to understand
+      the schema-validation plumbing; extending it to observations is a
+      D2 acceptance criterion.
+
+  - path: "commands/archive.md"
+    note: >-
+      Where /archive orchestration lives. Add the `alm observe
+      on-archive` step after TODO pruning (step 6-7 region). NOTE —
+      this file may also be edited by the parallel `work/install-and-merge`
+      row's /furrow:merge skill; a file-level merge may be needed even
+      though the semantic trigger is independent.
+
+  - path: ".furrow/almanac/todos.yaml"
+    symbols:
+      - "re-evaluate-dispatch-enforcement"
+    note: >-
+      The TODO to migrate to an observation in D4. Preserves trigger
+      semantics: `rows_since` parallel-agent-wiring + 3 rows.
+
+  - path: "skills/review.md"
+    note: >-
+      Review-step skill to extend with observation-capture prompt.
+
+  - path: "skills/shared/summary-protocol.md"
+    note: >-
+      Shared summary protocol where observations should be mentioned as
+      a post-ship follow-up channel alongside open-questions and
+      learnings.
+
+  - path: "/home/jonco/src/furrow-install-and-merge"
+    note: >-
+      Parallel row `work/install-and-merge` (worktree at same HEAD as
+      main, no commits yet). Semantic independence holds because
+      activation is a pure function of `archived_at`. File-level
+      coordination may still be needed on `commands/archive.md`; that
+      is a merge-time concern, not a design-time one.
+
+constraints:
+  - >-
+    Stateless triggers: no counter, progress, or activation state is
+    persisted on observations. Activation is a pure function of archive
+    history (`state.json.archived_at` across `.furrow/rows/*`). The one
+    permitted exception is `manual_activation_at` for
+    `triggered_by.type == manual`, because manual triggers have no other
+    signal.
+  - >-
+    Split status model: persisted `lifecycle` (`open | resolved |
+    dismissed`) represents user-driven state; computed `activation`
+    (`active | pending`) represents trigger-driven state and is never
+    stored. An observation is surfaceable iff
+    `lifecycle == open AND activation == active`.
+  - >-
+    No coupling to /furrow:merge: integration point is `archived_at` on
+    row state. This row must be mergeable before /furrow:merge exists.
+  - >-
+    MVP trigger types are `row_archived`, `rows_since`, `manual`. Schema
+    MUST NOT accept `after_date`, `row_merged`, or other types. Adding
+    types later is a schema evolution, not a silent accept. `row_merged`
+    is deferred deliberately — in an archive-only world the distinction
+    from `row_archived` is meaningless; a true merge-based trigger can
+    be added post /furrow:merge if the distinction matters.
+  - >-
+    Schema-first: D1 must validate before D2 is started; D2 must ship
+    before D3 and D4.
+  - >-
+    No CLI stubs. `alm observe <verb>` is fully implemented for every
+    verb in the deliverable (`add`, `list`, `show`, `resolve`,
+    `dismiss`, `activate`, `on-archive`).
+  - >-
+    `additionalProperties: false` on the observations schema, matching
+    `todos.schema.yaml`.
+  - >-
+    `source_type: decision-review` must be removed from the TODO schema
+    after the one live user is migrated — the workaround is eliminated,
+    not left coexisting.
+  - >-
+    No auto-resolution. Observations are surfaced by `/archive` and
+    `alm triage` but resolving or dismissing them is always an explicit
+    user action.
+  - >-
+    D4 migration must land as a single commit in the order specified in
+    D4's acceptance criteria (add to observations → remove from todos →
+    remove enum value), with `alm validate` passing between each step.

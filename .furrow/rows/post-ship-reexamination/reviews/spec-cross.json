@@ -1,0 +1,34 @@
+{
+  "type": "spec",
+  "dimensions": [
+    {
+      "name": "testability",
+      "verdict": "pass",
+      "evidence": "Most acceptance criteria are stated as concrete schema rules, CLI signatures, state transitions, or observable output/exit-code conditions that are mechanically checkable."
+    },
+    {
+      "name": "completeness",
+      "verdict": "pass",
+      "evidence": "The spec refines the main deliverables across schema, CLI, validation, archive/triage integration, migration, and prompt/documentation updates with file-level contracts."
+    },
+    {
+      "name": "consistency",
+      "verdict": "fail",
+      "evidence": "`archive-and-triage-integration.md` says 'No change to ... alm validate' under non-requirements, but the objective and other spec sections explicitly require extending `alm validate` to validate observations."
+    },
+    {
+      "name": "test-scenario-coverage",
+      "verdict": "fail",
+      "evidence": "Several non-trivial behaviors lack scenario coverage, including `alm observe add/resolve/dismiss/activate/show`, validation-failure no-write behavior, and the required migration sequence checks."
+    },
+    {
+      "name": "implementability",
+      "verdict": "pass",
+      "evidence": "The spec gives concrete file targets, command shapes, discriminator schemas, lifecycle rules, and archive-history activation logic sufficient to implement without major clarification."
+    }
+  ],
+  "overall": "fail",
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-22T18:24:12Z"
+}

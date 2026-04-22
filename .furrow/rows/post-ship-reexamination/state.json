@@ -1,0 +1,65 @@
+{
+  "name": "post-ship-reexamination",
+  "title": "Almanac watch-list primitive + decision-review TODO schema type — structured post-evidence re-examination",
+  "description": "Almanac watch-list primitive + decision-review TODO schema type — structured post-evidence re-examination",
+  "step": "implement",
+  "step_status": "not_started",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {},
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Ideation ceremony complete: 4 decisions settled (stratified schema with kind discriminator, MVP triggers row_archived+rows_since+manual, full integration scope, observations.yaml). Definition validated against schema. Dual outside voice complete — fresh-agent + codex cross-model review at reviews/ideation-cross.json produced 8 findings, all applied: split lifecycle/activation status model, row_merged renamed to row_archived, rows_since activation predicate specified, dismiss verb added, alm validate extended, D4 migration ordering explicit, archive.md shared-surface risk acknowledged. Summary sections populated and validated. User approved advance.",
+      "timestamp": "2026-04-22T18:00:14Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Research step complete: 3 parallel research agents produced per-topic findings (discriminator-idiom, alm-extension-blueprint, integration-points) plus synthesis.md. All 3 ideation open questions resolved (JSON Schema idiom = allOf+if/then+const with required on discriminator; alm triage gets additive active_observations key; schema evolution deferred). 1 new open question from research (validate-todos.sh does not exist) resolved via user-approved D1 AC8 amendment — validation stays inline in bin/alm:cmd_validate. Definition revalidated. Summary updated. User approved advance.",
+      "timestamp": "2026-04-22T18:12:55Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Plan step complete: plan.json (3 waves: D1 → D2 → D3 ∥ D4) and team-plan.md (7 architecture decisions AD-1..AD-7 with explicit research citations, specialist assignments, risk register, acceptance cadence). Dual-review: fresh Claude agent = pass with minor notes; codex = passed 3/4 dimensions (coverage/feasibility/specificity) and research-grounding fail was addressed by adding explicit Source: lines to each AD pointing at research artifacts. Wave 3 file ownership disjoint. Specialists: harness-engineer for D1/D2/D3, migration-strategist for D4. User approved.",
+      "timestamp": "2026-04-22T18:18:22Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Spec step complete: 4 per-deliverable specs in specs/ directory covering all 32 definition.yaml ACs. Dual-review: fresh-agent pass on all 4 with 5 polish items (all applied inline); codex flagged consistency (D3 non-requirements phrasing — fixed) and test-scenario-coverage (missing show/resolve happy paths — added). Cross-spec interface contracts consistent. No open questions. User approved.",
+      "timestamp": "2026-04-22T18:29:09Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Decompose step complete: validated plan-step plan.json + team-plan.md against decompose-step invariants (single-wave-per-deliverable, depends_on ordering, wave-local file ownership non-overlap, vertical-slice testability, team sizing). No corrections needed. Added Decompose validation section to team-plan.md for audit trail. Ready to implement 3 waves: W1=D1, W2=D2, W3=D3||D4. User approved.",
+      "timestamp": "2026-04-22T18:30:38Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/post-ship-reexamination",
+  "mode": "code",
+  "base_commit": "a284525186feabbfeef383e1ab304303310d33f9",
+  "seed_id": "furrow-182f",
+  "epic_seed_id": null,
+  "created_at": "2026-04-22T17:24:46Z",
+  "updated_at": "2026-04-22T18:31:16Z",
+  "archived_at": null,
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}

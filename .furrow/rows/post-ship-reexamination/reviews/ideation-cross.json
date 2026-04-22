@@ -1,0 +1,43 @@
+{
+  "type": "ideation",
+  "dimensions": [
+    {
+      "name": "Feasibility",
+      "verdict": "conditional",
+      "evidence": "The repo already has the needed surfaces (`adapters/shared/schemas/todos.schema.yaml`, `commands/archive.md`, `commands/triage.md`, `skills/review.md`, live TODO `re-evaluate-dispatch-enforcement` in `.furrow/almanac/todos.yaml`), so the feature is implementable. The main feasibility issue is an internal contract conflict: the framing says activation is a stateless pull-model computed from archive history, but the schema requires persisted `status` values including `pending` and `active`, and `alm observe activate` is specified to set `status: active`. That needs clarification or the implementation will blur computed activation with stored lifecycle state."
+    },
+    {
+      "name": "Alignment",
+      "verdict": "conditional",
+      "evidence": "The four deliverables map well to the objective: schema, CLI, archive/triage surfacing, and migration/review prompting. The alignment gap is that 'validated' is only covered by a new `validate-observations.sh` and per-command validation; there is no explicit acceptance criterion that `alm validate` or the broader almanac validation path includes observations, which weakens the 'first-class primitive' claim."
+    },
+    {
+      "name": "Dependency validity",
+      "verdict": "conditional",
+      "evidence": "The stated ordering is directionally correct: schema before CLI, CLI before integration/migration. The dependency set is not fully sufficient because D3 and D4 both rely on the status/trigger model being settled first, and D4 implicitly depends on the observations schema semantics as much as on CLI availability. More importantly, the framing does not isolate the unresolved status-model contradiction before downstream deliverables start, so the dependencies are correct but not sufficient to prevent rework."
+    },
+    {
+      "name": "Risk assessment",
+      "verdict": "conditional",
+      "evidence": "The constraints do a good job limiting scope: strict trigger set, `additionalProperties: false`, no `/furrow:merge` coupling, schema-first sequencing, and explicit no auto-resolution. Two scope-creep risks remain. First, `row_merged` is included as an MVP trigger even though the row must ship without merge integration and the only stable signal is `archived_at`; that invites premature expansion of semantics. Second, `/archive` is told to offer 'defer' even though observations have no `deferred` state in the schema, which creates pressure to add extra lifecycle behavior."
+    },
+    {
+      "name": "Completeness",
+      "verdict": "fail",
+      "evidence": "There are several obvious gaps. No acceptance criterion covers `alm validate` integration for observations. The schema includes `status: dismissed`, but no CLI verb or workflow covers dismissing an observation. The framing says `alm observe` supports the full lifecycle, but the listed verbs omit any edit/delete/dismiss path. `row_merged` trigger semantics are underspecified in a pre-merge world. `/archive` says users can 'defer' surfaced observations, but there is no corresponding model field or command behavior."
+    }
+  ],
+  "framing_quality": "questionable",
+  "suggested_revisions": [
+    "Clarify the state model: make persisted status purely lifecycle (`open|resolved|dismissed`, or similar) and treat activation (`pending|active`) as computed output, or explicitly justify why `pending/active` are persisted without violating the stateless-trigger constraint.",
+    "Add an acceptance criterion that `alm validate` validates `.furrow/almanac/observations.yaml`, not just a standalone `validate-observations.sh` script.",
+    "Either remove `row_merged` from MVP and use only archive-based semantics now, or define exactly how `row_merged` is represented when `/furrow:merge` does not yet exist.",
+    "Resolve the lifecycle gap: add a CLI path for `dismissed`, or remove `dismissed` from the schema if it is not part of MVP.",
+    "Replace '/archive offers defer' with a defined explicit action that exists in the observation model, or add the corresponding schema/CLI support.",
+    "Add a dependency/guard that D3 and D4 cannot start until the observation status/activation contract is finalized, since both depend on it semantically.",
+    "Define what 'full lifecycle' means for MVP in concrete verbs and states so review can test against a closed contract rather than infer missing operations."
+  ],
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-22T17:53:35Z"
+}
