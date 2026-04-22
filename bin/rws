@@ -1015,6 +1015,10 @@ update_summary() {
 
   # Map kebab-case section to display name
   case "$_usm_section" in
+    reintegration)
+      printf '[furrow:error] '\''reintegration'\'' is a machine-generated section; use '\''rws generate-reintegration'\'' instead\n' >&2
+      exit "$EXIT_VALIDATION"
+      ;;
     key-findings)     _usm_display="Key Findings" ;;
     open-questions)   _usm_display="Open Questions" ;;
     recommendations)  _usm_display="Recommendations" ;;
@@ -1107,6 +1111,17 @@ validate_summary() {
       _vs_errors="${_vs_errors}Section '$_vs_section' needs at least 1 non-empty line (has $_vs_content).\n"
     fi
   done
+
+  # If ## Reintegration section is present, BOTH markers must exist
+  if grep -q '^## Reintegration' "$_vs_summary_file" 2>/dev/null; then
+    _vs_has_begin=0
+    _vs_has_end=0
+    grep -q '<!-- reintegration:begin -->' "$_vs_summary_file" 2>/dev/null && _vs_has_begin=1
+    grep -q '<!-- reintegration:end -->' "$_vs_summary_file" 2>/dev/null && _vs_has_end=1
+    if [ "$_vs_has_begin" -eq 0 ] || [ "$_vs_has_end" -eq 0 ]; then
+      _vs_errors="${_vs_errors}Section 'Reintegration' is present but missing required markers (<!-- reintegration:begin --> and/or <!-- reintegration:end -->). Use 'rws generate-reintegration' to populate this section.\n"
+    fi
+  fi
 
   if [ -n "$_vs_errors" ]; then
     printf "summary.md validation failed:\n%b" "$_vs_errors" >&2
@@ -2243,7 +2258,7 @@ rws_update_summary() {
         if [ -z "$_usub_section" ]; then
           # Could be name or section — check if it's a valid section
           case "$1" in
-            key-findings|open-questions|recommendations)
+            reintegration|key-findings|open-questions|recommendations)
               _usub_section="$1"
               ;;
             *)
@@ -2262,6 +2277,12 @@ rws_update_summary() {
 
   if [ -z "$_usub_section" ]; then
     die "Usage: rws update-summary [name] <section> [--replace]"
+  fi
+
+  # Reject reintegration before resolving name (machine-generated section)
+  if [ "$_usub_section" = "reintegration" ]; then
+    printf '[furrow:error] '\''reintegration'\'' is a machine-generated section; use '\''rws generate-reintegration'\'' instead\n' >&2
+    exit "$EXIT_VALIDATION"
   fi
 
   _usub_name="$(resolve_name "$_usub_name")"
@@ -2469,6 +2490,91 @@ list_user_actions() {
 rws_list_user_actions() {
   _luar_name="$(resolve_name "${1:-}")"
   list_user_actions "$_luar_name"
+}
+
+# ============================================================
+#  validate_reintegration_json — jq-based schema check
+#  Returns 0 (valid) or 3 (invalid). Prints errors to stderr.
+# ============================================================
+
+validate_reintegration_json() {
+  _vrj_file="$1"
+  if [ ! -f "$_vrj_file" ]; then
+    echo "reintegration.json not found: $_vrj_file" >&2
+    return 2
+  fi
+
+  _vrj_result="$(jq -r '
+    def check_required(obj; fields):
+      fields | map(
+        if obj[.] == null then "missing:" + . else empty end
+      ) | .[];
+
+    . as $doc |
+    (check_required($doc; ["schema_version","row_name","branch","base_sha","head_sha","generated_at","commits","files_changed","decisions","open_items","test_results"]) // empty),
+    (if $doc.schema_version != "1.0" then "invalid:schema_version" else empty end),
+    (if ($doc.row_name | type) == "string" and ($doc.row_name | test("^[a-z][a-z0-9]*(-[a-z0-9]+)*$") | not) then "pattern:row_name" else empty end),
+    (if ($doc.branch | type) == "string" and ($doc.branch | test("^[A-Za-z0-9._/-]+$") | not) then "pattern:branch" else empty end),
+    (if ($doc.base_sha | type) == "string" and ($doc.base_sha | test("^[0-9a-f]{7,40}$") | not) then "pattern:base_sha" else empty end),
+    (if ($doc.head_sha | type) == "string" and ($doc.head_sha | test("^[0-9a-f]{7,40}$") | not) then "pattern:head_sha" else empty end),
+    (if ($doc.commits | type) != "array" then "type:commits" elif ($doc.commits | length) == 0 then "empty:commits" else empty end),
+    (if ($doc.test_results.pass | type) != "boolean" then "type:test_results.pass" else empty end)
+  ' "$_vrj_file" 2>/dev/null)"
+
+  if [ -n "$_vrj_result" ]; then
+    printf 'reintegration.json schema validation failed: %s\n' "$_vrj_result" >&2
+    return 3
+  fi
+  return 0
+}
+
+# ============================================================
+#  Subcommand: generate-reintegration
+# ============================================================
+
+rws_generate_reintegration() {
+  _gr_name="$(resolve_name "${1:-}")"
+  require_state "$_gr_name" > /dev/null
+
+  _gr_script="${FURROW_ROOT}/bin/frw.d/scripts/generate-reintegration.sh"
+  if [ ! -x "$_gr_script" ]; then
+    echo "generate-reintegration: helper script not found or not executable: $_gr_script" >&2
+    exit "$EXIT_NOT_FOUND"
+  fi
+
+  "$_gr_script" "$_gr_name" "$FURROW_ROOT"
+  _gr_exit=$?
+  if [ "$_gr_exit" -ne 0 ]; then
+    exit "$_gr_exit"
+  fi
+
+  # Bump state.json timestamp
+  update_state "$_gr_name" "." > /dev/null 2>&1 || true
+}
+
+# ============================================================
+#  Subcommand: get-reintegration-json
+# ============================================================
+
+rws_get_reintegration_json() {
+  _grj_name="$(resolve_name "${1:-}")"
+  require_state "$_grj_name" > /dev/null
+
+  _grj_work_dir="$(resolve_row_dir "$_grj_name")"
+  _grj_file="${_grj_work_dir}/reintegration.json"
+
+  if [ ! -f "$_grj_file" ]; then
+    printf 'reintegration.json not found for row '\''%s'\''. Run: rws generate-reintegration %s\n' \
+      "$_grj_name" "$_grj_name" >&2
+    exit "$EXIT_NOT_FOUND"
+  fi
+
+  # Validate before returning
+  if ! validate_reintegration_json "$_grj_file"; then
+    exit "$EXIT_VALIDATION"
+  fi
+
+  cat "$_grj_file"
 }
 
 # ============================================================
@@ -2714,6 +2820,12 @@ Commands:
                                          Verify sort invariant on seeds.jsonl / todos.yaml
                                          Exit 0 = sorted; exit 3 = out-of-order; no mutation
 
+  generate-reintegration [name]          Build reintegration.json + render ## Reintegration
+                                         section in summary.md from git log + state + reviews.
+                                         Exit 0 success; 2 row not found; 3 schema failed; 4 subprocess.
+  get-reintegration-json [name]          Emit reintegration.json verbatim (primary read path
+                                         for /furrow:merge). Exit 2 if missing; 3 if schema invalid.
+
   help                                   Show this help message
 
 Exit codes:
@@ -2758,6 +2870,8 @@ case "$cmd" in
   validate-worktree-summary)   rws_validate_worktree_summary "$@" ;;
   update-worktree-summary)     rws_update_worktree_summary "$@" ;;
   validate-sort-invariant)     rws_validate_sort_invariant "$@" ;;
+  generate-reintegration)      rws_generate_reintegration "$@" ;;
+  get-reintegration-json)      rws_get_reintegration_json "$@" ;;
   help|--help|-h)     rws_help ;;
   *)                  echo "Unknown command: $cmd" >&2; rws_help >&2; exit 1 ;;
 esac
