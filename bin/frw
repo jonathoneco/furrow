@@ -156,6 +156,9 @@ case "$cmd" in
   run-integration-tests)
     exec /bin/bash -c '. "$1/bin/frw.d/scripts/run-integration-tests.sh" && frw_run_integration_tests "${@:2}"' _ "$FURROW_ROOT" "$@"
     ;;
+  rescue)
+    exec "$FURROW_ROOT/bin/frw.d/scripts/rescue.sh" "$@"
+    ;;
   launch-phase)
     exec "$FURROW_ROOT/bin/frw.d/scripts/launch-phase.sh" "$@"
     ;;
