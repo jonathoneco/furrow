@@ -2004,3 +2004,63 @@
   impact: "medium"
   effort: "medium"
   status: active
+# --- Standalone: Merge-Process Skill ---
+- id: merge-process-skill
+  title: "Design a /furrow:merge skill — reconcile worktree branches back into main"
+  context: |
+    Merging completed worktree branches into main is currently ad-hoc and error-prone.
+    Observed failure modes from the Phase 2 merge session (2026-04-22):
+
+    1. **Consumer-project contamination**: Worktrees created by `frw launch-phase` run
+       install.sh-style logic that converts source-repo files (bin/alm, bin/rws, bin/sds,
+       .claude/rules/*) into symlinks pointing back at the source repo. If these
+       "install artifacts" get committed (as happened with parallel-agent-wiring's commit
+       a6eb8ff), a naive merge into main deletes real source files.
+    2. **Main-advance overlap**: Main can cherry-pick or re-apply a worktree's feature
+       commits before the worktree is merged. Straight merge duplicates the work; conflict
+       resolution needs to know which side has the canonical version.
+    3. **Hook cascade lock-out**: A merge conflict in `bin/frw.d/lib/common.sh` breaks every
+       Claude Code PreToolUse hook (because `frw hook *` sources common.sh), blocking all
+       Bash/Edit/Write tools until the file is manually repaired outside Claude Code.
+       Needs pre-merge detection or a bootstrap/rescue path.
+    4. **Stale row references**: Rows in the roadmap can reference TODOs that were
+       superseded or archived; merge prep should flag this.
+    5. **Heredoc false positives**: The script-guard hook matches `*frw.d/*` in the full
+       command string, so commit messages and docs mentioning frw.d/ paths trigger blocks.
+  work_needed: |
+    - Design a `/furrow:merge` command that orchestrates the full reconcile-and-land flow
+    - Pre-merge audit: detect symlink-ification, flag overlapping commits vs main, list
+      artifacts-only additions vs substantive feature changes
+    - Classify each worktree commit: safe / redundant-with-main / destructive / mixed
+    - Auto-resolution strategy for "protected files" (bin/*, .claude/rules/*, .gitignore)
+      — always prefer HEAD when the worktree's change is install-artifact symlink-ification
+    - Pre-merge check: ensure bin/frw.d/lib/common.sh parses (syntax-check before merge
+      creates a window where the hooks themselves break)
+    - Bootstrap rescue: if common.sh gets into a broken state mid-merge, provide a way to
+      restore it that bypasses hook sourcing (e.g., a `frw rescue` subcommand in a file that
+      doesn't depend on common.sh)
+    - Post-merge verification: run `frw doctor`, confirm no bin/ file deletions slipped
+      through, confirm hooks still parse
+    - Artifact reconciliation: for `.furrow/rows/*/` additions, confirm each row is
+      archived and its source_todo is closed in seeds.jsonl
+    - Seeds.jsonl ordering: currently conflict-prone; consider sorting by created_at or
+      grouping by id to reduce conflicts
+    - Script-guard heredoc false positives: either whitelist git commands, or don't match
+      paths inside quoted strings
+  references:
+    - bin/frw.d/scripts/launch-phase.sh
+    - bin/frw.d/hooks/script-guard.sh
+    - bin/frw.d/lib/common.sh
+    - .claude/settings.json
+    - commands/
+  source_type: "brain-dump"
+  created_at: "2026-04-22T00:00:00Z"
+  updated_at: "2026-04-22T00:00:00Z"
+  urgency: "medium"
+  impact: "high"
+  effort: "medium"
+  files_touched:
+    - commands/
+    - bin/frw.d/scripts/
+    - bin/frw.d/hooks/
+  status: active
