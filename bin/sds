@@ -552,21 +552,31 @@ cmd_migrate_from_beans() {
   printf 'Migrated %d seeds from beans to seeds\n' "$count"
 }
 
+# --- Normalization helper ---
+
+# normalize_seeds — call frw normalize-seeds if frw is available.
+# Runs after any write that mutates seeds.jsonl.
+normalize_seeds() {
+  if command -v frw >/dev/null 2>&1; then
+    frw normalize-seeds 2>/dev/null || true
+  fi
+}
+
 # --- Main dispatcher ---
 
 require_jq
 
 case "${1:-}" in
   init) shift; cmd_init "$@" ;;
-  create) shift; cmd_create "$@" ;;
+  create) shift; cmd_create "$@"; normalize_seeds ;;
   list) shift; cmd_list "$@" ;;
   show) shift; cmd_show "$@" ;;
-  update) shift; cmd_update "$@" ;;
-  close) shift; cmd_close "$@" ;;
+  update) shift; cmd_update "$@"; normalize_seeds ;;
+  close) shift; cmd_close "$@"; normalize_seeds ;;
   search) shift; cmd_search "$@" ;;
-  dep) shift; cmd_dep "$@" ;;
+  dep) shift; cmd_dep "$@"; normalize_seeds ;;
   ready) shift; cmd_ready "$@" ;;
-  migrate-from-beans) shift; cmd_migrate_from_beans "$@" ;;
+  migrate-from-beans) shift; cmd_migrate_from_beans "$@"; normalize_seeds ;;
   -h|--help|help)
     cat <<'EOF'
 seeds (sds) — minimal git-native seed tracker

@@ -51,6 +51,10 @@ Code generation:
   validate-definition <path>  Validate definition.yaml schema
   validate-naming <type> <name>
 
+Normalization:
+  normalize-seeds             Sort .furrow/seeds/seeds.jsonl by (created_at, id)
+  normalize-todos             Sort .furrow/almanac/todos.yaml by (created_at, id)
+
 Lifecycle:
   merge-to-main <name>        Merge archived row branch to main
   migrate-to-furrow [--dry-run]
@@ -155,6 +159,14 @@ case "$cmd" in
     ;;
   run-integration-tests)
     exec /bin/bash -c '. "$1/bin/frw.d/scripts/run-integration-tests.sh" && frw_run_integration_tests "${@:2}"' _ "$FURROW_ROOT" "$@"
+    ;;
+  normalize-seeds)
+    . "$FURROW_ROOT/bin/frw.d/scripts/normalize-seeds.sh"
+    frw_normalize_seeds "$@"
+    ;;
+  normalize-todos)
+    . "$FURROW_ROOT/bin/frw.d/scripts/normalize-todos.sh"
+    frw_normalize_todos "$@"
     ;;
   rescue)
     exec "$FURROW_ROOT/bin/frw.d/scripts/rescue.sh" "$@"

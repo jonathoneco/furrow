@@ -2472,6 +2472,197 @@ rws_list_user_actions() {
 }
 
 # ============================================================
+#  Subcommand: validate-sort-invariant
+# ============================================================
+
+rws_validate_sort_invariant() {
+  _vsi_file=""
+  _vsi_key=""
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --file)
+        [ $# -ge 2 ] || { printf 'rws: validate-sort-invariant: --file requires a path\n' >&2; exit 2; }
+        _vsi_file="$2"
+        shift 2
+        ;;
+      --key)
+        [ $# -ge 2 ] || { printf 'rws: validate-sort-invariant: --key requires an expression\n' >&2; exit 2; }
+        _vsi_key="$2"
+        shift 2
+        ;;
+      *)
+        printf 'rws: validate-sort-invariant: unknown argument: %s\n' "$1" >&2
+        exit 2
+        ;;
+    esac
+  done
+
+  # Default key expression
+  _vsi_default_key='[.created_at // "", .id // ""]'
+  [ -n "$_vsi_key" ] || _vsi_key="$_vsi_default_key"
+
+  _vsi_exit=0
+
+  if [ -n "$_vsi_file" ]; then
+    # Single-file mode
+    _vsi_check_file "$_vsi_file" "$_vsi_key" || _vsi_exit=$?
+  else
+    # Default: check both seeds.jsonl and todos.yaml
+    _seeds=".furrow/seeds/seeds.jsonl"
+    _todos=".furrow/almanac/todos.yaml"
+
+    if [ -f "$_seeds" ]; then
+      _vsi_check_file "$_seeds" "$_vsi_default_key" || _vsi_exit=$?
+    fi
+    if [ -f "$_todos" ]; then
+      _vsi_check_todos "$_todos" "$_vsi_default_key" || _vsi_exit=$?
+    fi
+  fi
+
+  return $_vsi_exit
+}
+
+# _vsi_check_file: check seeds.jsonl sort invariant (no mutation)
+_vsi_check_file() {
+  _cf_path="$1"
+  _cf_key="$2"
+
+  if [ ! -f "$_cf_path" ]; then
+    printf '[furrow:error] validate-sort-invariant: file not found: %s\n' "$_cf_path" >&2
+    return 2
+  fi
+
+  # Determine if it's a JSONL or YAML file
+  case "$_cf_path" in
+    *.yaml|*.yml)
+      _vsi_check_todos "$_cf_path" "$_cf_key"
+      return $?
+      ;;
+  esac
+
+  # JSONL file: sort in-memory and diff
+  _cf_tmp_keys=$(mktemp)
+  _cf_tmp_sorted=$(mktemp)
+  # shellcheck disable=SC2064
+  trap "rm -f '$_cf_tmp_keys' '$_cf_tmp_sorted'" EXIT INT TERM
+
+  _cf_linenum=0
+  _cf_err=0
+  while IFS= read -r _cf_line || [ -n "$_cf_line" ]; do
+    case "$_cf_line" in
+      '') continue ;;
+    esac
+    _cf_linenum=$((_cf_linenum + 1))
+    _cf_key_val=$(printf '%s\n' "$_cf_line" | LC_ALL=C jq -r "($_cf_key) | @tsv" 2>/dev/null) || {
+      printf '[furrow:error] validate-sort-invariant: invalid JSON at line %d of %s\n' "$_cf_linenum" "$_cf_path" >&2
+      _cf_err=1
+      break
+    }
+    printf '%s\t%d\t%s\n' "$_cf_key_val" "$_cf_linenum" "$_cf_line" >> "$_cf_tmp_keys"
+  done < "$_cf_path"
+
+  if [ "$_cf_err" -ne 0 ]; then
+    rm -f "$_cf_tmp_keys" "$_cf_tmp_sorted"
+    trap - EXIT INT TERM
+    return 2
+  fi
+
+  if [ ! -s "$_cf_tmp_keys" ]; then
+    rm -f "$_cf_tmp_keys" "$_cf_tmp_sorted"
+    trap - EXIT INT TERM
+    return 0
+  fi
+
+  # Produce sorted version
+  LC_ALL=C sort -t "$(printf '\t')" -k1,1 -k2,2 -k3,3n "$_cf_tmp_keys" | \
+    cut -f4- > "$_cf_tmp_sorted"
+
+  # Compare: sorted version vs on-disk (non-empty lines only)
+  _cf_disk=$(grep -v '^$' "$_cf_path" 2>/dev/null || true)
+  _cf_sorted_content=$(cat "$_cf_tmp_sorted" 2>/dev/null || true)
+
+  rm -f "$_cf_tmp_keys" "$_cf_tmp_sorted"
+  trap - EXIT INT TERM
+
+  if [ "$_cf_disk" = "$_cf_sorted_content" ]; then
+    return 0
+  fi
+
+  # Find first out-of-order pair by comparing line by line
+  _cf_first_bad=0
+  _cf_n=0
+  while IFS= read -r _cf_sorted_line; do
+    _cf_n=$((_cf_n + 1))
+    _cf_disk_line=$(printf '%s\n' "$_cf_disk" | sed -n "${_cf_n}p")
+    if [ "$_cf_sorted_line" != "$_cf_disk_line" ]; then
+      _cf_first_bad=$_cf_n
+      break
+    fi
+  done << EOF
+$(printf '%s\n' "$_cf_sorted_content")
+EOF
+
+  printf '[furrow:error] sort-invariant violated on %s: first out-of-order pair at line %d\n' \
+    "$_cf_path" "$_cf_first_bad" >&2
+  return 3
+}
+
+# _vsi_check_todos: check todos.yaml sort invariant (no mutation)
+_vsi_check_todos() {
+  _ct_path="$1"
+  _ct_key="$2"  # not used for yq — always .created_at, .id
+
+  if [ ! -f "$_ct_path" ]; then
+    printf '[furrow:error] validate-sort-invariant: file not found: %s\n' "$_ct_path" >&2
+    return 2
+  fi
+
+  if ! command -v yq >/dev/null 2>&1; then
+    printf '[furrow:error] validate-sort-invariant: yq required for YAML files\n' >&2
+    return 2
+  fi
+
+  _ct_tmp_sorted=$(mktemp)
+  _ct_tmp_disk=$(mktemp)
+  # shellcheck disable=SC2064
+  trap "rm -f '$_ct_tmp_sorted' '$_ct_tmp_disk'" EXIT INT TERM
+
+  # Get normalized form of on-disk file
+  LC_ALL=C yq -o=yaml '.' "$_ct_path" > "$_ct_tmp_disk" 2>/dev/null || {
+    printf '[furrow:error] validate-sort-invariant: failed to parse %s\n' "$_ct_path" >&2
+    rm -f "$_ct_tmp_sorted" "$_ct_tmp_disk"
+    trap - EXIT INT TERM
+    return 2
+  }
+
+  # Get sorted form
+  LC_ALL=C yq -o=yaml 'sort_by(.created_at, .id)' "$_ct_path" > "$_ct_tmp_sorted" 2>/dev/null || {
+    printf '[furrow:error] validate-sort-invariant: yq sort failed on %s\n' "$_ct_path" >&2
+    rm -f "$_ct_tmp_sorted" "$_ct_tmp_disk"
+    trap - EXIT INT TERM
+    return 2
+  }
+
+  # Compare
+  if cmp -s "$_ct_tmp_disk" "$_ct_tmp_sorted"; then
+    rm -f "$_ct_tmp_sorted" "$_ct_tmp_disk"
+    trap - EXIT INT TERM
+    return 0
+  fi
+
+  # Find first diff line
+  _ct_first_bad=$(diff "$_ct_tmp_disk" "$_ct_tmp_sorted" | grep '^[0-9]' | head -1 | sed 's/[^0-9].*//')
+
+  rm -f "$_ct_tmp_sorted" "$_ct_tmp_disk"
+  trap - EXIT INT TERM
+
+  printf '[furrow:error] sort-invariant violated on %s: first out-of-order pair at line %s\n' \
+    "$_ct_path" "${_ct_first_bad:-unknown}" >&2
+  return 3
+}
+
+# ============================================================
 #  Subcommand: help
 # ============================================================
 
@@ -2519,6 +2710,10 @@ Commands:
   update-worktree-summary [name] <section> [--replace]
                                          Update an agent-written worktree-summary section
 
+  validate-sort-invariant [--file <path>] [--key <key-expr>]
+                                         Verify sort invariant on seeds.jsonl / todos.yaml
+                                         Exit 0 = sorted; exit 3 = out-of-order; no mutation
+
   help                                   Show this help message
 
 Exit codes:
@@ -2562,6 +2757,7 @@ case "$cmd" in
   regenerate-worktree-summary) rws_regenerate_worktree_summary "$@" ;;
   validate-worktree-summary)   rws_validate_worktree_summary "$@" ;;
   update-worktree-summary)     rws_update_worktree_summary "$@" ;;
+  validate-sort-invariant)     rws_validate_sort_invariant "$@" ;;
   help|--help|-h)     rws_help ;;
   *)                  echo "Unknown command: $cmd" >&2; rws_help >&2; exit 1 ;;
 esac
