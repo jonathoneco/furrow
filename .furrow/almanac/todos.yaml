@@ -1795,3 +1795,86 @@
   files_touched:
     - bin/rws
   status: active
+# --- Standalone: Post-Merge Watch-List as Almanac Primitive ---
+- id: post-merge-watch-list
+  title: "Post-merge watch-list — track behavioral signals to validate after rows merge"
+  context: |
+    When a row merges, it often introduces behavioral changes that can't be verified
+    by the review gate alone — e.g., "does dual-review actually produce useful findings
+    on real rows?", "do step agents actually use scenarios to pick specialists, or
+    ignore them?", "what's the cost delta per row after this change?" These signals
+    emerge only after the change is in production use across multiple rows.
+
+    Currently there's no structured place to capture these signals. They live in
+    archive commit messages or get forgotten. An almanac primitive could track them
+    as first-class entities with trigger conditions, validation methods, and
+    resolution status. Identified during dual-review-delegation archive — listed 5
+    post-merge signals to watch but had nowhere structured to record them.
+  work_needed: |
+    - Ideate on the shape of a watch-list primitive (YAML schema, CLI, lifecycle)
+    - Define trigger conditions: how many rows post-merge? time-based? signal-based?
+    - Define resolution: who marks a watch item validated/invalidated/still-watching?
+    - Consider integration with existing almanac primitives (learnings, todos, rationale)
+    - Consider whether this is a new almanac file (watches.yaml) or a field on TODOs/rationale
+    - Consider UI: does `alm` grow a `watch` subcommand? Does `rws status` surface active watches?
+    - Consider review step integration: should reviewers suggest watch items?
+    - Consider archive integration: extract watch items from summary/review at archive time
+  references:
+    - .furrow/almanac/
+    - bin/alm
+    - skills/shared/summary-protocol.md
+    - skills/review.md
+  source_work_unit: "dual-review-delegation"
+  source_type: brain-dump
+  created_at: "2026-04-13T00:00:00Z"
+  updated_at: "2026-04-13T00:00:00Z"
+  urgency: low
+  impact: high
+  effort: medium
+  files_touched:
+    - .furrow/almanac/
+    - bin/alm
+    - skills/
+  status: active
+# --- Standalone: Effort Selection Alongside Model Selection ---
+- id: effort-selection-alongside-model
+  title: "Add effort_hint to specialists and step skills — decouple reasoning depth from model identity"
+  context: |
+    Specialists currently declare `model_hint` (opus/sonnet/haiku) in frontmatter,
+    and step skills declare `model_default`. This maps cleanly to "which model?"
+    but conflates model choice with reasoning effort. Modern models expose explicit
+    effort/thinking parameters — Claude extended thinking budgets, OpenAI's
+    reasoning_effort (low/medium/high) — that can change cost and quality
+    independently of model choice. A sonnet with high effort may outperform opus
+    with low effort on some tasks, at much lower cost.
+
+    Today Furrow can only control quality via model swap. Tasks that need deep
+    reasoning force an opus upgrade; tasks that need only quick execution can't
+    dial effort down on opus when opus is the default. This is crude.
+  work_needed: |
+    - Design an `effort_hint` field (low/medium/high or explicit budget) for specialist frontmatter
+    - Extend step skill `model_default` to allow paired `effort_default`
+    - Decide matrix semantics: model × effort — are all combinations valid? any forbidden pairs?
+    - Plumb effort parameter through agent dispatch (Agent tool thinking budget, claude -p flags, codex -c)
+    - Consider cost accounting: effort affects cost more than model choice for reasoning-heavy tasks
+    - Update references/specialist-template.md with effort_hint guidance
+    - Consider: should step-level modifier shift effort (research = high effort, implement = medium)?
+    - Research current API surface for effort control across providers (Claude thinking, Codex reasoning_effort, etc.)
+  references:
+    - specialists/
+    - references/specialist-template.md
+    - skills/
+    - bin/frw.d/scripts/
+  source_work_unit: "dual-review-delegation"
+  source_type: brain-dump
+  created_at: "2026-04-13T00:00:00Z"
+  updated_at: "2026-04-13T00:00:00Z"
+  urgency: low
+  impact: high
+  effort: medium
+  files_touched:
+    - specialists/
+    - references/specialist-template.md
+    - skills/
+    - bin/frw.d/scripts/
+  status: active
