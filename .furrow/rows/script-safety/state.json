@@ -1,0 +1,85 @@
+{
+  "name": "script-safety",
+  "title": "Restrict direct access to internal/dependency scripts",
+  "description": "Restrict direct access to internal/dependency scripts",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "script-execution-guard": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "definition.yaml validated; dual review passed (fresh-context + gpt-5.4 cross-model); all scope/mechanism/behavior decisions settled",
+      "timestamp": "2026-04-10T09:20:21Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "research complete: implementation pattern fully mapped from existing hooks; all sources primary (codebase); no unknowns",
+      "timestamp": "2026-04-10T09:24:02Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "plan complete: single deliverable, linear implementation, clone of state-guard.sh with command extraction + execution verb detection",
+      "timestamp": "2026-04-10T09:26:04Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "spec complete: 13 ACs, 5 test scenarios with verification commands, implementation-ready",
+      "timestamp": "2026-04-10T09:28:27Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "decompose complete: single wave, single deliverable, plan.json written",
+      "timestamp": "2026-04-10T09:29:03Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "implement complete: script-guard.sh hook, settings.json registration, cli-architecture.md update, 16/16 integration tests pass",
+      "timestamp": "2026-04-10T09:52:12Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "implement complete: script-guard.sh hook, settings.json registration, cli-architecture.md update, 16/16 integration tests pass",
+      "timestamp": "2026-04-10T09:52:39Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/script-safety",
+  "mode": "code",
+  "base_commit": "55e7d5d6c3cbb63871c39ba038a80e873516faf9",
+  "seed_id": "furrow-6719",
+  "epic_seed_id": null,
+  "created_at": "2026-04-08T18:19:25Z",
+  "updated_at": "2026-04-10T09:57:58Z",
+  "archived_at": "2026-04-10T09:57:58Z",
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}

@@ -138,6 +138,7 @@ hook scripts and call CLIs when they need harness data.
 | `post-compact.sh` | No | Context recovery after message compaction |
 | `work-check.sh` | No | Session-end row state verification |
 | `gate-check.sh` | Yes (`rws gate-check`) | Delegates gate validation to rws |
+| `script-guard.sh` | No | Blocks direct execution of bin/frw.d/ scripts |
 
 **Principle**: Domain logic belongs in CLIs; behavioral policies stay in hooks.
 

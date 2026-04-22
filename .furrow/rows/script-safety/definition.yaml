@@ -1,0 +1,42 @@
+objective: >
+  Add a PreToolUse Bash hook that blocks direct execution of scripts
+  inside bin/frw.d/, enforcing that all harness interaction goes through
+  the CLI entry points (frw, rws, alm, sds).
+
+deliverables:
+  - name: script-execution-guard
+    acceptance_criteria:
+      - Hook file at bin/frw.d/hooks/script-guard.sh
+      - Registered in .claude/settings.json PreToolUse Bash matchers
+      - Blocks "bash bin/frw.d/scripts/update-state.sh" (exit 2)
+      - Blocks "source bin/frw.d/lib/common.sh" (exit 2)
+      - Allows "cat bin/frw.d/scripts/update-state.sh" (exit 0)
+      - Allows "frw update-state ..." (exit 0 — no frw.d/ in command)
+      - Integration test covering block and allow cases
+      - Documented in cli-architecture.md policy hooks table
+    file_ownership:
+      - bin/frw.d/hooks/script-guard.sh
+      - tests/integration/test-script-guard.sh
+
+context_pointers:
+  - path: bin/frw.d/hooks/state-guard.sh
+    note: Pattern to follow — PreToolUse Write/Edit guard with exit 2
+  - path: bin/frw.d/hooks/verdict-guard.sh
+    note: Pattern to follow — same guard structure
+  - path: bin/frw.d/hooks/gate-check.sh
+    note: Existing PreToolUse Bash hook
+  - path: bin/frw.d/lib/common.sh
+    note: Sourced by hooks for logging utilities
+  - path: docs/architecture/cli-architecture.md
+    note: Policy hooks table to update
+
+constraints:
+  - Only block execution verbs (bash, sh, source, .) — not reads (cat, grep, head)
+  - Match on "frw.d/" substring for broad coverage
+  - Hard block (exit 2), no warn mode
+  - Must not interfere with "frw hook ..." dispatch (frw hides internal paths)
+  - Policy enforcement, not security isolation — cooperative agent threat model
+
+gate_policy: supervised
+
+source_todo: script-access-restrictions
