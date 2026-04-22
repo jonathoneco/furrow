@@ -10,27 +10,27 @@ dependency_graph:
   nodes:
     - id: install-architecture-overhaul
       phase: 1
-      row: install-and-merge-foundation
+      row: install-and-merge
       status: active
     - id: merge-process-skill
       phase: 1
-      row: install-and-merge-foundation
-      status: active
-    - id: post-merge-watch-list
-      phase: 1
-      row: install-and-merge-foundation
+      row: install-and-merge
       status: active
     - id: config-cleanup
       phase: 1
-      row: install-and-merge-foundation
+      row: install-and-merge
       status: active
     - id: worktree-reintegration-summary
       phase: 1
-      row: install-and-merge-foundation
+      row: install-and-merge
+      status: active
+    - id: post-merge-watch-list
+      phase: 1
+      row: post-ship-reexamination
       status: active
     - id: decision-review-todo-type
       phase: 1
-      row: install-and-merge-foundation
+      row: post-ship-reexamination
       status: active
     - id: almanac-graph-primitives
       phase: 2
@@ -165,7 +165,7 @@ dependency_graph:
       row: furrow-tui
       status: active
   edges:
-    - from: install-and-merge-foundation
+    - from: install-and-merge
       to: almanac-graph-and-promotion
       type: inferred
       reason: "foundational — stable merge/install pipeline before structural graph work"
@@ -276,21 +276,19 @@ phases:
   - number: 1
     title: "Install & Merge Foundation"
     status: planned
-    rationale: "Recurring commit/merge issues across this repo and consumer projects. One coherent install/merge/handoff story: self-hosting hygiene, the ~/.config/furrow/ tier, merge-process skill, worktree reintegration summary (the output of /furrow:merge), post-merge watch-list, and decision-review TODO type (the watch-list's TODO-schema counterpart). Folded config-cleanup in from Phase 5 because the 3-tier config resolution chain is inseparable from install-architecture decisions; folded worktree-reintegration-summary and decision-review-todo-type in because they unify with merge-process-skill and post-merge-watch-list respectively."
-    parallelism: "install-and-merge-foundation (single row)"
+    rationale: "Recurring commit/merge issues across this repo and consumer projects. Two parallel rows: install-and-merge (install architecture + /furrow:merge skill + reintegration summary, all sharing bin/frw.d/ hook surface) and post-ship-reexamination (watch-list + decision-review TODO type — structurally decoupled primitive for post-evidence re-examination)."
+    parallelism: "install-and-merge || post-ship-reexamination"
     rows:
-      - branch: work/install-and-merge-foundation
-        description: "Install architecture, ~/.config/furrow/ tier, /furrow:merge skill + reintegration summary, post-merge watch-list + decision-review TODO type"
+      - branch: work/install-and-merge
+        description: "Install architecture + ~/.config/furrow/ tier + /furrow:merge skill + worktree reintegration summary"
         todos:
           [
             install-architecture-overhaul,
             config-cleanup,
             merge-process-skill,
             worktree-reintegration-summary,
-            post-merge-watch-list,
-            decision-review-todo-type,
           ]
-        estimated_sessions: 6
+        estimated_sessions: 5
         key_files:
           [
             install.sh,
@@ -299,15 +297,26 @@ phases:
             bin/frw.d/hooks/,
             bin/frw.d/lib/common.sh,
             bin/frw,
-            bin/alm,
             commands/,
             commands/next.md,
             skills/implement.md,
             skills/shared/context-isolation.md,
+            .furrow/,
+          ]
+        conflict_risk: none
+        completed_at: null
+      - branch: work/post-ship-reexamination
+        description: "Almanac watch-list primitive + decision-review TODO schema type — structured post-evidence re-examination"
+        todos: [post-merge-watch-list, decision-review-todo-type]
+        estimated_sessions: 2
+        key_files:
+          [
+            .furrow/almanac/,
+            bin/alm,
             schemas/todos.schema.yaml,
             adapters/shared/schemas/todos.schema.yaml,
-            .furrow/almanac/,
-            .furrow/,
+            skills/review.md,
+            skills/shared/summary-protocol.md,
           ]
         conflict_risk: none
         completed_at: null

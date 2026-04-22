@@ -1,13 +1,13 @@
 # Roadmap
 
-> Last updated: 2026-04-22 | 7 phases, 0/7 complete | 39 active TODOs across 13 rows | regrouped: worktree-reintegration, decision-review-todo-type → Phase 1; ambient-promotion → Phase 2; effort_hint → Phase 3
+> Last updated: 2026-04-22 | 7 phases, 0/7 complete | 39 active TODOs across 14 rows | Phase 1 parallelized: install-and-merge || post-ship-reexamination
 
 ## Dependency DAG (active items only)
 
 ```
 Phase 1 — Install & Merge Foundation
-  install-and-merge-foundation  ── (foundational) ──┐
-                                                    │
+  install-and-merge        ── (foundational) ───────┐
+  post-ship-reexamination  ···  [terminal]          │
 Phase 2 — Almanac Graph, Seeds, Promotion           ▼
   almanac-graph-and-promotion  ~~ (foundational) ───┴──┐
                                                        │
@@ -46,20 +46,29 @@ Legend: `──` hard dep · `~~` inferred (foundational/merge) · `···` inde
 
 ## Phase 1 — Install & Merge Foundation — PLANNED
 
-Recurring commit/merge issues across this repo and consumer projects. One coherent install/merge/handoff story: self-hosting hygiene, the `~/.config/furrow/` tier, `/furrow:merge` skill, worktree reintegration summary (the output of `/furrow:merge`), post-merge watch-list, and decision-review TODO type (the watch-list's TODO-schema counterpart). Folded `config-cleanup` in from Phase 5, and folded `worktree-reintegration-summary` + `decision-review-todo-type` in from Phase 4/6 because each of those pairs should be designed as one primitive.
+Recurring commit/merge issues across this repo and consumer projects. Two parallel rows: `install-and-merge` (install architecture + `/furrow:merge` skill + reintegration summary, all sharing `bin/frw.d/` hook surface) and `post-ship-reexamination` (watch-list + decision-review TODO type — structurally decoupled primitive for post-evidence re-examination).
 
-### work/install-and-merge-foundation (6 TODOs, ~6 sessions)
+**Parallelism**: `install-and-merge || post-ship-reexamination`
+
+### work/install-and-merge (4 TODOs, ~5 sessions)
 
 - `install-architecture-overhaul` — Install architecture — self-hosting, symlink hygiene, commit safety
 - `config-cleanup` — ~/.config/furrow/ tier, 3-tier resolution chain, migration path
 - `merge-process-skill` — Design a /furrow:merge skill — reconcile worktree branches back into main
 - `worktree-reintegration-summary` — Produce summary for worktree reintegration (the /furrow:merge output)
+
+- **Key files**: `install.sh`, `bin/frw.d/install.sh`, `bin/frw.d/scripts/launch-phase.sh`, `bin/frw.d/hooks/`, `bin/frw.d/lib/common.sh`, `bin/frw`, `commands/`, `commands/next.md`, `skills/implement.md`, `skills/shared/context-isolation.md`, `.furrow/`
+- **Conflict risk**: none
+- **Why together**: install-architecture fixes the hook-cascade lockout and sets the "install residue" patterns that `/furrow:merge` needs to reject; the reintegration summary IS the `/furrow:merge` output. All four share `bin/frw.d/` hook surface so splitting would force coordination.
+
+### work/post-ship-reexamination (2 TODOs, ~2 sessions)
+
 - `post-merge-watch-list` — Post-merge watch-list — track behavioral signals to validate after rows merge
 - `decision-review-todo-type` — Decision-review TODO type — structured post-evidence re-examination triggers
 
-- **Key files**: `install.sh`, `bin/frw.d/install.sh`, `bin/frw.d/scripts/launch-phase.sh`, `bin/frw.d/hooks/`, `bin/frw.d/lib/common.sh`, `bin/frw`, `bin/alm`, `commands/`, `commands/next.md`, `skills/implement.md`, `skills/shared/context-isolation.md`, `schemas/todos.schema.yaml`, `.furrow/almanac/`, `.furrow/`
-- **Conflict risk**: none
-- **Why together**: All six unify under "get install/merge/watch right as one primitive." The reintegration summary IS the /furrow:merge output; the decision-review TODO type IS the TODO-schema side of the watch-list. Splitting these across phases would force the same designs to ping-pong between branches.
+- **Key files**: `.furrow/almanac/`, `bin/alm`, `schemas/todos.schema.yaml`, `skills/review.md`, `skills/shared/summary-protocol.md`
+- **Conflict risk**: none (fully decoupled from install-and-merge)
+- **Why together**: Both design a structured primitive for "after X ships, re-examine Y." Watch-list is almanac-level; decision-review is TODO-schema-level — unifying the design may produce one primitive instead of two competing ones.
 
 ## Phase 2 — Almanac Graph, Seeds, and Promotion — PLANNED
 
@@ -214,7 +223,8 @@ Low-urgency items. Insights feed back into earlier work. TUI is aspirational.
 
 ```sh
 # Phase 1 — Install & Merge Foundation
-git worktree add ../furrow-install-and-merge-foundation -b work/install-and-merge-foundation
+git worktree add ../furrow-install-and-merge -b work/install-and-merge
+git worktree add ../furrow-post-ship-reexamination -b work/post-ship-reexamination
 
 # Phase 2 — Almanac Graph, Seeds, Promotion
 git worktree add ../furrow-almanac-graph-and-promotion -b work/almanac-graph-and-promotion
