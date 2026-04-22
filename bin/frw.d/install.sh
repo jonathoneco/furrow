@@ -826,6 +826,35 @@ bin/alm
     "$_INSTALL_MODE" \
     "$_mig_ver"
 
+  # --- 10. XDG config bootstrap (AC-3) ---
+  # Consumer installs bootstrap empty global config files if they don't exist.
+  # Source-mode self-installs skip this — the Furrow source repo does not own
+  # consumer XDG state.
+  if [ "$_INSTALL_MODE" = "consumer" ]; then
+    echo ""
+    echo "--- XDG config bootstrap ---"
+    _xdg_cfg_home="${XDG_CONFIG_HOME:-${HOME}/.config}"
+    _furrow_cfg_dir="${_xdg_cfg_home}/furrow"
+    ensure_dir "$_furrow_cfg_dir"
+
+    _cfg_yaml="${_furrow_cfg_dir}/config.yaml"
+    if [ ! -f "$_cfg_yaml" ]; then
+      printf '# Global Furrow defaults. Overridden per-project by .furrow/furrow.yaml.\n{}\n' \
+        > "$_cfg_yaml"
+      _ok "config.yaml bootstrapped at $_cfg_yaml"
+    else
+      _skip "config.yaml already exists at $_cfg_yaml"
+    fi
+
+    _promo_yaml="${_furrow_cfg_dir}/promotion-targets.yaml"
+    if [ ! -f "$_promo_yaml" ]; then
+      printf 'targets: []\n' > "$_promo_yaml"
+      _ok "promotion-targets.yaml bootstrapped at $_promo_yaml"
+    else
+      _skip "promotion-targets.yaml already exists at $_promo_yaml"
+    fi
+  fi
+
   # --- Summary ---
   echo ""
   echo "=== Installation Complete ==="
