@@ -5,7 +5,7 @@ Ship a first-class `observations` primitive to the almanac that captures post-sh
 
 ## Current State
 Step: implement | Status: not_started
-Deliverables: 0/4 (defined)
+Deliverables: 1/1
 Mode: code
 
 ## Artifact Paths
