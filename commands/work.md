@@ -25,7 +25,7 @@ Scan arguments in order:
 4. Read `state.json`, run `rws load-step "{name}"` to inject current skill.
 5. Display: task name, step, step_status, deliverable progress.
 6. Continue execution within the current step.
-7. After any transition: run `rws gate-check` then `frw run-gate`.
+7. After any transition: run `frw run-gate` (gate enforcement happens inside `rws transition` itself).
 
 ### Route 2: `/work <description>` (create new row)
 
@@ -72,13 +72,12 @@ Resolve the focused row via `find_focused_row()` logic:
 3. Run `rws load-step "{name}"` to inject current skill.
 4. If step_status is "completed": run `rws transition "{name}"`.
 5. If step_status is "not_started": set to "in_progress", load skill.
-6. After any transition: run `rws gate-check` then `frw run-gate`.
+6. After any transition: run `frw run-gate` (gate enforcement, including step ordering and pending user actions, happens inside `rws transition` itself).
 7. Continue execution within the current step.
 
 ## Step Routing After Transition
 
 After `rws transition` advances the step:
-1. Run `rws gate-check` to check if the next step is trivially resolvable.
-2. If precheck passes, run `frw run-gate` for evaluator confirmation.
-3. If prechecked and confirmed, repeat until a non-trivial step is reached.
-4. Load the new step's skill and begin.
+1. Run `frw run-gate` for evaluator confirmation (pre-step evaluation is handled internally by `rws transition`).
+2. If the step is trivially resolvable (prechecked), repeat until a non-trivial step is reached.
+3. Load the new step's skill and begin.

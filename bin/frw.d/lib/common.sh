@@ -150,6 +150,58 @@ extract_row_from_path() {
   return 0
 }
 
+# --- markdown section helpers ---
+
+# extract_md_section <file> <display_name>
+# Prints the content lines of the given ## section from a markdown file.
+# Stops at the next ## heading. Strips blank lines.
+extract_md_section() {
+  _ems_file="$1"
+  _ems_display="$2"
+  awk -v sec="$_ems_display" '
+    $0 == "## " sec { found=1; next }
+    /^## /          { if (found) exit }
+    found           { print }
+  ' "$_ems_file" | sed '/^$/d'
+}
+
+# replace_md_section <file> <display_name> <content>
+# Atomically replaces the ## section with new content.
+# Writes to a temp file, validates the section is non-empty, then renames.
+# Exits with EXIT_VALIDATION (3) if the section is missing/empty after write.
+replace_md_section() {
+  _rms_file="$1"
+  _rms_display="$2"
+  _rms_content="$3"
+
+  _rms_tmp="${_rms_file}.tmp.$$"
+  trap 'rm -f "$_rms_tmp"' EXIT INT TERM
+
+  awk -v section="$_rms_display" -v new_content="$_rms_content" '
+    /^## / { if (header == section) { replacing=0 } }
+    /^## / { header=$0; sub(/^## /, "", header) }
+    header == section && !printed_new { print "## " section; printf "%s\n", new_content; printed_new=1; replacing=1; next }
+    replacing { next }
+    { print }
+  ' "$_rms_file" > "$_rms_tmp"
+
+  _rms_check="$(awk -v sec="$_rms_display" '
+    $0 == "## " sec { found=1; next }
+    /^## /          { if (found) exit }
+    found && NF     { print }
+  ' "$_rms_tmp")"
+
+  if [ -z "$_rms_check" ]; then
+    rm -f "$_rms_tmp"
+    trap - EXIT INT TERM
+    printf "Validation failed: section '%s' has no non-empty lines after update\n" "$_rms_display" >&2
+    exit 3
+  fi
+
+  mv "$_rms_tmp" "$_rms_file"
+  trap - EXIT INT TERM
+}
+
 # --- focus management ---
 
 # find_focused_row — find the focused row directory

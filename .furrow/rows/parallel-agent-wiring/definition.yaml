@@ -1,0 +1,54 @@
+objective: |
+  Make the implement step reliably dispatch parallel sub-agents for multi-deliverable
+  rows, add CLI-mediated worktree reintegration summaries, and integrate user action
+  lifecycle tracking with desktop notifications and gate enforcement.
+
+deliverables:
+  - name: orchestration-instructions
+    acceptance_criteria:
+      - "Decision tree with explicit solo vs multi-agent thresholds in implement.md"
+      - "At least one complete Agent tool call example with specialist template inclusion"
+      - "Dispatch checklist the agent follows before each wave"
+      - "Wave inspection protocol documenting what to check between waves"
+    specialist: prompt-engineer
+    file_ownership: ["skills/implement.md", "skills/shared/context-isolation.md"]
+
+  - name: worktree-summary
+    acceptance_criteria:
+      - "rws update-worktree-summary command implemented in bin/rws"
+      - "Schema with 4 sections (files_changed, decisions, open_items, test_results) defined and validated"
+      - "Skill instructions for worktree agents to generate summary before exit"
+    depends_on: [orchestration-instructions]
+    specialist: cli-designer
+    file_ownership: ["bin/rws"]
+
+  - name: user-action-lifecycle
+    acceptance_criteria:
+      - "pending_user_actions array in state.json schema"
+      - "rws add-user-action and rws complete-user-action commands"
+      - "Gate-check blocks step transitions when pending actions exist"
+      - "Audit trail in gate records for action completion"
+    specialist: cli-designer
+    file_ownership: ["bin/rws", "skills/shared/"]
+
+context_pointers:
+  - path: .furrow/almanac/todos.yaml
+    note: "Source TODOs: parallel-agent-orchestration-adoption, worktree-reintegration-summary, user-action-integration"
+  - path: skills/implement.md
+    note: "Current orchestration instructions to rewrite"
+  - path: skills/shared/context-isolation.md
+    note: "Sub-agent context rules"
+  - path: bin/rws
+    note: "CLI commands to extend"
+  - path: specialists/
+    note: "Template format for Agent prompt injection"
+  - path: bin/frw.d/scripts/generate-plan.sh
+    note: "Wave plan generation"
+
+constraints:
+  - "All state mutations via CLI (no direct state.json edits)"
+  - "implement.md changes must not exceed step context budget (50 lines injected)"
+  - "Worktree summary follows update-summary CLI pattern exactly"
+  - "User action gate enforcement reuses existing gate-check hook infrastructure"
+
+gate_policy: supervised

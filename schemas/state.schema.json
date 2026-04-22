@@ -14,6 +14,7 @@
     "steps_sequence",
     "deliverables",
     "gates",
+    "pending_user_actions",
     "force_stop_at",
     "branch",
     "mode",
@@ -131,6 +132,22 @@
         }
       },
       "description": "Append-only array of gate records"
+    },
+    "pending_user_actions": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "required": ["id", "instructions", "created_at"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "instructions": { "type": "string", "minLength": 1 },
+          "created_at": { "type": "string" },
+          "completed_at": { "type": ["string", "null"] }
+        },
+        "additionalProperties": false
+      },
+      "description": "User actions that must be completed before step transitions"
     },
     "force_stop_at": {
       "type": ["string", "null"],

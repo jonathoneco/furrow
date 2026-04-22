@@ -118,7 +118,7 @@ CLIs, not in standalone scripts.
 
 | Former Hook | Disposition |
 |-------------|-------------|
-| gate-check | Folded into `rws transition` -- validates gates internally |
+| gate-check | Removed — gate enforcement (step ordering + pending user actions) happens inside `rws transition` itself |
 | summary-regen | Folded into `rws regenerate-summary` |
 | timestamp-update | Automatic in `rws` state updates |
 | transition-guard | Removed -- guarded scripts deleted |

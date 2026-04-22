@@ -1957,3 +1957,50 @@
     - skills/
     - bin/frw.d/scripts/
   status: active
+- id: re-evaluate-dispatch-enforcement
+  title: "Re-evaluate whether structural enforcement is needed for multi-agent dispatch"
+  context: |
+    Decision during parallel-agent-wiring ideation: we chose instruction-only
+    (concrete decision tree + examples in implement.md) over file-ownership hooks
+    for enforcing multi-agent dispatch. The enforcement approach (restricting
+    orchestrator edits to non-deliverable files) was deemed infeasible without
+    excessive complexity. This TODO is a post-landing review trigger — after
+    the instruction rewrite ships, observe whether agents actually dispatch
+    in multi-deliverable rows. If solo execution persists, revisit enforcement.
+  work_needed: |
+    - Run the next 3 multi-deliverable rows (2+ deliverables) with the new implement.md instructions
+    - For each: check whether Agent tool calls appear during the implement step (visible in session history or row learnings)
+    - Threshold: if <2 of 3 rows dispatch sub-agents for multi-deliverable waves, escalate to structural enforcement
+    - If >=2 of 3 dispatch correctly: close this TODO
+    - Enforcement options to revisit: file-ownership hooks, pre-edit hook checking agent identity, mandatory dispatch step
+  source_type: "decision-review"
+  created_at: "2026-04-09T00:00:00Z"
+  updated_at: "2026-04-09T00:00:00Z"
+  urgency: "low"
+  impact: "medium"
+  effort: "small"
+  depends_on:
+    - parallel-agent-orchestration-adoption
+  status: active
+- id: decision-review-todo-type
+  title: "Design a 'decision review' TODO type for post-evidence re-examination"
+  context: |
+    Current TODO framing is work-oriented (title, work_needed, effort). But some
+    follow-ups aren't work — they're review triggers: "after X ships, re-examine
+    whether decision Y was correct given new evidence." These don't have deliverables
+    or effort estimates in the traditional sense. They need: a trigger condition
+    (what must happen first), a review question (what to re-examine), and acceptance
+    criteria (how to decide the outcome). The current schema doesn't express this
+    cleanly — source_type: "decision-review" is a workaround, not a design.
+  work_needed: |
+    - Evaluate whether this is a new TODO type or a new source_type with additional fields
+    - Consider: trigger_condition, review_question, decision_options, evidence_needed
+    - Decide whether these live in todos.yaml or a separate review-triggers file
+    - Update alm triage to handle decision-review TODOs differently (surface when trigger met)
+  source_type: "brain-dump"
+  created_at: "2026-04-09T00:00:00Z"
+  updated_at: "2026-04-09T00:00:00Z"
+  urgency: "low"
+  impact: "medium"
+  effort: "medium"
+  status: active

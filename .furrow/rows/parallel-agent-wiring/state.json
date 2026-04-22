@@ -1,0 +1,102 @@
+{
+  "name": "parallel-agent-wiring",
+  "title": "Parallel agent adoption, worktree summaries, user action integration",
+  "description": "Parallel agent adoption, worktree summaries, user action integration",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "orchestration-instructions": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "worktree-summary": {
+      "status": "completed",
+      "wave": 2,
+      "corrections": 0
+    },
+    "user-action-lifecycle": {
+      "status": "completed",
+      "wave": 3,
+      "corrections": 0
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "definition.yaml validated; 3 deliverables (orchestration-instructions, worktree-summary, user-action-lifecycle) approved with sequential ordering; instruction-only approach for dispatch with deferred enforcement re-evaluation; fresh reviewer synthesis incorporated",
+      "timestamp": "2026-04-09T05:03:00Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "3 research topics investigated via parallel agents; orchestration gap is instructional (no code); worktree-summary replicates update-summary awk pattern; user-action extends state.json with append-only array + rws_transition enforcement; all sources primary (source code); synthesis and per-topic docs in research/",
+      "timestamp": "2026-04-09T05:13:04Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "5 architecture decisions settled: inline example (no reference file), shared awk function in common.sh, enforcement in rws_transition with gate-check.sh removal, no notify-send, 3 sequential waves. plan.json and team-plan.md produced. All open questions resolved.",
+      "timestamp": "2026-04-10T09:25:07Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "3 specs written: orchestration-instructions (5 ACs, 2 scenarios), worktree-summary (5 ACs, 3 scenarios), user-action-lifecycle (9 ACs, 4 scenarios). All implementation-ready with interface contracts, test scenarios, and implementation notes.",
+      "timestamp": "2026-04-10T09:37:03Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "plan.json validated: 3 waves, 3 deliverables, no file_ownership overlap, dependency ordering respected. No changes from plan step artifacts. Specialist assignments confirmed.",
+      "timestamp": "2026-04-10T09:38:53Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "3 waves implemented sequentially: orchestration-instructions (2f34838), worktree-summary (c151df3 + source 0eaa69b), user-action-lifecycle (b7c2bc6 + source 67b3078). All commands verified working end-to-end. All 3 deliverables marked complete.",
+      "timestamp": "2026-04-13T13:20:48Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/parallel-agent-wiring",
+  "mode": "code",
+  "base_commit": "55e7d5d6c3cbb63871c39ba038a80e873516faf9",
+  "seed_id": "furrow-de9d",
+  "epic_seed_id": null,
+  "created_at": "2026-04-08T18:19:37Z",
+  "updated_at": "2026-04-13T14:12:49Z",
+  "archived_at": "2026-04-13T14:12:49Z",
+  "source_todo": null,
+  "gate_policy_init": "supervised",
+  "pending_user_actions": [
+    {
+      "id": "test-action",
+      "instructions": "Test user action for verification",
+      "created_at": "2026-04-10T10:07:01Z",
+      "completed_at": "2026-04-10T10:07:15Z"
+    },
+    {
+      "id": "test-block",
+      "instructions": "Manual test for enforcement",
+      "created_at": "2026-04-13T13:21:31Z",
+      "completed_at": "2026-04-13T13:21:31Z"
+    }
+  ]
+}

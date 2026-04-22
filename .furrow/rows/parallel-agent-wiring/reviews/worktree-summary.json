@@ -1,0 +1,27 @@
+{
+  "deliverable": "worktree-summary",
+  "phase_a": "pass",
+  "phase_b": {
+    "dimensions": {
+      "code_reuse": {"score": 4, "rationale": "Shared functions used by both update-summary variants. regenerate_summary still uses inline awk — missed reuse."},
+      "pattern_fidelity": {"score": 4, "rationale": "update_worktree_summary mirrors update_summary structure. regenerate_worktree_summary omits post-write validation loop."},
+      "atomicity": {"score": 4, "rationale": "Temp + mv atomic on same fs. No trap cleanup for .tmp.$$ if awk fails under set -eu."},
+      "posix_compliance": {"score": 5, "rationale": "Clean POSIX sh. All quotes in place. No bashisms."},
+      "error_handling": {"score": 3, "rationale": "validate-worktree-summary returns exit 1 vs EXIT_VALIDATION=3 convention. regenerate_worktree_summary has no error path."}
+    }
+  },
+  "overall": "conditional",
+  "concerns": [
+    "regenerate_summary still uses inline awk — incomplete refactor",
+    "regenerate_worktree_summary lacks post-write section validation",
+    "validate_worktree_summary exit 1 breaks internal exit-code convention (though matches spec)",
+    "No trap cleanup of .tmp.$$ files if awk fails mid-rewrite",
+    "regenerate_worktree_summary has no error handling"
+  ],
+  "strengths": [
+    "replace_md_section cleanly extracted with embedded validation",
+    "update_worktree_summary faithful structural parallel of update_summary",
+    "POSIX-clean throughout",
+    "Subcommand dispatch correctly wired"
+  ]
+}
