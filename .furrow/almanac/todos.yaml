@@ -2064,3 +2064,95 @@
     - bin/frw.d/scripts/
     - bin/frw.d/hooks/
   status: active
+# --- Standalone: Install Architecture Overhaul ---
+- id: install-architecture-overhaul
+  title: "Install architecture overhaul — self-hosting, symlink hygiene, commit safety"
+  context: |
+    The install mechanism produces recurring commit and merge problems across
+    both the source Furrow repo and consumer projects where the harness is
+    installed. Symptoms observed repeatedly:
+
+    1. **Self-hosting confusion** — Furrow source repo also uses Furrow, so
+       install.sh runs against the source repo itself. Worktrees of the source
+       repo trigger install behavior and end up with symlinks pointing back at
+       the source repo (or at broken paths like `../../../furrow/specialists/`).
+       The source repo cannot tell "am I the source, or a consumer?" reliably.
+    2. **Committed symlinks with broken targets** — main currently has
+       `.claude/commands/specialist:*.md` committed as symlinks pointing to
+       `../../../furrow/specialists/*`. These paths resolve OUTSIDE the repo and
+       are broken on every clone. Newer 6 symlinks (accessibility-auditor,
+       css-specialist, frontend-designer, merge-specialist, prompt-engineer,
+       technical-writer) use the correct `../../specialists/` convention but
+       remain untracked because the fix is ad-hoc.
+    3. **Install residue in worktrees** — `frw launch-phase` creates worktrees
+       that invoke install-flow, leaving `.bak` files (`bin/alm.bak`,
+       `bin/rws.bak`, `bin/sds.bak`), symlink type-changes on tracked files,
+       and `.gitignore` additions for "furrow:managed" patterns that only make
+       sense in a consumer project. If any of this is committed, the merge
+       back into main deletes or symlinks over the real source files.
+    4. **Merge-conflict prone files** — seeds.jsonl is ordered by time of
+       write, so every row adds lines at the end; two branches both adding to
+       the tail conflict by default. todos.yaml conflicts because both
+       branches append. common.sh is a bottleneck that every hook sources, so
+       a conflict there locks out all tool use.
+    5. **Install-script tracks state it shouldn't** — converting files to
+       symlinks is visible to git as modification/type-change. Stage-before-
+       commit workflows pick these up inadvertently. There's no "install-
+       private" namespace separate from "repo-tracked files."
+  work_needed: |
+    - **Design a self-hosting mode**: detect "running inside the source repo" and
+      skip the symlink-to-source install step. Consider a sentinel file
+      (`.furrow/SOURCE_REPO`) or checking the git remote.
+    - **Fix committed symlink paths**: all `specialist:*.md` command symlinks
+      in main should use `../../specialists/` (source-local); the currently
+      committed ones with `../../../furrow/` paths are broken and should be
+      repaired in a single cleanup commit. Add an install-time check that
+      validates symlink targets resolve.
+    - **Quarantine install artifacts**: ensure `.bak` files, install-induced
+      symlink changes, and consumer-project `.gitignore` additions live in an
+      untracked location (e.g., `.furrow/install-state/` or `.local/`) — never
+      in tracked paths. The install script should use a staging approach that
+      doesn't dirty the working tree for tracked files.
+    - **Pre-commit hook to catch contamination**: detect when a commit would
+      change `bin/alm`, `bin/rws`, `bin/sds`, or `.claude/rules/*` from
+      regular file to symlink, and block. Detect `bin/*.bak` in staged files
+      and block.
+    - **Reduce merge-conflict surface**: sort seeds.jsonl by `id` (or group
+      by id with atomic per-row append blocks), so two branches adding to
+      different rows don't conflict. Same for todos.yaml — consider one
+      YAML file per TODO under `.furrow/almanac/todos.d/` so branches never
+      modify the same file.
+    - **Protect common.sh from hook-cascade lockout**: either (a) hooks
+      should not source common.sh (duplicate needed helpers inline), (b)
+      common.sh should be split so only a minimal, never-conflicting subset
+      is sourced by hooks, or (c) `frw hook` should handle a sourcing syntax
+      error by degrading to no-op rather than exit-2.
+    - **Document the self-hosting model**: what does the source repo look
+      like on disk vs a consumer install? Where are the boundaries? Which
+      files should ever differ between the two?
+    - **Consider**: should the source repo NOT run install.sh on itself, and
+      instead have a separate `bootstrap-source.sh` that sets up just what
+      the source repo needs (without the symlink-ification)?
+  references:
+    - install.sh
+    - bin/frw.d/install.sh
+    - bin/frw.d/scripts/launch-phase.sh
+    - .gitignore
+    - .claude/commands/
+    - bin/frw.d/lib/common.sh
+    - .furrow/seeds/seeds.jsonl
+    - .furrow/almanac/todos.yaml
+  source_type: "meta-observation"
+  created_at: "2026-04-22T00:00:00Z"
+  updated_at: "2026-04-22T00:00:00Z"
+  urgency: "high"
+  impact: "high"
+  effort: "large"
+  files_touched:
+    - install.sh
+    - bin/frw.d/install.sh
+    - bin/frw.d/scripts/
+    - bin/frw.d/hooks/
+    - bin/frw.d/lib/common.sh
+    - .furrow/
+  status: active
