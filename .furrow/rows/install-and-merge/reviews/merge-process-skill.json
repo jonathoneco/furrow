@@ -1,0 +1,35 @@
+{
+  "deliverable": "merge-process-skill",
+  "wave": 3,
+  "reviewers": ["phase-a-in-session", "codex-cross-model"],
+  "fresh_claude": "SKIPPED — see install-architecture-overhaul.json",
+  "phase_a": {
+    "verdict": "PASS",
+    "summary": "All 10 ACs (1-10) traceable. 116/116 new assertions green. Primitive reuse verified (rws validate-sort-invariant, rescue.sh --baseline-check, rws get-reintegration-json)."
+  },
+  "phase_b_codex": {
+    "verdict": "FAIL",
+    "dimensions": [
+      {"name": "correctness", "verdict": "FAIL", "evidence": "merge-audit.sh never populates stale_rows (lines 308-322,403); test-merge-e2e.sh stops before approved execute+verify."},
+      {"name": "test-coverage", "verdict": "FAIL", "evidence": "test-merge-execute.sh only covers usage/precondition failures; never exercises successful planned resolution."},
+      {"name": "spec-compliance", "verdict": "FAIL", "evidence": "Spec requires all 5 merge scripts to validate merge-policy.yaml; only merge-audit does. merge-resolve-plan, merge-execute, merge-verify only check file existence."},
+      {"name": "unplanned-changes", "verdict": "FAIL", "evidence": "install.sh, reintegration.schema.json, template, .furrow/rows/* in diff (false positive: full base..HEAD comparison)."},
+      {"name": "code-quality", "verdict": "FAIL", "evidence": "readlink -f is GNU-only; breaks on BSD/macOS. Used in bin/frw:8, merge-audit.sh:22, merge-classify.sh:20."}
+    ]
+  },
+  "evaluator_notes": [
+    {"finding": "stale_rows not populated", "classification": "REAL GAP", "rationale": "Spec §Audit phase calls for detection of 'stale row/TODO references'. Implementation leaves stale_rows as empty array. AC-2 wording includes 'stale row/TODO references' — this is a real AC-2 gap."},
+    {"finding": "e2e test stops at 'execute requires approval'", "classification": "REAL GAP", "rationale": "AC-10 requires 'drives contamination fixture through all 5 phases'. Test covers audit→classify→resolve-plan→execute-rejection, then stops. Doesn't simulate an approved plan through to verify success. To close AC-10 fully, test needs: (a) approve the plan (append '<!-- approved:yes -->' marker), (b) rerun merge-execute to see it proceed, (c) merge-verify green."},
+    {"finding": "only merge-audit validates policy shape", "classification": "REAL GAP (spec compliance)", "rationale": "Spec §merge-policy contract calls for all 5 phases to reject invalid policy. Impl has 4 of 5 doing only file-existence check. Belt-and-suspenders validation is what makes the contract machine-enforceable at each phase boundary."},
+    {"finding": "readlink -f portability", "classification": "DEBATABLE", "rationale": "`readlink -f` is GNU (coreutils). BSD/macOS ships without it natively (macOS 12+ added readlink with -f support, but older systems don't). If the project targets Linux only (plausible — mise/Arch user env), not an issue. If cross-platform is needed, switch to `realpath` (GNU+BSD since ~2018) or a POSIX loop. Current scope doesn't explicitly constrain to Linux-only in the spec."},
+    {"finding": "unplanned-changes FAIL", "classification": "FALSE POSITIVE", "rationale": "Same as other deliverables — codex uses full base..HEAD diff; actual merge-process-skill-specific diff is within wave-3 ownership."}
+  ],
+  "overall": "FAIL",
+  "overall_rationale": "Real gaps in stale_rows population, e2e happy-path, and policy-validation consistency across 5 scripts. Phase A tests pass what they cover but miss the happy-path-through-verify scenario (AC-10) and stale_rows (AC-2).",
+  "action_items": [
+    {"severity": "medium", "item": "Populate audit.stale_rows in merge-audit.sh: scan worktree commits for references to archived rows or missing todos."},
+    {"severity": "medium", "item": "Extend test-merge-e2e.sh to cover the happy path: approve plan → merge-execute succeeds → merge-verify green. Distinct from current 'execute-refuses-without-approval' coverage."},
+    {"severity": "medium", "item": "Add policy-shape validation at the start of merge-resolve-plan.sh, merge-execute.sh, merge-verify.sh (reuse merge-audit's policy loader)."},
+    {"severity": "low", "item": "Decide portability target: Linux-only (keep readlink -f) vs cross-platform (switch to realpath or POSIX symlink resolution). Document decision."}
+  ]
+}

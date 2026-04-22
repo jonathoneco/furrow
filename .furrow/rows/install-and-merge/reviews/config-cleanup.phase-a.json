@@ -1,0 +1,28 @@
+{
+  "deliverable": "config-cleanup",
+  "wave": 2,
+  "phase": "A",
+  "dimensions": [
+    {
+      "name": "artifact_existence",
+      "verdict": "PASS",
+      "evidence": "All files present: bin/frw.d/lib/common.sh extended with resolve_config_value + find_specialist; bin/frw.d/scripts/upgrade.sh (new); bin/frw dispatcher case 'upgrade'; commands/next.md source_todos rendering; schemas/state.schema.json optional source_todos array; schemas/definition.schema.json source_todos; schemas/promotion-targets.schema.yaml (new, scaffolding only); docs/architecture/config-resolution.md (three-tier chain documented); 6 new tests + tests/fixtures/make-legacy-install.sh; rationale.yaml XDG tier entries appended."
+    },
+    {
+      "name": "acceptance_criteria",
+      "verdict": "PASS",
+      "evidence": "AC-1 (XDG config tier): resolve_config_value checks tier 2 $XDG_CONFIG_HOME/furrow/config.yaml — test-config-resolution test_xdg_override. AC-2 (shared specialists): find_specialist project→XDG→compiled-in; all 4 cases (3 hits + 1 miss) in test-specialist-precedence 9/9. AC-3 (promotion-targets scaffolding): schema + empty file written by upgrade --apply; grep confirms no consumer logic exists (verified in test-promotion-targets-scaffolding 7/7). AC-4 (resolution chain doc + impl): docs/architecture/config-resolution.md documents PROJECT_ROOT→XDG_CONFIG_HOME→FURROW_ROOT; test-resolver-exports 11/11 confirms functions are in common.sh, not common-minimal.sh. AC-5 (resolver regression): three-tier alpha>beta>gamma + XDG override + unset-key-exits-1 tested in test-config-resolution 9/9. AC-6 (source_todos end-to-end): schema extended + commands/next.md §3b prefers array with singular fallback. AC-7 (upgrade idempotent + migration_version): test-upgrade-idempotency 10/10 + test-upgrade-migration 12/12 verify byte-identical second run + migration_version '1.0' set + source-repo guard."
+    },
+    {
+      "name": "file_ownership_conformance",
+      "verdict": "PASS",
+      "evidence": "All writes within config-cleanup ownership: bin/frw.d/install.sh, bin/frw.d/lib/common.sh, bin/frw.d/scripts/upgrade.sh, bin/frw (upgrade dispatcher), commands/next.md, schemas/{definition,state,promotion-targets}.schema.*, docs/architecture/config-resolution.md, tests/integration/test-{config-resolution,upgrade-*,specialist-precedence,promotion-targets-scaffolding,resolver-exports}.sh, tests/fixtures/make-legacy-install.sh, .furrow/almanac/rationale.yaml. Confirmed NOT touched: common-minimal.sh, bin/rws, launch-phase.sh, generate-reintegration.sh, schemas/reintegration.schema.json, templates/reintegration.md.tmpl, skills/implement.md, skills/shared/context-isolation.md (parallel peer's territory)."
+    },
+    {
+      "name": "test_execution",
+      "verdict": "PASS",
+      "evidence": "test-config-resolution 9/9, test-upgrade-idempotency 10/10, test-upgrade-migration 12/12, test-specialist-precedence 9/9, test-promotion-targets-scaffolding 7/7, test-resolver-exports 11/11. Total 58 assertions, 0 failures. One transient side effect: an unstaged deletion of .furrow/furrow.yaml during sub-agent testing was restored from HEAD by orchestrator — no harm, but source-repo guard is worth re-verifying (raised in Open Questions)."
+    }
+  ],
+  "overall": "PASS"
+}

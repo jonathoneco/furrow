@@ -1,0 +1,28 @@
+{
+  "deliverable": "install-architecture-overhaul",
+  "wave": 1,
+  "phase": "A",
+  "dimensions": [
+    {
+      "name": "artifact_existence",
+      "verdict": "PASS",
+      "evidence": "All files in plan.json wave-1 file_ownership exist: .furrow/SOURCE_REPO (122 bytes), bin/frw.d/lib/common-minimal.sh (116 LOC, 8 hook-safe fns), bin/frw.d/scripts/rescue.sh (with --apply/--baseline-check/FURROW_BASELINE_COMMON_MINIMAL heredoc), bin/frw.d/install.sh (SOURCE_REPO branching, XDG, install-state.json, --xdg-state-home flag), install.sh (source/consumer branch, refuse-copy guard, symlink validator), bin/frw.d/hooks/pre-commit-typechange.sh + pre-commit-bakfiles.sh, .claude/commands/specialist:*.md (14 retargeted to ../../specialists/), docs/architecture/self-hosting.md (3 required H2 sections), tests/integration/test-install-*.sh (4 tests), test-rescue.sh (6 subtests), test-precommit-block.sh, test-precommit-bypass.sh, test-legacy-migration.sh, test-hook-cascade.sh, test-ci-contamination.sh, test-sort-seeds.sh, test-sort-todos.sh."
+    },
+    {
+      "name": "acceptance_criteria",
+      "verdict": "PASS",
+      "evidence": "AC-A (SOURCE_REPO tracked 122B): git ls-files .furrow/SOURCE_REPO exits 0. AC-B (24 symlink repair): readlink -f on specialist:*.md resolves into <repo>/specialists/; rules files regular. AC-C (XDG state): install-state.json at $XDG_STATE_HOME/furrow/<slug>/; $XDG_STATE_HOME override honored (test-install-xdg-override 8/8). AC-D (pre-commit blocks): test-precommit-block 14/14 covers 4 protected globs + 2 .bak locations; test-precommit-bypass 6/6 confirms hook-body reachable via direct exec. AC-E (sort determinism): test-sort-seeds 9/9 + test-sort-todos 9/9 incl. cross-locale and validate-fail exit-3. AC-F (rescue ordering): git log shows 1a→1b→1c→1d→1e→1f; grep for common.sh source in rescue.sh exits 1. AC-G (common.sh split): exact 8-function set match via `grep -oE '^[a-z_]+\\(\\)' common-minimal.sh | sort`; all 12 hooks + 2 new pre-commit hooks source common-minimal.sh. AC-H (legacy migration): test-legacy-migration 12/12 confirms .bak→XDG/bak/, .claude/furrow.yaml removal, migration_version '1.0' monotonic. AC-I (7 integration tests): all present and exit 0. AC-J (self-hosting docs): 3 H2 sections confirmed."
+    },
+    {
+      "name": "file_ownership_conformance",
+      "verdict": "PASS_WITH_NOTE",
+      "evidence": "Wave-1 scope respected for primary surfaces. Minor scope notes: (1) `bin/frw` received a `rescue` dispatcher case during 1d (spec §rescue.sh calls for this; plan.json file_ownership omitted bin/frw — discrepancy between spec and plan, not a scope violation). (2) `bin/sds` and `bin/alm` gained `frw normalize-seeds`/`frw normalize-todos` calls (spec §Sort-by-id §Writer specifies this; plan.json again omitted these paths from wave-1 ownership). Neither is a policy violation — they follow the spec. Flag for plan-schema improvement: file_ownership should enumerate incidental writer-integration files."
+    },
+    {
+      "name": "test_execution",
+      "verdict": "PASS",
+      "evidence": "Full integration suite from clean current state: 33 test scripts, ALL PASS. test-rescue 13/13, test-hook-cascade 22/22, test-install-source-mode 5/5, test-install-consumer-mode 6/6, test-install-xdg-override 8/8, test-install-idempotency 4/4, test-legacy-migration 12/12, test-precommit-block 14/14, test-precommit-bypass 6/6, test-sort-seeds 9/9, test-sort-todos 9/9, test-ci-contamination 11/11. No regressions to existing tests (test-rws 34/34, test-alm, test-sds, test-lifecycle, test-generate-plan, test-script-guard all green)."
+    }
+  ],
+  "overall": "PASS"
+}
