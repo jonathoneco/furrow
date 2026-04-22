@@ -30,8 +30,6 @@ FURROW_ROOT="$2"
 ROWS_DIR="${FURROW_ROOT}/.furrow/rows"
 ROW_DIR="${ROWS_DIR}/${ROW_NAME}"
 STATE_FILE="${ROW_DIR}/state.json"
-SCHEMA_FILE="${FURROW_ROOT}/schemas/reintegration.schema.json"
-TEMPLATE_FILE="${FURROW_ROOT}/templates/reintegration.md.tmpl"
 REINT_JSON="${ROW_DIR}/reintegration.json"
 SUMMARY_FILE="${ROW_DIR}/summary.md"
 
@@ -50,7 +48,7 @@ fi
 classify_file() {
   _cf_path="$1"
   case "$_cf_path" in
-    *.bak|bin/*.bak|.claude/rules/*.bak) echo "install-artifact" ;;
+    *.bak) echo "install-artifact" ;;
     schemas/*.json|schemas/*.yaml)        echo "schema" ;;
     tests/*|*_test.go|test-*.sh)          echo "test" ;;
     docs/*|*.md)                           echo "doc" ;;
@@ -75,7 +73,7 @@ parse_type() {
 # Check if path is an install artifact
 is_install_artifact() {
   case "$1" in
-    *.bak|bin/*.bak|.claude/rules/*.bak) return 0 ;;
+    *.bak) return 0 ;;
     *) return 1 ;;
   esac
 }
@@ -262,7 +260,7 @@ _test_pass=false
 
 if [ -d "${ROW_DIR}/reviews" ]; then
   # Find most recently modified review file
-  _latest_review="$(find "${ROW_DIR}/reviews" -maxdepth 1 -type f -name "*.md" -o -name "*.json" 2>/dev/null | \
+  _latest_review="$(find "${ROW_DIR}/reviews" -maxdepth 1 \( -name "*.md" -o -name "*.json" \) -type f 2>/dev/null | \
     xargs ls -t 2>/dev/null | head -1)" || _latest_review=""
 
   if [ -n "$_latest_review" ] && [ -f "$_latest_review" ]; then
