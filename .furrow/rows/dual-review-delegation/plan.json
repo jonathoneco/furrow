@@ -1,0 +1,44 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": ["dual-review-and-specialist-delegation"],
+      "assignments": {
+        "dual-review-and-specialist-delegation": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "skills/ideate.md",
+            "skills/research.md",
+            "skills/plan.md",
+            "skills/spec.md",
+            "skills/decompose.md",
+            "skills/shared/specialist-delegation.md",
+            "specialists/_meta.yaml",
+            "references/specialist-template.md",
+            "bin/frw.d/scripts/cross-model-review.sh",
+            "evals/gates/plan.yaml",
+            "evals/gates/spec.yaml"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 2,
+      "deliverables": ["new-specialist-templates"],
+      "assignments": {
+        "new-specialist-templates": {
+          "specialist": "prompt-engineer",
+          "file_ownership": [
+            "specialists/llm-specialist.md",
+            "specialists/test-driven-specialist.md",
+            "specialists/_meta.yaml"
+          ],
+          "skills": []
+        }
+      }
+    }
+  ],
+  "created_at": "2026-04-09T05:10:00Z",
+  "created_by": "plan-step"
+}

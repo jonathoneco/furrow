@@ -58,6 +58,7 @@ Read these when relevant to your current action:
 - `skills/shared/learnings-protocol.md` — when capturing learnings
 - `skills/shared/context-isolation.md` — when dispatching research sub-agents
 - `skills/shared/summary-protocol.md` — before completing step
+- `skills/shared/specialist-delegation.md` — specialist selection and delegation protocol
 
 ## Team Planning
 When definition has multiple deliverables or >3 research questions, dispatch

@@ -35,6 +35,7 @@ Do not use for test implementation in a specific language (go-specialist, python
 
 - **shell-specialist**: Shell-specialist owns shell-specific test script patterns in `tests/integration/`. Test-engineer owns the overall test strategy and gate alignment.
 - **go-specialist**: Go-specialist owns Go test idioms (table-driven tests, `t.Helper()`). Test-engineer owns cross-language test strategy and coverage analysis.
+- **test-driven-specialist**: Test-driven-specialist owns the test-first reasoning process (are ACs testable? is the plan test-friendly?). Test-engineer owns test implementation quality (suite design, fixtures, coverage analysis, gate-aligned grouping).
 
 ## Quality Criteria
 

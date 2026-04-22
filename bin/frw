@@ -43,6 +43,8 @@ Gate pipeline:
   run-ci-checks <name>
   cross-model-review <name> <deliv>  Run cross-model deliverable review
   cross-model-review --ideation <name>  Run cross-model ideation review
+  cross-model-review <name> --plan      Run cross-model plan review
+  cross-model-review <name> --spec      Run cross-model spec review
 
 Code generation:
   generate-plan <name>        Build plan.json from definition.yaml

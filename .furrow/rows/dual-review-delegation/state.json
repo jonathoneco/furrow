@@ -1,0 +1,97 @@
+{
+  "name": "dual-review-delegation",
+  "title": "Dual-review at plan/spec, intent-based specialist auto-delegation, new specialists",
+  "description": "Dual-review at plan/spec, intent-based specialist auto-delegation, new specialists",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "dual-review-and-specialist-delegation": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "new-specialist-templates": {
+      "status": "completed",
+      "wave": 2,
+      "corrections": 0
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Validated definition.yaml with 2 deliverables. Design decisions locked: end-of-step dual-review, explicit specialist selection from scenarios, all-step delegation, two new specialists. Fresh reviewer findings addressed.",
+      "timestamp": "2026-04-09T04:57:55Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Research complete: 4 topic files + synthesis. Dual-review follows review step pattern (--bare + cross-model). cross-model-review.sh needs --plan/--spec modes. Gate integration via dual-review dimension. Specialist delegation via scenarios field + explicit selection. All ideation questions resolved.",
+      "timestamp": "2026-04-09T05:06:36Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Plan complete: 2 waves, plan.json with file ownership. Delegation centralized in shared file. Gate dimension duplication accepted (TODO added). Specialist assignments: harness-engineer (W1), prompt-engineer (W2).",
+      "timestamp": "2026-04-10T09:18:56Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Specs complete: 2 deliverables with interface contracts, refined ACs (7+7), test scenarios (6+3), precise insertion points. All open questions resolved. Implementation-ready.",
+      "timestamp": "2026-04-10T09:23:06Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Decompose complete: plan.json finalized with 2 waves and file ownership. team-plan.md written with 4 groups in Wave 1, 3 tasks in Wave 2. Deliverables registered as not_started.",
+      "timestamp": "2026-04-10T09:26:54Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Decompose complete: plan.json finalized (2 waves, 11+3 files), team-plan.md written, deliverables registered as not_started. CLI gap noted (register-deliverable TODO added).",
+      "timestamp": "2026-04-10T09:27:34Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Implementation complete: 2/2 deliverables, 0 corrections. All 14 ACs verified. 13 files modified/created across 2 waves. Shell syntax validates, YAML parses, line limits respected.",
+      "timestamp": "2026-04-10T09:36:43Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Implementation complete: 2/2 deliverables, 0 corrections. 27 files, 1821 insertions. All 14 ACs verified.",
+      "timestamp": "2026-04-10T09:37:30Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/dual-review-delegation",
+  "mode": "code",
+  "base_commit": "55e7d5d6c3cbb63871c39ba038a80e873516faf9",
+  "seed_id": "furrow-8121",
+  "epic_seed_id": null,
+  "created_at": "2026-04-08T18:19:24Z",
+  "updated_at": "2026-04-10T09:57:59Z",
+  "archived_at": "2026-04-10T09:57:59Z",
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}

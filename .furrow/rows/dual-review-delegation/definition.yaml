@@ -1,0 +1,59 @@
+objective: >-
+  Add dual-reviewer protocol (fresh subagent + cross-model) to plan and spec
+  step gates, enable explicit specialist delegation at all steps via scenarios-based
+  selection, create specialist-informed dual-review integration, and add
+  llm-specialist and test-driven-specialist templates.
+
+deliverables:
+  - name: dual-review-and-specialist-delegation
+    acceptance_criteria:
+      - "skills/plan.md contains Dual-Reviewer Protocol section matching review.md pattern"
+      - "skills/spec.md contains Dual-Reviewer Protocol section matching review.md pattern"
+      - "cross-model-review.sh supports --plan and --spec modes"
+      - "specialists/_meta.yaml includes scenarios field for all specialists"
+      - "Step skills (ideate, research, plan, spec, decompose) include Specialist Delegation section"
+      - "Specialist selections recorded in summary.md during step execution"
+      - "Dual-review evidence appears in gate records for plan and spec transitions"
+
+  - name: new-specialist-templates
+    acceptance_criteria:
+      - "specialists/llm-specialist.md exists and passes specialist template validation"
+      - "specialists/test-driven-specialist.md exists and passes specialist template validation"
+      - "Both have scenarios field in frontmatter"
+      - "Both have ≥3 anti-patterns with ≥1 project-specific"
+      - "Both have 'When NOT to Use' section"
+      - "Both registered in specialists/_meta.yaml"
+
+context_pointers:
+  - path: references/specialist-template.md
+    note: "Specialist template constraints and validation rules"
+  - path: references/review-methodology.md
+    note: "Two-phase review protocol (Phase A + Phase B)"
+  - path: references/gate-protocol.md
+    note: "Gate evaluation flow and evidence recording"
+  - path: skills/review.md
+    note: "Dual-reviewer protocol to replicate at plan/spec"
+  - path: skills/ideate.md
+    note: "Dual outside voice pattern"
+  - path: skills/shared/gate-evaluator.md
+    note: "Gate integration point for dual-review"
+  - path: evals/gates/plan.yaml
+    note: "Plan step gate dimensions"
+  - path: evals/gates/spec.yaml
+    note: "Spec step gate dimensions"
+  - path: specialists/_meta.yaml
+    note: "Specialist index to extend with scenarios"
+
+constraints:
+  - "Specialist templates must stay ≤80 lines including frontmatter"
+  - "Specialists loaded into sub-agents only, never into orchestration session"
+  - "Context budget (ambient+work+step ≤350 lines) must not be violated by specialist delegation sections"
+  - "Dual-review isolation: reviewer receives artifacts + specialist template, NOT conversation history"
+  - "cross-model-review.sh modes (--plan, --spec) must follow existing --ideation pattern"
+  - "Prefer minimal changes to existing step skills — add sections, don't restructure"
+  - "scenarios field in specialist frontmatter should be 3-5 example descriptions"
+  - "Broader specialist audit deferred to separate TODO"
+
+gate_policy: supervised
+
+source_todo: dual-review-and-specialist-delegation

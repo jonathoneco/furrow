@@ -14,9 +14,13 @@ frw_cross_model_review() {
   set -eu
 
   _ideation=false
+  _plan=false
+  _spec=false
   while [ $# -gt 0 ]; do
     case "$1" in
       --ideation) _ideation=true; shift ;;
+      --plan) _plan=true; shift ;;
+      --spec) _spec=true; shift ;;
       *) break ;;
     esac
   done
@@ -29,6 +33,22 @@ frw_cross_model_review() {
     fi
     # Delegate to ideation function and return
     _cross_model_ideation "$@"
+    return $?
+  fi
+
+  if [ "$_plan" = true ]; then
+    if [ $# -lt 1 ]; then
+      echo "Usage: frw cross-model-review <name> --plan" >&2
+      return 1
+    fi
+    _cross_model_plan "$@"
+    return $?
+  elif [ "$_spec" = true ]; then
+    if [ $# -lt 1 ]; then
+      echo "Usage: frw cross-model-review <name> --spec" >&2
+      return 1
+    fi
+    _cross_model_spec "$@"
     return $?
   fi
 
@@ -403,4 +423,377 @@ Output as JSON:
   trap - EXIT
 
   echo "Ideation cross-model review written to ${work_dir}/reviews/ideation-cross.json"
+}
+
+_cross_model_plan() {
+  name="$1"
+  work_dir="${PROJECT_ROOT}/.furrow/rows/${name}"
+  definition_file="${work_dir}/definition.yaml"
+  summary_file="${work_dir}/summary.md"
+  furrow_config=""
+  for _candidate in "${PROJECT_ROOT}/.furrow/furrow.yaml" "${PROJECT_ROOT}/.claude/furrow.yaml"; do
+    if [ -f "$_candidate" ]; then
+      furrow_config="$_candidate"
+      break
+    fi
+  done
+
+  # --- 1. Read cross-model provider ---
+  if [ -z "$furrow_config" ]; then
+    echo "Cross-model review skipped: no furrow.yaml found" >&2
+    return 1
+  fi
+  provider="$(yq -r '.cross_model.provider // ""' "$furrow_config")"
+  if [ -z "$provider" ]; then
+    echo "Cross-model review skipped: no provider configured" >&2
+    return 1
+  fi
+
+  # --- 2. Read definition and plan context ---
+  if [ ! -f "$definition_file" ]; then
+    echo "Error: definition.yaml not found at ${definition_file}" >&2
+    return 2
+  fi
+
+  objective="$(yq -r '.objective // ""' "$definition_file")"
+
+  # Read wave structure from plan.json
+  plan_file="${work_dir}/plan.json"
+  plan_waves="(no plan.json found)"
+  if [ -f "$plan_file" ]; then
+    plan_waves="$(yq -r '
+      .waves[]? |
+      "### Wave " + (.name // "unnamed") + "\n" +
+      ((.deliverables[]? | "- **" + (.name // "?") + "**: " + (.specialist // "general")) // "(no deliverables)") + "\n"
+    ' "$plan_file" 2>/dev/null)" || plan_waves="(could not parse plan.json)"
+    [ -z "$plan_waves" ] && plan_waves="(empty plan structure)"
+  fi
+
+  # Read architecture decisions from summary Key Findings
+  key_findings="None documented"
+  if [ -f "$summary_file" ]; then
+    key_findings="$(awk '/^## Key Findings/{found=1; next} /^## /{if(found) exit} found && /[^ ]/' "$summary_file")" || key_findings="None documented"
+    [ -z "$key_findings" ] && key_findings="None documented"
+  fi
+
+  # --- 3. Load dimensions ---
+  dim_path="${FURROW_ROOT}/evals/dimensions/plan.yaml"
+  if [ ! -f "$dim_path" ]; then
+    echo "Error: plan dimensions not found at ${dim_path}" >&2
+    return 2
+  fi
+  dimensions="$(yq -r '.dimensions[] | "- **" + .name + "**: " + .definition + "\n  Pass: " + .pass_criteria + "\n  Fail: " + .fail_criteria' "$dim_path")"
+
+  # --- 4. Build plan review prompt ---
+  prompt="You are reviewing the architecture plan for deliverable quality.
+
+## Objective
+
+${objective}
+
+## Plan Structure
+
+${plan_waves}
+
+## Architecture Decisions
+
+${key_findings}
+
+## Evaluation Dimensions
+
+${dimensions}
+
+## Instructions
+
+For each dimension, provide: verdict (pass/fail) and one-line evidence.
+
+Output as JSON: {\"dimensions\": [{\"name\": \"...\", \"verdict\": \"...\", \"evidence\": \"...\"}], \"overall\": \"pass|fail\"}"
+
+  # --- 5. Invoke model ---
+  mkdir -p "${work_dir}/reviews"
+
+  response=""
+  _invoke_err="$(mktemp)"
+
+  case "$provider" in
+    codex|codex/*)
+      if ! command -v codex >/dev/null 2>&1; then
+        echo "error: codex CLI not found" >&2
+        rm -f "$_invoke_err"
+        return 2
+      fi
+      _model="${provider#codex}"
+      _model="${_model#/}"
+      if [ -n "$_model" ]; then
+        response="$(codex exec -c 'approval_policy="never"' -m "$_model" "$prompt" 2>"$_invoke_err")" || true
+      else
+        response="$(codex exec -c 'approval_policy="never"' "$prompt" 2>"$_invoke_err")" || true
+      fi
+      ;;
+    *)
+      if command -v claude >/dev/null 2>&1; then
+        response="$(claude --model "${provider}" --print "${prompt}" 2>"$_invoke_err")" || true
+      fi
+      ;;
+  esac
+
+  if [ -s "$_invoke_err" ]; then
+    echo "cross-model stderr: $(cat "$_invoke_err")" >&2
+  fi
+  rm -f "$_invoke_err"
+
+  if [ -z "$response" ]; then
+    prompt_file="${work_dir}/prompts/review-plan-cross.md"
+    mkdir -p "${work_dir}/prompts"
+    prompt_tmp="$(mktemp)"
+    printf '%s\n' "$prompt" > "$prompt_tmp"
+    mv "$prompt_tmp" "$prompt_file"
+    echo "Cross-model invocation failed — prompt written to ${prompt_file}" >&2
+    return 2
+  fi
+
+  # --- 6. Parse and write result ---
+  json_block="$(printf '%s\n' "$response" | awk '
+    BEGIN { depth=0; capture=0; buf="" }
+    {
+      for (i=1; i<=length($0); i++) {
+        c = substr($0, i, 1)
+        if (c == "{") { depth++; capture=1 }
+        if (capture) buf = buf c
+        if (c == "}" && capture) {
+          depth--
+          if (depth == 0) { print buf; exit }
+        }
+      }
+      if (capture) buf = buf "\n"
+    }
+  ')"
+
+  if [ -z "$json_block" ] || ! printf '%s\n' "$json_block" | jq empty 2>/dev/null; then
+    raw_file="${work_dir}/reviews/plan-cross.raw"
+    raw_tmp="$(mktemp)"
+    printf '%s\n' "$response" > "$raw_tmp"
+    mv "$raw_tmp" "$raw_file"
+    echo "Failed to parse JSON from model response — raw output written to ${raw_file}" >&2
+    return 2
+  fi
+
+  model_dims="$(printf '%s\n' "$json_block" | jq -c '.dimensions')" || {
+    echo "Error: failed to extract dimensions from model response" >&2
+    return 2
+  }
+  model_overall="$(printf '%s\n' "$json_block" | jq -r '.overall')" || {
+    echo "Error: failed to extract overall verdict from model response" >&2
+    return 2
+  }
+  timestamp="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+
+  review_tmp="$(mktemp)"
+  trap 'rm -f "$review_tmp"' EXIT
+
+  jq -n \
+    --argjson dims "$model_dims" \
+    --arg overall "$model_overall" \
+    --arg provider "$provider" \
+    --arg ts "$timestamp" \
+    '{
+      type: "plan",
+      dimensions: $dims,
+      overall: $overall,
+      reviewer: $provider,
+      cross_model: true,
+      timestamp: $ts
+    }' > "$review_tmp"
+
+  mv "$review_tmp" "${work_dir}/reviews/plan-cross.json"
+  trap - EXIT
+
+  echo "Plan cross-model review written to ${work_dir}/reviews/plan-cross.json"
+}
+
+_cross_model_spec() {
+  name="$1"
+  work_dir="${PROJECT_ROOT}/.furrow/rows/${name}"
+  definition_file="${work_dir}/definition.yaml"
+  furrow_config=""
+  for _candidate in "${PROJECT_ROOT}/.furrow/furrow.yaml" "${PROJECT_ROOT}/.claude/furrow.yaml"; do
+    if [ -f "$_candidate" ]; then
+      furrow_config="$_candidate"
+      break
+    fi
+  done
+
+  # --- 1. Read cross-model provider ---
+  if [ -z "$furrow_config" ]; then
+    echo "Cross-model review skipped: no furrow.yaml found" >&2
+    return 1
+  fi
+  provider="$(yq -r '.cross_model.provider // ""' "$furrow_config")"
+  if [ -z "$provider" ]; then
+    echo "Cross-model review skipped: no provider configured" >&2
+    return 1
+  fi
+
+  # --- 2. Read definition and spec context ---
+  if [ ! -f "$definition_file" ]; then
+    echo "Error: definition.yaml not found at ${definition_file}" >&2
+    return 2
+  fi
+
+  objective="$(yq -r '.objective // ""' "$definition_file")"
+  criteria="$(yq -r '.deliverables[].acceptance_criteria[]' "$definition_file" 2>/dev/null | sed 's/^/- /')" || criteria="(none)"
+  [ -z "$criteria" ] && criteria="(none)"
+
+  # Read spec content
+  specs_dir="${work_dir}/specs"
+  spec_file="${work_dir}/spec.md"
+  spec_content="(no spec content found)"
+  if [ -d "$specs_dir" ]; then
+    spec_content=""
+    for _sf in "$specs_dir"/*; do
+      [ -f "$_sf" ] || continue
+      _sfname="$(basename "$_sf")"
+      spec_content="${spec_content}### ${_sfname}
+$(head -100 "$_sf")
+
+"
+    done
+    [ -z "$spec_content" ] && spec_content="(specs directory empty)"
+  elif [ -f "$spec_file" ]; then
+    spec_content="$(head -100 "$spec_file")"
+  fi
+
+  # --- 3. Load dimensions ---
+  dim_path="${FURROW_ROOT}/evals/dimensions/spec.yaml"
+  if [ ! -f "$dim_path" ]; then
+    echo "Error: spec dimensions not found at ${dim_path}" >&2
+    return 2
+  fi
+  dimensions="$(yq -r '.dimensions[] | "- **" + .name + "**: " + .definition + "\n  Pass: " + .pass_criteria + "\n  Fail: " + .fail_criteria' "$dim_path")"
+
+  # --- 4. Build spec review prompt ---
+  prompt="You are reviewing the implementation specification for quality.
+
+## Objective
+
+${objective}
+
+## Acceptance Criteria
+
+${criteria}
+
+## Spec Content
+
+${spec_content}
+
+## Evaluation Dimensions
+
+${dimensions}
+
+## Instructions
+
+For each dimension, provide: verdict (pass/fail) and one-line evidence.
+
+Output as JSON: {\"dimensions\": [{\"name\": \"...\", \"verdict\": \"...\", \"evidence\": \"...\"}], \"overall\": \"pass|fail\"}"
+
+  # --- 5. Invoke model ---
+  mkdir -p "${work_dir}/reviews"
+
+  response=""
+  _invoke_err="$(mktemp)"
+
+  case "$provider" in
+    codex|codex/*)
+      if ! command -v codex >/dev/null 2>&1; then
+        echo "error: codex CLI not found" >&2
+        rm -f "$_invoke_err"
+        return 2
+      fi
+      _model="${provider#codex}"
+      _model="${_model#/}"
+      if [ -n "$_model" ]; then
+        response="$(codex exec -c 'approval_policy="never"' -m "$_model" "$prompt" 2>"$_invoke_err")" || true
+      else
+        response="$(codex exec -c 'approval_policy="never"' "$prompt" 2>"$_invoke_err")" || true
+      fi
+      ;;
+    *)
+      if command -v claude >/dev/null 2>&1; then
+        response="$(claude --model "${provider}" --print "${prompt}" 2>"$_invoke_err")" || true
+      fi
+      ;;
+  esac
+
+  if [ -s "$_invoke_err" ]; then
+    echo "cross-model stderr: $(cat "$_invoke_err")" >&2
+  fi
+  rm -f "$_invoke_err"
+
+  if [ -z "$response" ]; then
+    prompt_file="${work_dir}/prompts/review-spec-cross.md"
+    mkdir -p "${work_dir}/prompts"
+    prompt_tmp="$(mktemp)"
+    printf '%s\n' "$prompt" > "$prompt_tmp"
+    mv "$prompt_tmp" "$prompt_file"
+    echo "Cross-model invocation failed — prompt written to ${prompt_file}" >&2
+    return 2
+  fi
+
+  # --- 6. Parse and write result ---
+  json_block="$(printf '%s\n' "$response" | awk '
+    BEGIN { depth=0; capture=0; buf="" }
+    {
+      for (i=1; i<=length($0); i++) {
+        c = substr($0, i, 1)
+        if (c == "{") { depth++; capture=1 }
+        if (capture) buf = buf c
+        if (c == "}" && capture) {
+          depth--
+          if (depth == 0) { print buf; exit }
+        }
+      }
+      if (capture) buf = buf "\n"
+    }
+  ')"
+
+  if [ -z "$json_block" ] || ! printf '%s\n' "$json_block" | jq empty 2>/dev/null; then
+    raw_file="${work_dir}/reviews/spec-cross.raw"
+    raw_tmp="$(mktemp)"
+    printf '%s\n' "$response" > "$raw_tmp"
+    mv "$raw_tmp" "$raw_file"
+    echo "Failed to parse JSON from model response — raw output written to ${raw_file}" >&2
+    return 2
+  fi
+
+  model_dims="$(printf '%s\n' "$json_block" | jq -c '.dimensions')" || {
+    echo "Error: failed to extract dimensions from model response" >&2
+    return 2
+  }
+  model_overall="$(printf '%s\n' "$json_block" | jq -r '.overall')" || {
+    echo "Error: failed to extract overall verdict from model response" >&2
+    return 2
+  }
+  timestamp="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+
+  review_tmp="$(mktemp)"
+  trap 'rm -f "$review_tmp"' EXIT
+
+  jq -n \
+    --argjson dims "$model_dims" \
+    --arg overall "$model_overall" \
+    --arg provider "$provider" \
+    --arg ts "$timestamp" \
+    '{
+      type: "spec",
+      dimensions: $dims,
+      overall: $overall,
+      reviewer: $provider,
+      cross_model: true,
+      timestamp: $ts
+    }' > "$review_tmp"
+
+  mv "$review_tmp" "${work_dir}/reviews/spec-cross.json"
+  trap - EXIT
+
+  echo "Spec cross-model review written to ${work_dir}/reviews/spec-cross.json"
 }

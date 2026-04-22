@@ -57,6 +57,7 @@ Read these when relevant to your current action:
 - `skills/shared/red-flags.md` — before finalizing plan
 - `skills/shared/learnings-protocol.md` — when capturing learnings
 - `skills/shared/summary-protocol.md` — before completing step
+- `skills/shared/specialist-delegation.md` — specialist selection and delegation protocol
 
 ## Team Planning
 When `plan.json` has multiple deliverables, create `team-plan.md` with specialist
@@ -79,6 +80,19 @@ Pre-step evaluator (`evals/gates/plan.yaml`): complexity-assessment — does the
 deliverable need architectural decisions beyond definition.yaml? Per `skills/shared/gate-evaluator.md`.
 Next step expects: architecture decisions in `summary.md`, `plan.json` if
 parallel execution needed, and clear implementation path per deliverable.
+
+## Dual-Reviewer Protocol
+Before requesting transition, run both reviewers in parallel:
+1. **Fresh Claude reviewer** — `claude -p --bare` with plan artifacts,
+   definition.yaml ACs, and `evals/dimensions/plan.yaml` dimensions.
+   Specialist template included if specialist was delegated during this step.
+   Receives: plan.json, team-plan.md (if exists), definition.yaml.
+   Excludes: summary.md, conversation history, state.json.
+2. **Cross-model reviewer** — `frw cross-model-review {name} --plan`
+   if `cross_model.provider` configured in `furrow.yaml`. Skip if absent.
+Synthesize findings: flag disagreements, note unique findings, record
+both sources in gate evidence. Address or explicitly reject all findings
+before requesting transition.
 
 ## Supervised Transition Protocol
 Before requesting a step transition:

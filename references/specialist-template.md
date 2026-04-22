@@ -88,6 +88,14 @@ path) unless the specialist is a general-purpose language specialist.
 Every specialist must declare at least one scenario where it is the wrong
 choice, naming the better alternative (another specialist or no specialist).
 
+### Scenarios
+
+**Scenarios** — Every specialist must declare 3-5 scenarios in YAML frontmatter.
+Each scenario has a `When` (concrete task trigger) and `Use` (reasoning pattern
+from "How This Specialist Reasons"). Scenarios enable step agents to make explicit
+specialist selection during delegation. The `Use` field must reference an actual
+named pattern from the specialist's body.
+
 ### Overlap Boundaries
 
 When two specialists share domain surface, each must declare its boundary in
