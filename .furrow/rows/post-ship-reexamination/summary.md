@@ -4,7 +4,7 @@
 Ship a first-class `observations` primitive to the almanac that captures post-ship re-examination signals. A stratified schema (`kind: watch | decision-review`) lives at `.furrow/almanac/observations.yaml`, validated, with a pull-model trigger system (MVP types: `row_archived`, `rows_since`, `manual`). Lifecycle state is persisted (`open | resolved | dismissed`); activation state (`active | pending`) is COMPUTED from archive history, never stored. `alm observe` CLI supports the full lifecycle; `alm validate` covers observations.yaml; `/archive` and `alm triage` surface active observations; the review step prompts for new observations; the existing `re-evaluate-dispatch-enforcement` TODO migrates to an observation and the `decision-review` workaround is removed from `todos.schema.yaml`.
 
 ## Current State
-Step: implement | Status: not_started
+Step: review | Status: completed
 Deliverables: 4/4
 Mode: code
 
