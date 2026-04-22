@@ -23,6 +23,9 @@ SCRIPT_PATH="$(readlink -f "$0")"
 SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
 FURROW_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
+# Source shared merge library (policy validation + shared helpers)
+. "${SCRIPT_DIR}/merge-lib.sh"
+
 _die() { printf '[furrow:error] merge-audit: %s\n' "$1" >&2; exit "${2:-1}"; }
 _info() { printf '[furrow:info] merge-audit: %s\n' "$*" >&2; }
 _warn() { printf '[furrow:warning] merge-audit: %s\n' "$*" >&2; }
@@ -33,34 +36,6 @@ _warn() { printf '[furrow:warning] merge-audit: %s\n' "$*" >&2; }
 _check_deps() {
   command -v jq >/dev/null 2>&1 || _die "jq is required but not found in PATH" 2
   command -v git >/dev/null 2>&1 || _die "git is required but not found in PATH" 2
-}
-
-# ---------------------------------------------------------------------------
-# Policy validation (lightweight — checks required top-level keys exist)
-# ---------------------------------------------------------------------------
-_validate_policy_yaml() {
-  _pol="$1"
-  [ -f "$_pol" ] || _die "policy file not found: $_pol" 2
-
-  # Check required top-level keys exist using grep (avoid yq dependency for validation)
-  # A proper YAML-schema validator (ajv) is used in test AC-4; here we do a
-  # lightweight sanity check so scripts can report clear errors.
-  _missing=""
-  for _key in schema_version protected machine_mergeable prefer_ours always_delete_from_worktree_only; do
-    grep -q "^${_key}:" "$_pol" || _missing="${_missing} .${_key}"
-  done
-
-  if [ -n "$_missing" ]; then
-    printf '[furrow:error] merge-audit: merge-policy.yaml: missing required field(s):%s\n' "$_missing" >&2
-    exit 2
-  fi
-
-  # Check schema_version == "1.0"
-  _ver="$(grep '^schema_version:' "$_pol" | head -1 | sed 's/schema_version:[[:space:]]*//' | tr -d '"'"'")"
-  if [ "$_ver" != "1.0" ]; then
-    printf '[furrow:error] merge-audit: merge-policy.yaml: .schema_version must be "1.0", got "%s"\n' "$_ver" >&2
-    exit 2
-  fi
 }
 
 # ---------------------------------------------------------------------------
@@ -162,7 +137,7 @@ frw_merge_audit() {
   _policy_path="$2"
 
   _check_deps
-  _validate_policy_yaml "$_policy_path"
+  merge_validate_policy "$_policy_path" "merge-audit"
 
   # Resolve branch — if it looks like a row name (no slashes), try work/<name>
   _resolved_branch="$_branch"

@@ -21,6 +21,9 @@ SCRIPT_PATH="$(readlink -f "$0")"
 SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
 FURROW_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
+# Source shared merge library (policy validation + shared helpers)
+. "${SCRIPT_DIR}/merge-lib.sh"
+
 _die() { printf '[furrow:error] merge-classify: %s\n' "$1" >&2; exit "${2:-1}"; }
 _info() { printf '[furrow:info] merge-classify: %s\n' "$*" >&2; }
 _warn() { printf '[furrow:warning] merge-classify: %s\n' "$*" >&2; }
@@ -45,6 +48,12 @@ frw_merge_classify() {
 
   # Validate audit.json is valid JSON
   jq . "$_audit_json" >/dev/null 2>&1 || _die "audit.json is malformed" 2
+
+  # Validate merge-policy shape (belt-and-suspenders — all phases validate)
+  _policy_path="$(jq -r '.policy_path // ""' "$_audit_json" 2>/dev/null || true)"
+  if [ -n "$_policy_path" ]; then
+    merge_validate_policy "$_policy_path" "merge-classify"
+  fi
 
   _branch="$(jq -r '.branch' "$_audit_json")"
   _base_sha="$(jq -r '.base_sha' "$_audit_json")"

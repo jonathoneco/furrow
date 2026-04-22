@@ -20,6 +20,9 @@ SCRIPT_PATH="$(readlink -f "$0")"
 SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
 FURROW_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
+# Source shared merge library (policy validation + shared helpers)
+. "${SCRIPT_DIR}/merge-lib.sh"
+
 _die() { printf '[furrow:error] merge-execute: %s\n' "$1" >&2; exit "${2:-1}"; }
 _info() { printf '[furrow:info] merge-execute: %s\n' "$*" >&2; }
 _warn() { printf '[furrow:warning] merge-execute: %s\n' "$*" >&2; }
@@ -70,9 +73,9 @@ frw_merge_execute() {
     _die "plan not approved — set approved: true in plan.json after reviewing plan.md" 5
   fi
 
-  # Get policy path and verify inputs_hash
+  # Get policy path and validate its shape (belt-and-suspenders — all phases validate)
   _policy_path="$(jq -r '.policy_path' "$_audit_json")"
-  [ -f "$_policy_path" ] || _die "policy file not found: $_policy_path" 2
+  merge_validate_policy "$_policy_path" "merge-execute"
 
   _stored_hash="$(jq -r '.inputs_hash' "$_plan_json")"
   _fresh_hash="$(_compute_inputs_hash "$_audit_json" "$_classify_json" "$_policy_path")"
