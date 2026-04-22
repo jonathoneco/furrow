@@ -2,7 +2,7 @@
   "name": "post-ship-reexamination",
   "title": "Almanac watch-list primitive + decision-review TODO schema type — structured post-evidence re-examination",
   "description": "Almanac watch-list primitive + decision-review TODO schema type — structured post-evidence re-examination",
-  "step": "implement",
+  "step": "review",
   "step_status": "not_started",
   "steps_sequence": [
     "ideate",
@@ -70,6 +70,13 @@
       "decided_by": "manual",
       "evidence": "Decompose step complete: validated plan-step plan.json + team-plan.md against decompose-step invariants (single-wave-per-deliverable, depends_on ordering, wave-local file ownership non-overlap, vertical-slice testability, team sizing). No corrections needed. Added Decompose validation section to team-plan.md for audit trail. Ready to implement 3 waves: W1=D1, W2=D2, W3=D3||D4. User approved.",
       "timestamp": "2026-04-22T18:30:38Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 4 deliverables shipped 0 corrections; alm validate green; commits 677da44 c0f196f 93e4f4b 994f905; summary validated",
+      "timestamp": "2026-04-22T19:47:16Z"
     }
   ],
   "force_stop_at": null,
@@ -79,7 +86,7 @@
   "seed_id": "furrow-182f",
   "epic_seed_id": null,
   "created_at": "2026-04-22T17:24:46Z",
-  "updated_at": "2026-04-22T19:40:48Z",
+  "updated_at": "2026-04-22T19:47:16Z",
   "archived_at": null,
   "source_todo": null,
   "gate_policy_init": "supervised"
