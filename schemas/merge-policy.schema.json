@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://furrow.dev/schemas/merge-policy.schema.json",
+  "title": "Furrow Merge Policy",
+  "description": "Schema for schemas/merge-policy.yaml — governs how /furrow:merge resolves file conflicts.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "protected",
+    "machine_mergeable",
+    "prefer_ours",
+    "always_delete_from_worktree_only"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Policy schema version. Must equal '1.0' for this schema."
+    },
+    "protected": {
+      "type": "array",
+      "description": "Paths that are NEVER auto-merged. Any conflict forces human-decides.",
+      "items": {
+        "type": "object",
+        "required": ["path", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Glob path (fnmatch-style with ** extension) relative to repo root."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Human-readable rationale for protection."
+          }
+        }
+      }
+    },
+    "machine_mergeable": {
+      "type": "array",
+      "description": "Paths that can be machine-resolved via the named strategy.",
+      "items": {
+        "type": "object",
+        "required": ["path", "strategy", "key"],
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Glob path relative to repo root."
+          },
+          "strategy": {
+            "type": "string",
+            "enum": ["sort-by-id-union"],
+            "description": "Merge strategy. Only 'sort-by-id-union' is supported in v1.0."
+          },
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Field name used as the unique key for union de-duplication."
+          },
+          "sort_tuple": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 1,
+            "description": "Ordered list of field names to sort by (LC_ALL=C)."
+          }
+        }
+      }
+    },
+    "prefer_ours": {
+      "type": "array",
+      "description": "Paths where main wins on conflict (prefer-ours strategy).",
+      "items": {
+        "type": "object",
+        "required": ["path", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Glob path relative to repo root."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Human-readable rationale."
+          },
+          "condition": {
+            "type": "string",
+            "description": "Optional additional condition restricting when this rule applies."
+          }
+        }
+      }
+    },
+    "always_delete_from_worktree_only": {
+      "type": "array",
+      "description": "Glob patterns for files to delete if they appear only on the worktree side.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "overrides": {
+      "type": "object",
+      "description": "Per-deliverable overrides (v1: unused; reserved for future extension).",
+      "additionalProperties": true
+    }
+  }
+}
