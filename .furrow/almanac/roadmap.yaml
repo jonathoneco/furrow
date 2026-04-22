@@ -24,17 +24,25 @@ dependency_graph:
       phase: 1
       row: install-and-merge-foundation
       status: active
+    - id: worktree-reintegration-summary
+      phase: 1
+      row: install-and-merge-foundation
+      status: active
+    - id: decision-review-todo-type
+      phase: 1
+      row: install-and-merge-foundation
+      status: active
     - id: almanac-graph-primitives
       phase: 2
-      row: almanac-and-seeds
+      row: almanac-graph-and-promotion
       status: active
     - id: seeds-concept
       phase: 2
-      row: almanac-and-seeds
+      row: almanac-graph-and-promotion
       status: active
     - id: ambient-context-promotion
       phase: 2
-      row: ambient-promotion
+      row: almanac-graph-and-promotion
       status: active
     - id: unified-isolated-review
       phase: 3
@@ -56,6 +64,10 @@ dependency_graph:
       phase: 3
       row: specialist-quality
       status: active
+    - id: effort-selection-alongside-model
+      phase: 3
+      row: specialist-quality
+      status: active
     - id: brain-dump-triage-command
       phase: 4
       row: command-pipeline
@@ -69,10 +81,6 @@ dependency_graph:
       row: command-pipeline
       status: active
     - id: research-documentation-detection
-      phase: 4
-      row: command-pipeline
-      status: active
-    - id: decision-review-todo-type
       phase: 4
       row: command-pipeline
       status: active
@@ -112,15 +120,7 @@ dependency_graph:
       phase: 6
       row: orchestration-polish
       status: active
-    - id: worktree-reintegration-summary
-      phase: 6
-      row: orchestration-polish
-      status: active
     - id: user-action-integration
-      phase: 6
-      row: orchestration-polish
-      status: active
-    - id: effort-selection-alongside-model
       phase: 6
       row: orchestration-polish
       status: active
@@ -166,29 +166,21 @@ dependency_graph:
       status: active
   edges:
     - from: install-and-merge-foundation
-      to: almanac-and-seeds
+      to: almanac-graph-and-promotion
       type: inferred
       reason: "foundational — stable merge/install pipeline before structural graph work"
-    - from: install-and-merge-foundation
-      to: ambient-promotion
-      type: inferred
-      reason: "foundational — promotion mechanics flow through merge pipeline"
-    - from: almanac-and-seeds
+    - from: almanac-graph-and-promotion
       to: command-pipeline
       type: inferred
-      reason: "merge-implication — command layer reads seed graph and almanac"
-    - from: almanac-and-seeds
+      reason: "merge-implication — command layer reads seed graph, almanac, and promoted context"
+    - from: almanac-graph-and-promotion
       to: planning-ux
       type: inferred
       reason: "merge-implication — planning commands depend on graph primitives"
-    - from: almanac-and-seeds
+    - from: almanac-graph-and-promotion
       to: sprint-and-spikes
       type: inferred
       reason: "foundational — seed graph before sprint/spike patterns"
-    - from: ambient-promotion
-      to: command-pipeline
-      type: inferred
-      reason: "merge-implication — commands surface promoted context"
     - from: review-unification
       to: command-pipeline
       type: inferred
@@ -207,7 +199,15 @@ dependency_graph:
       reason: "foundational — CLI decisions gate verb rename and status line"
   waves:
     - wave: 1
-      todos: [install-architecture-overhaul, merge-process-skill, post-merge-watch-list, config-cleanup]
+      todos:
+        [
+          install-architecture-overhaul,
+          config-cleanup,
+          merge-process-skill,
+          post-merge-watch-list,
+          worktree-reintegration-summary,
+          decision-review-todo-type,
+        ]
     - wave: 2
       todos: [almanac-graph-primitives, seeds-concept, ambient-context-promotion]
     - wave: 3
@@ -218,6 +218,7 @@ dependency_graph:
           specialist-template-warning-escalation,
           specialist-quality-validation,
           apply-nate-jones-skill,
+          effort-selection-alongside-model,
         ]
     - wave: 4
       todos:
@@ -226,7 +227,6 @@ dependency_graph:
           todo-context-references,
           roadmap-todo-integration,
           research-documentation-detection,
-          decision-review-todo-type,
           triage-and-braindump-ideation,
           furrow-next-phase-lifecycle,
           research-methodology-design,
@@ -244,9 +244,7 @@ dependency_graph:
         [
           parallel-agent-orchestration-adoption,
           re-evaluate-dispatch-enforcement,
-          worktree-reintegration-summary,
           user-action-integration,
-          effort-selection-alongside-model,
           sprint-inspired-planning,
           spike-row-mode,
           harness-lifecycle-ux,
@@ -264,11 +262,6 @@ dependency_graph:
         ]
   cycles: []
 conflict_zones:
-  - phase: 2
-    file_pattern: ".furrow/almanac/, bin/alm"
-    work_units: [almanac-and-seeds, ambient-promotion]
-    severity: medium
-    mitigation: "almanac-and-seeds merges first"
   - phase: 5
     file_pattern: "bin/rws, bin/frw.d/"
     work_units: [cli-architecture, folder-structure]
@@ -283,19 +276,21 @@ phases:
   - number: 1
     title: "Install & Merge Foundation"
     status: planned
-    rationale: "Recurring commit/merge issues across this repo and consumer projects. One coherent install story: self-hosting hygiene, the ~/.config/furrow/ tier, merge-process skill, and post-merge validation. Folded config-cleanup in from Phase 5 because the 3-tier config resolution chain is inseparable from install-architecture decisions."
+    rationale: "Recurring commit/merge issues across this repo and consumer projects. One coherent install/merge/handoff story: self-hosting hygiene, the ~/.config/furrow/ tier, merge-process skill, worktree reintegration summary (the output of /furrow:merge), post-merge watch-list, and decision-review TODO type (the watch-list's TODO-schema counterpart). Folded config-cleanup in from Phase 5 because the 3-tier config resolution chain is inseparable from install-architecture decisions; folded worktree-reintegration-summary and decision-review-todo-type in because they unify with merge-process-skill and post-merge-watch-list respectively."
     parallelism: "install-and-merge-foundation (single row)"
     rows:
       - branch: work/install-and-merge-foundation
-        description: "Install architecture overhaul, ~/.config/furrow/ tier, merge-process skill, post-merge watch-list"
+        description: "Install architecture, ~/.config/furrow/ tier, /furrow:merge skill + reintegration summary, post-merge watch-list + decision-review TODO type"
         todos:
           [
             install-architecture-overhaul,
             config-cleanup,
             merge-process-skill,
+            worktree-reintegration-summary,
             post-merge-watch-list,
+            decision-review-todo-type,
           ]
-        estimated_sessions: 5
+        estimated_sessions: 6
         key_files:
           [
             install.sh,
@@ -304,31 +299,38 @@ phases:
             bin/frw.d/hooks/,
             bin/frw.d/lib/common.sh,
             bin/frw,
+            bin/alm,
             commands/,
             commands/next.md,
+            skills/implement.md,
+            skills/shared/context-isolation.md,
+            schemas/todos.schema.yaml,
+            adapters/shared/schemas/todos.schema.yaml,
+            .furrow/almanac/,
             .furrow/,
           ]
         conflict_risk: none
         completed_at: null
   - number: 2
-    title: "Almanac Graph & Seeds"
+    title: "Almanac Graph, Seeds, and Promotion"
     status: planned
-    rationale: "Foundational graph primitives and promotion system. Many downstream TODOs reference seed graph and almanac primitives. almanac-and-seeds merges first (shared bin/alm surface)."
-    parallelism: "almanac-and-seeds || ambient-promotion"
+    rationale: "Foundational graph primitives, seed concept, and the promotion system that graduates row-level knowledge up the tier chain. Consolidated into one row because the previous split (almanac-and-seeds || ambient-promotion) couldn't actually parallelize — both rewrite bin/alm and .furrow/almanac/, with mitigation already requiring sequential merge. Building them together means the graph design accommodates promotion from day 1."
+    parallelism: "almanac-graph-and-promotion (single row)"
     rows:
-      - branch: work/almanac-and-seeds
-        description: "First-class seed graph and seeds concept — within-row + cross-row work management"
-        todos: [almanac-graph-primitives, seeds-concept]
-        estimated_sessions: 5
-        key_files: [bin/alm, bin/sds, .furrow/almanac/, skills/, references/]
-        conflict_risk: medium
-        completed_at: null
-      - branch: work/ambient-promotion
-        description: "Context promotion system — row to project to global knowledge graduation"
-        todos: [ambient-context-promotion]
-        estimated_sessions: 4
-        key_files: [.furrow/almanac/, bin/alm, commands/lib/]
-        conflict_risk: medium
+      - branch: work/almanac-graph-and-promotion
+        description: "First-class seed graph, seeds concept, and context promotion (row to project to global)"
+        todos: [almanac-graph-primitives, seeds-concept, ambient-context-promotion]
+        estimated_sessions: 7
+        key_files:
+          [
+            bin/alm,
+            bin/sds,
+            .furrow/almanac/,
+            skills/,
+            references/,
+            commands/lib/,
+          ]
+        conflict_risk: none
         completed_at: null
   - number: 3
     title: "Review & Specialist System"
@@ -353,15 +355,23 @@ phases:
         conflict_risk: low
         completed_at: null
       - branch: work/specialist-quality
-        description: "Specialist warning escalation, quality validation, Nate Jones skill pattern"
+        description: "Specialist warning escalation, quality validation, Nate Jones skill pattern, effort_hint frontmatter"
         todos:
           [
             specialist-template-warning-escalation,
             specialist-quality-validation,
             apply-nate-jones-skill,
+            effort-selection-alongside-model,
           ]
-        estimated_sessions: 3
-        key_files: [specialists/, references/specialist-template.md, skills/implement.md]
+        estimated_sessions: 4
+        key_files:
+          [
+            specialists/,
+            references/specialist-template.md,
+            skills/implement.md,
+            skills/,
+            bin/frw.d/scripts/,
+          ]
         conflict_risk: low
         completed_at: null
   - number: 4
@@ -371,14 +381,13 @@ phases:
     parallelism: "command-pipeline || planning-ux"
     rows:
       - branch: work/command-pipeline
-        description: "Brain-dump triage command, TODO context refs, roadmap integration, research-to-docs detection, decision-review TODO type"
+        description: "Brain-dump triage command, TODO context refs, roadmap integration, research-to-docs detection"
         todos:
           [
             brain-dump-triage-command,
             todo-context-references,
             roadmap-todo-integration,
             research-documentation-detection,
-            decision-review-todo-type,
           ]
         estimated_sessions: 3
         key_files:
@@ -454,23 +463,20 @@ phases:
     parallelism: "orchestration-polish || sprint-and-spikes || harness-lifecycle-ux || collaborative-surfaces"
     rows:
       - branch: work/orchestration-polish
-        description: "Parallel agent adoption, dispatch-enforcement review, worktree summaries, user-action lifecycle, effort_hint"
+        description: "Parallel agent adoption, dispatch-enforcement review, user-action lifecycle"
         todos:
           [
             parallel-agent-orchestration-adoption,
             re-evaluate-dispatch-enforcement,
-            worktree-reintegration-summary,
             user-action-integration,
-            effort-selection-alongside-model,
           ]
-        estimated_sessions: 3
+        estimated_sessions: 2
         key_files:
           [
             skills/implement.md,
             skills/shared/context-isolation.md,
             bin/rws,
-            specialists/,
-            references/specialist-template.md,
+            skills/shared/user-actions.md,
           ]
         conflict_risk: low
         completed_at: null

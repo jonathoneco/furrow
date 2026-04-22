@@ -1,6 +1,6 @@
 # Roadmap
 
-> Last updated: 2026-04-22 | 7 phases, 0/7 complete | 39 active TODOs across 15 rows | config-cleanup folded into Phase 1
+> Last updated: 2026-04-22 | 7 phases, 0/7 complete | 39 active TODOs across 13 rows | regrouped: worktree-reintegration, decision-review-todo-type → Phase 1; ambient-promotion → Phase 2; effort_hint → Phase 3
 
 ## Dependency DAG (active items only)
 
@@ -8,14 +8,13 @@
 Phase 1 — Install & Merge Foundation
   install-and-merge-foundation  ── (foundational) ──┐
                                                     │
-Phase 2 — Almanac Graph & Seeds                     ▼
-  almanac-and-seeds  ~~ (foundational) ─────────┬───┴──┐
-  ambient-promotion  ~~ (foundational) ─────────┤      │
-                                                │      │
-Phase 3 — Review & Specialist System             │      │
-  review-unification  ~~ (merge-impl) ───────┐  │      │
-  specialist-quality  ···                    │  │      │
-                                             ▼  ▼      ▼
+Phase 2 — Almanac Graph, Seeds, Promotion           ▼
+  almanac-graph-and-promotion  ~~ (foundational) ───┴──┐
+                                                       │
+Phase 3 — Review & Specialist System                   │
+  review-unification  ~~ (merge-impl) ───┐             │
+  specialist-quality  ···                │             │
+                                         ▼             ▼
 Phase 4 — Command Pipeline & Planning UX
   command-pipeline  ~~ (merge-impl) ──────────┐
   planning-ux  ~~ (merge-impl) ───────────────┤
@@ -42,45 +41,39 @@ Legend: `──` hard dep · `~~` inferred (foundational/merge) · `···` inde
 
 | Zone | Files | Rows affected | Severity | Mitigation |
 |------|-------|---------------|----------|------------|
-| Phase 2 | `.furrow/almanac/`, `bin/alm` | almanac-and-seeds, ambient-promotion | medium | almanac-and-seeds merges first |
 | Phase 5 | `bin/rws`, `bin/frw.d/` | cli-architecture, folder-structure | medium | cli-architecture merges first |
 | Phase 6 | `skills/`, `commands/` | orchestration-polish, harness-lifecycle-ux | low | different subsystems within shared dirs |
 
 ## Phase 1 — Install & Merge Foundation — PLANNED
 
-Recurring commit/merge issues across this repo and consumer projects. One coherent install story: self-hosting hygiene, the `~/.config/furrow/` tier, merge-process skill, and post-merge validation. Folded `config-cleanup` in from Phase 5 because the 3-tier config resolution chain is inseparable from install-architecture decisions.
+Recurring commit/merge issues across this repo and consumer projects. One coherent install/merge/handoff story: self-hosting hygiene, the `~/.config/furrow/` tier, `/furrow:merge` skill, worktree reintegration summary (the output of `/furrow:merge`), post-merge watch-list, and decision-review TODO type (the watch-list's TODO-schema counterpart). Folded `config-cleanup` in from Phase 5, and folded `worktree-reintegration-summary` + `decision-review-todo-type` in from Phase 4/6 because each of those pairs should be designed as one primitive.
 
-### work/install-and-merge-foundation (4 TODOs, ~5 sessions)
+### work/install-and-merge-foundation (6 TODOs, ~6 sessions)
 
-- `install-architecture-overhaul` — Install architecture overhaul — self-hosting, symlink hygiene, commit safety
-- `config-cleanup` — Configuration cleanup — ~/.config/furrow/ tier, 3-tier resolution chain, migration path
+- `install-architecture-overhaul` — Install architecture — self-hosting, symlink hygiene, commit safety
+- `config-cleanup` — ~/.config/furrow/ tier, 3-tier resolution chain, migration path
 - `merge-process-skill` — Design a /furrow:merge skill — reconcile worktree branches back into main
+- `worktree-reintegration-summary` — Produce summary for worktree reintegration (the /furrow:merge output)
 - `post-merge-watch-list` — Post-merge watch-list — track behavioral signals to validate after rows merge
+- `decision-review-todo-type` — Decision-review TODO type — structured post-evidence re-examination triggers
 
-- **Key files**: `install.sh`, `bin/frw.d/install.sh`, `bin/frw.d/scripts/launch-phase.sh`, `bin/frw.d/hooks/`, `bin/frw.d/lib/common.sh`, `bin/frw`, `commands/`, `commands/next.md`, `.furrow/`
+- **Key files**: `install.sh`, `bin/frw.d/install.sh`, `bin/frw.d/scripts/launch-phase.sh`, `bin/frw.d/hooks/`, `bin/frw.d/lib/common.sh`, `bin/frw`, `bin/alm`, `commands/`, `commands/next.md`, `skills/implement.md`, `skills/shared/context-isolation.md`, `schemas/todos.schema.yaml`, `.furrow/almanac/`, `.furrow/`
 - **Conflict risk**: none
-- **Why together**: All four address the same structural pain — the install/config/merge/validate pipeline. Landing them on one branch keeps self-hosting, the 3-tier config chain, and merge hygiene coherent. `~/.config/furrow/` is arguably the cleanest answer to "install writes too many files into the project": if shared specialists and promotion targets live in `~/.config/furrow/`, consumers don't need to symlink them at all, eliminating half the broken-target symlink problem.
+- **Why together**: All six unify under "get install/merge/watch right as one primitive." The reintegration summary IS the /furrow:merge output; the decision-review TODO type IS the TODO-schema side of the watch-list. Splitting these across phases would force the same designs to ping-pong between branches.
 
-## Phase 2 — Almanac Graph & Seeds — PLANNED
+## Phase 2 — Almanac Graph, Seeds, and Promotion — PLANNED
 
-Foundational graph primitives and promotion system. Many downstream TODOs reference seed graph and almanac primitives. almanac-and-seeds merges first (shared `bin/alm` surface).
+Foundational graph primitives, seed concept, and the promotion system that graduates row-level knowledge up the tier chain. Consolidated into one row because the previous split couldn't actually parallelize — both rewrite `bin/alm` and `.furrow/almanac/`. Building them together means the graph design accommodates promotion from day 1.
 
-### work/almanac-and-seeds (2 TODOs, ~5 sessions)
+### work/almanac-graph-and-promotion (3 TODOs, ~7 sessions)
 
 - `almanac-graph-primitives`
 - `seeds-concept`
-
-- **Key files**: `bin/alm`, `bin/sds`, `.furrow/almanac/`, `skills/`, `references/`
-- **Conflict risk**: medium (with ambient-promotion on `.furrow/almanac/` and `bin/alm`)
-- **Why together**: Seed graph IS the almanac graph engine — one cohesive primitive.
-
-### work/ambient-promotion (1 TODO, ~4 sessions)
-
 - `ambient-context-promotion`
 
-- **Key files**: `.furrow/almanac/`, `bin/alm`, `commands/lib/`
-- **Conflict risk**: medium
-- **Why together**: Standalone promotion system; kept separate for independent pacing.
+- **Key files**: `bin/alm`, `bin/sds`, `.furrow/almanac/`, `skills/`, `references/`, `commands/lib/`
+- **Conflict risk**: none
+- **Why together**: Seed graph IS the almanac graph engine; promotion is the use case that validates the graph primitives. One primitive, one branch.
 
 ## Phase 3 — Review & Specialist System — PLANNED
 
@@ -95,31 +88,31 @@ Unify review machinery and raise specialist quality bar before downstream comman
 - **Conflict risk**: low
 - **Why together**: Both restructure how reviews are invoked and how gate dimensions compose — one branch keeps the review contract consistent.
 
-### work/specialist-quality (3 TODOs, ~3 sessions)
+### work/specialist-quality (4 TODOs, ~4 sessions)
 
 - `specialist-template-warning-escalation`
 - `specialist-quality-validation`
 - `apply-nate-jones-skill`
+- `effort-selection-alongside-model` — effort_hint frontmatter alongside model_hint
 
-- **Key files**: `specialists/`, `references/specialist-template.md`, `skills/implement.md`
+- **Key files**: `specialists/`, `references/specialist-template.md`, `skills/implement.md`, `skills/`, `bin/frw.d/scripts/`
 - **Conflict risk**: low
-- **Why together**: All three address the specialist quality bar — template enforcement, validation, and skill application patterns.
+- **Why together**: All four address the specialist metadata + quality bar — template enforcement, validation, applied skill patterns, and effort-alongside-model frontmatter. Grouping effort_hint here (from Phase 6 orchestration-polish) keeps specialist-frontmatter changes atomic.
 
 ## Phase 4 — Command Pipeline & Planning UX — PLANNED
 
 Command layer matures after agent wiring, reviews, and graph primitives stabilize. Planning UX shares `commands/` but different files.
 
-### work/command-pipeline (5 TODOs, ~3 sessions)
+### work/command-pipeline (4 TODOs, ~3 sessions)
 
 - `brain-dump-triage-command`
 - `todo-context-references`
 - `roadmap-todo-integration`
 - `research-documentation-detection`
-- `decision-review-todo-type`
 
 - **Key files**: `commands/`, `commands/work-todos.md`, `commands/triage.md`, `commands/next.md`, `bin/alm`, `skills/review.md`
 - **Conflict risk**: low
-- **Why together**: Command-surface changes for brain-dump, TODO, and roadmap flow — consolidate for atomic UX.
+- **Why together**: Command-surface changes for brain-dump, TODO, and roadmap flow — consolidate for atomic UX. (decision-review-todo-type moved to Phase 1 with post-merge-watch-list.)
 
 ### work/planning-ux (3 TODOs, ~3 sessions)
 
@@ -157,17 +150,15 @@ CLI architecture decision gates downstream lifecycle UX. cli-architecture merges
 
 Polish orchestration patterns, add sprint/spike modes, and land lifecycle-UX verb renames. Four rows run in parallel; mostly distinct subsystems.
 
-### work/orchestration-polish (5 TODOs, ~3 sessions)
+### work/orchestration-polish (3 TODOs, ~2 sessions)
 
 - `parallel-agent-orchestration-adoption`
 - `re-evaluate-dispatch-enforcement`
-- `worktree-reintegration-summary`
 - `user-action-integration`
-- `effort-selection-alongside-model`
 
-- **Key files**: `skills/implement.md`, `skills/shared/context-isolation.md`, `bin/rws`, `specialists/`, `references/specialist-template.md`
+- **Key files**: `skills/implement.md`, `skills/shared/context-isolation.md`, `bin/rws`, `skills/shared/user-actions.md`
 - **Conflict risk**: low
-- **Why together**: All refine the orchestrator/dispatch lifecycle and its knobs.
+- **Why together**: Orchestrator dispatch lifecycle and user-action integration. (worktree-reintegration-summary moved to Phase 1 with merge-process-skill; effort-selection moved to Phase 3 specialist-quality.)
 
 ### work/sprint-and-spikes (2 TODOs, ~4 sessions)
 
@@ -225,9 +216,8 @@ Low-urgency items. Insights feed back into earlier work. TUI is aspirational.
 # Phase 1 — Install & Merge Foundation
 git worktree add ../furrow-install-and-merge-foundation -b work/install-and-merge-foundation
 
-# Phase 2 — Almanac Graph & Seeds
-git worktree add ../furrow-almanac-and-seeds -b work/almanac-and-seeds
-git worktree add ../furrow-ambient-promotion -b work/ambient-promotion
+# Phase 2 — Almanac Graph, Seeds, Promotion
+git worktree add ../furrow-almanac-graph-and-promotion -b work/almanac-graph-and-promotion
 
 # Phase 3 — Review & Specialist System
 git worktree add ../furrow-review-unification -b work/review-unification
