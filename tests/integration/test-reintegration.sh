@@ -553,6 +553,48 @@ REINT
   trap - EXIT INT TERM
 }
 
+# --- Scenario 10: Template modification surfaces in rendered output (AC-R5) ---
+test_template_modification_surfaces_in_render() {
+  printf '\n[Scenario 10: template modification surfaces in rendered output]\n'
+  _dir="$(mktemp -d)"
+  # shellcheck disable=SC2064
+  trap "rm -rf '$_dir'" EXIT INT TERM
+
+  _row="$(build_test_repo "$_dir")"
+
+  # Add one commit so we have a valid branch range
+  (
+    cd "$_dir" &&
+    printf 'content\n' > marker_test.txt &&
+    git add marker_test.txt &&
+    git commit -q -m "feat: marker test commit"
+  )
+
+  # Create a local template dir with a modified skeleton containing an identifiable marker
+  _tmpl_dir="${_dir}/.tmpl_override"
+  mkdir -p "$_tmpl_dir"
+  cat > "${_tmpl_dir}/reintegration.md.tmpl" << 'TMPL'
+<!-- reintegration:begin -->
+## Reintegration
+<!-- TEMPLATE_FIXTURE_MARKER -->
+<!-- reintegration:end -->
+TMPL
+
+  _script="${PROJECT_ROOT}/bin/frw.d/scripts/generate-reintegration.sh"
+  _exit=0
+  (cd "$_dir" && FURROW_TEMPLATE_DIR="$_tmpl_dir" sh "$_script" "$_row" "$_dir") >/dev/null 2>&1 || _exit=$?
+
+  assert_exit_code "generate-reintegration exits 0 with template override" 0 "$_exit"
+
+  _summary="${_dir}/.furrow/rows/${_row}/summary.md"
+  assert_file_contains "rendered output contains TEMPLATE_FIXTURE_MARKER" "$_summary" '<!-- TEMPLATE_FIXTURE_MARKER -->'
+  assert_file_contains "rendered output still has begin marker" "$_summary" '<!-- reintegration:begin -->'
+  assert_file_contains "rendered output still has end marker" "$_summary" '<!-- reintegration:end -->'
+
+  rm -rf "$_dir"
+  trap - EXIT INT TERM
+}
+
 # --- Run all scenarios ---
 printf '=== test-reintegration.sh ===\n'
 
@@ -565,6 +607,7 @@ test_merge_consumer_contract
 test_idempotency
 test_update_summary_rejects_reintegration
 test_validate_summary_marker_enforcement
+test_template_modification_surfaces_in_render
 
 # --- Summary ---
 printf '\n=== Results ===\n'
