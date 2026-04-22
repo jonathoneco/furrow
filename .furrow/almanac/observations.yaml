@@ -1,1 +1,21 @@
-[]
+- id: re-evaluate-dispatch-enforcement
+  kind: decision-review
+  title: Re-evaluate whether structural enforcement is needed for multi-agent dispatch
+  triggered_by:
+    type: rows_since
+    since_row: parallel-agent-wiring
+    count: 3
+  lifecycle: open
+  source_work_unit: parallel-agent-wiring
+  created_at: "2026-04-09T00:00:00Z"
+  updated_at: "2026-04-22T19:38:01Z"
+  question: Given the instruction-only approach to multi-agent dispatch in implement.md, do step agents actually dispatch sub-agents for multi-deliverable waves in practice?
+  options:
+    - id: instruction-sufficient
+      label: Instruction-only is working (>=2 of 3 rows dispatch correctly); close as validated.
+    - id: escalate-to-enforcement
+      label: Dispatch is not happening (<2 of 3); escalate to structural enforcement (file-ownership hooks, pre-edit hook, or mandatory dispatch step).
+  acceptance_criteria: 'Threshold: after 3 subsequent multi-deliverable rows archive, check whether Agent tool calls appeared during implement step in each. If >=2 of 3, choose instruction-sufficient. If <2 of 3, choose escalate-to-enforcement.'
+  evidence_needed:
+    - Session histories or row learnings for 3 post-parallel-agent-wiring multi-deliverable rows
+    - Per-row count of Agent tool calls during implement step
