@@ -1,1 +1,0 @@
-../../specialists/python-specialist.md

@@ -1,1 +1,0 @@
-../../specialists/complexity-skeptic.md

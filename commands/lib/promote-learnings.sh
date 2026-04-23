@@ -5,12 +5,20 @@
 #   name                    — row name
 #   project_learnings_path  — path to project-level learnings.jsonl (default: learnings.jsonl)
 #
-# Reads per-row learnings, auto-recommends promotion, and outputs
-# promotion candidates for user confirmation.
+# Reads per-row learnings (canonical new schema — see schemas/learning.schema.json),
+# auto-recommends promotion, and outputs promotion candidates for user confirmation.
+#
+# Canonical record shape (post-migration):
+#   {ts, step, kind, summary, detail, tags}
+#
+# The append-learning hook guarantees every on-disk record matches this shape;
+# this script asserts on missing fields and refers the user to the hook if the
+# assertion fails.
 #
 # Exit codes:
 #   0 — success (or no learnings)
 #   1 — usage error
+#   3 — on-disk record violates the canonical schema (hook bypass)
 
 set -eu
 
@@ -46,21 +54,30 @@ promoted_count=0
 while IFS= read -r line; do
   line_num=$((line_num + 1))
 
-  category="$(echo "${line}" | jq -r '.category')"
-  content="$(echo "${line}" | jq -r '.content')"
-  context="$(echo "${line}" | jq -r '.context')"
-  source_step="$(echo "${line}" | jq -r '.source_step')"
-  already_promoted="$(echo "${line}" | jq -r '.promoted')"
+  [ -z "${line}" ] && continue
 
-  if [ "${already_promoted}" = "true" ]; then
-    continue
+  # Canonical new-schema fields.
+  kind="$(echo "${line}" | jq -r '.kind')"
+  step="$(echo "${line}" | jq -r '.step')"
+  summary="$(echo "${line}" | jq -r '.summary')"
+  detail="$(echo "${line}" | jq -r '.detail')"
+  tags="$(echo "${line}" | jq -r '.tags | join(",")')"
+
+  # Assertion — append-learning hook should have prevented this.
+  if [ -z "${kind}" ] || [ "${kind}" = "null" ] \
+     || [ -z "${step}" ] || [ "${step}" = "null" ] \
+     || [ -z "${summary}" ] || [ "${summary}" = "null" ]; then
+    echo "promote-learnings: schema violation on line ${line_num} of ${work_learnings}" >&2
+    echo "  missing one of [kind, step, summary] — the append-learning hook should have refused this write." >&2
+    echo "  Run bin/frw.d/scripts/migrate-learnings-schema.sh and/or check hook registration in .claude/settings.json." >&2
+    exit 3
   fi
 
   # --- auto-recommendation ---
   recommend="skip"
   reason=""
 
-  case "${category}" in
+  case "${kind}" in
     convention)
       recommend="promote"
       reason="Conventions are inherently project-wide."
@@ -74,8 +91,8 @@ while IFS= read -r line; do
       reason="User preferences are always project-wide."
       ;;
     pattern)
-      # Promote if content references project-level paths
-      if echo "${content}" | grep -qE '(internal/|pkg/|src/|lib/)'; then
+      # Promote if summary references project-level paths
+      if echo "${summary}" | grep -qE '(internal/|pkg/|src/|lib/)'; then
         recommend="promote"
         reason="Pattern references project-level code paths."
       else
@@ -84,8 +101,8 @@ while IFS= read -r line; do
       fi
       ;;
     pitfall)
-      # Promote if content references a package/module
-      if echo "${content}" | grep -qE '(package|module|import|require|dependency)'; then
+      # Promote if summary references a package/module
+      if echo "${summary}" | grep -qE '(package|module|import|require|dependency)'; then
         recommend="promote"
         reason="Pitfall likely recurs in other rows."
       else
@@ -95,11 +112,11 @@ while IFS= read -r line; do
       ;;
   esac
 
-  # --- check deduplication ---
+  # --- check deduplication (on summary) ---
   if [ -f "${project_file}" ]; then
-    exact_match="$(jq -r --arg c "${content}" 'select(.content == $c) | .content' "${project_file}" 2>/dev/null | wc -l)" || exact_match="0"
+    exact_match="$(jq -r --arg s "${summary}" 'select(.summary == $s) | .summary' "${project_file}" 2>/dev/null | wc -l)" || exact_match="0"
     if [ "${exact_match}" -gt 0 ]; then
-      echo "[${line_num}/${line_count}] SKIP (duplicate): ${content}"
+      echo "[${line_num}/${line_count}] SKIP (duplicate): ${summary}"
       continue
     fi
   fi
@@ -107,9 +124,11 @@ while IFS= read -r line; do
   # --- output for user review ---
   echo "---"
   echo "[${line_num}/${line_count}]"
-  echo "  Learning: \"${content}\""
-  echo "  Category: ${category} | Source: ${name}/${source_step}"
-  echo "  Context: \"${context}\""
+  echo "  summary=${summary}"
+  echo "  kind=${kind}"
+  echo "  step=${name}/${step}"
+  echo "  tags=${tags}"
+  echo "  detail=${detail}"
   echo ""
   if [ "${recommend}" = "promote" ]; then
     echo "  Recommendation: PROMOTE to project level"

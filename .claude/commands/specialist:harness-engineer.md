@@ -1,1 +1,0 @@
-../../specialists/harness-engineer.md

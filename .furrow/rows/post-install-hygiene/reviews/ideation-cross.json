@@ -1,0 +1,41 @@
+{
+  "type": "ideation",
+  "dimensions": [
+    {
+      "name": "Feasibility",
+      "verdict": "conditional",
+      "evidence": "The objective is achievable with the stated constraints. The repo already has the relevant surfaces: integration tests, setup-style helpers, rescue.sh, cross-model-review.sh, common.sh config helpers, reintegration.schema.json, validate-json/Draft2020-12 validation patterns, promote-learnings.sh, install/upgrade specialist handling, and merge e2e tests. Feasibility depends on keeping schema changes narrowly additive and making test-isolation-guard land first."
+    },
+    {
+      "name": "Alignment",
+      "verdict": "pass",
+      "evidence": "The eight deliverables map directly to the eight audit findings named in the objective: test isolation, rescue exec contract, per-deliverable cross-model diffs, reintegration validation consolidation, XDG config consumption, learnings promotion schema repair, specialist symlink handling, and AC-10 fixture coverage."
+    },
+    {
+      "name": "Dependency validity",
+      "verdict": "conditional",
+      "evidence": "The safety-first dependency is directionally correct, but the framing says only ac-10-e2e-fixture has a declared depends_on while several other deliverables are expected to add or modify integration tests. If the workflow system supports depends_on per deliverable, test-isolation-guard should be an explicit dependency for cross-model-per-deliverable-diff, reintegration-schema-consolidation, xdg-config-consumer-wiring, promote-learnings-schema-fix, specialist-symlink-unification, and ac-10-e2e-fixture. There is also a naming inconsistency: the constraint mentions cross-model-scope and config-resolution while deliverables are named cross-model-per-deliverable-diff and xdg-config-consumer-wiring."
+    },
+    {
+      "name": "Risk assessment",
+      "verdict": "pass",
+      "evidence": "The constraints are strong and specific: no live worktree mutation, POSIX shell, schema-authoritative validation, single XDG resolver, install.sh-only specialist symlink production, back-compat limits, and explicit scope discipline. These are adequate to prevent most scope creep if acceptance criteria stay concrete."
+    },
+    {
+      "name": "Completeness",
+      "verdict": "conditional",
+      "evidence": "The deliverable set covers the obvious audit findings. The main gaps are framing-level: missing explicit dependency declarations for all test-touching deliverables, no documented migration/verification plan for archived rows after adding test_results.evidence_path, and no explicit acceptance criterion requiring existing review fixtures to continue validating. The open questions section says none, but dependency encoding and archived-row migration policy should be settled before implementation."
+    }
+  ],
+  "framing_quality": "questionable",
+  "suggested_revisions": [
+    "Add explicit depends_on: [test-isolation-guard] to every deliverable that adds or modifies integration tests, not just ac-10-e2e-fixture.",
+    "Normalize deliverable names across the objective and constraints: use cross-model-per-deliverable-diff consistently instead of cross-model-scope, and xdg-config-consumer-wiring instead of config-resolution.",
+    "Add an AC or constraint for archived-row compatibility: existing reintegration/review fixtures must validate after the additive test_results.evidence_path requirement, with migration only if validation proves it is needed.",
+    "Make test-isolation-guard define the shared setup_sandbox contract and require subsequent tests to fail review if they bypass it.",
+    "Keep the current no-redesign constraint; route any broader config, schema, or install architecture concerns into follow-up TODOs."
+  ],
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-23T17:21:36Z"
+}
