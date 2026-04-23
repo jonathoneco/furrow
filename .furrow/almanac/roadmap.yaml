@@ -3,13 +3,13 @@ metadata:
   project: furrow
   generated_at: '2026-04-23T13:06:10-04:00'
   total_phases: 8
-  completed_phases: 0
+  completed_phases: 1
 dependency_graph:
   nodes:
   - id: ac-10-e2e-fixture-split-across-contaminated-stop-a
     label: AC-10 e2e fixture split across contaminated-stop and safe-happy-path
     phase: 1
-    status: active
+    status: completed
     depends_on: []
   - id: adapters-audit
     label: "Adapters pass \u2014 check for atrophy, modularization decay, internal consistency"
@@ -34,17 +34,17 @@ dependency_graph:
   - id: audit-test-install-sh-and-test-upgrade-sh-for-live
     label: Audit test-install-*.sh and test-upgrade-*.sh for live-worktree mutation
     phase: 1
-    status: active
+    status: completed
     depends_on: []
   - id: audit-xdg-config-fields-for-runtime-consumers-pref
     label: Audit XDG config fields for runtime consumers (preferred_specialists, cross_model.provider)
     phase: 1
-    status: active
+    status: completed
     depends_on: []
   - id: bin-frw-d-scripts-rescue-sh-committed-as-100644-di
     label: bin/frw.d/scripts/rescue.sh committed as 100644; dispatcher exec fails
     phase: 1
-    status: active
+    status: completed
     depends_on: []
   - id: brain-dump-triage-command
     label: "Brain dump + triage command \u2014 collaborative ideation, TODO extraction, roadmap bootstrap fields"
@@ -60,7 +60,7 @@ dependency_graph:
   - id: codex-cross-model-reviewer-flags-other-deliverable
     label: Codex cross-model reviewer flags other deliverables' commits as unplanned
     phase: 1
-    status: active
+    status: completed
     depends_on: []
   - id: collaborative-surfaces
     label: "Document-based collaboration \u2014 markdown + comment threading, Notion integration"
@@ -70,7 +70,7 @@ dependency_graph:
   - id: commands-lib-promote-learnings-sh-reads-null-for-e
     label: commands/lib/promote-learnings.sh reads null for every learning
     phase: 1
-    status: active
+    status: completed
     depends_on: []
   - id: design-pattern-context-construction
     label: Context construction driven by design pattern thinking
@@ -115,7 +115,7 @@ dependency_graph:
   - id: generate-reintegration-sh-should-use-canonical-sch
     label: generate-reintegration.sh should use canonical schema, not inline jq-subset
     phase: 1
-    status: active
+    status: completed
     depends_on: []
   - id: harness-lifecycle-ux
     label: "Harness UX \u2014 sow/reap verbs, status line, installation/exploration skill"
@@ -235,7 +235,7 @@ dependency_graph:
   - id: unify-tracked-14-vs-gitignored-8-specialist-symlin
     label: Unify tracked (14) vs .gitignored (8) specialist symlinks
     phase: 1
-    status: active
+    status: completed
     depends_on: []
   - id: user-action-integration
     label: Integration points for actions the user must take
@@ -308,9 +308,8 @@ conflict_zones:
 phases:
 - number: 1
   title: "Post-install hygiene \u2014 test isolation, review pipeline, install asymmetry"
-  status: planned
-  rationale: "Post-merge cleanup from install-and-merge (shipped 2026-04-22). Test-isolation fix leads \u2014 tests corrupted live-repo symlinks, a safety issue. Bundled so 8 small fixes amortize one branch\
-    \ instead of 8 tiny ones."
+  status: completed
+  rationale: "Merged foundation work from work/post-install-hygiene. This phase hardened install and self-hosting behavior, sandboxed integration tests, consolidated schema validation, fixed script mode drift, and corrected cross-model review scoping. It is complete and now serves as the baseline for the Go CLI rewrite."
   rows:
   - index: 1
     branch: work/post-install-hygiene
@@ -324,16 +323,22 @@ phases:
     - commands-lib-promote-learnings-sh-reads-null-for-e
     - unify-tracked-14-vs-gitignored-8-specialist-symlin
     - ac-10-e2e-fixture-split-across-contaminated-stop-a
-    key_files: []
+    key_files:
+    - bin/frw.d/hooks/append-learning.sh
+    - bin/frw.d/lib/validate-json.sh
+    - bin/frw.d/scripts/cross-model-review.sh
+    - docs/architecture/config-resolution.md
+    - docs/architecture/self-hosting.md
+    - docs/architecture/testing.md
+    - tests/integration/run-all.sh
     conflict_risk: low
     depends_on: []
-    completed_at: null
+    completed_at: '2026-04-23T00:00:00Z'
     why_together: Same source review; same subsystem (install/test/review pipeline); bundling avoids 8 tiny branches.
 - number: 2
   title: "CLI Go rewrite \u2014 foundational language migration"
   status: planned
-  rationale: "Go rewrite of frw/rws/alm/sds. Decision 2026-04-23: Go (over TypeScript), all-in (no bash quick-wins phase). Rewrites the exact infrastructure Phase 3+ builds on, so it must land first. Absorbs\
-    \ cli-ergonomics-pass, cli-breakup-script-guard, register-deliverable-command, and log-disposition-discipline \u2014 their implementations live in the new Go CLI rather than transitional bash."
+  rationale: "Go rewrite of frw/rws/alm/sds. Decision 2026-04-23: Go (over TypeScript), all-in (no bash quick-wins phase). With post-install hygiene now landed, this is the next canonical backend step. The portability research informs the contract and boundary docs (`docs/architecture/go-cli-contract.md`, `docs/architecture/core-adapter-boundary.md`) but does not get merged as adapter implementation. Absorbs cli-ergonomics-pass, cli-breakup-script-guard, register-deliverable-command, and log-disposition-discipline \u2014 their implementations live in the new Go CLI rather than transitional bash."
   rows:
   - index: 1
     branch: work/cli-go-rewrite
