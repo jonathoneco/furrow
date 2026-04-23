@@ -216,6 +216,84 @@ During migration, keep these wrappers as compatibility shims:
 They should translate legacy invocations to the canonical Go binary rather than
 preserve independent domain logic.
 
+## Pi-first implementation order
+
+To let Pi come online early without breaking teammate compatibility in Claude
+Code, implement the Go surface in this order.
+
+### Slice 1 — minimum shared backend
+
+Make these commands real first:
+
+- `furrow row status --json`
+- `furrow row transition --json`
+- `furrow doctor --json`
+- `furrow almanac validate --json`
+
+Why first:
+
+- enough backend reality for a Pi adapter to begin consuming the contract
+- enough shared semantics to avoid Pi-only workflow logic
+- small enough surface to stabilize quickly
+
+### Slice 2 — Pi-enabling backend calls
+
+Next, implement:
+
+- `furrow row list --json`
+- `furrow row init --json`
+- `furrow gate status --json`
+- `furrow review status --json`
+
+Why second:
+
+- gives Pi enough project and row introspection for a usable authoring workflow
+- still avoids deep merge/review orchestration work too early
+
+### Slice 3 — Claude compatibility delegation
+
+After the first two slices are stable, begin delegating:
+
+- `frw` wrapper calls into `furrow`
+- `rws` wrapper calls into `furrow row ...`
+- `alm` wrapper calls into `furrow almanac ...`
+- `sds` wrapper calls into `furrow seeds ...`
+
+Why third:
+
+- Pi can move early
+- Claude remains usable for teammates without forcing Claude-first sequencing
+
+### Slice 4 — deeper workflow semantics
+
+Then implement:
+
+- gate execution/evaluation
+- review orchestration
+- merge/archive semantics
+- seed graph behavior
+
+This is where the backend becomes fully load-bearing for both runtimes.
+
+## Sequencing rule
+
+If a capability is needed for:
+
+- shared `.furrow/` semantics
+- stable adapter contracts
+- teammate compatibility in Claude
+
+then it belongs in the backend queue.
+
+If a capability is only needed for:
+
+- Pi UX richness
+- host-native status/widgets
+- personal ergonomics
+
+then Pi may implement it earlier as an adapter feature, provided it still calls
+through the backend for semantics.
+
 ## Derived guidance from the portability research
 
 The portability research is still useful here, but only at the contract level:

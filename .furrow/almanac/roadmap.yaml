@@ -56,7 +56,46 @@ dependency_graph:
     label: "CLI architecture overhaul \u2014 Go rewrite of frw/rws/alm/sds with modularization, structured logging, introspection"
     phase: 2
     status: active
+    depends_on:
+    - go-cli-contract-v1
+    - migration-operating-mode
+  - id: dual-runtime-target-architecture
+    label: "Freeze the target dual-runtime architecture \u2014 backend/core plus Claude and Pi adapters"
+    phase: 2
+    status: active
     depends_on: []
+  - id: go-cli-contract-v1
+    label: "Define the first stable Go CLI contract for adapter-facing Furrow operations"
+    phase: 2
+    status: active
+    depends_on:
+    - dual-runtime-target-architecture
+  - id: migration-operating-mode
+    label: "Define the migration operating mode \u2014 Furrow/Claude for backend work, Pi for manual adapter exploration until enforcement is stable"
+    phase: 2
+    status: active
+    depends_on:
+    - dual-runtime-target-architecture
+  - id: claude-wrapper-compatibility
+    label: "Preserve Claude Code compatibility via legacy wrapper delegation over the Go backend"
+    phase: 2
+    status: active
+    depends_on:
+    - go-cli-contract-v1
+  - id: pi-adapter-package
+    label: "Build the Furrow Pi package/extension on top of the stable Go backend"
+    phase: 7
+    status: active
+    depends_on:
+    - cli-architecture-overhaul
+    - claude-wrapper-compatibility
+  - id: dual-runtime-parity-validation
+    label: "Validate Claude Code and Pi against the same backend contracts and .furrow state"
+    phase: 7
+    status: active
+    depends_on:
+    - pi-adapter-package
+    - claude-wrapper-compatibility
   - id: codex-cross-model-reviewer-flags-other-deliverable
     label: Codex cross-model reviewer flags other deliverables' commits as unplanned
     phase: 1
@@ -336,34 +375,72 @@ phases:
     completed_at: '2026-04-23T00:00:00Z'
     why_together: Same source review; same subsystem (install/test/review pipeline); bundling avoids 8 tiny branches.
 - number: 2
-  title: "CLI Go rewrite \u2014 foundational language migration"
+  title: "Backend contract + Go rewrite \u2014 canonical core before adapters"
   status: planned
-  rationale: "Go rewrite of frw/rws/alm/sds. Decision 2026-04-23: Go (over TypeScript), all-in (no bash quick-wins phase). With post-install hygiene now landed, this is the next canonical backend step. The portability research informs the contract and boundary docs (`docs/architecture/go-cli-contract.md`, `docs/architecture/core-adapter-boundary.md`) but does not get merged as adapter implementation. Absorbs cli-ergonomics-pass, cli-breakup-script-guard, register-deliverable-command, and log-disposition-discipline \u2014 their implementations live in the new Go CLI rather than transitional bash."
+  rationale: "With post-install hygiene landed, Furrow should freeze the target host strategy, dual-runtime architecture, and Go CLI contract before broad migration work. The portability research remains design input only; implementation proceeds backend-first in-repo. The target is shared backend/artifact semantics with asymmetric UX: Pi is allowed to become the stronger primary runtime, while Claude compatibility is preserved for teammates through thin wrappers and shared backend contracts."
   rows:
   - index: 1
+    branch: work/backend-contract
+    description: Freeze the dual-runtime architecture, first Go CLI contract, and migration operating mode
+    todos:
+    - dual-runtime-target-architecture
+    - go-cli-contract-v1
+    - migration-operating-mode
+    key_files:
+    - docs/architecture/core-adapter-boundary.md
+    - docs/architecture/go-cli-contract.md
+    - docs/architecture/host-strategy-matrix.md
+    - docs/architecture/dual-runtime-migration-plan.md
+    - .furrow/almanac/roadmap.yaml
+    - .furrow/almanac/todos.yaml
+    conflict_risk: low
+    depends_on: []
+    completed_at: null
+    why_together: Contract freeze first — this is the guardrail against repeating the speculative portability spike.
+  - index: 2
     branch: work/cli-go-rewrite
-    description: Rewrite frw/rws/alm/sds in Go with modularization, structured logging, introspection
+    description: Implement the minimum shared Go backend slice, then expand toward full CLI replacement
     todos:
     - cli-architecture-overhaul
     key_files:
     - .furrow/almanac/rationale.yaml
     - bin/
     - cmd/
+    - docs/architecture/go-cli-contract.md
     - install.sh
     - internal/
     - schemas/
     - tests/integration/
     conflict_risk: low
-    depends_on: []
+    depends_on:
+    - go-cli-contract-v1
+    - migration-operating-mode
     completed_at: null
-    why_together: "Single large migration \u2014 every downstream row builds on the new binaries."
+    why_together: The first goal is the minimum shared backend slice that lets Pi start early without creating Pi-only semantics.
 - number: 3
-  title: "Dispatch + ambient contract \u2014 foundational for downstream skills"
+  title: "Pi early-adapter + dispatch + ambient contract"
   status: planned
-  rationale: Sub-agent dispatch shape, ambient-layer contract, and specialist quality signal. These reshape contracts that Phase 4-6 skills/commands write against. Landing them after the Go rewrite means
-    generators and ambient-layer tooling are built in Go from the start.
+  rationale: Once the minimum Go backend slice exists, Pi should come online early as the primary authoring runtime. This phase establishes the first Pi adapter over the shared backend and then continues into sub-agent dispatch shape, ambient-layer contract, and specialist quality signal. Those downstream contracts still belong after the backend freeze, but they no longer need to wait for full Claude wrapper migration.
   rows:
   - index: 1
+    branch: work/pi-adapter-foundation
+    description: Bring up the first usable Pi adapter on top of the minimum shared backend slice
+    todos:
+    - pi-adapter-package
+    key_files:
+    - adapters/pi/
+    - docs/architecture/go-cli-contract.md
+    - docs/architecture/host-strategy-matrix.md
+    - cmd/
+    - internal/
+    - install.sh
+    conflict_risk: medium
+    depends_on:
+    - cli-architecture-overhaul
+    - go-cli-contract-v1
+    completed_at: null
+    why_together: Pi should come online as early as the backend can support it; this row intentionally precedes deeper host-agnostic dispatch work.
+  - index: 2
     branch: work/sub-agent-normalization
     description: Register specialists as Claude Code agent types; generator; quality validation
     todos:
@@ -389,7 +466,7 @@ phases:
     - specialist-expansion
     completed_at: null
     why_together: "All four touch specialist dispatch shape, registration, and quality gating \u2014 same module."
-  - index: 2
+  - index: 3
     branch: work/ambient-context
     description: Promote rationale/learnings/manifest into unified living-docs ambient layer
     todos:
@@ -402,7 +479,7 @@ phases:
     depends_on: []
     completed_at: null
     why_together: "Standalone \u2014 reshapes ambient contract before Phase 4 writes against it."
-  - index: 3
+  - index: 4
     branch: work/effort-and-model-routing
     description: Effort selection alongside per-step model routing
     todos:
@@ -561,10 +638,9 @@ phases:
     completed_at: null
     why_together: Triage/brain-dump UX and the panes that watch those artifacts in real time.
 - number: 7
-  title: Post-seeds re-triage + dashboards + lifecycle
+  title: Post-seeds re-triage + Pi adapter + dashboards + lifecycle
   status: planned
-  rationale: "Several TODOs may be subsumed, simplified, or re-shaped once seeds lands \u2014 re-triage them here rather than designing against pre-seeds assumptions. Plus dashboards, self-update, and harness\
-    \ lifecycle UX which build on stable foundations."
+  rationale: "Several TODOs may be subsumed, simplified, or re-shaped once seeds lands \u2014 re-triage them here rather than designing against pre-seeds assumptions. After the backend and Claude compatibility layers are stable, this phase also hosts the real Pi adapter/package work and dual-runtime parity validation, followed by dashboards, self-update, and lifecycle UX on top of the stabilized core."
   rows:
   - index: 1
     branch: work/post-seeds-retriage
@@ -593,6 +669,26 @@ phases:
     completed_at: null
     why_together: Each one has an overlap with seeds semantics. Re-triage instead of pre-planning.
   - index: 2
+    branch: work/claude-compat-and-validation
+    description: Preserve Claude compatibility through thin wrappers and validate shared-backend compatibility across hosts
+    todos:
+    - claude-wrapper-compatibility
+    - dual-runtime-parity-validation
+    key_files:
+    - bin/
+    - .claude/
+    - docs/architecture/go-cli-contract.md
+    - docs/architecture/host-strategy-matrix.md
+    - cmd/
+    - internal/
+    - tests/integration/
+    conflict_risk: medium
+    depends_on:
+    - cli-architecture-overhaul
+    - pi-adapter-package
+    completed_at: null
+    why_together: Claude remains important for teammate participation, but thin compatibility and shared-backend validation can follow Pi coming online.
+  - index: 3
     branch: work/dashboards-and-lifecycle
     description: TUI dashboard, harness sow/reap verbs + status line, adapters audit, self-update
     todos:

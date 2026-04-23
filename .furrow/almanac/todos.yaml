@@ -2819,3 +2819,190 @@
     - bin/frw.d/hooks/pre-commit-typechange.sh
     - bin/frw.d/hooks/pre-commit-script-modes.sh
     - install.sh
+- id: dual-runtime-target-architecture
+  title: Freeze the target dual-runtime architecture
+  context: |
+    Furrow should migrate in-repo, but without letting the existing Claude-shaped
+    implementation implicitly define the future architecture. The target shape
+    must be explicit: Go backend/core, `.furrow/` as canonical state, thin
+    Claude and Pi adapters, shared semantics with asymmetric UX, and a Pi-advantaged
+    personal runtime that still preserves Claude teammate compatibility.
+  work_needed: |
+    - Finalize the target architecture document for backend + Claude + Pi
+    - Record what belongs in core vs adapters
+    - Record what must be shared vs what may diverge by host
+    - Record acceptable vs unacceptable host differences
+    - Define the repo-shape target for the post-shell world
+    - Keep the archived portability research as reference input, not code
+  references:
+    - docs/architecture/core-adapter-boundary.md
+    - docs/architecture/host-strategy-matrix.md
+    - docs/architecture/dual-runtime-migration-plan.md
+    - docs/architecture/go-cli-contract.md
+  source_type: manual
+  status: active
+  urgency: high
+  impact: high
+  effort: small
+  created_at: "2026-04-23T22:00:00Z"
+  updated_at: "2026-04-23T22:00:00Z"
+  files_touched:
+    - docs/architecture/core-adapter-boundary.md
+    - docs/architecture/dual-runtime-migration-plan.md
+    - .furrow/almanac/roadmap.yaml
+    - .furrow/almanac/todos.yaml
+- id: go-cli-contract-v1
+  title: Define the first stable Go CLI contract
+  context: |
+    Before broader migration work continues, Furrow needs a stable adapter-facing
+    CLI contract for the future `furrow` binary. This is the boundary that both
+    Claude Code and Pi should consume. Without it, adapter work will drift into
+    speculative runtime-shaped design again.
+  work_needed: |
+    - Define command groups and their ownership boundaries
+    - Define JSON response envelopes and stable error shapes
+    - Define exit-code semantics
+    - Identify the first subcommands that must become real in Go
+    - Prioritize the minimum shared backend slice: `furrow row status`, `furrow row transition`, `furrow doctor`, `furrow almanac validate`
+    - Keep wrappers (`frw`, `rws`, `alm`, `sds`) as compatibility layers during migration
+  references:
+    - docs/architecture/go-cli-contract.md
+    - docs/architecture/core-adapter-boundary.md
+    - cmd/furrow/
+    - internal/cli/
+  source_type: manual
+  status: active
+  urgency: high
+  impact: high
+  effort: medium
+  created_at: "2026-04-23T22:00:00Z"
+  updated_at: "2026-04-23T22:00:00Z"
+  files_touched:
+    - docs/architecture/go-cli-contract.md
+    - cmd/furrow/
+    - internal/
+    - bin/
+- id: migration-operating-mode
+  title: Define the migration operating mode (backend-canonical, Pi-early, Claude-compatible)
+  context: |
+    The practical migration question is not just architecture but workflow:
+    how should Furrow be used while the backend comes online, given that Pi is
+    the preferred primary runtime for the main author while a teammate still
+    needs Claude Code compatibility? The current best answer is: keep semantics
+    in the backend, move onto Pi as soon as backend calls are stable enough,
+    and preserve Claude as a compatibility frontend for shared project work.
+  work_needed: |
+    - Record the backend-canonical, Pi-early operating mode explicitly
+    - Identify which work can move onto Pi as soon as backend calls are viable
+    - Identify which behavior must remain backend-owned rather than extension-owned
+    - Document which Claude capabilities are required for teammate viability
+    - Document the guardrails that prevent runtime-shaped drift during the rewrite
+  references:
+    - docs/architecture/dual-runtime-migration-plan.md
+    - docs/architecture/host-strategy-matrix.md
+    - docs/architecture/go-cli-contract.md
+    - docs/architecture/core-adapter-boundary.md
+  source_type: manual
+  status: active
+  urgency: high
+  impact: high
+  effort: small
+  created_at: "2026-04-23T22:00:00Z"
+  updated_at: "2026-04-23T22:00:00Z"
+  files_touched:
+    - docs/architecture/dual-runtime-migration-plan.md
+    - .furrow/almanac/roadmap.yaml
+    - .furrow/almanac/todos.yaml
+- id: claude-wrapper-compatibility
+  title: Preserve Claude Code compatibility through thin wrapper delegation over the Go backend
+  context: |
+    Furrow must remain usable in Claude Code for teammates while core semantics
+    move into Go. That means wrapper compatibility is not cleanup work — it is
+    part of the migration plan. But Claude support here means shared backend and
+    artifact compatibility, not equal UX. The existing `frw`, `rws`, `alm`, and
+    `sds` surfaces should progressively delegate to the canonical Go backend
+    rather than preserve separate domain logic forever.
+  work_needed: |
+    - Define which legacy shell entrypoints stay during migration
+    - Decide delegation order from shell to Go
+    - Preserve current Claude-facing command UX while moving semantics behind the wrapper
+    - Keep Claude support thin enough that it does not block Pi-first sequencing
+    - Add regression coverage for wrapper-to-Go delegation
+  references:
+    - bin/frw
+    - bin/rws
+    - bin/alm
+    - bin/sds
+    - docs/architecture/go-cli-contract.md
+  source_type: manual
+  status: active
+  urgency: high
+  impact: high
+  effort: medium
+  created_at: "2026-04-23T22:00:00Z"
+  updated_at: "2026-04-23T22:00:00Z"
+  files_touched:
+    - bin/
+    - cmd/
+    - internal/
+    - tests/integration/
+- id: pi-adapter-package
+  title: Build the Furrow Pi package/extension on the stable backend
+  context: |
+    Pi support should be built fresh once the Go backend contract is stable
+    enough to consume, and it should become the primary authoring runtime as
+    early as practical. The adapter should use the real Pi APIs and compose with
+    selected baseline extensions or equivalent patterns where helpful, but it
+    should not revive the old speculative portability spike.
+  work_needed: |
+    - Define the minimal Pi package structure
+    - Register commands against backend JSON calls
+    - Wire Pi events/hooks against backend contracts
+    - Start against the minimum shared backend slice rather than waiting for the full CLI rewrite
+    - Decide which baseline Pi extension patterns to compose vs replace
+    - Keep TS focused on runtime wiring rather than workflow semantics
+  references:
+    - docs/architecture/core-adapter-boundary.md
+    - docs/architecture/go-cli-contract.md
+    - docs/architecture/dual-runtime-migration-plan.md
+    - adapters/
+  source_type: manual
+  status: active
+  urgency: medium
+  impact: high
+  effort: large
+  created_at: "2026-04-23T22:00:00Z"
+  updated_at: "2026-04-23T22:00:00Z"
+  files_touched:
+    - adapters/pi/
+    - install.sh
+    - cmd/
+    - internal/
+- id: dual-runtime-parity-validation
+  title: Validate Claude Code and Pi against the same backend contracts
+  context: |
+    Shared-host support is only real when both adapters prove they operate over
+    the same backend semantics and `.furrow/` state. This validation is about
+    semantic compatibility and artifact compatibility, not equal runtime UX.
+    Validation should come after the backend and Pi adapter are real enough to test.
+  work_needed: |
+    - Define a shared-backend validation checklist driven by backend commands and filesystem state
+    - Validate command sets, gate behavior, and review behavior across hosts where those semantics are shared
+    - Validate that both adapters preserve `.furrow/` invariants
+    - Record acceptable runtime differences separately from semantic failures
+  references:
+    - docs/architecture/dual-runtime-migration-plan.md
+    - docs/architecture/go-cli-contract.md
+    - adapters/
+    - tests/integration/
+  source_type: manual
+  status: active
+  urgency: medium
+  impact: high
+  effort: medium
+  created_at: "2026-04-23T22:00:00Z"
+  updated_at: "2026-04-23T22:00:00Z"
+  files_touched:
+    - adapters/
+    - tests/integration/
+    - docs/architecture/
