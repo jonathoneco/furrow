@@ -212,7 +212,7 @@
     },
     "test_results": {
       "type": "object",
-      "required": ["pass"],
+      "required": ["pass", "evidence_path"],
       "additionalProperties": false,
       "properties": {
         "pass": {
