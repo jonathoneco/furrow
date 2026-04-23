@@ -1,1 +1,0 @@
-../../specialists/migration-strategist.md

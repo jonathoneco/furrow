@@ -65,3 +65,34 @@ installation, where boundaries are enforced, and why the distinction matters.
   `specialist:*.md` and `rules/*.md` symlinks after creation and calls `readlink -e`
   on each; any unresolved symlink causes `install.sh` to exit 1 with a diagnostic,
   completing the AC-B validator requirement deferred from Foundation step 1b.
+
+## Specialist symlinks as install-time artifacts
+
+- All 22 `.claude/commands/specialist:*.md` entries are install-time artifacts.
+  None are tracked in the source repo: `.gitignore` (line 30) excludes the
+  `.claude/commands/specialist:*` pattern, so the working-tree symlinks never
+  appear in `git status` and cannot be committed accidentally.
+- `install.sh` (delegating through `bin/frw` to `bin/frw.d/install.sh`) is the
+  sole producer. Discovery happens via the glob-discovery loop at
+  `bin/frw.d/install.sh:572-581` which iterates `$FURROW_ROOT/specialists/*.md`,
+  filters out files whose basename begins with `_` (e.g. `_meta.yaml`), and
+  invokes `symlink()` to create `.claude/commands/specialist:<name>.md`
+  pointing at the matched specialist file. No manifest is consulted — the
+  filesystem is authoritative.
+- In self-hosting (the Furrow source repo itself), the same loop runs and
+  creates 22 local symlinks with relative targets
+  (`../../specialists/<name>.md`). Because `.gitignore` excludes the pattern,
+  these produced symlinks do not appear in `git status --porcelain`; the
+  source repo's working tree therefore stays clean across repeated
+  `install.sh` invocations.
+- After the loop, `_validate_symlinks` asserts every produced specialist
+  symlink resolves to an existing `specialists/*.md` file. A broken target
+  fails installation with
+  `install: specialist symlink <name> points to missing target <target>` on
+  stderr and exit 1 — preventing a half-installed state from going unnoticed.
+- The pre-commit `pre-commit-typechange.sh` hook is the second line of
+  defence: it rejects any attempt to re-track a specialist symlink (a
+  regular-file-to-symlink type-change on a protected path). Combined with
+  the `.gitignore` rule and the install-time validator, the contract is
+  that the 22 entries live in the working tree only, regenerated on every
+  install, and never recorded in the git index.
