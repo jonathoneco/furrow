@@ -802,7 +802,7 @@
     - Place the summary where the main session can read it on reintegration
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-23T15:00:00Z"
   urgency: "low"
   impact: "medium"
   effort: "small"
@@ -810,7 +810,7 @@
     - "skills/implement.md"
     - "skills/shared/context-isolation.md"
   # Cluster: TODO / Roadmap System
-  status: active
+  status: done
 - id: almanac-knowledge-subcommands-learn-rationale-docs
   title: Almanac knowledge subcommands (learn, rationale, docs, specialists, history)
   context: 'The alm CLI was built with 8 planning subcommands (add, extract, list, show, triage, next, validate, render). The knowledge management subcommands were deferred from beans-enforcement-integration. These expand the almanac from a planning tool to a full knowledge management system: learnings capture, rationale tracking, architecture doc lifecycle, specialist template management, and cross-row knowledge queries.'
@@ -1480,7 +1480,7 @@
     - commands/next.md
   source_type: brain-dump
   created_at: "2026-04-07T00:00:00Z"
-  updated_at: "2026-04-07T00:00:00Z"
+  updated_at: "2026-04-23T15:00:00Z"
   urgency: medium
   impact: medium
   effort: small
@@ -1489,7 +1489,7 @@
     - bin/frw.d/install.sh
     - bin/frw
     - commands/next.md
-  status: active
+  status: done
 - id: furrow-next-phase-lifecycle
   title: "furrow:next as full phase lifecycle — merge, update roadmap, handoff, launch"
   context: |
@@ -2080,7 +2080,7 @@
     - .furrow/almanac/todos.yaml
   source_type: "brain-dump"
   created_at: "2026-04-22T00:00:00Z"
-  updated_at: "2026-04-22T00:00:00Z"
+  updated_at: "2026-04-23T15:00:00Z"
   urgency: "high"
   impact: "high"
   effort: "large"
@@ -2091,7 +2091,7 @@
     - bin/frw.d/hooks/
     - bin/frw.d/lib/common.sh
     - .furrow/
-  status: active
+  status: done
 # --- Standalone: Merge-Process Skill ---
 - id: merge-process-skill
   title: "Design a /furrow:merge skill — reconcile worktree branches back into main"
@@ -2152,3 +2152,84 @@
     - bin/frw.d/scripts/
     - bin/frw.d/hooks/
   status: active
+- id: ac-10-e2e-fixture-split-across-contaminated-stop-a
+  title: AC-10 e2e fixture split across contaminated-stop and safe-happy-path
+  context: 'Round-3 review of install-and-merge flagged that tests/integration/test-merge-e2e.sh splits AC-10 coverage across two fixtures: a contaminated fixture that stops at unapproved-execute, and a separate safe fixture for approved-execute+verify-green. AC-10 specifies a single unified fixture combining install-artifact contamination + feature commits + one protected-file conflict running through all five subphases.'
+  work_needed: '- Either merge the two fixtures into one that runs all five phases end-to-end, or add a third fixture combining contamination + protected-conflict + approved-execute + verify-green\n- Tighten assertion: final state on main branch should be clean (doctor green, hooks intact, sort invariants hold)\n- Keep existing per-phase tests; this is a single new e2e scenario'
+  source_type: review-finding
+  status: active
+  created_at: "2026-04-23T11:12:29-04:00"
+  updated_at: "2026-04-23T11:12:29-04:00"
+  source_work_unit: install-and-merge
+- id: audit-xdg-config-fields-for-runtime-consumers-pref
+  title: Audit XDG config fields for runtime consumers (preferred_specialists, cross_model.provider)
+  context: 'Round-3 review of install-and-merge flagged that ~/.config/furrow/config.yaml is written by the install/upgrade path but not fully consumed at runtime. Specifically: cross-model review reads project-local furrow.yaml only; preferred_specialists has no resolver consumer; rws gate-policy default does not read XDG fallback. AC-1 wires the config file; AC-4 documents the resolution chain; runtime wiring of each field to its consumer is incomplete.'
+  work_needed: '- Audit each field in ~/.config/furrow/config.yaml for a runtime reader (cross_model.provider, gate_policy default, preferred_specialists)\n- Wire missing consumers through bin/frw.d/lib/common.sh resolver helpers\n- Add integration tests: test-config-resolution.sh should cover each field''s project->XDG->compiled-in fallback'
+  source_type: review-finding
+  status: active
+  created_at: "2026-04-23T11:12:29-04:00"
+  updated_at: "2026-04-23T11:12:29-04:00"
+  source_work_unit: install-and-merge
+- id: generate-reintegration-sh-should-use-canonical-sch
+  title: generate-reintegration.sh should use canonical schema, not inline jq-subset
+  context: Round-3 review of install-and-merge flagged that bin/frw.d/scripts/generate-reintegration.sh validates via inline jq subset (lines 357-400) instead of schemas/reintegration.schema.json. HIGH-2 fix (9576e0a) applied the Python Draft2020-12Validator pattern to get-reintegration-json but not to the generator. Schema is authoritative; both endpoints should use it.
+  work_needed: '- Replace inline jq validation in generate-reintegration.sh with subprocess call to Python Draft2020-12Validator against schemas/reintegration.schema.json (mirror get-reintegration-json implementation)\n- Also add test_results.evidence_path to the schema''s required fields (currently missing per AC-R2 contract)\n- Add regression test covering a malformed generator-output case'
+  source_type: review-finding
+  status: active
+  created_at: "2026-04-23T11:12:29-04:00"
+  updated_at: "2026-04-23T11:12:29-04:00"
+  source_work_unit: install-and-merge
+- id: audit-test-install-sh-and-test-upgrade-sh-for-live
+  title: Audit test-install-*.sh and test-upgrade-*.sh for live-worktree mutation
+  context: During install-and-merge round-3 session, the live worktree's symlinks (.claude/commands/specialist:*.md, .claude/rules/{cli-mediation,step-sequence}.md, bin/alm, bin/sds) and .furrow/almanac/todos.yaml were mutated by test runs — classic test-isolation failure where FURROW_ROOT or $HOME resolved outside the fixture $TMP into the live repo. Had to revert with git checkout HEAD --.
+  work_needed: '- Trace FURROW_ROOT / HOME / XDG_* usage in tests/integration/test-install-*.sh and tests/integration/test-upgrade-*.sh\n- Ensure every test fully sandboxes: HOME=$TMP, FURROW_ROOT=$TMP/fixture, no live-repo symlink creation\n- Add a test-sanity guard: before-and-after snapshot of .claude/commands/specialist:*.md targets; fail test if any changed outside the fixture\n- Consider a CI pre-test hook: ''git status --porcelain'' empty before tests, and empty after'
+  source_type: review-finding
+  status: active
+  created_at: "2026-04-23T11:12:30-04:00"
+  updated_at: "2026-04-23T11:12:30-04:00"
+  source_work_unit: install-and-merge
+- id: bin-frw-d-scripts-rescue-sh-committed-as-100644-di
+  title: bin/frw.d/scripts/rescue.sh committed as 100644; dispatcher exec fails
+  context: 'Discovered during install-and-merge round-3 session: bin/frw rescue fails with ''Permission denied'' because rescue.sh is 100644 in git. Either the script mode is wrong or the dispatcher should invoke via ''sh "$script"'' instead of exec.'
+  work_needed: '- Decide contract: is rescue.sh standalone-executable (100755) or sourced/interpreted-via-sh (100644)?\n- If standalone: git update-index --chmod=+x bin/frw.d/scripts/rescue.sh\n- If interpreter-invoked: change bin/frw line 207 to route rescue through ''sh "$script"'' and document why rescue is special\n- Add test asserting ''frw rescue --diagnose'' exits 0 on a clean tree'
+  source_type: review-finding
+  status: active
+  created_at: "2026-04-23T11:12:30-04:00"
+  updated_at: "2026-04-23T11:12:30-04:00"
+  source_work_unit: install-and-merge
+- id: codex-cross-model-reviewer-flags-other-deliverable
+  title: Codex cross-model reviewer flags other deliverables' commits as unplanned
+  context: Across install-and-merge rounds 1-3, codex cross-model reviewer consistently failed the 'unplanned-changes' dimension for every deliverable because it uses the full base..HEAD diff per review invocation. Every deliverable sees every other deliverable's legitimate wave changes. Harness-level bug in frw cross-model-review.
+  work_needed: '- In bin/frw cross-model-review, compute per-deliverable commit range instead of base..HEAD\n- Use git log --follow --pretty=format:%H -- <file_ownership_globs> to get commits that touched this deliverable''s files\n- Constrain the diff passed to codex to only those commits\n- Regression: run cross-model-review on a multi-deliverable row and confirm unplanned-changes no longer flags cross-deliverable work'
+  source_type: review-finding
+  status: active
+  created_at: "2026-04-23T11:12:30-04:00"
+  updated_at: "2026-04-23T11:12:30-04:00"
+  source_work_unit: install-and-merge
+- id: commands-lib-promote-learnings-sh-reads-null-for-e
+  title: commands/lib/promote-learnings.sh reads null for every learning
+  context: 'Discovered during install-and-merge archive: bash commands/lib/promote-learnings.sh install-and-merge prints all 8 learnings with title=null, category=null, context=null — schema mismatch between the current learnings.jsonl format (fields: ts, step, kind, summary, detail, tags) and what the script expects (title, category, source, context).'
+  work_needed: '- Update promote-learnings.sh to read the actual jsonl schema (summary, kind, step, tags)\n- Or: migrate learnings.jsonl to the expected schema and document\n- Add a validate-learning.sh invocation on append to prevent further drift\n- Regression: promote-learnings on a row with known learnings displays non-null summaries'
+  source_type: review-finding
+  status: active
+  created_at: "2026-04-23T11:12:30-04:00"
+  updated_at: "2026-04-23T11:12:30-04:00"
+  source_work_unit: install-and-merge
+- id: support-sharded-todos-d-directory-to-reduce-merge
+  title: Support sharded todos.d/ directory to reduce merge-conflict surface
+  context: Carried forward from install-and-merge ideation. A single .furrow/almanac/todos.yaml is a merge-conflict hotspot for parallel rows. Sharding into .furrow/almanac/todos.d/<id>.yaml per entry would eliminate the hotspot but requires loader changes in alm. Deferred in this row; surface again here.
+  work_needed: '- Evaluate cost/benefit vs current sort-by-id discipline (which already reduces conflict incidence substantially)\n- If pursued: alm loader reads todos.yaml + todos.d/*.yaml into one collection; add normalize-todos --shard / --unshard; update validate schema\n- Back-compat: todos.yaml continues to work if todos.d/ is empty'
+  source_type: review-finding
+  status: active
+  created_at: "2026-04-23T11:12:30-04:00"
+  updated_at: "2026-04-23T11:12:30-04:00"
+  source_work_unit: install-and-merge
+- id: unify-tracked-14-vs-gitignored-8-specialist-symlin
+  title: Unify tracked (14) vs .gitignored (8) specialist symlinks
+  context: 'Discovered during install-and-merge: .gitignore:30 excludes .claude/commands/specialist:*, but 14 of the 22 specialists are committed anyway. The other 8 are working-tree-only and point to the install-time source directory (in this session, the adjacent /home/jonco/src/furrow/). Asymmetry is invisible and surprising.'
+  work_needed: '- Decide: track all 22 committed (update .gitignore to remove or scope the pattern), OR remove the 14 tracked ones and treat all as install-time artifacts\n- Document the decision in references/install-architecture.md\n- Update install.sh to match the chosen model\n- Regression: test that a fresh consumer install produces the documented set'
+  source_type: review-finding
+  status: active
+  created_at: "2026-04-23T11:12:30-04:00"
+  updated_at: "2026-04-23T11:12:30-04:00"
+  source_work_unit: install-and-merge
