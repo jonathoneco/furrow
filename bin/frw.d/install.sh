@@ -237,15 +237,27 @@ _migrate_legacy_install() {
 # --- symlink validator (AC-B) ---
 # After symlink creation loops, verify all created symlinks resolve.
 # Arguments: $1=target_dir (.claude/)
+#
+# Per specialist-symlink-unification spec, unresolved specialist targets
+# emit the canonical message:
+#   install: specialist symlink <name> points to missing target <target>
+# which is parsed by tests/integration/test-specialist-symlinks.sh and by
+# downstream tooling that diagnoses install drift.
 _validate_symlinks() {
   _vsym_target="$1"
   _vsym_errors=0
 
-  # Check specialist: commands
+  # Check specialist: commands — produced by the glob-discovery loop at
+  # bin/frw.d/install.sh:572-581 (see docs/architecture/self-hosting.md).
   for _link in "${_vsym_target}/commands/specialist:"*.md; do
     [ -L "$_link" ] || continue
+    _vsym_name="$(basename "$_link" .md)"
+    _vsym_name="${_vsym_name#specialist:}"
+    # Raw target (what the symlink literally points at); used in diagnostic.
+    _vsym_raw="$(readlink "$_link" 2>/dev/null || printf '<unknown>')"
     if ! readlink -e "$_link" > /dev/null 2>&1; then
-      printf '[furrow:error] unresolved symlink: %s\n' "$_link" >&2
+      printf 'install: specialist symlink %s points to missing target %s\n' \
+        "$_vsym_name" "$_vsym_raw" >&2
       _vsym_errors=$((_vsym_errors + 1))
     fi
   done

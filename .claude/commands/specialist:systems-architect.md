@@ -1,1 +1,0 @@
-../../specialists/systems-architect.md
