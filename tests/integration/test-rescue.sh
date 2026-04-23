@@ -8,6 +8,12 @@
 #   4. baseline_drift     — edit common-minimal.sh without refreshing heredoc; exit 3
 #   5. target_missing_no_baseline — missing target, no git; exit 1
 #   6. post_write_parse_fail — broken bundled baseline in temp rescue.sh; exit 4
+#   7. dispatcher_exec_contract — bin/frw rescue (diagnose default) exits 0
+#      inside a sandbox. Regression for script-modes-fix AC-2/AC-6: the
+#      dispatcher's `exec "$FURROW_ROOT/bin/frw.d/scripts/rescue.sh"` path no
+#      longer fails with EACCES once rescue.sh is committed at mode 100755.
+#      (Spec AC-2 writes `--diagnose`; the rescue.sh CLI uses diagnose as the
+#       default with no such flag, so the test uses the bare form.)
 #
 # Usage: bash tests/integration/test-rescue.sh
 
@@ -336,6 +342,74 @@ test_post_write_parse_fail() {
 }
 
 # ---------------------------------------------------------------------------
+# Subtest 7: dispatcher_exec_contract (script-modes-fix AC-2, AC-6)
+#
+# Verify the bin/frw dispatcher can exec rescue.sh without EACCES. Before the
+# mode promotion in script-modes-fix, rescue.sh was committed at 100644, so
+# `exec "$FURROW_ROOT/bin/frw.d/scripts/rescue.sh" "$@"` failed with
+# "Permission denied" even though the working-tree copy had +x.
+#
+# Runs inside a sandboxed environment (setup_sandbox from the wave-1
+# test-isolation-guard deliverable): HOME, XDG_CONFIG_HOME, XDG_STATE_HOME,
+# FURROW_ROOT are all redirected inside $TMP, but FURROW_ROOT is reassigned
+# back to PROJECT_ROOT for this specific test because we need the live repo's
+# bin/frw to be invoked (rescue.sh parses its own FURROW_ROOT from its path).
+# The test is still isolated: the sandbox HOME and XDG roots are active, and
+# no file under PROJECT_ROOT is written.
+# ---------------------------------------------------------------------------
+test_dispatcher_exec_contract() {
+  echo ""
+  echo "--- test_dispatcher_exec_contract ---"
+
+  # Source the sandbox lib for setup_sandbox. Unset TMP so we get a fresh one.
+  # shellcheck source=lib/sandbox.sh
+  . "$SCRIPT_DIR/lib/sandbox.sh"
+  unset TMP HOME XDG_CONFIG_HOME XDG_STATE_HOME FURROW_ROOT
+  setup_sandbox >/dev/null
+
+  # For this test, the dispatcher resolves rescue.sh via the live repo layout.
+  # Redirect FURROW_ROOT back to PROJECT_ROOT so `bin/frw rescue` can find
+  # bin/frw.d/scripts/rescue.sh. The sandboxed HOME/XDG_* remain in effect so
+  # the test cannot mutate the user's config even on failure.
+  FURROW_ROOT="$PROJECT_ROOT"
+  export FURROW_ROOT
+
+  local out_file="${TMP}/rescue.out"
+  local err_file="${TMP}/rescue.err"
+  local rc=0
+
+  # `bin/frw rescue` defaults to diagnose-only (no --apply). Spec AC-2
+  # references `--diagnose`, but rescue.sh has no such flag — the bare
+  # invocation is the diagnose path.
+  "${PROJECT_ROOT}/bin/frw" rescue > "$out_file" 2> "$err_file" || rc=$?
+
+  assert_exit_code "dispatcher_exec_contract: bin/frw rescue exits 0" 0 "$rc"
+
+  # AC-2: stderr must not contain "Permission denied".
+  TESTS_RUN=$((TESTS_RUN + 1))
+  if grep -qi 'permission denied' "$err_file" 2>/dev/null; then
+    printf "  FAIL: dispatcher_exec_contract: stderr contains 'permission denied'\n" >&2
+    printf "  (stderr: %s)\n" "$(cat "$err_file" 2>/dev/null || echo '(empty)')" >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  else
+    printf "  PASS: dispatcher_exec_contract: stderr has no EACCES\n"
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  fi
+
+  # Stdout should carry the diagnose preamble ("OK: no rescue needed..." on a
+  # clean tree) — verify the dispatcher actually reached rescue.sh's body.
+  TESTS_RUN=$((TESTS_RUN + 1))
+  if grep -qE 'rescue|OK' "$out_file" 2>/dev/null; then
+    printf "  PASS: dispatcher_exec_contract: stdout has diagnose output\n"
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    printf "  FAIL: dispatcher_exec_contract: stdout empty or unexpected\n" >&2
+    printf "  (stdout: %s)\n" "$(cat "$out_file" 2>/dev/null || echo '(empty)')" >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 echo "=== test-rescue.sh ==="
@@ -346,5 +420,6 @@ run_test test_no_common_source_grep
 run_test test_baseline_drift
 run_test test_target_missing_no_baseline
 run_test test_post_write_parse_fail
+run_test test_dispatcher_exec_contract
 
 print_summary
