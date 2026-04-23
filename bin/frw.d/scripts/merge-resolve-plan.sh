@@ -107,67 +107,6 @@ _match_policy_section() {
   return 1
 }
 
-# Get machine_mergeable entry details for a path
-_get_machine_merge_details() {
-  _file="$1"
-  _policy_file="$2"
-
-  _in_section=0
-  _in_entry=0
-  _entry_path=""
-  _entry_strategy=""
-  _entry_key=""
-  _entry_sort_tuple="[]"
-
-  while IFS= read -r _line; do
-    case "$_line" in
-      machine_mergeable:*) _in_section=1; continue ;;
-      protected:*|prefer_ours:*|always_delete_from_worktree_only:*|overrides:*|schema_version:*) _in_section=0 ;;
-    esac
-    [ "$_in_section" -eq 0 ] && continue
-
-    case "$_line" in
-      "  - path:"*|"  -"*"path:"*)
-        # New entry
-        if [ -n "$_entry_path" ]; then
-          case "$_file" in
-            $_entry_path)
-              printf 'strategy=%s key=%s sort_tuple=%s\n' "$_entry_strategy" "$_entry_key" "$_entry_sort_tuple"
-              return 0
-              ;;
-          esac
-        fi
-        _entry_path="$(printf '%s' "$_line" | sed "s/.*path:[[:space:]]*//" | tr -d \"\')"
-        _entry_strategy=""
-        _entry_key=""
-        _entry_sort_tuple="[]"
-        ;;
-      *"strategy:"*)
-        _entry_strategy="$(printf '%s' "$_line" | sed "s/.*strategy:[[:space:]]*//" | tr -d \"\')"
-        ;;
-      *"key:"*)
-        _entry_key="$(printf '%s' "$_line" | sed "s/.*key:[[:space:]]*//" | tr -d \"\')"
-        ;;
-      *"sort_tuple:"*)
-        # Inline array
-        _entry_sort_tuple="$(printf '%s' "$_line" | sed 's/.*sort_tuple:[[:space:]]*//')"
-        ;;
-    esac
-  done < "$_policy_file"
-
-  # Check last entry
-  if [ -n "$_entry_path" ]; then
-    case "$_file" in
-      $_entry_path)
-        printf 'strategy=%s key=%s sort_tuple=%s\n' "$_entry_strategy" "$_entry_key" "$_entry_sort_tuple"
-        return 0
-        ;;
-    esac
-  fi
-
-  return 1
-}
-
 frw_merge_resolve_plan() {
   [ $# -ge 1 ] || { printf 'Usage: frw merge-resolve-plan <merge_id> [--regenerate]\n' >&2; exit 1; }
 
