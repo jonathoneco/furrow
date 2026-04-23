@@ -1,0 +1,92 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": ["pi-migration-gap-analysis"],
+      "assignments": {
+        "pi-migration-gap-analysis": {
+          "specialist": "systems-architect",
+          "file_ownership": [
+            "docs/research/pi-migration-gap-analysis.md"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 2,
+      "deliverables": ["pi-adapter-interface"],
+      "assignments": {
+        "pi-adapter-interface": {
+          "specialist": "systems-architect",
+          "file_ownership": [
+            "docs/architecture/pi-adapter-interface.md",
+            "schemas/host-adapter-interface.schema.json"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 3,
+      "deliverables": ["harness-schema-upgrades"],
+      "assignments": {
+        "harness-schema-upgrades": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "schemas/*.schema.json",
+            "bin/alm",
+            "bin/rws",
+            ".furrow/almanac/*.yaml",
+            "specialists/**"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 4,
+      "deliverables": ["pi-adapter"],
+      "assignments": {
+        "pi-adapter": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "adapters/pi/**",
+            "bin/frw.d/hooks/pi-*.sh"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 5,
+      "deliverables": ["pi-ecosystem-integration"],
+      "assignments": {
+        "pi-ecosystem-integration": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "adapters/pi/ecosystem/**",
+            "docs/architecture/pi-ecosystem-integration.md"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 6,
+      "deliverables": ["dual-host-migration-validation"],
+      "assignments": {
+        "dual-host-migration-validation": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "docs/architecture/dual-host-validation.md",
+            "bin/frw.d/scripts/host-switch.sh"
+          ],
+          "skills": []
+        }
+      }
+    }
+  ],
+  "created_at": "2026-04-22T00:00:00Z",
+  "created_by": "plan-step"
+}

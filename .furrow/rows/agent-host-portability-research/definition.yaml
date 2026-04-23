@@ -1,0 +1,355 @@
+objective: >-
+  Migrate Furrow to run on Pi (Mario Zechner's pi-mono/coding-agent) as a
+  second supported host, keeping Claude Code fully functional as a hedge.
+  Produce the host adapter interface, a Pi adapter implementation, and
+  composable integration with the Pi plugin ecosystem. Any harness
+  improvement discovered during migration that is host-independent must
+  apply to BOTH Pi and CC — dual-host parity; Pi-only capabilities must
+  document a CC shim or upstream-ask path. Decision outcome of ideation
+  research: migrate to Pi; preserve CC as dual-host end state.
+
+mode: research
+
+gate_policy: supervised
+
+deliverables:
+  - name: pi-migration-gap-analysis
+    acceptance_criteria:
+      - >-
+        Rolled-up analysis consolidating R1 (Furrow surface inventory),
+        R2 (Pi deep-dive), R8 (Pi ecosystem), R9 (Pi technical), R10
+        (ecosystem learn-from). Output contains — at minimum — the 4
+        required sections (per-surface gap table, eliminated-candidate
+        footnotes, ecosystem composition matrix, host-parity column).
+      - >-
+        Enumerates "documented tolerances" for Wave-4/6 use — explicit
+        list of acceptable behavioral deltas between Pi and CC (e.g.,
+        subagent return value shape, stdin format, event timing). This
+        list is the checklist `pi-adapter` AC "behavior matching CC
+        within documented tolerances" references.
+      - >-
+        Per-surface gap table: Furrow's Claude Code host surface → concrete
+        Pi primitive (extension event, command API, etc.) → gap assessment
+        (clean port / adapter needed / ecosystem fills / reimplement).
+      - >-
+        Eliminated-candidate footnotes (<=1 line each) for Agent SDK, goose,
+        opencode, CC+routing — why each was cut.
+      - >-
+        Ecosystem composition matrix: every community extension/pattern
+        surfaced in R8 gets one of (compose / supersede / ignore / monitor)
+        with a one-sentence rationale.
+      - >-
+        Host-parity column: for every improvement adopted during migration,
+        indicate "host-independent (applies to CC + Pi)" or "Pi-only (CC
+        shim: X / CC upstream-ask: Y)". No silent Pi-only improvements.
+    specialist: systems-architect
+    file_ownership:
+      - docs/research/pi-migration-gap-analysis.md
+
+  - name: pi-adapter-interface
+    acceptance_criteria:
+      - >-
+        Interface spec exists at docs/architecture/pi-adapter-interface.md
+        AND schemas/host-adapter-interface.schema.json (prose + JSON
+        Schema per P4). Content is freshly drafted — no verbatim copy
+        from the vestigial in-tree adapters/ tree; any pattern reuse
+        explicitly cited as "pattern from X, reimplemented for clarity."
+      - >-
+        Every CC-coupled file from .furrow/almanac/rationale.yaml maps
+        to exactly one interface surface. Any rationale entry that doesn't
+        map is flagged as dead code and scheduled for deletion.
+      - >-
+        Pi binding documented per surface: which Pi primitive implements
+        it, any adaptation layer required, any community extension composed
+        in.
+      - >-
+        Claude Code binding re-documented per surface so dual-host end
+        state is specified, not implicit. Any newly discovered improvement
+        must be reflected in BOTH bindings or marked Pi-only with CC path.
+    specialist: systems-architect
+    depends_on:
+      - pi-migration-gap-analysis
+    file_ownership:
+      - docs/architecture/pi-adapter-interface.md
+      - schemas/host-adapter-interface.schema.json
+
+  - name: harness-schema-upgrades
+    acceptance_criteria:
+      - >-
+        Typed JSON Schemas for almanac blocks (rationale, roadmap, todos,
+        seeds) live in `schemas/`. `alm` enforces at both write-time and
+        load-time (defense in depth, per P3-1). Every rationale entry with
+        no map to a surface is either re-mapped or deleted (R1 finding).
+      - >-
+        Almanac migration: one-shot normalization pass cleans non-
+        conforming entries (9 with `open_questions` drift, plus entry 67
+        fixed separately). Post-normalization, `alm validate` passes.
+        Enforcement goes strict (per P3-2).
+      - >-
+        Typed `produces:` outputs per deliverable: schema extension to
+        definition.yaml allowing `produces: { name: { path, required,
+        content_check } }`. Complements existing `file_ownership:` (per
+        P3-4). Review step verifies existence + structural diff (per
+        P3-5).
+      - >-
+        Specialist frontmatter contract: `dispatch:` block mandatory
+        (model_hint, effort_hint, prompt_mode, skills, inherit_context,
+        disallowed_tools). `consumes:`/`produces:` optional (per P3-6).
+        `alm specialists validate` subcommand exists (per P3-8).
+      - >-
+        All 22 existing specialists migrated to the new frontmatter:
+        script-generated `dispatch:` defaults with human review pass (per
+        P3-7). Each specialist's frontmatter parses, validates, and
+        dispatches correctly on both CC and Pi.
+      - >-
+        Rollback procedure documented and tested for strict-mode
+        enforcement cutover. Migration is split into commits: (1)
+        normalize existing data, (2) human-review specialist migration,
+        (3) flip `alm` to strict enforcement. Each commit is reversible
+        via a documented `git revert` path AND by a single-command
+        unstrict override (env var or CLI flag) pending full revert.
+      - >-
+        CC-host smoke test passes BETWEEN the one-shot migration commit
+        and the strict-enforcement-switch commit. Concretely:
+        `frw doctor --host cc` passes on the migrated-but-not-strict
+        intermediate state. If it fails, strict is not flipped; migration
+        is re-examined.
+      - >-
+        Two-phase deliverable (per P4-3): Phase A = systems-architect
+        owns schema design sign-off on schemas/*.schema.json and
+        frontmatter schema. Phase B = harness-engineer owns
+        implementation (alm wiring, migration scripts, specialist
+        migration). Handoff documented in team-plan.md.
+    specialist: harness-engineer
+    depends_on:
+      - pi-adapter-interface
+    file_ownership:
+      - schemas/*.schema.json
+      - bin/alm
+      - bin/rws
+      - .furrow/almanac/*.yaml
+      - specialists/**
+
+  - name: pi-adapter
+    acceptance_criteria:
+      - >-
+        Working Pi adapter at adapters/pi/ (NOT spikes/ — production code)
+        implementing every surface in pi-adapter-interface per its Pi
+        binding.
+      - >-
+        /furrow:work end-to-end through at least ideate + research steps
+        runs on Pi with behavior matching CC per the "documented
+        tolerances" checklist produced by pi-migration-gap-analysis. Each
+        tolerance is explicitly met or explicitly waived with reason.
+      - >-
+        state-guard, correction-limit, and ownership-warn are implemented
+        via Pi's native `pi.on("tool_call", ...)` handler returning
+        `{ block: true, reason }` for violations.
+      - >-
+        Subagent dispatch via @tintinweb/pi-subagents with config
+        replicating CC's --bare semantics: prompt_mode=replace,
+        skills=false, inherit_context=false,
+        disallowed_tools="write,edit,bash". Git-worktree isolation is NOT
+        used (would break .furrow/ access).
+      - >-
+        Compaction recovery uses Pi's `session_before_compact` event
+        (fires BEFORE compaction, can author custom summary directly) —
+        strictly stronger than CC's post-compact re-injection. The CC
+        binding documents an equivalent path (keep post-compact stdout
+        re-injection) so feature parity is maintained.
+      - >-
+        Cross-model review uses `pi -p --no-session --no-extensions
+        --no-skills --no-context-files` as CC's --bare equivalent. RPC
+        mode hook-firing is verified via a one-line experiment before
+        commit (T4 evidence required).
+      - >-
+        frw doctor --host pi passes. CC host still passes. Both hosts
+        functional in parallel.
+      - >-
+        Pi version exactly pinned (R9: CHANGELOG shows heavy churn).
+        Install script does not depend on pi.dev/packages (currently
+        flaky — R9); goes direct to npm.
+      - >-
+        `pi --version` preflight check in install; graceful degradation
+        if extension install fails.
+    specialist: harness-engineer
+    depends_on:
+      - pi-adapter-interface
+      - harness-schema-upgrades
+    file_ownership:
+      - adapters/pi/**
+      - bin/frw.d/hooks/pi-*.sh
+
+  - name: pi-ecosystem-integration
+    acceptance_criteria:
+      - >-
+        Furrow-on-Pi composes with upstream Pi (@mariozechner/pi-coding-agent)
+        ONLY — oh-my-pi is explicitly unsupported for the initial release.
+      - >-
+        Subagent dispatch composed via @tintinweb/pi-subagents (181 stars,
+        dominant). Pi's 34KB example extension not vendored.
+      - >-
+        Gating uses Pi's native `pi.on("tool_call")` — no external
+        permission system composed. pi-permission-system explicitly
+        rejected (wrong primitive per R9).
+      - >-
+        MCP is NOT composed. Furrow does not ship an MCP bridge; users who
+        want MCP install their own. Rationale: user preference for explicit
+        CLI tooling + Furrow uses zero MCP today (R1).
+      - >-
+        Memory extensions (jayzeng/pi-memory,
+        MattDevy/pi-continuous-learning) are NOT composed at runtime —
+        Furrow retains its own memory layers. But the ecosystem-integration
+        doc includes an explicit "Learn-from: memory patterns" section.
+      - >-
+        Scope boundary (per Plan P-3 split + P4-1 restructure): schema-
+        level harness improvements live in `harness-schema-upgrades`
+        deliverable, not here. This deliverable owns only ecosystem
+        composition concerns. Behavior-level R10/memory adopts are
+        deferred to follow-up rows tracked in the almanac.
+      - >-
+        Learn-from (R10) — SKIP non-blocking cycle warnings (pi-tasks
+        pattern): contradicts hard_block_over_autocorrect. SKIP auto-
+        cascade subagent execution (pi-tasks): violates step-sequence
+        invariant. Document both as explicit anti-patterns in the
+        ecosystem-integration doc.
+      - >-
+        Memory learn-from and behavior-level R10 adopts are DEFERRED to
+        follow-up rows. Ecosystem-integration doc must include a
+        "deferred-to-follow-ups" section listing each deferred item and
+        citing the almanac TODO that tracks it.
+      - >-
+        Install recipe documented: fresh machine → upstream Pi installed
+        (version-pinned) → Furrow adapter installed → @tintinweb/pi-subagents
+        installed → reproducibility verified. No pi.dev dependency.
+      - >-
+        Optional enhancements documented but not required: pi-sandbox
+        (OS-level filesystem/network policy per row), pi-rewind (turn-
+        level checkpoints coexisting with row-level commits),
+        pi-tool-display (output styling).
+    specialist: harness-engineer
+    depends_on:
+      - pi-adapter
+    file_ownership:
+      - adapters/pi/ecosystem/**
+      - docs/architecture/pi-ecosystem-integration.md
+
+  - name: dual-host-migration-validation
+    acceptance_criteria:
+      - >-
+        A full-cycle row (ideate → archive) completes on Pi with no CC-side
+        effects — proves the adapter is truly host-isolated.
+      - >-
+        The same cycle runs on CC unchanged — proves CC host was not
+        regressed during migration.
+      - >-
+        Every host-independent improvement adopted during migration
+        (typed schema blocks, typed produces, pattern library, stagnation
+        safeguard, SCRATCHPAD.md, priority injection, pattern distillation)
+        is verified working on BOTH hosts with evidence. Pi-only
+        capabilities (session_before_compact, input mutation) have
+        CC-shim paths verified where documented.
+      - >-
+        Documented reversibility checkpoint: one command (or documented
+        steps) switches Furrow's default host between CC and Pi, with
+        rollback tested.
+      - >-
+        frw measure-context reports per-host context overhead so the
+        Anthropic-quota-escape motivation is verified with numbers.
+      - >-
+        RPC mode hook-firing experiment recorded (T4): does `pi --mode rpc`
+        fire extension hooks? Evidence in the validation doc.
+    specialist: harness-engineer
+    depends_on:
+      - pi-adapter
+      - pi-ecosystem-integration
+    file_ownership:
+      - docs/architecture/dual-host-validation.md
+      - bin/frw.d/scripts/host-switch.sh
+
+context_pointers:
+  - path: .furrow/almanac/rationale.yaml
+    note: >-
+      Every Claude-Code-coupled file with its delete_when condition. The
+      interface deliverable diffs against this rather than re-deriving. Any
+      rationale entry that doesn't map to a surface is deletion candidate.
+  - path: .claude/settings.json
+    note: >-
+      Hook registrations — event taxonomy Furrow currently requires. The
+      Pi binding must cover each registered event.
+  - path: bin/frw.d/hooks/
+    note: >-
+      12 hook implementations — behavioral contract per event. Each will
+      gain a Pi-side counterpart in bin/frw.d/hooks/pi-*.sh or be ported
+      into the Pi extension.
+  - path: .claude/commands/
+    note: >-
+      Slash command surface — 14 furrow: + 22 specialist: commands.
+      Markdown-based; maps cleanly to Pi pi.registerCommand per R2.
+  - path: skills/
+    note: >-
+      Context injection surface. Pi supports skills via agentskills.io
+      spec per R2 — expected to port largely unchanged.
+  - path: bin/frw
+    note: >-
+      Harness CLI dispatcher — host-independent. Measures the floor of
+      what any host needs to provide. Adapter boundary is frw hook /
+      install / launch-phase / run-gate / cross-model-review per R1.
+  - path: adapters/
+    note: >-
+      Vestigial in-tree adapter scaffolding. Never actually used for
+      anything but Claude Code. Pi adapter starts fresh at adapters/pi/;
+      existing adapters/agent-sdk/ is separate cleanup out of scope here.
+  - path: .furrow/rows/agent-host-portability-research/research/
+    note: >-
+      Completed research outputs — R1 (surface inventory), R2 (Pi deep
+      dive), R3 (opencode), R4 (goose), R5 (Agent SDK), R6 (CC+routing),
+      R8 (Pi ecosystem), R9 (Pi technical), R10 (learn-from ecosystem) +
+      synthesis.md. All downstream steps consume these.
+
+constraints:
+  - >-
+    Dual-host parity: any harness improvement adopted during this
+    migration that is host-independent (lives in .furrow/, bin/frw,
+    skills/, review step logic) MUST apply to both Pi and CC bindings.
+    Pi-only capabilities (e.g., session_before_compact, tool_call input
+    mutation) are permitted but must document either a CC shim or an
+    explicit CC upstream-ask. No silent Pi-only improvements.
+  - >-
+    Claude Code host must remain functional throughout the migration. The
+    end state is DUAL-host — Pi as new option, CC preserved as hedge.
+    Breaking CC at any step is blocker-grade failure.
+  - >-
+    Dual-host parity enforcement (per plan review): `frw doctor` MUST
+    pass on CC at EVERY wave-boundary commit (Waves 1-6), not only at
+    Wave 6 validation. Pi host must pass from Wave 4 onward. This
+    enforces the parity constraint mechanically rather than relying on
+    end-of-row validation alone.
+  - >-
+    Prefer composing community Pi extensions (per R8) over reimplementing
+    functionality inside Furrow. Reimplementation requires a documented
+    reason in the gap analysis.
+  - >-
+    Pi adapter lives at adapters/pi/ as production code. No spikes/ scope;
+    no thrown-away code. Version-pin Pi exactly per R9's churn finding.
+  - >-
+    CC + routing is out of scope — user confirmed the Anthropic-quota
+    constraint is the target, which routing does not escape.
+  - >-
+    Dual-host switch mechanism must be reversible via one command or
+    documented steps — no irreversible migration cutover.
+  - >-
+    Install script must not depend on pi.dev/packages (R9: currently
+    flaky). Use direct npm paths; version-pin aggressively; preflight
+    `pi --version` check; graceful degradation on extension install
+    failure.
+  - >-
+    RPC mode hook firing is UNVERIFIED (R9). Cross-model review
+    implementation requires a one-line experiment confirming hooks fire
+    in `pi --mode rpc` before being committed.
+  - >-
+    Row scope-change limitation: the mode field in state.json is frozen
+    at init (no rws change-mode CLI yet). This row stays as mode=research
+    even though it will produce implementation artifacts. Almanac TODO
+    `row-scope-change-clis-rws-change-mode-and-rws-rena` tracks the CLI
+    gap for future fix.

@@ -1,0 +1,41 @@
+{
+  "type": "ideation",
+  "dimensions": [
+    {
+      "name": "Feasibility",
+      "verdict": "conditional",
+      "evidence": "The objective is achievable if Furrow's current Claude Code touchpoints are narrow enough to inventory and mirror in a Host Adapter Interface, and if the Pi spike is limited to proving those exercised surfaces inside `spikes/pi-adapter/`. The main feasibility risk is hidden integration depth: if Furrow relies on Claude Code behaviors that are undocumented or hard to reproduce, the matrix and spike can still be completed, but the migration decision may remain provisional rather than definitive."
+    },
+    {
+      "name": "Alignment",
+      "verdict": "pass",
+      "evidence": "The deliverables map well to the objective: the interface makes reversibility explicit, the candidate matrix supports comparative evaluation, the Pi spike tests the primary migration candidate, and the decision memo forces a recorded outcome. The instruction to spec only currently used surfaces also keeps the interface aligned to the real decision rather than a hypothetical platform abstraction."
+    },
+    {
+      "name": "Dependency validity",
+      "verdict": "conditional",
+      "evidence": "The framing is missing explicit dependency statements. At minimum, the work depends on a verified inventory of Furrow's currently exercised host capabilities, access to authoritative source material for each candidate host, and a common evaluation rubric shared by all candidates including the control case. Those dependencies are implied by the constraints, but not stated directly, so they are not yet fully sufficient as written."
+    },
+    {
+      "name": "Risk assessment",
+      "verdict": "pass",
+      "evidence": "The constraints are strong and materially reduce scope creep: spike isolation prevents contamination of the main tree, the interface is bounded to currently used surfaces, per-cell sourcing prevents unsupported claims, the memo must name losing options, research mode blocks premature archival, and the control case must be evaluated fairly. The main residual risk is criteria drift if the matrix axes are not fixed up front."
+    },
+    {
+      "name": "Completeness",
+      "verdict": "conditional",
+      "evidence": "The deliverable set is close, but there is an obvious gap around the explicit current-state baseline. Because the interface must cover only surfaces used today, there should be either a standalone capability inventory deliverable or an acceptance criterion inside `host-adapter-interface` or `candidate-host-matrix` requiring a traced mapping from today's Furrow usage to adapter methods and comparison axes. Without that, completeness depends on implicit work."
+    }
+  ],
+  "framing_quality": "questionable",
+  "suggested_revisions": [
+    "Add an explicit prerequisite or acceptance criterion requiring an audited inventory of Furrow's currently used Claude Code host surfaces, with each adapter method traced back to observed usage.",
+    "Define the comparison axes up front for all candidates, including the control case, so the matrix and decision memo cannot drift into uneven evaluation.",
+    "State source-quality expectations for the matrix cells, such as official docs, vendor statements, or direct experimental evidence, to avoid inconsistent citation standards.",
+    "Clarify what success means for the Pi spike: prove portability of the exercised interface surfaces, not end-to-end production readiness.",
+    "Add an explicit dependency on decision inputs from the isolated spike and the sourced matrix into the decision memo, so the memo is clearly grounded in evidence rather than narrative synthesis alone."
+  ],
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-22T17:40:14Z"
+}
