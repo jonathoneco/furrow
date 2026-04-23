@@ -552,10 +552,9 @@ test_safe_e2e_verify_green() {
   local exit_code=0
   (cd "$SAFE_REPO" && PROJECT_ROOT="$SAFE_REPO" bash "${PROJECT_ROOT}/bin/frw.d/scripts/merge-verify.sh" "$SAFE_MERGE_ID" 2>/dev/null) || exit_code=$?
 
-  # verify exits 0 if all checks pass, 7 if any fail
-  # In the safe fixture: frw doctor may not be available in SAFE_REPO context,
-  # and rws validate-sort-invariant depends on the real PROJECT_ROOT having valid files.
-  # We accept exit 0 or 7 (verify ran) and check verify.json was written.
+  # AC-10 happy path: a clean merge MUST exit 0. No tolerance.
+  assert_exit_code "verify exits 0 on clean merge" 0 "$exit_code"
+
   TESTS_RUN=$((TESTS_RUN + 1))
   local verify_json="${SAFE_STATE_DIR}/${SAFE_MERGE_ID}/verify.json"
   if [ -f "$verify_json" ]; then
@@ -566,6 +565,9 @@ test_safe_e2e_verify_green() {
     TESTS_FAILED=$((TESTS_FAILED + 1))
     return
   fi
+
+  # Overall label must be "pass" for a truly clean merge.
+  assert_json_field "verify.json overall is pass" "$verify_json" ".overall" "pass"
 
   # Verify the JSON has required fields
   assert_json_field "verify.json schema_version is 1.0" "$verify_json" ".schema_version" "1.0"
@@ -603,6 +605,66 @@ test_safe_e2e_verify_green() {
     printf '  FAIL: no_bin_deletions check failed\n' >&2
     TESTS_FAILED=$((TESTS_FAILED + 1))
   fi
+}
+
+# Phase 5 negative path: a post-merge invariant violation MUST force exit 7.
+#
+# We stage a sort-invariant violation (unsorted todos.yaml) after the merge
+# has been committed but before verify runs. Check 4 (sort_invariant) must
+# detect it and push the overall verdict to fail, returning exit 7.
+test_safe_e2e_verify_detects_regression() {
+  printf '  --- test_safe_e2e_verify_detects_regression ---\n'
+
+  if [ -z "${SAFE_MERGE_ID:-}" ]; then
+    printf '  SKIP: SAFE_MERGE_ID not set\n'
+    return
+  fi
+
+  local execute_json="${SAFE_STATE_DIR}/${SAFE_MERGE_ID}/execute.json"
+  if [ ! -f "$execute_json" ]; then
+    printf '  SKIP: execute.json not found\n'
+    return
+  fi
+
+  # Break the sort invariant by rewriting todos.yaml in wrong chronological
+  # order. rws validate-sort-invariant must reject and verify must exit 7.
+  cat > "${SAFE_REPO}/.furrow/almanac/todos.yaml" <<'YAML'
+- id: todo-003
+  title: later todo out of order
+  created_at: "2026-03-01T00:00:00Z"
+- id: todo-001
+  title: earlier todo
+  created_at: "2026-01-01T00:00:00Z"
+YAML
+
+  local exit_code=0
+  (cd "$SAFE_REPO" && PROJECT_ROOT="$SAFE_REPO" bash "${PROJECT_ROOT}/bin/frw.d/scripts/merge-verify.sh" "$SAFE_MERGE_ID" 2>/dev/null) || exit_code=$?
+
+  # Verify exits 7 on any post-merge regression — the contract exit code.
+  assert_exit_code "verify exits 7 on sort-invariant regression" 7 "$exit_code"
+
+  local verify_json="${SAFE_STATE_DIR}/${SAFE_MERGE_ID}/verify.json"
+  assert_file_exists "verify.json written on failure path" "$verify_json"
+  if [ -f "$verify_json" ]; then
+    assert_json_field "verify.json overall is fail on regression" "$verify_json" ".overall" "fail"
+
+    # Check that sort_invariant specifically is the failing check.
+    TESTS_RUN=$((TESTS_RUN + 1))
+    local sort_pass
+    sort_pass="$(jq -r '.checks[] | select(.name == "sort_invariant") | .pass' "$verify_json" 2>/dev/null || echo 'missing')"
+    if [ "$sort_pass" = "false" ]; then
+      printf '  PASS: sort_invariant check reported fail\n'
+      TESTS_PASSED=$((TESTS_PASSED + 1))
+    else
+      printf '  FAIL: sort_invariant check pass=%s (expected false)\n' "$sort_pass" >&2
+      TESTS_FAILED=$((TESTS_FAILED + 1))
+    fi
+  fi
+
+  # Restore the sorted todos.yaml so idempotent re-run still exercises the
+  # green path if re-invoked out of band (defensive — test-order-insensitive).
+  printf -- '- id: todo-001\n  title: first todo\n  created_at: "2026-01-01T00:00:00Z"\n' \
+    > "${SAFE_REPO}/.furrow/almanac/todos.yaml"
 }
 
 # Phase 5 idempotency: re-run verify on already-verified state (AC-10 key subtest)
@@ -678,6 +740,7 @@ main() {
   run_test test_safe_e2e_execute_rejects_without_approval
   run_test test_safe_e2e_execute_approved_succeeds
   run_test test_safe_e2e_verify_green
+  run_test test_safe_e2e_verify_detects_regression
   run_test test_safe_e2e_verify_idempotent
 
   print_summary
