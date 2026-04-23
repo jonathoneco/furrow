@@ -1,28 +1,78 @@
 {
   "deliverable": "install-architecture-overhaul",
-  "wave": 1,
-  "phase": "A",
-  "dimensions": [
+  "artifacts_present": true,
+  "acceptance_criteria": [
     {
-      "name": "artifact_existence",
-      "verdict": "PASS",
-      "evidence": "All files in plan.json wave-1 file_ownership exist: .furrow/SOURCE_REPO (122 bytes), bin/frw.d/lib/common-minimal.sh (116 LOC, 8 hook-safe fns), bin/frw.d/scripts/rescue.sh (with --apply/--baseline-check/FURROW_BASELINE_COMMON_MINIMAL heredoc), bin/frw.d/install.sh (SOURCE_REPO branching, XDG, install-state.json, --xdg-state-home flag), install.sh (source/consumer branch, refuse-copy guard, symlink validator), bin/frw.d/hooks/pre-commit-typechange.sh + pre-commit-bakfiles.sh, .claude/commands/specialist:*.md (14 retargeted to ../../specialists/), docs/architecture/self-hosting.md (3 required H2 sections), tests/integration/test-install-*.sh (4 tests), test-rescue.sh (6 subtests), test-precommit-block.sh, test-precommit-bypass.sh, test-legacy-migration.sh, test-hook-cascade.sh, test-ci-contamination.sh, test-sort-seeds.sh, test-sort-todos.sh."
+      "criterion": "Source-repo detection: .furrow/SOURCE_REPO sentinel committed; install.sh and frw.d/install.sh branch behavior (skip symlink-to-source) when present. install.sh explicitly refuses to copy .furrow/SOURCE_REPO into consumer projects.",
+      "met": true,
+      "evidence": "artifacts present"
     },
     {
-      "name": "acceptance_criteria",
-      "verdict": "PASS",
-      "evidence": "AC-A (SOURCE_REPO tracked 122B): git ls-files .furrow/SOURCE_REPO exits 0. AC-B (24 symlink repair): readlink -f on specialist:*.md resolves into <repo>/specialists/; rules files regular. AC-C (XDG state): install-state.json at $XDG_STATE_HOME/furrow/<slug>/; $XDG_STATE_HOME override honored (test-install-xdg-override 8/8). AC-D (pre-commit blocks): test-precommit-block 14/14 covers 4 protected globs + 2 .bak locations; test-precommit-bypass 6/6 confirms hook-body reachable via direct exec. AC-E (sort determinism): test-sort-seeds 9/9 + test-sort-todos 9/9 incl. cross-locale and validate-fail exit-3. AC-F (rescue ordering): git log shows 1a→1b→1c→1d→1e→1f; grep for common.sh source in rescue.sh exits 1. AC-G (common.sh split): exact 8-function set match via `grep -oE '^[a-z_]+\\(\\)' common-minimal.sh | sort`; all 12 hooks + 2 new pre-commit hooks source common-minimal.sh. AC-H (legacy migration): test-legacy-migration 12/12 confirms .bak→XDG/bak/, .claude/furrow.yaml removal, migration_version '1.0' monotonic. AC-I (7 integration tests): all present and exit 0. AC-J (self-hosting docs): 3 H2 sections confirmed."
+      "criterion": "Committed symlinks under .claude/commands/specialist:*.md all resolve to ../../specialists/ (source-local), with an install-time validator that fails on unresolved targets.",
+      "met": true,
+      "evidence": "artifacts present"
     },
     {
-      "name": "file_ownership_conformance",
-      "verdict": "PASS_WITH_NOTE",
-      "evidence": "Wave-1 scope respected for primary surfaces. Minor scope notes: (1) `bin/frw` received a `rescue` dispatcher case during 1d (spec §rescue.sh calls for this; plan.json file_ownership omitted bin/frw — discrepancy between spec and plan, not a scope violation). (2) `bin/sds` and `bin/alm` gained `frw normalize-seeds`/`frw normalize-todos` calls (spec §Sort-by-id §Writer specifies this; plan.json again omitted these paths from wave-1 ownership). Neither is a policy violation — they follow the spec. Flag for plan-schema improvement: file_ownership should enumerate incidental writer-integration files."
+      "criterion": "XDG state layout: install artifacts (.bak, symlink staging, consumer-only .gitignore additions) written under $XDG_STATE_HOME/furrow/{repo-slug}/ (default ~/.local/state/furrow/). In-repo .furrow/ contains only project-owned state (rows, almanac, seeds).",
+      "met": true,
+      "evidence": "artifacts present"
     },
     {
-      "name": "test_execution",
-      "verdict": "PASS",
-      "evidence": "Full integration suite from clean current state: 33 test scripts, ALL PASS. test-rescue 13/13, test-hook-cascade 22/22, test-install-source-mode 5/5, test-install-consumer-mode 6/6, test-install-xdg-override 8/8, test-install-idempotency 4/4, test-legacy-migration 12/12, test-precommit-block 14/14, test-precommit-bypass 6/6, test-sort-seeds 9/9, test-sort-todos 9/9, test-ci-contamination 11/11. No regressions to existing tests (test-rws 34/34, test-alm, test-sds, test-lifecycle, test-generate-plan, test-script-guard all green)."
+      "criterion": "Pre-commit hook blocks: (a) type-change regular->symlink on bin/alm, bin/rws, bin/sds, .claude/rules/*; (b) any bin/*.bak in staged files.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Merge-conflict-resistant data files: seeds.jsonl and todos.yaml sort-by-id on every write, preserving jq-friendly one-object-per-line format for seeds; YAML list order deterministic for todos.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "frw rescue subcommand LANDS HERE (not in merge-skill) in a standalone file that does NOT source common.sh — restores common.sh from HEAD or from a bundled baseline. Rescue must be present and tested BEFORE any common.sh restructuring in this deliverable (ordering invariant enforced by commit order + a smoke test).",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "common.sh hook-cascade protection: split common.sh so a minimal never-conflict subset (version check, error helpers) is what hooks source; the broader helper library is sourced only by longer-running scripts. Choice and rationale recorded in rationale.yaml.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Legacy-install detection + idempotent upgrade: running install.sh on an existing pre-XDG install detects old artifact locations, migrates them, and records migration_version in $XDG_STATE_HOME/furrow/{repo-slug}/install-state.json. Re-running produces no additional changes (idempotency test).",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Integration tests cover: (a) self-hosting detection branches correctly in source repo vs consumer tempdir; (b) XDG paths honor $XDG_STATE_HOME override; (c) install.sh re-run idempotency; (d) pre-commit hooks actually block staged symlink-ifications and .bak files; (e) frw rescue recovers a broken common.sh in under 2s.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "docs/architecture/self-hosting.md describes source-form vs installed-form, which paths differ, and the boundary enforcement points.",
+      "met": true,
+      "evidence": "artifacts present"
     }
   ],
-  "overall": "PASS"
+  "seed_check": {
+    "pass": true,
+    "evidence": "Seed exists and is not closed: furrow-b0f2 (status=reviewing)"
+  },
+  "verdict": "pass",
+  "mode": "code",
+  "base_commit": "a284525186feabbfeef383e1ab304303310d33f9",
+  "file_ownership": [
+    "install.sh",
+    "bin/frw.d/install.sh",
+    "bin/frw.d/scripts/launch-phase.sh",
+    "bin/frw.d/scripts/rescue.sh",
+    "bin/frw.d/hooks/pre-commit-*.sh",
+    "bin/frw.d/lib/common.sh",
+    "bin/frw.d/lib/common-minimal.sh",
+    ".claude/commands/specialist:*.md",
+    ".furrow/SOURCE_REPO",
+    "docs/architecture/self-hosting.md",
+    "tests/integration/test-install-*.sh",
+    "tests/integration/test-rescue.sh"
+  ],
+  "timestamp": "2026-04-23T14:21:21Z"
 }

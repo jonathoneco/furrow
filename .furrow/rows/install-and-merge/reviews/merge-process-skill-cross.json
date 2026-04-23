@@ -14,27 +14,27 @@
       {
         "name": "correctness",
         "verdict": "fail",
-        "evidence": "`XDG_STATE_HOME=/tmp/furrow-review-state bash tests/integration/test-merge-e2e.sh` passes only because `test_safe_e2e_verify_green` accepts verify exit `7`; the run shows `frw doctor` returning `RESULT: FAIL`, so the AC requiring a clean merge with doctor green is not met."
+        "evidence": "AC-10 is not met: the contaminated E2E fixture stops at unapproved execute, while the only approved execute/verify path uses a separate safe fixture with no install-artifact contamination or protected-file conflict."
       },
       {
         "name": "test-coverage",
         "verdict": "fail",
-        "evidence": "`shellcheck` reports `bin/frw.d/scripts/merge-resolve-plan.sh:111` `_get_machine_merge_details()` is never invoked (`SC2329`), so this new branching helper has no exercised test path."
+        "evidence": "The protected-conflict plan application path is untested; tests/integration/test-merge-e2e.sh only applies an approved plan for the safe fixture explicitly described as having no protected-path touches."
       },
       {
         "name": "spec-compliance",
         "verdict": "fail",
-        "evidence": "The contract says all phases reject invalid policy via `schemas/merge-policy.schema.json`, but `bin/frw.d/scripts/merge-lib.sh` only greps for top-level keys and `schema_version`; it never validates against the schema file."
+        "evidence": "The documented /furrow:merge interface includes dry-run/skip-verify/resume orchestration, but bin/frw only exposes separate merge-audit/classify/resolve-plan/execute/verify subcommands and no merge orchestrator."
       },
       {
         "name": "unplanned-changes",
         "verdict": "fail",
-        "evidence": "Wave-3 file ownership in `.furrow/rows/install-and-merge/plan.json` is limited to merge command/scripts/policy/tests, but the submitted diff also changes out-of-scope files like `install.sh`, `bin/frw.d/install.sh`, `schemas/reintegration.schema.json`, and many `.furrow/...` artifacts without a merge-process-skill-specific justification."
+        "evidence": "Wave-3 ownership is limited to merge command/scripts/policy/tests, but the submitted changes include out-of-scope files such as install.sh, bin/rws, schemas/reintegration.schema.json, and many .furrow artifacts without per-file justification."
       },
       {
         "name": "code-quality",
         "verdict": "fail",
-        "evidence": "`shellcheck` reports concrete issues in delivered files, including `bin/frw.d/scripts/merge-verify.sh:168` using undefined variable `rescue_path` (`SC2154`) and `bin/frw.d/hooks/script-guard.sh:1` missing a shebang/shell directive (`SC2148`)."
+        "evidence": "shellcheck fails delivered files, including SC2148 in bin/frw.d/hooks/script-guard.sh and SC3001 POSIX-sh process substitution in bin/frw.d/scripts/merge-sort-union.sh."
       }
     ],
     "verdict": "fail"
@@ -43,5 +43,5 @@
   "corrections": 0,
   "reviewer": "codex",
   "cross_model": true,
-  "timestamp": "2026-04-22T22:05:15Z"
+  "timestamp": "2026-04-23T14:23:44Z"
 }

@@ -14,27 +14,27 @@
       {
         "name": "correctness",
         "verdict": "fail",
-        "evidence": "AC-7 is not fully met: `bin/frw.d/scripts/upgrade.sh` only migrates `.claude/furrow.yaml` and scaffolds `promotion-targets.yaml`; a fixture with legacy `.claude/specialists/legacy.md` leaves no `XDG_CONFIG_HOME/furrow/specialists/*` after `frw upgrade --apply`."
+        "evidence": "Focused tests pass, but actual consumers are not wired: cross-model review still reads only project .furrow/.claude config, rws ignores XDG gate defaults, preferred_specialists has no runtime use, and rws state init never writes source_todos."
       },
       {
         "name": "test-coverage",
-        "verdict": "pass",
-        "evidence": "New config-cleanup paths are exercised by focused integration tests that all passed: `test-config-resolution.sh`, `test-specialist-precedence.sh`, `test-promotion-targets-scaffolding.sh`, `test-source-todos-handoff.sh`, `test-upgrade-migration.sh`, `test-upgrade-idempotency.sh`, `test-install-xdg-override.sh`, and `test-legacy-migration.sh`."
+        "verdict": "fail",
+        "evidence": "source_todos test exercises a local helper plus commands/next.md text, not the real handoff/runtime path; no tests catch missing XDG wiring for cross_model.provider, gate_policy defaults, or preferred_specialists."
       },
       {
         "name": "spec-compliance",
         "verdict": "fail",
-        "evidence": "The spec requires `source_todo` and `source_todos` to be mutually exclusive, but `bin/frw validate-definition` accepts a definition containing both fields (`definition.yaml is valid`), so the interface contract is not enforced."
+        "evidence": "XDG config is implemented as helper/scaffolding but not as the specified global defaults tier for the relevant consumers; source_todos is schema/doc-only and not threaded into state initialization."
       },
       {
         "name": "unplanned-changes",
         "verdict": "fail",
-        "evidence": "`config-cleanup` ownership in `definition.yaml`/`plan.json` does not include `install.sh`, `tests/fixtures/make-legacy-install.sh`, or the `tests/integration/test-upgrade-*.sh` files, yet those files changed and no deliverable-specific ownership exception is recorded."
+        "evidence": "config-cleanup ownership lists only 8 paths, but the change set includes many tests, fixtures, upgrade scripts, install.sh, merge/reintegration files, hooks, and .furrow artifacts without deliverable-specific ownership justification."
       },
       {
         "name": "code-quality",
         "verdict": "fail",
-        "evidence": "Linting is not clean: `shellcheck` exits 1 on the changed surfaces, including SC2097/SC2098 in `tests/integration/test-promotion-targets-scaffolding.sh`, `test-upgrade-migration.sh`, and `test-upgrade-idempotency.sh`, plus SC2129 in `bin/frw.d/install.sh`."
+        "evidence": "shellcheck exits 1 on changed surfaces, including SC2097/SC2098 in upgrade/promotion-target tests and SC2129 in bin/frw.d/install.sh."
       }
     ],
     "verdict": "fail"
@@ -43,5 +43,5 @@
   "corrections": 0,
   "reviewer": "codex",
   "cross_model": true,
-  "timestamp": "2026-04-22T22:00:38Z"
+  "timestamp": "2026-04-23T14:23:00Z"
 }
