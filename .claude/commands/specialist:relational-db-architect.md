@@ -1,1 +1,1 @@
-../../../furrow/specialists/relational-db-architect.md
+../../specialists/relational-db-architect.md

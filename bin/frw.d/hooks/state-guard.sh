@@ -4,6 +4,9 @@
 # Receives JSON on stdin with tool_name and tool_input.
 # Return 2 to block if target is state.json; return 0 otherwise.
 
+# shellcheck source=../lib/common-minimal.sh
+. "${FURROW_ROOT}/bin/frw.d/lib/common-minimal.sh"
+
 hook_state_guard() {
   input="$(cat)"
 

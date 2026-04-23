@@ -8,6 +8,9 @@
 #   0 — allowed
 #   2 — blocked
 
+# shellcheck source=../lib/common-minimal.sh
+. "${FURROW_ROOT}/bin/frw.d/lib/common-minimal.sh"
+
 hook_verdict_guard() {
   input="$(cat)"
   target_path="$(echo "$input" | jq -r '.tool_input.file_path // .tool_input.path // ""' 2>/dev/null)" || target_path=""

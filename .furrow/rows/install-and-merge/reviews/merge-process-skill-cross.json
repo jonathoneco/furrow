@@ -1,0 +1,47 @@
+{
+  "deliverable": "merge-process-skill",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "fail",
+        "evidence": "AC-10 is not met: the contaminated E2E fixture stops at unapproved execute, while the only approved execute/verify path uses a separate safe fixture with no install-artifact contamination or protected-file conflict."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "fail",
+        "evidence": "The protected-conflict plan application path is untested; tests/integration/test-merge-e2e.sh only applies an approved plan for the safe fixture explicitly described as having no protected-path touches."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "fail",
+        "evidence": "The documented /furrow:merge interface includes dry-run/skip-verify/resume orchestration, but bin/frw only exposes separate merge-audit/classify/resolve-plan/execute/verify subcommands and no merge orchestrator."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "fail",
+        "evidence": "Wave-3 ownership is limited to merge command/scripts/policy/tests, but the submitted changes include out-of-scope files such as install.sh, bin/rws, schemas/reintegration.schema.json, and many .furrow artifacts without per-file justification."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "fail",
+        "evidence": "shellcheck fails delivered files, including SC2148 in bin/frw.d/hooks/script-guard.sh and SC3001 POSIX-sh process substitution in bin/frw.d/scripts/merge-sort-union.sh."
+      }
+    ],
+    "verdict": "fail"
+  },
+  "overall": "fail",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-23T14:23:44Z"
+}

@@ -4,7 +4,11 @@
 # Receives JSON on stdin with tool_name and tool_input.
 # Return 2 to block if advancing without a passing gate; return 0 otherwise.
 #
-# Delegates to: has_passing_gate from common.sh
+# Note: has_passing_gate lives in common.sh (not common-minimal.sh); this hook
+# does not currently use it (gate validation is handled inside rws_transition).
+
+# shellcheck source=../lib/common-minimal.sh
+. "${FURROW_ROOT}/bin/frw.d/lib/common-minimal.sh"
 
 hook_gate_check() {
   # The transition command now records the gate AND validates/advances in a

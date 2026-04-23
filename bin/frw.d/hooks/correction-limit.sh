@@ -10,6 +10,9 @@
 #   0 — allowed
 #   2 — blocked (correction limit reached, message on stderr)
 
+# shellcheck source=../lib/common-minimal.sh
+. "${FURROW_ROOT}/bin/frw.d/lib/common-minimal.sh"
+
 hook_correction_limit() {
   input="$(cat)"
   file_path="$(printf '%s' "${input}" | jq -r '.tool_input.file_path // .tool_input.filePath // ""' 2>/dev/null)" || file_path=""

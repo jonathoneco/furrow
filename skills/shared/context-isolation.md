@@ -86,6 +86,10 @@ budget is met. Interface definitions and contracts are the last to be summarized
 
 Never pass the lead agent's full conversation to a sub-agent. The lead's context contains decision-making, exploration, and dead ends that are noise for the specialist. Curate, do not copy.
 
+## Reintegration Handoff Artifact
+
+When a worktree completes, the canonical handoff to `/furrow:merge` is `.furrow/rows/<row>/reintegration.json` (schema: `schemas/reintegration.schema.json`). Pass this JSON — never the markdown view — to the merge agent. Read it via `rws get-reintegration-json <row>`.
+
 ## Orchestrator/Agent Boundary
 
 The orchestrator session and step agents have distinct roles:

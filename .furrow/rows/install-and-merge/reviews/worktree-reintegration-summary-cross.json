@@ -1,0 +1,47 @@
+{
+  "deliverable": "worktree-reintegration-summary",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "pass",
+        "evidence": "Targeted run `sh tests/integration/test-reintegration.sh` passed 60/60, including generation, markers, template use, schema-invalid rejection, and update-summary round-trip preservation."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "pass",
+        "evidence": "`tests/integration/test-reintegration.sh` covers the generator, template fallback/override, launch handoff contract via get-reintegration-json, update-summary rejection, and round-trip preservation."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "fail",
+        "evidence": "`generate-reintegration.sh` validates with an inline jq subset before writing rather than validating against `schemas/reintegration.schema.json`, and the schema does not require `test_results.evidence_path` despite the stated contract."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "fail",
+        "evidence": "`definition.yaml` file_ownership for this deliverable omits `bin/frw.d/scripts/generate-reintegration.sh`, which is a deliverable implementation file, with no ownership justification there."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "fail",
+        "evidence": "`shellcheck -S warning` reports SC2038 in `generate-reintegration.sh` and POSIX SC3001 process substitution in `tests/integration/test-reintegration.sh` under `#!/bin/sh`."
+      }
+    ],
+    "verdict": "fail"
+  },
+  "overall": "fail",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-23T14:23:13Z"
+}

@@ -4,6 +4,9 @@
 # Runs frw install --check silently. If it fails, runs frw install --project
 # to self-heal. Designed to be fast and quiet when everything is fine.
 
+# shellcheck source=../lib/common-minimal.sh
+. "${FURROW_ROOT}/bin/frw.d/lib/common-minimal.sh"
+
 hook_auto_install() {
   # Only run if this project has a furrow.yaml (i.e., Furrow is expected here)
   _config=""

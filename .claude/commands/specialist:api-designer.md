@@ -1,1 +1,1 @@
-../../../furrow/specialists/api-designer.md
+../../specialists/api-designer.md

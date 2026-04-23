@@ -1,0 +1,78 @@
+{
+  "deliverable": "install-architecture-overhaul",
+  "artifacts_present": true,
+  "acceptance_criteria": [
+    {
+      "criterion": "Source-repo detection: .furrow/SOURCE_REPO sentinel committed; install.sh and frw.d/install.sh branch behavior (skip symlink-to-source) when present. install.sh explicitly refuses to copy .furrow/SOURCE_REPO into consumer projects.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Committed symlinks under .claude/commands/specialist:*.md all resolve to ../../specialists/ (source-local), with an install-time validator that fails on unresolved targets.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "XDG state layout: install artifacts (.bak, symlink staging, consumer-only .gitignore additions) written under $XDG_STATE_HOME/furrow/{repo-slug}/ (default ~/.local/state/furrow/). In-repo .furrow/ contains only project-owned state (rows, almanac, seeds).",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Pre-commit hook blocks: (a) type-change regular->symlink on bin/alm, bin/rws, bin/sds, .claude/rules/*; (b) any bin/*.bak in staged files.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Merge-conflict-resistant data files: seeds.jsonl and todos.yaml sort-by-id on every write, preserving jq-friendly one-object-per-line format for seeds; YAML list order deterministic for todos.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "frw rescue subcommand LANDS HERE (not in merge-skill) in a standalone file that does NOT source common.sh — restores common.sh from HEAD or from a bundled baseline. Rescue must be present and tested BEFORE any common.sh restructuring in this deliverable (ordering invariant enforced by commit order + a smoke test).",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "common.sh hook-cascade protection: split common.sh so a minimal never-conflict subset (version check, error helpers) is what hooks source; the broader helper library is sourced only by longer-running scripts. Choice and rationale recorded in rationale.yaml.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Legacy-install detection + idempotent upgrade: running install.sh on an existing pre-XDG install detects old artifact locations, migrates them, and records migration_version in $XDG_STATE_HOME/furrow/{repo-slug}/install-state.json. Re-running produces no additional changes (idempotency test).",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Integration tests cover: (a) self-hosting detection branches correctly in source repo vs consumer tempdir; (b) XDG paths honor $XDG_STATE_HOME override; (c) install.sh re-run idempotency; (d) pre-commit hooks actually block staged symlink-ifications and .bak files; (e) frw rescue recovers a broken common.sh in under 2s.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "docs/architecture/self-hosting.md describes source-form vs installed-form, which paths differ, and the boundary enforcement points.",
+      "met": true,
+      "evidence": "artifacts present"
+    }
+  ],
+  "seed_check": {
+    "pass": true,
+    "evidence": "Seed exists and is not closed: furrow-b0f2 (status=reviewing)"
+  },
+  "verdict": "pass",
+  "mode": "code",
+  "base_commit": "a284525186feabbfeef383e1ab304303310d33f9",
+  "file_ownership": [
+    "install.sh",
+    "bin/frw.d/install.sh",
+    "bin/frw.d/scripts/launch-phase.sh",
+    "bin/frw.d/scripts/rescue.sh",
+    "bin/frw.d/hooks/pre-commit-*.sh",
+    "bin/frw.d/lib/common.sh",
+    "bin/frw.d/lib/common-minimal.sh",
+    ".claude/commands/specialist:*.md",
+    ".furrow/SOURCE_REPO",
+    "docs/architecture/self-hosting.md",
+    "tests/integration/test-install-*.sh",
+    "tests/integration/test-rescue.sh"
+  ],
+  "timestamp": "2026-04-23T14:21:21Z"
+}
