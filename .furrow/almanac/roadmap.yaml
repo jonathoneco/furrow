@@ -31,6 +31,12 @@ dependency_graph:
     phase: 6
     status: active
     depends_on: []
+  - id: artifact-informed-handoffs-and-gate-prompts
+    label: "Use row artifacts as first-class inputs to handoff prompts, orchestration, and gate transitions"
+    phase: 6
+    status: active
+    depends_on:
+    - artifact-writing-defaults
   - id: audit-test-install-sh-and-test-upgrade-sh-for-live
     label: Audit test-install-*.sh and test-upgrade-*.sh for live-worktree mutation
     phase: 1
@@ -573,9 +579,10 @@ phases:
   rows:
   - index: 1
     branch: work/artifacts-and-row-variants
-    description: Blanket file-artifact rule; patch-row and spike-row modes; LOW-finding policy
+    description: Blanket file-artifact rule; patch-row and spike-row modes; LOW-finding policy; artifact-informed prompt consumption
     todos:
     - artifact-writing-defaults
+    - artifact-informed-handoffs-and-gate-prompts
     - patch-row-concept
     - spike-row-mode
     - low-finding-disposition-policy
@@ -584,19 +591,26 @@ phases:
     - .furrow/almanac/rationale.yaml
     - bin/alm
     - bin/rws
+    - commands/next.md
     - evals/dimensions/
     - references/definition-shape.md
+    - references/gate-protocol.md
     - references/review-methodology.md
     - references/row-layout.md
     - schemas/
     - schemas/review-result.schema.json
     - skills/
+    - skills/orchestrator.md
     - skills/review.md
+    - skills/shared/context-isolation.md
+    - skills/shared/gate-evaluator.md
+    - skills/shared/specialist-delegation.md
+    - skills/shared/summary-protocol.md
     conflict_risk: high
     depends_on:
     - patch-row-concept
     completed_at: null
-    why_together: Artifact conventions + lightweight row shapes are the same design conversation.
+    why_together: Artifact conventions, lightweight row shapes, and artifact-informed prompt consumption are the same design conversation.
   - index: 2
     branch: work/review-surfaces
     description: Unified isolated review + collaborative surfaces

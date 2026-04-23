@@ -3006,3 +3006,51 @@
     - adapters/
     - tests/integration/
     - docs/architecture/
+- id: artifact-informed-handoffs-and-gate-prompts
+  title: Use row artifacts as first-class inputs to handoff prompts, orchestration, and gate transitions
+  context: |
+    Current artifacts inform direction implicitly, but they are not yet used as
+    explicit structured inputs to handoff prompts, stage transitions, or
+    orchestrator/delegation flows. This is a missed opportunity. Furrow already
+    produces useful state and artifact files (summary.md, plan.json, team-plan.md,
+    review artifacts, gate evidence, learnings) that could be converted into
+    explicit context packets for:
+
+    - handoff prompts between sessions/runtimes
+    - orchestrator -> specialist delegation
+    - gate evaluation and transition prompts
+    - review bootstrapping
+
+    This would tighten the relationship between artifact production and artifact
+    consumption, reducing prompt drift and making the workflow more structurally
+    enforced.
+  work_needed: |
+    - Identify the canonical artifact set that should feed handoff/delegation/gate prompts
+    - Define structured handoff-context builders from row artifacts
+    - Define orchestrator-to-specialist context packets derived from team-plan/plan/state/summary
+    - Define gate-transition prompt inputs derived from step artifacts and prior evidence
+    - Decide which parts belong in backend-generated prompt/context assembly vs skill guidance
+    - Update commands/next.md and relevant step/gate flows to consume these structured inputs
+    - Add tests or fixtures proving handoff/delegation prompts reference the intended artifacts
+  references:
+    - commands/next.md
+    - skills/orchestrator.md
+    - skills/shared/specialist-delegation.md
+    - skills/shared/context-isolation.md
+    - skills/shared/gate-evaluator.md
+    - skills/shared/summary-protocol.md
+    - references/gate-protocol.md
+    - docs/architecture/host-strategy-matrix.md
+  source_type: manual
+  status: active
+  urgency: medium
+  impact: high
+  effort: medium
+  created_at: "2026-04-24T00:30:00Z"
+  updated_at: "2026-04-24T00:30:00Z"
+  files_touched:
+    - commands/next.md
+    - skills/
+    - references/
+    - docs/architecture/
+    - tests/
