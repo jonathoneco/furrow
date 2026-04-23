@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Learning",
+  "description": "Canonical learnings.jsonl record shape. One object per line in .furrow/rows/<name>/learnings.jsonl.",
+  "type": "object",
+  "required": ["ts", "step", "kind", "summary", "detail", "tags"],
+  "additionalProperties": false,
+  "properties": {
+    "ts": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp"
+    },
+    "step": {
+      "type": "string",
+      "enum": [
+        "ideate",
+        "research",
+        "plan",
+        "spec",
+        "decompose",
+        "implement",
+        "review"
+      ],
+      "description": "Step in the Furrow sequence where this learning surfaced"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "pattern",
+        "pitfall",
+        "preference",
+        "convention",
+        "dependency"
+      ],
+      "description": "Category of learning"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Actionable insight, one concise paragraph"
+    },
+    "detail": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Situation that surfaced the insight"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Free-form tags for retrieval; may be empty"
+    }
+  }
+}
