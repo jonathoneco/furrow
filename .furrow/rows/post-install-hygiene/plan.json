@@ -1,0 +1,121 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": ["test-isolation-guard"],
+      "assignments": {
+        "test-isolation-guard": {
+          "specialist": "test-engineer",
+          "file_ownership": [
+            "tests/integration/lib/sandbox.sh",
+            "tests/integration/run-all.sh",
+            "tests/integration/test-install-*.sh",
+            "tests/integration/test-upgrade-*.sh",
+            "tests/integration/test-sandbox-guard.sh",
+            "tests/integration/helpers.sh",
+            "docs/architecture/testing.md"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 2,
+      "deliverables": [
+        "script-modes-fix",
+        "reintegration-schema-consolidation",
+        "xdg-config-consumer-wiring",
+        "promote-learnings-schema-fix",
+        "specialist-symlink-unification",
+        "ac-10-e2e-fixture"
+      ],
+      "assignments": {
+        "script-modes-fix": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "bin/frw.d/hooks/pre-commit-script-modes.sh",
+            "tests/integration/test-rescue.sh",
+            "tests/integration/test-script-modes.sh"
+          ],
+          "skills": []
+        },
+        "reintegration-schema-consolidation": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "bin/frw.d/scripts/generate-reintegration.sh",
+            "bin/frw.d/scripts/get-reintegration-json.sh",
+            "bin/frw.d/lib/validate-json.sh",
+            "bin/frw.d/scripts/migrate-reintegration-evidence-path.sh",
+            "schemas/reintegration.schema.json",
+            "tests/integration/test-reintegration-schema.sh",
+            "tests/integration/test-reintegration-backcompat.sh"
+          ],
+          "skills": []
+        },
+        "xdg-config-consumer-wiring": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "bin/frw.d/lib/common.sh",
+            "bin/frw.d/scripts/doctor-config-audit.sh",
+            "bin/rws",
+            "bin/frw.d/hooks/stop-ideation.sh",
+            "skills/shared/specialist-delegation.md",
+            "docs/architecture/config-resolution.md",
+            "tests/integration/test-config-resolution.sh"
+          ],
+          "skills": []
+        },
+        "promote-learnings-schema-fix": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "commands/lib/promote-learnings.sh",
+            "bin/frw.d/hooks/append-learning.sh",
+            "bin/frw.d/scripts/migrate-learnings-schema.sh",
+            "schemas/learning.schema.json",
+            "skills/shared/learnings-protocol.md",
+            "tests/integration/test-promote-learnings.sh",
+            "tests/integration/test-migrate-learnings.sh",
+            ".furrow/rows/*/learnings.jsonl"
+          ],
+          "skills": []
+        },
+        "specialist-symlink-unification": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            ".gitignore",
+            "install.sh",
+            "bin/frw.d/install.sh",
+            "docs/architecture/self-hosting.md",
+            "tests/integration/test-specialist-symlinks.sh",
+            ".claude/commands/specialist:*.md"
+          ],
+          "skills": []
+        },
+        "ac-10-e2e-fixture": {
+          "specialist": "test-engineer",
+          "file_ownership": [
+            "tests/integration/test-merge-e2e.sh",
+            "tests/integration/fixtures/merge-e2e/full-pipeline/**"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 3,
+      "deliverables": ["cross-model-per-deliverable-diff"],
+      "assignments": {
+        "cross-model-per-deliverable-diff": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "bin/frw.d/scripts/cross-model-review.sh",
+            "tests/integration/test-cross-model-scope.sh"
+          ],
+          "skills": []
+        }
+      }
+    }
+  ],
+  "created_at": "2026-04-23T17:30:00Z",
+  "created_by": "plan-step"
+}

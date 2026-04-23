@@ -1,1 +1,0 @@
-../../specialists/relational-db-architect.md

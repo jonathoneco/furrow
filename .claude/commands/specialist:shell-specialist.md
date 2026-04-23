@@ -1,1 +1,0 @@
-../../specialists/shell-specialist.md

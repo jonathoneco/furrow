@@ -1,1 +1,0 @@
-../../specialists/cli-designer.md

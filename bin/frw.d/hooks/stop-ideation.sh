@@ -15,8 +15,12 @@
 #   0 — valid (or not in ideation step, or autonomous mode)
 #   2 — missing required fields (blocking)
 
-# shellcheck source=../lib/common-minimal.sh
-. "${FURROW_ROOT}/bin/frw.d/lib/common-minimal.sh"
+# Source common.sh to pick up resolve_config_value for gate_policy resolution.
+# common.sh re-sources common-minimal.sh, so all previously available symbols
+# (find_focused_row, log_warning, etc.) remain in scope. This is safe for this
+# hook because it already requires yq for the definition.yaml field check.
+# shellcheck source=../lib/common.sh
+. "${FURROW_ROOT}/bin/frw.d/lib/common.sh"
 
 hook_stop_ideation() {
   work_dir="$(find_focused_row)"
@@ -33,12 +37,13 @@ hook_stop_ideation() {
   fi
 
   # --- check gate policy ---
+  # Resolve via the three-tier config chain (project .furrow/furrow.yaml → XDG
+  # → compiled-in) instead of reading definition.yaml directly. This is the
+  # canonical resolver adopted by xdg-config-consumer-wiring; the prior ad-hoc
+  # yq read is removed.
 
   def_file="${work_dir}/definition.yaml"
-  gate_policy=""
-  if [ -f "${def_file}" ] && command -v yq > /dev/null 2>&1; then
-    gate_policy="$(yq -r '.gate_policy // ""' "${def_file}" 2>/dev/null)" || gate_policy=""
-  fi
+  gate_policy="$(resolve_config_value gate_policy)" || gate_policy="supervised"
 
   if [ "${gate_policy}" = "autonomous" ]; then
     return 0

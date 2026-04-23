@@ -1,1 +1,0 @@
-../../specialists/typescript-specialist.md

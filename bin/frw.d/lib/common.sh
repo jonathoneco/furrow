@@ -121,9 +121,16 @@ replace_md_section() {
 resolve_config_value() {
   _rcv_key="$1"
 
+  # Defensive defaults for callers that haven't exported PROJECT_ROOT/FURROW_ROOT
+  # (e.g., hooks, short-running scripts). Under `set -eu` unset expansions abort;
+  # these fallbacks keep the resolver callable from any context without
+  # introducing a parallel helper.
+  _rcv_proj="${PROJECT_ROOT:-$(pwd)}"
+  _rcv_froot="${FURROW_ROOT:-}"
+
   # Tier 1: project-local .furrow/furrow.yaml
-  if [ -f "${PROJECT_ROOT}/.furrow/furrow.yaml" ]; then
-    _rcv_v="$(yq -r ".${_rcv_key} // \"\"" "${PROJECT_ROOT}/.furrow/furrow.yaml" 2>/dev/null || true)"
+  if [ -f "${_rcv_proj}/.furrow/furrow.yaml" ]; then
+    _rcv_v="$(yq -r ".${_rcv_key} // \"\"" "${_rcv_proj}/.furrow/furrow.yaml" 2>/dev/null || true)"
     [ -n "$_rcv_v" ] && [ "$_rcv_v" != "null" ] && { printf '%s\n' "$_rcv_v"; return 0; }
   fi
 
@@ -135,8 +142,8 @@ resolve_config_value() {
   fi
 
   # Tier 3: compiled-in default under $FURROW_ROOT
-  if [ -f "${FURROW_ROOT}/.furrow/furrow.yaml" ]; then
-    _rcv_v="$(yq -r ".${_rcv_key} // \"\"" "${FURROW_ROOT}/.furrow/furrow.yaml" 2>/dev/null || true)"
+  if [ -n "$_rcv_froot" ] && [ -f "${_rcv_froot}/.furrow/furrow.yaml" ]; then
+    _rcv_v="$(yq -r ".${_rcv_key} // \"\"" "${_rcv_froot}/.furrow/furrow.yaml" 2>/dev/null || true)"
     [ -n "$_rcv_v" ] && [ "$_rcv_v" != "null" ] && { printf '%s\n' "$_rcv_v"; return 0; }
   fi
 

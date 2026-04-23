@@ -1,0 +1,39 @@
+# Full-pipeline fixture policy.
+#
+# Key difference from schemas/merge-policy.yaml: .claude/rules/step-sequence.md
+# is in prefer_ours so the three-way conflict we stage on it is auto-resolvable
+# via `git checkout --ours` during execute. The spec calls it a "protected-file
+# conflict"; we encode the resolution via prefer_ours so execute can commit
+# without an out-of-band human-edit step (the plan still requires approval,
+# which the test provides).
+schema_version: "1.0"
+
+protected:
+  - path: "bin/alm"
+    reason: "Top-level CLI."
+  - path: "bin/rws"
+    reason: "Top-level CLI."
+  - path: "bin/sds"
+    reason: "Top-level CLI."
+
+machine_mergeable:
+  - path: ".furrow/almanac/todos.yaml"
+    strategy: "sort-by-id-union"
+    key: "id"
+    sort_tuple: ["created_at", "id"]
+  - path: ".furrow/seeds/seeds.jsonl"
+    strategy: "sort-by-id-union"
+    key: "id"
+    sort_tuple: ["ts", "id"]
+
+prefer_ours:
+  - path: ".claude/rules/step-sequence.md"
+    reason: "Fixture-only: conflict auto-resolves to main's version."
+  - path: "bin/*.bak"
+    reason: "Install backups."
+
+always_delete_from_worktree_only:
+  - "bin/*.bak"
+  - "**/.bak"
+
+overrides: {}

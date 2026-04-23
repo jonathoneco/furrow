@@ -105,4 +105,11 @@ for _cli in frw sds rws alm; do
 done
 
 # --- Delegate to frw install ---
+# bin/frw.d/install.sh is the sole producer of the 22
+# .claude/commands/specialist:*.md symlinks (glob-discovery loop at
+# bin/frw.d/install.sh:572-581). Immediately after that loop,
+# _validate_symlinks asserts each produced symlink resolves to an existing
+# specialists/*.md file; a broken target fails this install with
+#   install: specialist symlink <name> points to missing target <target>
+# on stderr and exit 1. See docs/architecture/self-hosting.md.
 exec "$FURROW_ROOT/bin/frw" install "$@"

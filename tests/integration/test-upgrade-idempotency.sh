@@ -14,8 +14,9 @@ source "$SCRIPT_DIR/helpers.sh"
 
 echo "=== test-upgrade-idempotency.sh (AC-7) ==="
 
-FURROW_ROOT="$PROJECT_ROOT"
-export FURROW_ROOT
+# Sandbox the four env vars inside $TMP; snapshot protected paths.
+setup_sandbox >/dev/null
+snapshot_guard_targets
 
 FIXTURE_MAKER="${PROJECT_ROOT}/tests/fixtures/make-legacy-install.sh"
 
@@ -76,16 +77,21 @@ _write_state_json() {
 # _frw_upgrade: invoke frw upgrade in isolated env (cd into project dir)
 # Runs in a subshell to isolate cwd from the test process.
 # ---------------------------------------------------------------------------
+_SOURCE_BIN_FRW="$PROJECT_ROOT/bin/frw"
+
 _frw_upgrade() {
   local proj="$1" xdg_cfg="$2" xdg_state="$3"
   shift 3
   (
     cd "$proj"
+    # Invoke the real on-disk binary via _SOURCE_BIN_FRW (captured from the
+    # test harness's PROJECT_ROOT before any sandbox-side overrides). frw
+    # computes its own FURROW_ROOT from its script path, so we deliberately
+    # do not pass the sandboxed FURROW_ROOT here.
     PROJECT_ROOT="$proj" \
       XDG_CONFIG_HOME="$xdg_cfg" \
       XDG_STATE_HOME="$xdg_state" \
-      FURROW_ROOT="$FURROW_ROOT" \
-      "$FURROW_ROOT/bin/frw" upgrade "$@"
+      "$_SOURCE_BIN_FRW" upgrade "$@"
   )
 }
 
@@ -228,5 +234,8 @@ echo ""
 run_test test_idempotency
 run_test test_check_mode_exits_10_when_migration_needed
 run_test test_check_mode_exits_0_when_current
+
+# Sandbox guard: fail the suite if any protected path was mutated.
+assert_no_worktree_mutation
 
 print_summary
