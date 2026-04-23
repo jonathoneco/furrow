@@ -9,6 +9,11 @@ set -eu
 SCRIPT_PATH="$(readlink -f "$0")"
 FURROW_ROOT="$(cd "$(dirname "$SCRIPT_PATH")" && cd .. && pwd)"
 
+# PROJECT_ROOT defaults to cwd (the project using this rws); required by the
+# three-tier config resolver in common.sh. Callers may override by exporting.
+PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
+export PROJECT_ROOT FURROW_ROOT
+
 # Source shared library (provides extract_md_section, replace_md_section, etc.)
 _RWS_LIB="${FURROW_ROOT}/bin/frw.d/lib/common.sh"
 if [ -f "$_RWS_LIB" ]; then
@@ -115,12 +120,23 @@ require_state() {
 }
 
 read_gate_policy() {
-  _def_file="${ROWS_DIR}/$1/definition.yaml"
-  if [ -f "$_def_file" ] && command -v yq > /dev/null 2>&1; then
-    yq -r '.gate_policy // "supervised"' "$_def_file" 2>/dev/null || echo "supervised"
+  # Canonical resolver chain (project .furrow/furrow.yaml → XDG → compiled-in).
+  # Per the xdg-config-consumer-wiring contract we use resolve_config_value;
+  # the hardcoded "supervised" fallback only applies when all three tiers miss.
+  # Row-local overrides still work because the project tier is the first hit.
+  if _rgp_val="$(resolve_config_value gate_policy)"; then
+    printf '%s\n' "$_rgp_val"
   else
     echo "supervised"
   fi
+}
+
+# rws_gate_policy [<row>] — print the resolved gate_policy for a row.
+# Row argument is currently informational: gate_policy resolves through the
+# config chain, not from the row's definition.yaml. Accepted for
+# forward-compatibility and scripting convenience.
+rws_gate_policy() {
+  read_gate_policy "${1:-}"
 }
 
 # ============================================================
@@ -2946,6 +2962,7 @@ case "$cmd" in
   validate-sort-invariant)     rws_validate_sort_invariant "$@" ;;
   generate-reintegration)      rws_generate_reintegration "$@" ;;
   get-reintegration-json)      rws_get_reintegration_json "$@" ;;
+  gate-policy)        rws_gate_policy "$@" ;;
   help|--help|-h)     rws_help ;;
   *)                  echo "Unknown command: $cmd" >&2; rws_help >&2; exit 1 ;;
 esac
