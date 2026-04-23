@@ -1,14 +1,23 @@
 #!/bin/sh
 # cross-model-review.sh — Invoke a cross-model review for a deliverable
 #
-# Usage: frw cross-model-review <name> <deliverable>
+# Usage: frw cross-model-review <name> <deliverable> [--dry-run] [--emit-diff-scope]
 #   name        — row name (kebab-case)
 #   deliverable — deliverable name to review
+#   --dry-run   — compute diff_scope and write review record, but skip model invocation
+#   --emit-diff-scope — emit the computed diff_scope JSON on stdout (implies --dry-run)
 #
 # Return codes:
 #   0 — cross-model review complete, result written
 #   1 — usage error or cross_model.provider not configured (skip gracefully)
 #   2 — invocation failed or response parsing error
+
+# Source common.sh for resolve_config_value (three-tier config chain).
+# Guarded so re-sourcing is a no-op.
+if ! command -v resolve_config_value >/dev/null 2>&1; then
+  # shellcheck source=../lib/common.sh
+  . "${FURROW_ROOT}/bin/frw.d/lib/common.sh"
+fi
 
 frw_cross_model_review() {
   set -eu
@@ -16,11 +25,16 @@ frw_cross_model_review() {
   _ideation=false
   _plan=false
   _spec=false
+  _dry_run=false
+  _emit_diff_scope=false
+  _positional=""
   while [ $# -gt 0 ]; do
     case "$1" in
       --ideation) _ideation=true; shift ;;
       --plan) _plan=true; shift ;;
       --spec) _spec=true; shift ;;
+      --dry-run) _dry_run=true; shift ;;
+      --emit-diff-scope) _emit_diff_scope=true; _dry_run=true; shift ;;
       *) break ;;
     esac
   done
@@ -62,24 +76,16 @@ frw_cross_model_review() {
   work_dir="${PROJECT_ROOT}/.furrow/rows/${name}"
   state_file="${work_dir}/state.json"
   definition_file="${work_dir}/definition.yaml"
-  furrow_config=""
-  for _candidate in "${PROJECT_ROOT}/.furrow/furrow.yaml" "${PROJECT_ROOT}/.claude/furrow.yaml"; do
-    if [ -f "$_candidate" ]; then
-      furrow_config="$_candidate"
-      break
-    fi
-  done
 
-  # --- 1. Read cross-model provider ---
+  # --- 1. Read cross-model provider (three-tier resolver) ---
 
-  if [ -z "$furrow_config" ]; then
-    echo "Cross-model review skipped: no furrow.yaml found" >&2
-    return 1
-  fi
-  provider="$(yq -r '.cross_model.provider // ""' "$furrow_config")"
+  provider="$(resolve_config_value cross_model.provider 2>/dev/null)" || provider=""
   if [ -z "$provider" ]; then
-    echo "Cross-model review skipped: no provider configured" >&2
-    return 1
+    if [ "$_dry_run" != true ]; then
+      echo "Cross-model review skipped: no provider configured" >&2
+      return 1
+    fi
+    provider="(dry-run:none)"
   fi
 
   # --- 2. Read mode and step from state ---
@@ -110,10 +116,55 @@ frw_cross_model_review() {
     return 2
   fi
 
-  # --- 5. Get diff or file listing ---
+  # --- 5. Get diff (scoped per-deliverable via file_ownership globs) ---
+  #
+  # AD-2: use `git log -p --no-merges <base>..HEAD -- <globs>` to correctly
+  # filter by path while preserving commit identity. NOT `git diff
+  # <first>^..<last>` (which would include unrelated commits in the range).
+
+  unplanned_changes_flag="absent"   # present | absent | not-applicable
+  diff_fallback_reason=""
+  diff_scope_base="${base_commit:-}"
+  diff_scope_commits_json="[]"
+  diff_scope_files_json="[]"
 
   if [ "$mode" = "code" ] && [ -n "$base_commit" ] && [ "$base_commit" != "null" ] && [ "$base_commit" != "unknown" ]; then
-    changes="$(git diff --stat "${base_commit}..HEAD" 2>/dev/null || echo "(no diff available)")"
+    # Read file_ownership globs for this deliverable (pattern from check-artifacts.sh:77-106)
+    file_ownership_list="$(name="${deliverable}" \
+      yq -r '.deliverables[] | select(.name == env(name)) | .file_ownership[]?' \
+      "$definition_file" 2>/dev/null || true)"
+
+    if [ -z "$file_ownership_list" ]; then
+      # AC2: empty file_ownership → warn, fall back to unscoped base..HEAD,
+      # mark unplanned-changes as not-applicable.
+      echo "cross-model-review: no file_ownership declared for '${deliverable}' — falling back to unscoped base..HEAD" >&2
+      diff_fallback_reason="no file_ownership declared for '${deliverable}'"
+      unplanned_changes_flag="not-applicable"
+      changes="$(git diff "${base_commit}..HEAD" 2>/dev/null || echo "(no diff available)")"
+      diff_scope_commits_json="$(git log --format=%H --no-merges "${base_commit}..HEAD" 2>/dev/null | jq -R . | jq -s . 2>/dev/null || echo "[]")"
+      diff_scope_files_json="$(git log --name-only --format= --no-merges "${base_commit}..HEAD" 2>/dev/null | sort -u | sed '/^$/d' | jq -R . | jq -s . 2>/dev/null || echo "[]")"
+    else
+      # Build positional args from globs (one per line from yq).
+      # Globs pass literally to git (git expands under --).
+      _glob_args=""
+      _oldifs="$IFS"
+      IFS='
+'
+      for _g in $file_ownership_list; do
+        [ -n "$_g" ] || continue
+        _glob_args="${_glob_args} $_g"
+      done
+      IFS="$_oldifs"
+
+      # eval is required to expand the concatenated glob args as separate
+      # positional arguments without quoting them (git expands globs itself).
+      # shellcheck disable=SC2086
+      changes="$(eval "git log -p --no-merges \"${base_commit}..HEAD\" --" $_glob_args 2>/dev/null || echo "(no diff available)")"
+      # shellcheck disable=SC2086
+      diff_scope_commits_json="$(eval "git log --format=%H --no-merges \"${base_commit}..HEAD\" --" $_glob_args 2>/dev/null | jq -R . | jq -s . 2>/dev/null || echo "[]")"
+      # shellcheck disable=SC2086
+      diff_scope_files_json="$(eval "git log --name-only --format= --no-merges \"${base_commit}..HEAD\" --" $_glob_args 2>/dev/null | sort -u | sed '/^$/d' | jq -R . | jq -s . 2>/dev/null || echo "[]")"
+    fi
   else
     deliverables_dir="${work_dir}/deliverables"
     if [ -d "$deliverables_dir" ]; then
@@ -121,6 +172,53 @@ frw_cross_model_review() {
     else
       changes="(no deliverable files found)"
     fi
+  fi
+
+  # Assemble diff_scope JSON fragment for the review record.
+  diff_scope_json="$(jq -n \
+    --arg base "$diff_scope_base" \
+    --arg fallback "$diff_fallback_reason" \
+    --argjson commits "$diff_scope_commits_json" \
+    --argjson files "$diff_scope_files_json" \
+    '{base: $base, commits: $commits, files_matched: $files} +
+     (if $fallback != "" then {fallback_reason: $fallback} else {} end)')"
+
+  if [ "$_emit_diff_scope" = true ]; then
+    # Emit the computed diff_scope JSON on stdout so tests can assert on it
+    # without depending on a live model.
+    jq -n \
+      --argjson scope "$diff_scope_json" \
+      --arg unplanned "$unplanned_changes_flag" \
+      '{diff_scope: $scope, unplanned_changes: $unplanned}'
+  fi
+
+  if [ "$_dry_run" = true ]; then
+    # Dry-run still writes a review record so downstream tooling can audit
+    # the diff_scope even when no model was invoked.
+    mkdir -p "${work_dir}/reviews"
+    timestamp="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    review_tmp="$(mktemp)"
+    jq -n \
+      --arg deliverable "$deliverable" \
+      --arg provider "$provider" \
+      --arg ts "$timestamp" \
+      --arg unplanned "$unplanned_changes_flag" \
+      --argjson scope "$diff_scope_json" \
+      '{
+        deliverable: $deliverable,
+        phase_a: { artifacts_present: true, acceptance_criteria: [], plan_completion: { planned_files_touched: true, unplanned_changes: [] }, verdict: "skipped-dry-run" },
+        phase_b: { dimensions: [], verdict: "skipped-dry-run" },
+        overall: "skipped-dry-run",
+        corrections: 0,
+        reviewer: $provider,
+        cross_model: true,
+        dry_run: true,
+        diff_scope: $scope,
+        unplanned_changes: $unplanned,
+        timestamp: $ts
+      }' > "$review_tmp"
+    mv "$review_tmp" "${work_dir}/reviews/${deliverable}-cross.json"
+    return 0
   fi
 
   # --- 6. Build review prompt ---
@@ -242,6 +340,8 @@ Output as JSON: {\"dimensions\": [{\"name\": \"...\", \"verdict\": \"...\", \"ev
     --arg overall "$model_overall" \
     --arg provider "$provider" \
     --arg ts "$timestamp" \
+    --arg unplanned "$unplanned_changes_flag" \
+    --argjson scope "$diff_scope_json" \
     '{
       deliverable: $deliverable,
       phase_a: { artifacts_present: true, acceptance_criteria: [], plan_completion: { planned_files_touched: true, unplanned_changes: [] }, verdict: "pass" },
@@ -250,6 +350,8 @@ Output as JSON: {\"dimensions\": [{\"name\": \"...\", \"verdict\": \"...\", \"ev
       corrections: 0,
       reviewer: $provider,
       cross_model: true,
+      diff_scope: $scope,
+      unplanned_changes: $unplanned,
       timestamp: $ts
     }' > "$review_tmp"
 
@@ -264,20 +366,9 @@ _cross_model_ideation() {
   work_dir="${PROJECT_ROOT}/.furrow/rows/${name}"
   definition_file="${work_dir}/definition.yaml"
   summary_file="${work_dir}/summary.md"
-  furrow_config=""
-  for _candidate in "${PROJECT_ROOT}/.furrow/furrow.yaml" "${PROJECT_ROOT}/.claude/furrow.yaml"; do
-    if [ -f "$_candidate" ]; then
-      furrow_config="$_candidate"
-      break
-    fi
-  done
 
-  # --- 1. Read cross-model provider ---
-  if [ -z "$furrow_config" ]; then
-    echo "Cross-model review skipped: no furrow.yaml found" >&2
-    return 1
-  fi
-  provider="$(yq -r '.cross_model.provider // ""' "$furrow_config")"
+  # --- 1. Read cross-model provider (three-tier resolver) ---
+  provider="$(resolve_config_value cross_model.provider 2>/dev/null)" || provider=""
   if [ -z "$provider" ]; then
     echo "Cross-model review skipped: no provider configured" >&2
     return 1
@@ -430,20 +521,9 @@ _cross_model_plan() {
   work_dir="${PROJECT_ROOT}/.furrow/rows/${name}"
   definition_file="${work_dir}/definition.yaml"
   summary_file="${work_dir}/summary.md"
-  furrow_config=""
-  for _candidate in "${PROJECT_ROOT}/.furrow/furrow.yaml" "${PROJECT_ROOT}/.claude/furrow.yaml"; do
-    if [ -f "$_candidate" ]; then
-      furrow_config="$_candidate"
-      break
-    fi
-  done
 
-  # --- 1. Read cross-model provider ---
-  if [ -z "$furrow_config" ]; then
-    echo "Cross-model review skipped: no furrow.yaml found" >&2
-    return 1
-  fi
-  provider="$(yq -r '.cross_model.provider // ""' "$furrow_config")"
+  # --- 1. Read cross-model provider (three-tier resolver) ---
+  provider="$(resolve_config_value cross_model.provider 2>/dev/null)" || provider=""
   if [ -z "$provider" ]; then
     echo "Cross-model review skipped: no provider configured" >&2
     return 1
@@ -615,20 +695,9 @@ _cross_model_spec() {
   name="$1"
   work_dir="${PROJECT_ROOT}/.furrow/rows/${name}"
   definition_file="${work_dir}/definition.yaml"
-  furrow_config=""
-  for _candidate in "${PROJECT_ROOT}/.furrow/furrow.yaml" "${PROJECT_ROOT}/.claude/furrow.yaml"; do
-    if [ -f "$_candidate" ]; then
-      furrow_config="$_candidate"
-      break
-    fi
-  done
 
-  # --- 1. Read cross-model provider ---
-  if [ -z "$furrow_config" ]; then
-    echo "Cross-model review skipped: no furrow.yaml found" >&2
-    return 1
-  fi
-  provider="$(yq -r '.cross_model.provider // ""' "$furrow_config")"
+  # --- 1. Read cross-model provider (three-tier resolver) ---
+  provider="$(resolve_config_value cross_model.provider 2>/dev/null)" || provider=""
   if [ -z "$provider" ]; then
     echo "Cross-model review skipped: no provider configured" >&2
     return 1

@@ -1,0 +1,67 @@
+{
+  "deliverable": "test-isolation-guard",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "fail",
+        "evidence": "Targeted runs of `tests/integration/test-sandbox-guard.sh`, `test-install-consumer-mode.sh`, and `test-upgrade-migration.sh` passed, but AC-5 is still unmet because `tests/integration/test-sandbox-guard.sh` only mutates `$TMP/fake-repo` and never points `FURROW_ROOT` at the real repo root as required."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "pass",
+        "evidence": "The new sandbox library paths are exercised by `tests/integration/test-sandbox-guard.sh`, and the adopted install/upgrade flows were verified by successful runs of `tests/integration/test-install-consumer-mode.sh` and `tests/integration/test-upgrade-migration.sh`."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "fail",
+        "evidence": "`docs/architecture/testing.md` tells tests to invoke `\"$PROJECT_ROOT/bin/frw\"`, and `bin/frw` immediately resets `FURROW_ROOT` from its own script path, so harness code paths still resolve to the live checkout, violating the AC-1 contract that no code path may do so."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "pass",
+        "evidence": "The diff is limited to sandbox/test harness files and the requested testing architecture doc (`docs/architecture/testing.md`, `tests/integration/*`), with no unrelated product or runtime code changes."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "fail",
+        "evidence": "`shellcheck` on the changed shell files reports warnings in modified code, including `SC2154` at `tests/integration/test-sandbox-guard.sh:64` and `SC2034` at `tests/integration/test-install-source-mode.sh:85`."
+      }
+    ],
+    "verdict": "fail"
+  },
+  "overall": "fail",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "diff_scope": {
+    "base": "5110adda49bb18689607d3fffc9327556cc5e50f",
+    "commits": [
+      "78f3a7e19cebf980a87d72f1aeb164a264305f70"
+    ],
+    "files_matched": [
+      "docs/architecture/testing.md",
+      "tests/integration/helpers.sh",
+      "tests/integration/lib/sandbox.sh",
+      "tests/integration/run-all.sh",
+      "tests/integration/test-install-consumer-mode.sh",
+      "tests/integration/test-install-idempotency.sh",
+      "tests/integration/test-install-source-mode.sh",
+      "tests/integration/test-install-xdg-override.sh",
+      "tests/integration/test-sandbox-guard.sh",
+      "tests/integration/test-upgrade-idempotency.sh",
+      "tests/integration/test-upgrade-migration.sh"
+    ]
+  },
+  "unplanned_changes": "absent",
+  "timestamp": "2026-04-23T19:59:24Z"
+}

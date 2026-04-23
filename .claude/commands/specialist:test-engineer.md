@@ -1,1 +1,0 @@
-../../specialists/test-engineer.md

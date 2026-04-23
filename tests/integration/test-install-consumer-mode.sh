@@ -13,10 +13,12 @@ source "$SCRIPT_DIR/helpers.sh"
 
 echo "=== test-install-consumer-mode.sh (AC-A refuse-copy) ==="
 
-# We need FURROW_ROOT to invoke frw install via the dispatcher.
-# PROJECT_ROOT is set by helpers.sh.
-FURROW_ROOT="$PROJECT_ROOT"
-export FURROW_ROOT
+# Sandbox the four env vars inside $TMP and snapshot the protected-path set
+# before running any harness invocation. Tests invoke the harness via
+# "$PROJECT_ROOT/bin/frw" (the real binary on disk); setup_sandbox points
+# FURROW_ROOT at $TMP/fixture so no code path can mutate the live worktree.
+setup_sandbox >/dev/null
+snapshot_guard_targets
 
 # ---------------------------------------------------------------------------
 # Helper: create minimal consumer fixture with SOURCE_REPO already present
@@ -58,7 +60,7 @@ test_refuse_copy_exits_2() {
   local stderr_out
   stderr_out="$(
     XDG_STATE_HOME="$xdg_dir" \
-    "$FURROW_ROOT/bin/frw" install \
+    "$PROJECT_ROOT/bin/frw" install \
       --project "$fixture_dir" \
       --xdg-state-home "$xdg_dir" \
       2>&1 >/dev/null
@@ -88,7 +90,7 @@ test_source_repo_not_created_after_refused_run() {
 
   # Run install; it should fail (exit 2)
   XDG_STATE_HOME="$xdg_dir" \
-  "$FURROW_ROOT/bin/frw" install \
+  "$PROJECT_ROOT/bin/frw" install \
     --project "$fixture_dir" \
     --xdg-state-home "$xdg_dir" \
     > /dev/null 2>&1 || true
@@ -135,7 +137,7 @@ test_clean_consumer_install_succeeds() {
 
   local exit_code=0
   XDG_STATE_HOME="$xdg_dir" \
-  "$FURROW_ROOT/bin/frw" install \
+  "$PROJECT_ROOT/bin/frw" install \
     --project "$fixture_dir" \
     --xdg-state-home "$xdg_dir" \
     > /dev/null 2>&1 || exit_code=$?
@@ -158,5 +160,8 @@ test_clean_consumer_install_succeeds() {
 run_test test_refuse_copy_exits_2
 run_test test_source_repo_not_created_after_refused_run
 run_test test_clean_consumer_install_succeeds
+
+# Sandbox guard: fail the suite if any protected path was mutated.
+assert_no_worktree_mutation
 
 print_summary

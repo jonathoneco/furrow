@@ -14,10 +14,17 @@ source "$SCRIPT_DIR/helpers.sh"
 
 echo "=== test-upgrade-migration.sh (AC-7 end-to-end) ==="
 
-FURROW_ROOT="$PROJECT_ROOT"
-export FURROW_ROOT
+# Capture the real source-repo path BEFORE sandbox_sandbox redirects
+# FURROW_ROOT into $TMP/fixture. The source-repo-guard test below
+# needs to point at the real repo (which has the SOURCE_REPO sentinel).
+SOURCE_REPO_ROOT="$PROJECT_ROOT"
+_SOURCE_BIN_FRW="$PROJECT_ROOT/bin/frw"
 
-FIXTURE_MAKER="${PROJECT_ROOT}/tests/fixtures/make-legacy-install.sh"
+# Sandbox the four env vars inside $TMP; snapshot protected paths.
+setup_sandbox >/dev/null
+snapshot_guard_targets
+
+FIXTURE_MAKER="${SOURCE_REPO_ROOT}/tests/fixtures/make-legacy-install.sh"
 
 # Global temp dirs — cleaned by EXIT trap
 _TMP_DIRS=()
@@ -79,11 +86,13 @@ _frw_upgrade() {
   shift 3
   (
     cd "$proj"
+    # Invoke the real on-disk binary (captured in _SOURCE_BIN_FRW before any
+    # sandbox override). frw computes its own FURROW_ROOT from the script
+    # path, so we deliberately do not pass the sandboxed FURROW_ROOT here.
     PROJECT_ROOT="$proj" \
       XDG_CONFIG_HOME="$xdg_cfg" \
       XDG_STATE_HOME="$xdg_state" \
-      FURROW_ROOT="$FURROW_ROOT" \
-      "$FURROW_ROOT/bin/frw" upgrade "$@"
+      "$_SOURCE_BIN_FRW" upgrade "$@"
   )
 }
 
@@ -210,11 +219,14 @@ test_source_repo_guard() {
   xdg_state_dir="$(_make_tmp_dir)"
 
   local exit_code=0
-  # FURROW_ROOT == PROJECT_ROOT and SOURCE_REPO exists — source-repo guard fires
-  PROJECT_ROOT="$FURROW_ROOT" \
+  # FURROW_ROOT == PROJECT_ROOT and SOURCE_REPO exists — source-repo guard fires.
+  # SOURCE_REPO_ROOT captures the real repo path (which has the SOURCE_REPO
+  # sentinel); invoking frw from there means frw resolves FURROW_ROOT to that
+  # same path, matching the guard condition.
+  PROJECT_ROOT="$SOURCE_REPO_ROOT" \
     XDG_CONFIG_HOME="$xdg_cfg_dir" \
     XDG_STATE_HOME="$xdg_state_dir" \
-    "$FURROW_ROOT/bin/frw" upgrade --apply || exit_code=$?
+    "$_SOURCE_BIN_FRW" upgrade --apply || exit_code=$?
 
   assert_exit_code "source-repo guard exits 0 (skip, not error)" 0 "$exit_code"
 
@@ -417,5 +429,8 @@ run_test test_migration_fixture_end_to_end
 run_test test_source_repo_guard
 run_test test_pre_xdg_specialists_migration
 run_test test_already_migrated_specialists_no_op
+
+# Sandbox guard: fail the suite if any protected path was mutated.
+assert_no_worktree_mutation
 
 print_summary
