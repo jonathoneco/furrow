@@ -595,6 +595,219 @@ TMPL
   trap - EXIT INT TERM
 }
 
+# --- Scenario 11: Round-trip — update-summary preserves reintegration block (HIGH-1 regression) ---
+test_update_summary_preserves_reintegration_block() {
+  printf '\n[Scenario 11: update-summary preserves reintegration block]\n'
+  _dir="$(mktemp -d)"
+  # shellcheck disable=SC2064
+  trap "rm -rf '$_dir'" EXIT INT TERM
+
+  _row="$(build_test_repo "$_dir")"
+
+  # Add one commit so generate-reintegration has something to work with.
+  (
+    cd "$_dir" &&
+    printf 'content\n' > rt.txt &&
+    git add rt.txt &&
+    git commit -q -m "feat: round-trip fixture"
+  )
+
+  # Scaffold a summary.md with all seven required sections so update-summary
+  # can target Recommendations.
+  _summary="${_dir}/.furrow/rows/${_row}/summary.md"
+  cat > "$_summary" << 'SUM'
+# Round-trip -- Summary
+
+## Task
+Round-trip fixture
+
+## Current State
+Step: implement | Status: in_progress
+Deliverables: 0/0
+Mode: code
+
+## Artifact Paths
+- state.json: .furrow/rows/test-row/state.json
+
+## Settled Decisions
+- none
+
+## Key Findings
+- placeholder
+
+## Open Questions
+- placeholder
+
+## Recommendations
+- initial recommendation
+SUM
+
+  # Generate the reintegration block via the helper script (same entrypoint
+  # rws generate-reintegration uses).
+  _script="${PROJECT_ROOT}/bin/frw.d/scripts/generate-reintegration.sh"
+  (cd "$_dir" && sh "$_script" "$_row" "$_dir") >/dev/null 2>&1
+
+  # Snapshot the reintegration block byte-for-byte.
+  _block_before="$(awk '
+    /<!-- reintegration:begin -->/ { capture=1 }
+    capture { print }
+    /<!-- reintegration:end -->/ { capture=0 }
+  ' "$_summary")"
+
+  assert_not_empty "reintegration block was produced" "$_block_before"
+
+  # (a) Append to Recommendations — the non-reintegration section most likely
+  #     to collide with the block (it immediately precedes it in layout).
+  _exit=0
+  _stderr="$(cd "$_dir" && printf -- '- added recommendation\n' | rws update-summary "$_row" recommendations 2>&1)" || _exit=$?
+  assert_exit_code "update-summary recommendations exits 0" 0 "$_exit"
+
+  _block_after="$(awk '
+    /<!-- reintegration:begin -->/ { capture=1 }
+    capture { print }
+    /<!-- reintegration:end -->/ { capture=0 }
+  ' "$_summary")"
+
+  TESTS_RUN=$((TESTS_RUN + 1))
+  if [ "$_block_before" = "$_block_after" ]; then
+    printf '  PASS: reintegration block is byte-identical after update-summary recommendations\n'
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    printf '  FAIL: reintegration block changed after update-summary recommendations\n' >&2
+    printf '  diff:\n%s\n' "$(diff <(printf '%s' "$_block_before") <(printf '%s' "$_block_after") 2>/dev/null || true)" >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+
+  # The Recommendations edit must have actually landed.
+  assert_file_contains "Recommendations update landed" "$_summary" 'added recommendation'
+
+  # Begin/end markers each appear exactly once.
+  TESTS_RUN=$((TESTS_RUN + 1))
+  _begin_count="$(grep -c '<!-- reintegration:begin -->' "$_summary" 2>/dev/null || echo 0)"
+  _end_count="$(grep -c '<!-- reintegration:end -->' "$_summary" 2>/dev/null || echo 0)"
+  if [ "$_begin_count" = "1" ] && [ "$_end_count" = "1" ]; then
+    printf '  PASS: exactly one begin and one end marker after round-trip\n'
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    printf '  FAIL: marker counts wrong (begin=%s end=%s)\n' "$_begin_count" "$_end_count" >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+
+  # (b) Repeat for Key Findings and Open Questions — they come before
+  #     Recommendations, so any future refactor that broke order semantics
+  #     would surface here.
+  for _sec in key-findings open-questions; do
+    _exit=0
+    (cd "$_dir" && printf -- '- %s edit\n' "$_sec" | rws update-summary "$_row" "$_sec") >/dev/null 2>&1 || _exit=$?
+    assert_exit_code "update-summary $_sec exits 0" 0 "$_exit"
+  done
+
+  _block_after_all="$(awk '
+    /<!-- reintegration:begin -->/ { capture=1 }
+    capture { print }
+    /<!-- reintegration:end -->/ { capture=0 }
+  ' "$_summary")"
+
+  TESTS_RUN=$((TESTS_RUN + 1))
+  if [ "$_block_before" = "$_block_after_all" ]; then
+    printf '  PASS: reintegration block survives multiple update-summary calls\n'
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    printf '  FAIL: reintegration block changed after key-findings/open-questions edits\n' >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+
+  # (c) get-reintegration-json after the round-trip must succeed with valid JSON.
+  _exit=0
+  _output="$(cd "$_dir" && rws get-reintegration-json "$_row" 2>/dev/null)" || _exit=$?
+  assert_exit_code "get-reintegration-json exits 0 after round-trip" 0 "$_exit"
+
+  TESTS_RUN=$((TESTS_RUN + 1))
+  if printf '%s' "$_output" | jq -e '.schema_version == "1.0"' >/dev/null 2>&1; then
+    printf '  PASS: get-reintegration-json emits schema-valid JSON after round-trip\n'
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    printf '  FAIL: get-reintegration-json output not schema-valid after round-trip\n' >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+
+  rm -rf "$_dir"
+  trap - EXIT INT TERM
+}
+
+# --- Scenario 12: schema-invalid fixture is rejected with named field (HIGH-2 regression) ---
+test_get_reintegration_json_schema_invalid_names_field() {
+  printf '\n[Scenario 12: get-reintegration-json names offending field]\n'
+  _dir="$(mktemp -d)"
+  # shellcheck disable=SC2064
+  trap "rm -rf '$_dir'" EXIT INT TERM
+
+  _row="$(build_test_repo "$_dir")"
+  (
+    cd "$_dir" &&
+    printf 'content\n' > inv.txt &&
+    git add inv.txt &&
+    git commit -q -m "feat: schema-invalid fixture"
+  )
+
+  _script="${PROJECT_ROOT}/bin/frw.d/scripts/generate-reintegration.sh"
+  (cd "$_dir" && sh "$_script" "$_row" "$_dir") >/dev/null 2>&1
+
+  _reint="${_dir}/.furrow/rows/${_row}/reintegration.json"
+
+  # (a) Missing a required field — jq-level check already caught this, but
+  #     tighten the assertion: stdout MUST be empty, stderr MUST name the
+  #     missing field.
+  jq 'del(.test_results)' "$_reint" > "${_reint}.tmp" && mv "${_reint}.tmp" "$_reint"
+
+  _stdout_file="$(mktemp)"
+  _stderr_file="$(mktemp)"
+  _exit=0
+  (cd "$_dir" && rws get-reintegration-json "$_row") >"$_stdout_file" 2>"$_stderr_file" || _exit=$?
+
+  assert_exit_code "get-reintegration-json exits 3 when required field missing" 3 "$_exit"
+
+  TESTS_RUN=$((TESTS_RUN + 1))
+  if [ ! -s "$_stdout_file" ]; then
+    printf '  PASS: stdout is empty on schema-invalid input\n'
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    printf '  FAIL: stdout is NOT empty on schema-invalid input\n' >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+
+  assert_file_contains "stderr names the missing field (test_results)" "$_stderr_file" 'test_results'
+
+  rm -f "$_stdout_file" "$_stderr_file"
+
+  # (b) additionalProperties violation — jq check did NOT catch this; full
+  #     jsonschema must. Regenerate a clean file first.
+  (cd "$_dir" && sh "$_script" "$_row" "$_dir") >/dev/null 2>&1
+  jq '.commits[0].mystery_field = "unexpected"' "$_reint" > "${_reint}.tmp" && mv "${_reint}.tmp" "$_reint"
+
+  _stdout_file="$(mktemp)"
+  _stderr_file="$(mktemp)"
+  _exit=0
+  (cd "$_dir" && rws get-reintegration-json "$_row") >"$_stdout_file" 2>"$_stderr_file" || _exit=$?
+
+  assert_exit_code "get-reintegration-json exits 3 on additionalProperties" 3 "$_exit"
+
+  TESTS_RUN=$((TESTS_RUN + 1))
+  if [ ! -s "$_stdout_file" ]; then
+    printf '  PASS: stdout is empty on additionalProperties violation\n'
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    printf '  FAIL: stdout is NOT empty on additionalProperties violation\n' >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+
+  assert_file_contains "stderr names the offending field (mystery_field)" "$_stderr_file" 'mystery_field'
+
+  rm -f "$_stdout_file" "$_stderr_file"
+  rm -rf "$_dir"
+  trap - EXIT INT TERM
+}
+
 # --- Run all scenarios ---
 printf '=== test-reintegration.sh ===\n'
 
@@ -608,6 +821,8 @@ test_idempotency
 test_update_summary_rejects_reintegration
 test_validate_summary_marker_enforcement
 test_template_modification_surfaces_in_render
+test_update_summary_preserves_reintegration_block
+test_get_reintegration_json_schema_invalid_names_field
 
 # --- Summary ---
 printf '\n=== Results ===\n'
