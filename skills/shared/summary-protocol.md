@@ -29,3 +29,4 @@ Update summary sections incrementally throughout the step, not just at boundarie
 - After settling a design decision
 - After discovering a key finding or new open question
 - Before requesting step transition (hook enforces this)
+- Observations — if a decision needs re-examination post-ship (after a row merges or after N rows archive), record it via `alm observe add` instead of parking it in Open Questions. Open Questions are for unresolved blockers in THIS row; Observations are for deferred re-examinations triggered by future archive events.

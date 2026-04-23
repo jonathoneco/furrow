@@ -1,0 +1,20 @@
+{
+  "deliverable": "alm-observe-cli",
+  "reviewers": ["phase-a-orchestrator", "phase-b-isolated-claude"],
+  "phase_a": {
+    "file_ownership": "PASS",
+    "acceptance_criteria": "PASS",
+    "evidence": "bin/alm only (commit c0f196f). All 7 observe verbs exposed in --help. `alm validate` passes both files. cmd_add/cmd_triage callers preserved via basename inference. observe) dispatch registered."
+  },
+  "phase_b": {
+    "dimensions": [
+      {"name": "correctness", "verdict": "PASS", "evidence": "All seven verbs function per AC. add/list/show/activate/resolve/dismiss/on-archive exercised. activate idempotent; resolve lifecycle-gated and kind-flag-validated; dismiss gated; activate on non-manual trigger exits 2; alm validate no-arg and basename-inferred both pass. AC1-AC12 verified."},
+      {"name": "spec-compliance", "verdict": "PASS", "evidence": "bin/alm:1617 cmd_observe dispatches 7 spec verbs. bin/alm:902 cmd_validate is thin dispatcher matching spec pseudocode. bin/alm:19-20 declares SCHEMA_FILE_TODOS/OBSERVATIONS. bin/alm:1695 _observe_compute_activation implements AD-4 pull model. bin/alm:1674 _observe_write_validated wraps every mutation atomically."},
+      {"name": "code-quality", "verdict": "PASS", "evidence": "set -eu preserved. No // empty jq-isms in yq. Errors to stderr (9 redirects). Atomic write pattern consistent. Exit codes consistent (1 user-input, 2 semantic/validation)."},
+      {"name": "unplanned-changes", "verdict": "PASS", "evidence": "git show --name-only c0f196f: bin/alm + rws-managed state.json/summary.md only."},
+      {"name": "test-coverage", "verdict": "PASS", "evidence": "Each verb exercised by smoke: add×4, list×4 filters, show, resolve watch+decision-review+wrong-kind, dismiss with --reason, activate idempotent + non-manual rejection, validate both-file and basename modes. on-archive covered by static review (bin/alm:2332-2398)."}
+    ],
+    "overall": "PASS"
+  },
+  "overall": "PASS"
+}

@@ -70,6 +70,8 @@ On pass: row ready for archive. On fail: returns to implement step.
 ## Supervised Transition Protocol
 Before completing review:
 1. Update `summary.md` — write Key Findings, Open Questions, and Recommendations sections.
+   Before updating: check whether any decisions in this row are conditional on
+   post-ship evidence. If yes, record each via `alm observe add --kind decision-review ...`.
 2. Present review findings to user per `skills/shared/summary-protocol.md`.
 3. Ask explicitly: "**Ready to archive?** Yes / No"
 4. Wait for user response. Do NOT proceed without explicit approval.

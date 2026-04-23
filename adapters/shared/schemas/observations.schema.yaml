@@ -1,0 +1,298 @@
+# JSON Schema expressed in YAML for readability.
+#
+# observations.yaml validation schema
+# Validates observation entries (watches and decision-reviews) for
+# project-level post-ship reflection tracking.
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: "Observation Entries"
+description: "Schema for observations.yaml — structured watches and decision-reviews"
+type: array
+items:
+  type: object
+  required:
+    - id
+    - kind
+    - title
+    - triggered_by
+    - lifecycle
+    - created_at
+    - updated_at
+  additionalProperties: false
+  properties:
+    id:
+      type: string
+      pattern: "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+      description: "Slug-style kebab-case identifier, unique across all entries"
+    kind:
+      type: string
+      enum:
+        - watch
+        - decision-review
+      description: "Discriminator: watch (monitor a signal) or decision-review (deferred decision)"
+    title:
+      type: string
+      minLength: 1
+      description: "One-line summary of the observation"
+    triggered_by:
+      type: object
+      additionalProperties: false
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum:
+            - row_archived
+            - rows_since
+            - manual
+          description: "Activation trigger kind"
+        row:
+          type: string
+          pattern: "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+          description: "Row id that activates this observation (row_archived)"
+        since_row:
+          type: string
+          pattern: "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+          description: "Anchor row id; activates when count(rows r where r.archived_at > since_row.archived_at) >= count; pending if since_row is not yet archived (rows_since)"
+        count:
+          type: integer
+          minimum: 1
+          description: "Number of rows archived after since_row required to activate; activates when count(rows r where r.archived_at > since_row.archived_at) >= count; pending if since_row is not yet archived (rows_since)"
+      allOf:
+        - if:
+            properties:
+              type:
+                const: row_archived
+            required:
+              - type
+          then:
+            required:
+              - type
+              - row
+        - if:
+            properties:
+              type:
+                const: rows_since
+            required:
+              - type
+          then:
+            required:
+              - type
+              - since_row
+              - count
+        - if:
+            properties:
+              type:
+                const: manual
+            required:
+              - type
+          then:
+            required:
+              - type
+      description: "Discriminated union describing what activates this observation"
+    lifecycle:
+      type: string
+      enum:
+        - open
+        - resolved
+        - dismissed
+      description: "Persisted lifecycle state (activation is computed, never stored)"
+    source_work_unit:
+      type: string
+      pattern: "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+      description: "Name of the row that surfaced this observation"
+    manual_activation_at:
+      type: string
+      format: date-time
+      description: "ISO 8601 timestamp when manually activated (meaningful only when triggered_by.type == manual)"
+    created_at:
+      type: string
+      format: date-time
+      description: "ISO 8601 timestamp with timezone"
+    updated_at:
+      type: string
+      format: date-time
+      description: "ISO 8601 timestamp with timezone"
+    signal:
+      type: string
+      minLength: 1
+      description: "What to observe (watch-specific; enforced required by kind discriminator)"
+    question:
+      type: string
+      minLength: 1
+      description: "The decision to revisit (decision-review-specific; enforced required by kind discriminator)"
+    options:
+      type: array
+      minItems: 2
+      items:
+        type: object
+        additionalProperties: false
+        required:
+          - id
+          - label
+        properties:
+          id:
+            type: string
+            pattern: "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+            description: "Option identifier (kebab-case)"
+          label:
+            type: string
+            minLength: 1
+            description: "Human-readable option label"
+      description: "At least two candidate options (decision-review-specific)"
+    acceptance_criteria:
+      type: string
+      minLength: 1
+      description: "Prose description of how to decide (decision-review-specific)"
+    evidence_needed:
+      type: array
+      items:
+        type: string
+        minLength: 1
+      description: "Optional list of evidence items required to resolve (decision-review)"
+    resolution:
+      type: object
+      description: "Populated when lifecycle == resolved; shape is kind-specific (enforced by kind discriminator). Schema does not cross-enforce lifecycle == resolved (D2 CLI does)."
+    dismissal:
+      type: object
+      additionalProperties: false
+      required:
+        - dismissed_at
+      properties:
+        reason:
+          type: string
+          description: "Optional reason for dismissal"
+        dismissed_at:
+          type: string
+          format: date-time
+          description: "ISO 8601 timestamp when dismissed"
+      description: "Populated when lifecycle == dismissed; schema does not cross-enforce (D2 CLI does)"
+  allOf:
+    - if:
+        properties:
+          kind:
+            const: watch
+        required:
+          - kind
+      then:
+        required:
+          - signal
+        properties:
+          signal:
+            type: string
+            minLength: 1
+            description: "What to observe (watch-specific)"
+          resolution:
+            type: object
+            additionalProperties: false
+            required:
+              - outcome
+              - resolved_at
+            properties:
+              outcome:
+                type: string
+                enum:
+                  - pass
+                  - fail
+                  - inconclusive
+                description: "Watch resolution outcome"
+              resolved_at:
+                type: string
+                format: date-time
+                description: "ISO 8601 timestamp when resolved"
+              note:
+                type: string
+                description: "Optional free-text note on the resolution"
+            description: "Populated when lifecycle == resolved; schema does not cross-enforce (D2 CLI does)"
+          dismissal:
+            type: object
+            additionalProperties: false
+            required:
+              - dismissed_at
+            properties:
+              reason:
+                type: string
+                description: "Optional reason for dismissal"
+              dismissed_at:
+                type: string
+                format: date-time
+                description: "ISO 8601 timestamp when dismissed"
+            description: "Populated when lifecycle == dismissed; schema does not cross-enforce (D2 CLI does)"
+    - if:
+        properties:
+          kind:
+            const: decision-review
+        required:
+          - kind
+      then:
+        required:
+          - question
+          - options
+          - acceptance_criteria
+        properties:
+          question:
+            type: string
+            minLength: 1
+            description: "The decision to revisit (decision-review-specific)"
+          options:
+            type: array
+            minItems: 2
+            items:
+              type: object
+              additionalProperties: false
+              required:
+                - id
+                - label
+              properties:
+                id:
+                  type: string
+                  pattern: "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+                  description: "Option identifier (kebab-case)"
+                label:
+                  type: string
+                  minLength: 1
+                  description: "Human-readable option label"
+            description: "At least two candidate options to choose between"
+          acceptance_criteria:
+            type: string
+            minLength: 1
+            description: "Prose description of how to decide"
+          evidence_needed:
+            type: array
+            items:
+              type: string
+              minLength: 1
+            description: "Optional list of evidence items required to resolve"
+          resolution:
+            type: object
+            additionalProperties: false
+            required:
+              - option_id
+              - rationale
+              - resolved_at
+            properties:
+              option_id:
+                type: string
+                description: "Chosen option id (must match one of options[].id; D2 CLI enforces)"
+              rationale:
+                type: string
+                description: "Why this option was chosen"
+              resolved_at:
+                type: string
+                format: date-time
+                description: "ISO 8601 timestamp when resolved"
+            description: "Populated when lifecycle == resolved; schema does not cross-enforce (D2 CLI does)"
+          dismissal:
+            type: object
+            additionalProperties: false
+            required:
+              - dismissed_at
+            properties:
+              reason:
+                type: string
+                description: "Optional reason for dismissal"
+              dismissed_at:
+                type: string
+                format: date-time
+                description: "ISO 8601 timestamp when dismissed"
+            description: "Populated when lifecycle == dismissed; schema does not cross-enforce (D2 CLI does)"

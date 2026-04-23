@@ -9,13 +9,17 @@ set -eu
 ALM_DIR=".furrow/almanac"
 ALM_TODOS="$ALM_DIR/todos.yaml"
 ALM_ROADMAP="$ALM_DIR/roadmap.yaml"
+ALM_OBSERVATIONS="${ALM_OBSERVATIONS:-$ALM_DIR/observations.yaml}"
 ROWS_DIR=".furrow/rows"
 _alm_self="$0"
 if [ -L "$_alm_self" ]; then
   _alm_self="$(readlink -f "$_alm_self")"
 fi
 SCRIPT_DIR="$(cd "$(dirname "$_alm_self")" && pwd)"
-SCHEMA_FILE="$SCRIPT_DIR/../adapters/shared/schemas/todos.schema.yaml"
+SCHEMA_FILE_TODOS="$SCRIPT_DIR/../adapters/shared/schemas/todos.schema.yaml"
+SCHEMA_FILE_OBSERVATIONS="$SCRIPT_DIR/../adapters/shared/schemas/observations.schema.yaml"
+# Deprecated alias — kept for external compatibility; internal callers use $SCHEMA_FILE_TODOS.
+SCHEMA_FILE="$SCHEMA_FILE_TODOS"
 
 # --- Helpers ---
 
@@ -733,6 +737,63 @@ print(json.dumps(result))
   total_phases=$(printf '%s' "$phases" | jq 'length')
   completed_phases=$(printf '%s' "$phases" | jq '[.[] | select(.status == "done")] | length')
 
+  # Compute active_observations: open + activation == active. Additive key;
+  # omit entirely if empty to avoid diff noise for existing consumers.
+  active_obs_json="[]"
+  _obs_all=$(_observe_load_json)
+  if [ "$_obs_all" != "[]" ]; then
+    _obs_open=$(printf '%s' "$_obs_all" | jq -c '.[] | select(.lifecycle == "open")')
+    if [ -n "$_obs_open" ]; then
+      _ao_tmp=$(mktemp)
+      printf '[' > "$_ao_tmp"
+      _first=1
+      printf '%s\n' "$_obs_open" | while IFS= read -r _obs; do
+        [ -z "$_obs" ] && continue
+        _act=$(_observe_compute_activation "$_obs" "")
+        [ "$_act" = "active" ] || continue
+        _tt=$(printf '%s' "$_obs" | jq -r '.triggered_by.type')
+        case "$_tt" in
+          row_archived)
+            _row=$(printf '%s' "$_obs" | jq -r '.triggered_by.row')
+            _reason="row_archived: $_row"
+            ;;
+          rows_since)
+            _since=$(printf '%s' "$_obs" | jq -r '.triggered_by.since_row')
+            _target=$(printf '%s' "$_obs" | jq -r '.triggered_by.count')
+            _n=$(_observe_rows_since_count "$_obs")
+            _reason="rows_since: $_n/$_target rows archived since $_since"
+            ;;
+          manual)
+            _mts=$(printf '%s' "$_obs" | jq -r '.manual_activation_at // "unknown"')
+            _reason="manual: activated at $_mts"
+            ;;
+          *)
+            _reason="$_tt"
+            ;;
+        esac
+        _entry=$(jq -n \
+          --arg id "$(printf '%s' "$_obs" | jq -r '.id')" \
+          --arg kind "$(printf '%s' "$_obs" | jq -r '.kind')" \
+          --arg title "$(printf '%s' "$_obs" | jq -r '.title')" \
+          --arg reason "$_reason" \
+          '{id: $id, kind: $kind, title: $title, activation_reason: $reason}')
+        if [ "$_first" = "1" ]; then
+          printf '%s' "$_entry" >> "$_ao_tmp"
+          _first=0
+        else
+          printf ',%s' "$_entry" >> "$_ao_tmp"
+        fi
+        # Track that we wrote at least one entry via a sentinel file
+        : > "$_ao_tmp.nonempty"
+      done
+      printf ']' >> "$_ao_tmp"
+      if [ -f "$_ao_tmp.nonempty" ]; then
+        active_obs_json=$(cat "$_ao_tmp")
+      fi
+      rm -f "$_ao_tmp" "$_ao_tmp.nonempty"
+    fi
+  fi
+
   # Assemble roadmap
   roadmap=$(jq -n \
     --arg ts "$ts" \
@@ -758,6 +819,17 @@ print(json.dumps(result))
         template: "Start with: `/work {branch_name} — {description}`\nSource TODOs: {todo_ids}\nKey files: {key_files}"
       }
     }')
+
+  # Additive: inject active_observations only when non-empty.
+  # Placement: after `deferred`, before `handoff` (no top-level `waves` key exists
+  # in this roadmap shape; `deferred` is the nearest analog).
+  _ao_len=$(printf '%s' "$active_obs_json" | jq 'length')
+  if [ "$_ao_len" -gt 0 ]; then
+    roadmap=$(printf '%s' "$roadmap" | jq --argjson ao "$active_obs_json" '
+      {schema_version, metadata, dependency_graph, conflict_zones, phases, deferred, active_observations: $ao, handoff}
+    ')
+    analysis=$(printf '%s' "$analysis" | jq --argjson ao "$active_obs_json" '. + {active_observations: $ao}')
+  fi
 
   # Write roadmap.yaml
   printf '%s' "$roadmap" | yq -P '.' > "$ALM_ROADMAP"
@@ -822,22 +894,41 @@ cmd_next() {
 }
 
 # ============================================================
-# alm validate — validate todos.yaml against schema
+# alm validate — validate todos.yaml and observations.yaml against schemas
 # ============================================================
+# Dispatcher: preserves the public cmd_validate "<path>" signature used by
+# cmd_add (todos path) and cmd_triage (todos path). With no arg, validates
+# BOTH todos.yaml AND observations.yaml; returns non-zero if either fails.
 cmd_validate() {
   if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
     printf 'Usage: alm validate [<path>]\n'
-    printf '  Default path: %s (fallback: ./todos.yaml)\n' "$ALM_TODOS"
+    printf '  No arg: validate both todos.yaml and observations.yaml.\n'
+    printf '  With path: infer schema by basename (todos*.yaml | observations*.yaml).\n'
     return 0
   fi
 
+  if [ $# -eq 0 ]; then
+    _rc=0
+    cmd_validate_todos "$ALM_TODOS" || _rc=$?
+    cmd_validate_observations "$ALM_OBSERVATIONS" || _rc=$?
+    return $_rc
+  fi
+
+  case "$(basename "$1")" in
+    todos*.yaml)        cmd_validate_todos "$1" ;;
+    observations*.yaml) cmd_validate_observations "$1" ;;
+    *) die "validate: unknown schema target: $1" 2 ;;
+  esac
+}
+
+cmd_validate_todos() {
   todos_path=$(resolve_todos_path "${1:-}")
   errors=""
 
   [ -f "$todos_path" ] || die "validate: file not found: $todos_path" 2
 
-  if [ ! -f "$SCHEMA_FILE" ]; then
-    die "validate: schema not found: $SCHEMA_FILE" 2
+  if [ ! -f "$SCHEMA_FILE_TODOS" ]; then
+    die "validate: schema not found: $SCHEMA_FILE_TODOS" 2
   fi
 
   # Step 1: Schema validation (requires yq + python3)
@@ -849,8 +940,8 @@ cmd_validate() {
 
     if ! yq -o=json '.' "$todos_path" > "$json_tmp" 2>/dev/null; then
       errors="${errors}Invalid YAML syntax in $todos_path\n"
-    elif ! yq -o=json '.' "$SCHEMA_FILE" > "$schema_tmp" 2>/dev/null; then
-      errors="${errors}Invalid YAML syntax in schema: $SCHEMA_FILE\n"
+    elif ! yq -o=json '.' "$SCHEMA_FILE_TODOS" > "$schema_tmp" 2>/dev/null; then
+      errors="${errors}Invalid YAML syntax in schema: $SCHEMA_FILE_TODOS\n"
     else
       schema_errors=$(python3 -c "
 import json, sys
@@ -930,10 +1021,103 @@ for e in errs:
   # Report results
   if [ -n "$errors" ]; then
     printf '%b' "$errors" | sed '/^$/d' >&2
-    exit 3
+    return 3
   fi
 
   printf 'todos.yaml is valid\n'
+}
+
+cmd_validate_observations() {
+  obs_path="${1:-$ALM_OBSERVATIONS}"
+  errors=""
+
+  [ -f "$obs_path" ] || die "validate: file not found: $obs_path" 2
+
+  if [ ! -f "$SCHEMA_FILE_OBSERVATIONS" ]; then
+    die "validate: schema not found: $SCHEMA_FILE_OBSERVATIONS" 2
+  fi
+
+  # Step 1: Schema validation (requires yq + python3)
+  if command -v yq >/dev/null 2>&1 && command -v python3 >/dev/null 2>&1; then
+    json_tmp=$(mktemp)
+    schema_tmp=$(mktemp)
+    _old_trap=$(trap -p EXIT | sed "s/^trap -- '//;s/' EXIT$//")
+    trap "rm -f \"$json_tmp\" \"$schema_tmp\"; $_old_trap" EXIT
+
+    if ! yq -o=json '.' "$obs_path" > "$json_tmp" 2>/dev/null; then
+      errors="${errors}Invalid YAML syntax in $obs_path\n"
+    elif ! yq -o=json '.' "$SCHEMA_FILE_OBSERVATIONS" > "$schema_tmp" 2>/dev/null; then
+      errors="${errors}Invalid YAML syntax in schema: $SCHEMA_FILE_OBSERVATIONS\n"
+    else
+      schema_errors=$(python3 -c "
+import json, sys
+try:
+    from jsonschema import Draft202012Validator, FormatChecker
+except ImportError:
+    try:
+        from jsonschema import Draft7Validator as Draft202012Validator
+        FormatChecker = None
+    except ImportError:
+        print('SKIP: jsonschema not installed', file=sys.stderr)
+        sys.exit(0)
+with open(sys.argv[1]) as f:
+    schema = json.load(f)
+with open(sys.argv[2]) as f:
+    instance = json.load(f)
+kwargs = {}
+if FormatChecker is not None:
+    try:
+        kwargs['format_checker'] = FormatChecker()
+    except Exception:
+        pass
+validator = Draft202012Validator(schema, **kwargs)
+errs = sorted(validator.iter_errors(instance), key=lambda e: list(e.path))
+for e in errs:
+    path = '.'.join(str(p) for p in e.absolute_path) or '(root)'
+    print(f'Schema error at {path}: {e.message}')
+" "$schema_tmp" "$json_tmp" 2>&1)
+      if [ -n "$schema_errors" ]; then
+        errors="${errors}${schema_errors}\n"
+      fi
+    fi
+  elif command -v yq >/dev/null 2>&1; then
+    printf 'Warning: python3 not found; skipping schema validation\n' >&2
+  else
+    printf 'Warning: yq not found; skipping all validation\n' >&2
+    printf 'observations.yaml is valid\n'
+    return 0
+  fi
+
+  # Step 2: Cross-field checks — unique IDs
+  if command -v yq >/dev/null 2>&1; then
+    ids=$(yq -r '.[].id' "$obs_path" 2>/dev/null) || ids=""
+    if [ -n "$ids" ]; then
+      dupes=$(printf '%s\n' "$ids" | sort | uniq -d)
+      if [ -n "$dupes" ]; then
+        for dupe in $dupes; do
+          errors="${errors}Duplicate observation id: ${dupe}\n"
+        done
+      fi
+    fi
+  fi
+
+  # Step 3: Cross-field checks — slug format on ids
+  if command -v yq >/dev/null 2>&1; then
+    bad_ids=$(yq -r '.[].id' "$obs_path" 2>/dev/null | grep -v -E '^[a-z][a-z0-9]*(-[a-z0-9]+)*$' || true)
+    if [ -n "$bad_ids" ]; then
+      for bad in $bad_ids; do
+        errors="${errors}Invalid observation slug format: $bad\n"
+      done
+    fi
+  fi
+
+  # Report results
+  if [ -n "$errors" ]; then
+    printf '%b' "$errors" | sed '/^$/d' >&2
+    return 3
+  fi
+
+  printf 'observations.yaml is valid\n'
 }
 
 # ============================================================
@@ -1428,6 +1612,792 @@ _rationale_add() {
 }
 
 # ============================================================
+# alm observe — post-ship observations (watches + decision-reviews)
+# ============================================================
+cmd_observe() {
+  if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ] || [ -z "${1:-}" ]; then
+    _observe_help
+    return 0
+  fi
+  _verb="$1"; shift
+  case "$_verb" in
+    add)        _observe_add "$@" ;;
+    list)       _observe_list "$@" ;;
+    show)       _observe_show "$@" ;;
+    resolve)    _observe_resolve "$@" ;;
+    dismiss)    _observe_dismiss "$@" ;;
+    activate)   _observe_activate "$@" ;;
+    on-archive) _observe_on_archive "$@" ;;
+    *) die "observe: unknown verb: $_verb" 1 ;;
+  esac
+}
+
+_observe_help() {
+  cat <<'USAGE'
+Usage: alm observe <verb> [options]
+
+Verbs:
+  add          Create a new observation (watch | decision-review)
+  list         List observations (filter by activation/lifecycle)
+  show <id>    Show full observation detail + computed activation
+  resolve <id> Mark an observation resolved with kind-specific fields
+  dismiss <id> Mark an observation dismissed
+  activate <id> Manually activate a manual-trigger observation
+  on-archive <row>  Display observations newly activated by a row archive
+
+Run 'alm observe <verb> --help' for verb-specific usage.
+USAGE
+}
+
+# Ensure observations.yaml exists as an empty array.
+_observe_ensure_file() {
+  ensure_almanac_dir
+  if [ ! -f "$ALM_OBSERVATIONS" ]; then
+    printf '[]\n' > "$ALM_OBSERVATIONS"
+  fi
+}
+
+# Load observations.yaml as JSON array (prints "[]" if missing/empty).
+_observe_load_json() {
+  if [ ! -f "$ALM_OBSERVATIONS" ] || [ ! -s "$ALM_OBSERVATIONS" ]; then
+    printf '[]'
+    return 0
+  fi
+  _out=$(yq -o=json '.' "$ALM_OBSERVATIONS" 2>/dev/null) || _out="[]"
+  [ -z "$_out" ] && _out="[]"
+  [ "$_out" = "null" ] && _out="[]"
+  printf '%s' "$_out"
+}
+
+# Write-validate-mv helper.
+# $1 = full JSON array (stringified) representing the new observations.yaml contents.
+_observe_write_validated() {
+  _obs_new="$1"
+  _tmp=$(mktemp)
+  _err=$(mktemp)
+  printf '%s' "$_obs_new" | yq -P -o=yaml '.' > "$_tmp"
+  if cmd_validate_observations "$_tmp" > "$_err" 2>&1; then
+    rm -f "$_err"
+    mv "$_tmp" "$ALM_OBSERVATIONS"
+    return 0
+  else
+    cat "$_err" >&2
+    rm -f "$_tmp" "$_err"
+    return 2
+  fi
+}
+
+# Compute activation for a single observation.
+# $1 = observation JSON
+# $2 = optional row name to EXCLUDE (treat its archived_at as null) — used by on-archive.
+# Invariant: archived_at timestamps are UTC with trailing Z; lexicographic compare
+# of timestamps is only correct under that invariant.
+_observe_compute_activation() {
+  _obs="$1"
+  _exclude_row="${2:-}"
+  _trig_type=$(printf '%s' "$_obs" | jq -r '.triggered_by.type')
+  case "$_trig_type" in
+    row_archived)
+      _row=$(printf '%s' "$_obs" | jq -r '.triggered_by.row')
+      if [ -n "$_exclude_row" ] && [ "$_row" = "$_exclude_row" ]; then
+        _archived="null"
+      else
+        _archived=$(jq -r '.archived_at // "null"' "$ROWS_DIR/$_row/state.json" 2>/dev/null) || _archived="null"
+        [ -z "$_archived" ] && _archived="null"
+      fi
+      if [ "$_archived" = "null" ]; then
+        printf 'pending'
+      else
+        printf 'active'
+      fi
+      ;;
+    rows_since)
+      _since=$(printf '%s' "$_obs" | jq -r '.triggered_by.since_row')
+      _target=$(printf '%s' "$_obs" | jq -r '.triggered_by.count')
+      if [ -n "$_exclude_row" ] && [ "$_since" = "$_exclude_row" ]; then
+        _baseline="null"
+      else
+        _baseline=$(jq -r '.archived_at // "null"' "$ROWS_DIR/$_since/state.json" 2>/dev/null) || _baseline="null"
+        [ -z "$_baseline" ] && _baseline="null"
+      fi
+      if [ "$_baseline" = "null" ]; then
+        printf 'pending'
+        return 0
+      fi
+      _count=0
+      if [ -d "$ROWS_DIR" ]; then
+        for _sf in "$ROWS_DIR"/*/state.json; do
+          [ -f "$_sf" ] || continue
+          _row_name=$(basename "$(dirname "$_sf")")
+          if [ -n "$_exclude_row" ] && [ "$_row_name" = "$_exclude_row" ]; then
+            continue
+          fi
+          _a=$(jq -r '.archived_at // "null"' "$_sf" 2>/dev/null) || continue
+          [ "$_a" = "null" ] && continue
+          [ -z "$_a" ] && continue
+          # Lexicographic string compare — valid under Z-normalized UTC invariant.
+          if [ "$_a" \> "$_baseline" ]; then
+            _count=$((_count + 1))
+          fi
+        done
+      fi
+      if [ "$_count" -ge "$_target" ]; then
+        printf 'active'
+      else
+        printf 'pending'
+      fi
+      ;;
+    manual)
+      _manual_ts=$(printf '%s' "$_obs" | jq -r '.manual_activation_at // "null"')
+      if [ "$_manual_ts" = "null" ] || [ -z "$_manual_ts" ]; then
+        printf 'pending'
+      else
+        printf 'active'
+      fi
+      ;;
+    *)
+      printf 'pending'
+      ;;
+  esac
+}
+
+# Compute qualifying count for rows_since (helper for show).
+_observe_rows_since_count() {
+  _obs="$1"
+  _since=$(printf '%s' "$_obs" | jq -r '.triggered_by.since_row')
+  _baseline=$(jq -r '.archived_at // "null"' "$ROWS_DIR/$_since/state.json" 2>/dev/null) || _baseline="null"
+  [ -z "$_baseline" ] && _baseline="null"
+  if [ "$_baseline" = "null" ]; then
+    printf '0'
+    return 0
+  fi
+  _count=0
+  if [ -d "$ROWS_DIR" ]; then
+    for _sf in "$ROWS_DIR"/*/state.json; do
+      [ -f "$_sf" ] || continue
+      _a=$(jq -r '.archived_at // "null"' "$_sf" 2>/dev/null) || continue
+      [ "$_a" = "null" ] && continue
+      [ -z "$_a" ] && continue
+      if [ "$_a" \> "$_baseline" ]; then
+        _count=$((_count + 1))
+      fi
+    done
+  fi
+  printf '%s' "$_count"
+}
+
+_observe_rows_since_baseline() {
+  _obs="$1"
+  _since=$(printf '%s' "$_obs" | jq -r '.triggered_by.since_row')
+  _baseline=$(jq -r '.archived_at // "null"' "$ROWS_DIR/$_since/state.json" 2>/dev/null) || _baseline="null"
+  [ -z "$_baseline" ] && _baseline="null"
+  printf '%s' "$_baseline"
+}
+
+# ------------------------------------------------------------
+# observe add
+# ------------------------------------------------------------
+_observe_add() {
+  _kind="" _title="" _trigger="" _row="" _since_row="" _count=""
+  _signal="" _question="" _options="" _acceptance=""
+  _source_work_unit=""
+  _evidence=""
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --kind)             shift; _kind="${1:-}"; shift ;;
+      --title)            shift; _title="${1:-}"; shift ;;
+      --trigger)          shift; _trigger="${1:-}"; shift ;;
+      --row)              shift; _row="${1:-}"; shift ;;
+      --since-row)        shift; _since_row="${1:-}"; shift ;;
+      --count)            shift; _count="${1:-}"; shift ;;
+      --signal)           shift; _signal="${1:-}"; shift ;;
+      --question)         shift; _question="${1:-}"; shift ;;
+      --options)          shift; _options="${1:-}"; shift ;;
+      --acceptance)       shift; _acceptance="${1:-}"; shift ;;
+      --evidence)         shift; _evidence="${_evidence:+$_evidence|}${1:-}"; shift ;;
+      --source-work-unit) shift; _source_work_unit="${1:-}"; shift ;;
+      --help|-h)
+        cat <<'USAGE'
+Usage: alm observe add --kind <watch|decision-review> --title T --trigger <row_archived|rows_since|manual> [trigger-flags] [kind-flags] [--source-work-unit NAME]
+
+Trigger flags:
+  --trigger row_archived --row <name>
+  --trigger rows_since --since-row <name> --count <int>
+  --trigger manual
+
+Kind flags:
+  --kind watch:           --signal <text>
+  --kind decision-review: --question <text> --options <csv|json> --acceptance <text> [--evidence <text> ...]
+USAGE
+        return 0
+        ;;
+      *) die "observe add: unknown flag: $1" 1 ;;
+    esac
+  done
+
+  [ -n "$_kind" ]    || die "observe add: --kind is required" 1
+  [ -n "$_title" ]   || die "observe add: --title is required" 1
+  [ -n "$_trigger" ] || die "observe add: --trigger is required" 1
+
+  case "$_kind" in
+    watch|decision-review) ;;
+    *) die "observe add: invalid --kind '$_kind' (watch|decision-review)" 1 ;;
+  esac
+
+  case "$_trigger" in
+    row_archived|rows_since|manual) ;;
+    *) die "observe add: invalid --trigger '$_trigger' (row_archived|rows_since|manual)" 1 ;;
+  esac
+
+  # Trigger-specific validation
+  case "$_trigger" in
+    row_archived)
+      [ -n "$_row" ] || die "observe add: --row required when --trigger row_archived" 1
+      ;;
+    rows_since)
+      [ -n "$_since_row" ] || die "observe add: --since-row required when --trigger rows_since" 1
+      [ -n "$_count" ] || die "observe add: --count required when --trigger rows_since" 1
+      case "$_count" in
+        ''|*[!0-9]*) die "observe add: --count must be a positive integer" 1 ;;
+      esac
+      [ "$_count" -ge 1 ] || die "observe add: --count must be >= 1" 1
+      ;;
+  esac
+
+  # Kind-specific validation
+  case "$_kind" in
+    watch)
+      [ -n "$_signal" ] || die "observe add: --signal required when --kind watch" 1
+      ;;
+    decision-review)
+      [ -n "$_question" ]   || die "observe add: --question required when --kind decision-review" 1
+      [ -n "$_options" ]    || die "observe add: --options required when --kind decision-review" 1
+      [ -n "$_acceptance" ] || die "observe add: --acceptance required when --kind decision-review" 1
+      ;;
+  esac
+
+  _observe_ensure_file
+
+  # Generate slug id
+  _slug=$(slugify "$_title")
+  [ -n "$_slug" ] || die "observe add: could not generate slug from title" 1
+  # Truncate to 40 chars (tighter than slugify's 50 default)
+  _slug=$(printf '%s' "$_slug" | cut -c1-40 | sed 's/-$//')
+
+  _existing=$(_observe_load_json)
+  _base_slug="$_slug"
+  _suffix=1
+  while printf '%s' "$_existing" | jq -e --arg id "$_slug" '.[] | select(.id == $id)' >/dev/null 2>&1; do
+    _suffix=$((_suffix + 1))
+    _slug="${_base_slug}-${_suffix}"
+  done
+
+  _ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+  # Build triggered_by block
+  case "$_trigger" in
+    row_archived)
+      _trig_json=$(jq -n --arg row "$_row" '{type: "row_archived", row: $row}')
+      ;;
+    rows_since)
+      _trig_json=$(jq -n --arg since "$_since_row" --argjson c "$_count" '{type: "rows_since", since_row: $since, count: $c}')
+      ;;
+    manual)
+      _trig_json='{"type":"manual"}'
+      ;;
+  esac
+
+  # Build options JSON for decision-review (accept JSON array or CSV of "id:label" pairs)
+  _options_json="[]"
+  if [ -n "$_options" ]; then
+    # Try JSON first
+    if printf '%s' "$_options" | jq -e 'type == "array"' >/dev/null 2>&1; then
+      _options_json="$_options"
+    else
+      # CSV form: "id1:label1,id2:label2" or "id1,id2" (label defaults to id)
+      _options_json=$(printf '%s' "$_options" | tr ',' '\n' | jq -R '
+        split(":") |
+        if length >= 2 then {id: .[0], label: (.[1:] | join(":"))}
+        else {id: .[0], label: .[0]}
+        end
+      ' | jq -s '.')
+    fi
+  fi
+
+  # Build evidence array
+  _evidence_json="[]"
+  if [ -n "$_evidence" ]; then
+    _evidence_json=$(printf '%s' "$_evidence" | tr '|' '\n' | jq -R '.' | jq -s '.')
+  fi
+
+  _entry=$(jq -n \
+    --arg id "$_slug" \
+    --arg kind "$_kind" \
+    --arg title "$_title" \
+    --argjson triggered_by "$_trig_json" \
+    --arg created_at "$_ts" \
+    --arg updated_at "$_ts" \
+    --arg signal "$_signal" \
+    --arg question "$_question" \
+    --argjson options "$_options_json" \
+    --arg acceptance "$_acceptance" \
+    --argjson evidence "$_evidence_json" \
+    --arg source_work_unit "$_source_work_unit" \
+    '{
+      id: $id,
+      kind: $kind,
+      title: $title,
+      triggered_by: $triggered_by,
+      lifecycle: "open",
+      created_at: $created_at,
+      updated_at: $updated_at
+    }
+    + (if $kind == "watch" then {signal: $signal} else {} end)
+    + (if $kind == "decision-review" then {question: $question, options: $options, acceptance_criteria: $acceptance} else {} end)
+    + (if $kind == "decision-review" and ($evidence | length) > 0 then {evidence_needed: $evidence} else {} end)
+    + (if $source_work_unit != "" then {source_work_unit: $source_work_unit} else {} end)
+    ')
+
+  _new_array=$(printf '%s' "$_existing" | jq --argjson e "$_entry" '. + [$e]')
+
+  if _observe_write_validated "$_new_array"; then
+    printf 'added observation: %s\n' "$_slug"
+  else
+    return 2
+  fi
+}
+
+# ------------------------------------------------------------
+# observe list
+# ------------------------------------------------------------
+_observe_list() {
+  _filter="active"
+  _kind_filter=""
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --active)    _filter="active"; shift ;;
+      --pending)   _filter="pending"; shift ;;
+      --resolved)  _filter="resolved"; shift ;;
+      --dismissed) _filter="dismissed"; shift ;;
+      --all)       _filter="all"; shift ;;
+      --kind)      shift; _kind_filter="${1:-}"; shift ;;
+      --help|-h)
+        printf 'Usage: alm observe list [--active | --pending | --resolved | --dismissed | --all] [--kind watch|decision-review]\n'
+        return 0
+        ;;
+      *) die "observe list: unknown flag: $1" 1 ;;
+    esac
+  done
+
+  _all=$(_observe_load_json)
+
+  # Sort by created_at ascending; emit one tsv line per entry with computed activation.
+  _sorted=$(printf '%s' "$_all" | jq -c 'sort_by(.created_at) | .[]')
+  [ -z "$_sorted" ] && return 0
+
+  printf '%s\n' "$_sorted" | while IFS= read -r _obs; do
+    [ -z "$_obs" ] && continue
+    _id=$(printf '%s' "$_obs" | jq -r '.id')
+    _k=$(printf '%s' "$_obs" | jq -r '.kind')
+    _lc=$(printf '%s' "$_obs" | jq -r '.lifecycle')
+    _title=$(printf '%s' "$_obs" | jq -r '.title')
+
+    # Apply kind filter
+    if [ -n "$_kind_filter" ] && [ "$_k" != "$_kind_filter" ]; then
+      continue
+    fi
+
+    # Compute activation only when useful
+    _act="-"
+    if [ "$_lc" = "open" ]; then
+      _act=$(_observe_compute_activation "$_obs")
+    fi
+
+    # Apply lifecycle/activation filter
+    case "$_filter" in
+      active)
+        [ "$_lc" = "open" ] && [ "$_act" = "active" ] || continue
+        ;;
+      pending)
+        [ "$_lc" = "open" ] && [ "$_act" = "pending" ] || continue
+        ;;
+      resolved)
+        [ "$_lc" = "resolved" ] || continue
+        ;;
+      dismissed)
+        [ "$_lc" = "dismissed" ] || continue
+        ;;
+      all)
+        ;;
+    esac
+
+    printf '%s\t%s\t%s\t%s\t%s\n' "$_id" "$_k" "$_lc" "$_act" "$_title"
+  done
+}
+
+# ------------------------------------------------------------
+# observe show
+# ------------------------------------------------------------
+_observe_show() {
+  if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+    printf 'Usage: alm observe show <id>\n'
+    return 0
+  fi
+  [ -n "${1:-}" ] || die "observe show: <id> required" 1
+  _id="$1"
+
+  _all=$(_observe_load_json)
+  _obs=$(printf '%s' "$_all" | jq -c --arg id "$_id" '.[] | select(.id == $id)')
+  [ -n "$_obs" ] || die "observation not found: $_id" 2
+
+  printf 'Observation: %s\n' "$(printf '%s' "$_obs" | jq -r '.id')"
+  printf 'Kind: %s\n' "$(printf '%s' "$_obs" | jq -r '.kind')"
+  printf 'Title: %s\n' "$(printf '%s' "$_obs" | jq -r '.title')"
+  printf 'Lifecycle: %s\n' "$(printf '%s' "$_obs" | jq -r '.lifecycle')"
+  printf 'Created: %s\n' "$(printf '%s' "$_obs" | jq -r '.created_at')"
+  printf 'Updated: %s\n' "$(printf '%s' "$_obs" | jq -r '.updated_at')"
+
+  _swu=$(printf '%s' "$_obs" | jq -r '.source_work_unit // empty')
+  [ -n "$_swu" ] && printf 'Source Work Unit: %s\n' "$_swu"
+
+  _trig_type=$(printf '%s' "$_obs" | jq -r '.triggered_by.type')
+  printf 'Trigger: %s\n' "$_trig_type"
+  case "$_trig_type" in
+    row_archived)
+      printf '  row: %s\n' "$(printf '%s' "$_obs" | jq -r '.triggered_by.row')"
+      ;;
+    rows_since)
+      printf '  since_row: %s\n' "$(printf '%s' "$_obs" | jq -r '.triggered_by.since_row')"
+      printf '  count: %s\n' "$(printf '%s' "$_obs" | jq -r '.triggered_by.count')"
+      ;;
+    manual)
+      _mts=$(printf '%s' "$_obs" | jq -r '.manual_activation_at // empty')
+      if [ -n "$_mts" ]; then
+        printf '  manual_activation_at: %s\n' "$_mts"
+      fi
+      ;;
+  esac
+
+  _kind=$(printf '%s' "$_obs" | jq -r '.kind')
+  case "$_kind" in
+    watch)
+      _sig=$(printf '%s' "$_obs" | jq -r '.signal // empty')
+      [ -n "$_sig" ] && printf 'Signal: %s\n' "$_sig"
+      ;;
+    decision-review)
+      _q=$(printf '%s' "$_obs" | jq -r '.question // empty')
+      [ -n "$_q" ] && printf 'Question: %s\n' "$_q"
+      _ac=$(printf '%s' "$_obs" | jq -r '.acceptance_criteria // empty')
+      [ -n "$_ac" ] && printf 'Acceptance Criteria: %s\n' "$_ac"
+      _opts=$(printf '%s' "$_obs" | jq -r 'if .options then .options[] | "  - " + .id + ": " + .label else empty end')
+      if [ -n "$_opts" ]; then
+        printf 'Options:\n'
+        printf '%s\n' "$_opts"
+      fi
+      _ev=$(printf '%s' "$_obs" | jq -r 'if .evidence_needed then .evidence_needed[] | "  - " + . else empty end')
+      if [ -n "$_ev" ]; then
+        printf 'Evidence Needed:\n'
+        printf '%s\n' "$_ev"
+      fi
+      ;;
+  esac
+
+  # Resolution / dismissal blocks
+  _res=$(printf '%s' "$_obs" | jq -c '.resolution // empty')
+  if [ -n "$_res" ]; then
+    printf 'Resolution:\n'
+    printf '%s\n' "$_res" | jq -r 'to_entries[] | "  " + .key + ": " + (.value | tostring)'
+  fi
+  _dis=$(printf '%s' "$_obs" | jq -c '.dismissal // empty')
+  if [ -n "$_dis" ]; then
+    printf 'Dismissal:\n'
+    printf '%s\n' "$_dis" | jq -r 'to_entries[] | "  " + .key + ": " + (.value | tostring)'
+  fi
+
+  # Computed activation block
+  _lc=$(printf '%s' "$_obs" | jq -r '.lifecycle')
+  if [ "$_lc" = "open" ]; then
+    _act=$(_observe_compute_activation "$_obs")
+    printf '\nComputed:\n'
+    printf '  activation: %s\n' "$_act"
+    if [ "$_trig_type" = "rows_since" ]; then
+      _qc=$(_observe_rows_since_count "$_obs")
+      _tgt=$(printf '%s' "$_obs" | jq -r '.triggered_by.count')
+      _bl=$(_observe_rows_since_baseline "$_obs")
+      printf '  qualifying_archived_rows: %s / target: %s\n' "$_qc" "$_tgt"
+      if [ "$_bl" = "null" ]; then
+        printf '  baseline: not archived yet\n'
+      else
+        printf '  baseline: %s\n' "$_bl"
+      fi
+    fi
+  fi
+}
+
+# ------------------------------------------------------------
+# observe resolve
+# ------------------------------------------------------------
+_observe_resolve() {
+  if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+    cat <<'USAGE'
+Usage:
+  alm observe resolve <id> --outcome <pass|fail|inconclusive> [--note <text>]   (watch)
+  alm observe resolve <id> --option <option-id> --rationale <text>             (decision-review)
+USAGE
+    return 0
+  fi
+  [ -n "${1:-}" ] || die "observe resolve: <id> required" 1
+  _id="$1"; shift
+
+  _outcome="" _note="" _option="" _rationale=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --outcome)   shift; _outcome="${1:-}"; shift ;;
+      --note)      shift; _note="${1:-}"; shift ;;
+      --option)    shift; _option="${1:-}"; shift ;;
+      --rationale) shift; _rationale="${1:-}"; shift ;;
+      *) die "observe resolve: unknown flag: $1" 1 ;;
+    esac
+  done
+
+  _all=$(_observe_load_json)
+  _obs=$(printf '%s' "$_all" | jq -c --arg id "$_id" '.[] | select(.id == $id)')
+  [ -n "$_obs" ] || die "observation not found: $_id" 2
+
+  _lc=$(printf '%s' "$_obs" | jq -r '.lifecycle')
+  [ "$_lc" = "open" ] || { printf 'cannot resolve: lifecycle is %s\n' "$_lc" >&2; return 2; }
+
+  _kind=$(printf '%s' "$_obs" | jq -r '.kind')
+  case "$_kind" in
+    watch)
+      if [ -n "$_option" ] || [ -n "$_rationale" ]; then
+        printf 'use --outcome/--note for watch observations\n' >&2
+        return 2
+      fi
+      [ -n "$_outcome" ] || die "observe resolve: --outcome required for watch" 1
+      case "$_outcome" in
+        pass|fail|inconclusive) ;;
+        *) die "observe resolve: invalid --outcome '$_outcome' (pass|fail|inconclusive)" 1 ;;
+      esac
+      ;;
+    decision-review)
+      if [ -n "$_outcome" ] || [ -n "$_note" ]; then
+        printf 'use --option/--rationale for decision-review observations\n' >&2
+        return 2
+      fi
+      [ -n "$_option" ]    || die "observe resolve: --option required for decision-review" 1
+      [ -n "$_rationale" ] || die "observe resolve: --rationale required for decision-review" 1
+      # Validate option id exists in observation's options list
+      _match=$(printf '%s' "$_obs" | jq --arg oid "$_option" '[.options[]? | select(.id == $oid)] | length')
+      if [ "${_match:-0}" -lt 1 ]; then
+        printf 'observe resolve: option "%s" not in observation options\n' "$_option" >&2
+        return 2
+      fi
+      ;;
+  esac
+
+  _ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+  case "$_kind" in
+    watch)
+      _res_json=$(jq -n --arg outcome "$_outcome" --arg note "$_note" --arg ts "$_ts" '
+        {outcome: $outcome, resolved_at: $ts}
+        + (if $note != "" then {note: $note} else {} end)
+      ')
+      ;;
+    decision-review)
+      _res_json=$(jq -n --arg opt "$_option" --arg rat "$_rationale" --arg ts "$_ts" '
+        {option_id: $opt, rationale: $rat, resolved_at: $ts}
+      ')
+      ;;
+  esac
+
+  _new_array=$(printf '%s' "$_all" | jq \
+    --arg id "$_id" \
+    --arg ts "$_ts" \
+    --argjson res "$_res_json" '
+    map(if .id == $id then
+      .lifecycle = "resolved"
+      | .resolution = $res
+      | .updated_at = $ts
+    else . end)
+  ')
+
+  if _observe_write_validated "$_new_array"; then
+    printf 'resolved observation: %s\n' "$_id"
+  else
+    return 2
+  fi
+}
+
+# ------------------------------------------------------------
+# observe dismiss
+# ------------------------------------------------------------
+_observe_dismiss() {
+  if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+    printf 'Usage: alm observe dismiss <id> [--reason <text>]\n'
+    return 0
+  fi
+  [ -n "${1:-}" ] || die "observe dismiss: <id> required" 1
+  _id="$1"; shift
+
+  _reason=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --reason) shift; _reason="${1:-}"; shift ;;
+      *) die "observe dismiss: unknown flag: $1" 1 ;;
+    esac
+  done
+
+  _all=$(_observe_load_json)
+  _obs=$(printf '%s' "$_all" | jq -c --arg id "$_id" '.[] | select(.id == $id)')
+  [ -n "$_obs" ] || die "observation not found: $_id" 2
+
+  _lc=$(printf '%s' "$_obs" | jq -r '.lifecycle')
+  [ "$_lc" = "open" ] || { printf 'cannot dismiss: lifecycle is %s\n' "$_lc" >&2; return 2; }
+
+  _ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+  _dis_json=$(jq -n --arg r "$_reason" --arg ts "$_ts" '
+    {dismissed_at: $ts}
+    + (if $r != "" then {reason: $r} else {} end)
+  ')
+
+  _new_array=$(printf '%s' "$_all" | jq \
+    --arg id "$_id" \
+    --arg ts "$_ts" \
+    --argjson dis "$_dis_json" '
+    map(if .id == $id then
+      .lifecycle = "dismissed"
+      | .dismissal = $dis
+      | .updated_at = $ts
+    else . end)
+  ')
+
+  if _observe_write_validated "$_new_array"; then
+    printf 'dismissed observation: %s\n' "$_id"
+  else
+    return 2
+  fi
+}
+
+# ------------------------------------------------------------
+# observe activate
+# ------------------------------------------------------------
+_observe_activate() {
+  if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+    printf 'Usage: alm observe activate <id>\n'
+    return 0
+  fi
+  [ -n "${1:-}" ] || die "observe activate: <id> required" 1
+  _id="$1"
+
+  _all=$(_observe_load_json)
+  _obs=$(printf '%s' "$_all" | jq -c --arg id "$_id" '.[] | select(.id == $id)')
+  [ -n "$_obs" ] || die "observation not found: $_id" 2
+
+  _trig_type=$(printf '%s' "$_obs" | jq -r '.triggered_by.type')
+  if [ "$_trig_type" != "manual" ]; then
+    printf 'cannot activate: trigger type is %s; activate only works on manual triggers\n' "$_trig_type" >&2
+    return 2
+  fi
+
+  _existing_ts=$(printf '%s' "$_obs" | jq -r '.manual_activation_at // empty')
+  if [ -n "$_existing_ts" ]; then
+    printf 'already activated at %s\n' "$_existing_ts" >&2
+    return 0
+  fi
+
+  _ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+  _new_array=$(printf '%s' "$_all" | jq \
+    --arg id "$_id" \
+    --arg ts "$_ts" '
+    map(if .id == $id then
+      .manual_activation_at = $ts
+      | .updated_at = $ts
+    else . end)
+  ')
+
+  if _observe_write_validated "$_new_array"; then
+    printf 'activated observation: %s\n' "$_id"
+  else
+    return 2
+  fi
+}
+
+# ------------------------------------------------------------
+# observe on-archive — STATELESS display helper
+# ------------------------------------------------------------
+_observe_on_archive() {
+  if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+    printf 'Usage: alm observe on-archive <row-name>\n'
+    printf '  Print observations newly activated by archive of <row>. No state mutation.\n'
+    return 0
+  fi
+  [ -n "${1:-}" ] || die "observe on-archive: <row-name> required" 1
+  _row="$1"
+
+  _state_file="$ROWS_DIR/$_row/state.json"
+  _archived_at="null"
+  if [ -f "$_state_file" ]; then
+    _archived_at=$(jq -r '.archived_at // "null"' "$_state_file" 2>/dev/null) || _archived_at="null"
+    [ -z "$_archived_at" ] && _archived_at="null"
+  fi
+  if [ "$_archived_at" = "null" ]; then
+    printf 'row %s is not archived yet\n' "$_row" >&2
+    return 1
+  fi
+
+  _all=$(_observe_load_json)
+  _open=$(printf '%s' "$_all" | jq -c '.[] | select(.lifecycle == "open")')
+
+  _any=0
+  _out_tmp=$(mktemp)
+  if [ -n "$_open" ]; then
+    printf '%s\n' "$_open" | while IFS= read -r _obs; do
+      [ -z "$_obs" ] && continue
+      _with=$(_observe_compute_activation "$_obs" "")
+      _without=$(_observe_compute_activation "$_obs" "$_row")
+      if [ "$_with" = "active" ] && [ "$_without" = "pending" ]; then
+        _id=$(printf '%s' "$_obs" | jq -r '.id')
+        _k=$(printf '%s' "$_obs" | jq -r '.kind')
+        _title=$(printf '%s' "$_obs" | jq -r '.title')
+        _tt=$(printf '%s' "$_obs" | jq -r '.triggered_by.type')
+        case "$_tt" in
+          row_archived)
+            _reason="row_archived: $(printf '%s' "$_obs" | jq -r '.triggered_by.row') archived"
+            ;;
+          rows_since)
+            _tgt=$(printf '%s' "$_obs" | jq -r '.triggered_by.count')
+            _since=$(printf '%s' "$_obs" | jq -r '.triggered_by.since_row')
+            _reason="rows_since: $_tgt rows archived after $_since"
+            ;;
+          *)
+            _reason="$_tt"
+            ;;
+        esac
+        printf 'id: %s\n' "$_id" >> "$_out_tmp"
+        printf '  kind: %s\n' "$_k" >> "$_out_tmp"
+        printf '  title: %s\n' "$_title" >> "$_out_tmp"
+        printf '  activation_reason: %s\n' "$_reason" >> "$_out_tmp"
+      fi
+    done
+  fi
+
+  if [ -s "$_out_tmp" ]; then
+    cat "$_out_tmp"
+    _any=1
+  fi
+  rm -f "$_out_tmp"
+
+  if [ "$_any" -eq 0 ]; then
+    printf 'no observations activated by archive of %s\n' "$_row"
+  fi
+  return 0
+}
+
+# ============================================================
 # alm docs / specialists / history — stubs
 # ============================================================
 cmd_docs() {
@@ -1473,9 +2443,10 @@ Commands:
   show        Display full detail of a single TODO
   triage      Run dependency graph analysis and generate roadmap
   next        Generate handoff prompts from roadmap
-  validate    Validate todos.yaml against schema
+  validate    Validate todos.yaml and observations.yaml against schemas
   render      Generate Markdown from roadmap.yaml
   learn       Knowledge management (list, search, show, promote, add)
+  observe     Manage post-ship observations (add, list, show, resolve, dismiss, activate, on-archive)
   rationale   Component rationale management (list, show, add)
   docs        Documentation management (stub)
   specialists Specialist agent management (stub)
@@ -1505,6 +2476,7 @@ case "$cmd" in
   validate)    cmd_validate "$@" ;;
   render)      cmd_render "$@" ;;
   learn)       cmd_learn "$@" ;;
+  observe)     cmd_observe "$@" ;;
   rationale)   cmd_rationale "$@" ;;
   docs)        cmd_docs ;;
   specialists) cmd_specialists ;;
