@@ -1,0 +1,29 @@
+{
+  "type": "plan",
+  "dimensions": [
+    {
+      "name": "coverage",
+      "verdict": "pass",
+      "evidence": "`.furrow/rows/post-install-hygiene/definition.yaml` declares 8 deliverables, and `.furrow/rows/post-install-hygiene/plan.json` places each of those 8 exactly once across waves 1-3 with no omissions or duplicates."
+    },
+    {
+      "name": "feasibility",
+      "verdict": "pass",
+      "evidence": "All dependency edges are respected (`test-isolation-guard` in wave 1; all deliverables that depend on it in waves 2-3; `cross-model-per-deliverable-diff` in wave 3 after `xdg-config-consumer-wiring`), and the file_ownership globs in each wave are disjoint in `plan.json`."
+    },
+    {
+      "name": "specificity",
+      "verdict": "pass",
+      "evidence": "Every assignment in `.furrow/rows/post-install-hygiene/plan.json` names a concrete specialist (`test-engineer` or `harness-engineer`) and includes at least one explicit `file_ownership` glob."
+    },
+    {
+      "name": "research-grounding",
+      "verdict": "fail",
+      "evidence": "The plan artifacts cite research files globally (`.furrow/rows/post-install-hygiene/research/*.md`) and the prompt lists findings, but neither `plan.json` nor the architecture decisions attach major choices to specific research sections such as `cross-model-and-xdg.md` Section B/C or `install-artifacts.md` Section A/C, which the rubric requires."
+    }
+  ],
+  "overall": "fail",
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-23T18:19:33Z"
+}

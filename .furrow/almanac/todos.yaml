@@ -2015,6 +2015,535 @@
     - bin/frw.d/lib/common.sh
     - .furrow/
   status: done
+# --- Standalone: Merge-Process Skill ---
+- id: merge-process-skill
+  title: "Design a /furrow:merge skill — reconcile worktree branches back into main"
+  context: |
+    Merging completed worktree branches into main is currently ad-hoc and error-prone.
+    Observed failure modes from the Phase 2 merge session (2026-04-22):
+
+    1. **Consumer-project contamination**: Worktrees created by `frw launch-phase` run
+       install.sh-style logic that converts source-repo files (bin/alm, bin/rws, bin/sds,
+       .claude/rules/*) into symlinks pointing back at the source repo. If these
+       "install artifacts" get committed (as happened with parallel-agent-wiring's commit
+       a6eb8ff), a naive merge into main deletes real source files.
+    2. **Main-advance overlap**: Main can cherry-pick or re-apply a worktree's feature
+       commits before the worktree is merged. Straight merge duplicates the work; conflict
+       resolution needs to know which side has the canonical version.
+    3. **Hook cascade lock-out**: A merge conflict in `bin/frw.d/lib/common.sh` breaks every
+       Claude Code PreToolUse hook (because `frw hook *` sources common.sh), blocking all
+       Bash/Edit/Write tools until the file is manually repaired outside Claude Code.
+       Needs pre-merge detection or a bootstrap/rescue path.
+    4. **Stale row references**: Rows in the roadmap can reference TODOs that were
+       superseded or archived; merge prep should flag this.
+    5. **Heredoc false positives**: The script-guard hook matches `*frw.d/*` in the full
+       command string, so commit messages and docs mentioning frw.d/ paths trigger blocks.
+  work_needed: |
+    - Design a `/furrow:merge` command that orchestrates the full reconcile-and-land flow
+    - Pre-merge audit: detect symlink-ification, flag overlapping commits vs main, list
+      artifacts-only additions vs substantive feature changes
+    - Classify each worktree commit: safe / redundant-with-main / destructive / mixed
+    - Auto-resolution strategy for "protected files" (bin/*, .claude/rules/*, .gitignore)
+      — always prefer HEAD when the worktree's change is install-artifact symlink-ification
+    - Pre-merge check: ensure bin/frw.d/lib/common.sh parses (syntax-check before merge
+      creates a window where the hooks themselves break)
+    - Bootstrap rescue: if common.sh gets into a broken state mid-merge, provide a way to
+      restore it that bypasses hook sourcing (e.g., a `frw rescue` subcommand in a file that
+      doesn't depend on common.sh)
+    - Post-merge verification: run `frw doctor`, confirm no bin/ file deletions slipped
+      through, confirm hooks still parse
+    - Artifact reconciliation: for `.furrow/rows/*/` additions, confirm each row is
+      archived and its source_todo is closed in seeds.jsonl
+    - Seeds.jsonl ordering: currently conflict-prone; consider sorting by created_at or
+      grouping by id to reduce conflicts
+    - Script-guard heredoc false positives: either whitelist git commands, or don't match
+      paths inside quoted strings
+  references:
+    - bin/frw.d/scripts/launch-phase.sh
+    - bin/frw.d/hooks/script-guard.sh
+    - bin/frw.d/lib/common.sh
+    - .claude/settings.json
+    - commands/
+  source_type: "brain-dump"
+  created_at: "2026-04-22T00:00:00Z"
+  updated_at: "2026-04-22T00:00:00Z"
+  urgency: "medium"
+  impact: "high"
+  effort: "medium"
+  files_touched:
+    - commands/
+    - bin/frw.d/scripts/
+    - bin/frw.d/hooks/
+  status: active
+- id: artifact-writing-defaults
+  title: "Artifact-writing defaults — long-form outputs go to files as first-class citizens"
+  context: |
+    Brain-dump 2026-04-22: "default to writing long reviews / open questions
+    to a file (i.e. at ideation, research synthesis, planning, etc)."
+    Currently skills vary in whether they push long-form content into
+    summary.md sections (which becomes noisy) or into dedicated files. Open
+    questions, reviewer critiques, deep research notes, and design debates
+    all have the "too big for summary, too important to lose" problem.
+
+    User wants to move the harness toward this style of interaction as a
+    first-class pattern — summary.md is an index + synthesis; deep content
+    lives in purpose-named files. This is a blanket rule, not a threshold
+    rule. Absorbs the prior `scratchpad-md-session-persistent-actionables-layer`
+    TODO (scratchpad is one specific artifact in the general pattern).
+  work_needed: |
+    - Audit each step skill (ideate, research, plan, spec, decompose,
+      implement, review) for places where content belongs in files instead
+      of summary. Rewrite instructions to bias toward file creation.
+    - Define the canonical artifact set. Blurry today — likely candidates:
+      `open-questions.md`, `decisions.md`, `research/*.md`, `reviews/*.md`,
+      `scratchpad.md` (absorbed from prior TODO). Scrape Furrow / CC chat
+      logs for instances where the user has manually requested this pattern
+      to identify real-world artifact types worth canonicalizing.
+    - Artifacts are free-form markdown, not schema-validated (decision
+      baked). These are human/agent writing spaces — structure would
+      suffocate them.
+    - Update `references/row-layout.md` to canonicalize the file structure.
+    - Update `rws regenerate-summary` / `rws validate-summary` to
+      auto-maintain an "Artifacts" section in summary.md that indexes files
+      present in the row.
+    - Consider `rws add-artifact <row> <type> <name>` to stub a file with a
+      minimal template.
+    - Context-budget interaction: artifacts on disk are on-demand (not
+      injected), which makes the step budget easier. Reinforce in context
+      budget docs.
+    - Tie to tmux-sessionizer-integration: live-review/iteration on these
+      files is a key UX — artifacts should be where the user comments and
+      the agent responds.
+    - Backward compat: existing rows with long summary sections stay as-is;
+      convention applies going forward.
+  open_questions:
+    - "Canonical artifact list is blurry today. Before codifying, scrape Furrow + CC chat logs for manual requests to write content to files — those instances are the ground truth for what deserves a first-class slot."
+    - "Does scratchpad.md (absorbed from the prior TODO) have host-portability concerns that still apply here, or is the absorption complete? (Prior TODO called out CC+Pi host-independence — preserve that constraint when designing.)"
+  source_type: "brain-dump"
+  status: active
+  created_at: "2026-04-22T15:03:13-04:00"
+  updated_at: "2026-04-22T15:03:13-04:00"
+  urgency: "medium"
+  impact: "high"
+  effort: "medium"
+  references:
+    - skills/
+    - references/row-layout.md
+    - bin/rws
+  files_touched:
+    - skills/
+    - references/row-layout.md
+    - bin/rws
+    - .furrow/almanac/rationale.yaml
+  absorbs:
+    - scratchpad-md-session-persistent-actionables-layer
+- id: furrow-next-semantic-merge
+  title: "furrow:next semantic merge — read row artifacts for intelligent merge + per-deliverable squash"
+  context: |
+    Brain-dump 2026-04-22: "when merging in furrow:next, we should consider
+    the furrow artifacts to understand the reasoning behind the changes and
+    merge intelligently" and "merge trees should collapse commits rather than
+    push all commits." Today, `/furrow:next` merges with whatever git strategy
+    is the default. Row artifacts (definition.objective, acceptance_criteria,
+    plan.json waves, summary.md findings, review verdict) contain the
+    *semantic* shape of the change and should drive commit structure and
+    context surfacing for conflicts.
+
+    Significant overlap with the currently active merge/worktree work —
+    sequence carefully so this doesn't re-decide what that work lands.
+  work_needed: |
+    - Squash policy: per-deliverable as default (decision baked). Each
+      deliverable becomes one commit on the target branch. Falls back to
+      per-row only when the row has a single deliverable or deliverables are
+      trivially coupled.
+    - Generate squash commit messages from artifacts: title from
+      definition.objective or deliverable.name; body from summary.md Key
+      Findings + Recommendations; footer with gate history and specialist
+      assignments for traceability.
+    - Merge vs PR is configurable via furrow.yaml (decision baked). Direct
+      merge is faster; PR preserves review outside Furrow. Projects opt in.
+    - Conflict resolution: surface context to the human first — present the
+      row's rationale alongside any unresolved conflict rather than raw
+      `<<<<<<<` markers. LLM-driven merge is a trust leap, explicitly
+      deferred.
+    - Gate the merge on review verdict — only `pass` rows auto-merge;
+      `needs-revision` blocks; `fail` requires explicit override.
+    - CI signal interaction: if CI ran on individual wave commits and passed,
+      the squashed commit re-runs CI — note this as expected behavior in
+      docs; no special handling needed at the merge layer.
+  open_questions:
+    - "Determinism: which parts of the merge strategy are deterministic (squash, commit-message assembly) vs judgement-requiring (semantic conflict surfacing)? Deterministic parts should be testable end-to-end; non-deterministic parts need a different harness (maybe eval-style)."
+    - "How does this interact with the currently active merge/worktree work? Before implementing, audit that work's landed shape so decisions aren't duplicated or contradicted."
+  source_type: "brain-dump"
+  status: active
+  created_at: "2026-04-22T15:03:13-04:00"
+  updated_at: "2026-04-22T15:03:13-04:00"
+  urgency: "medium"
+  impact: "high"
+  effort: "large"
+  references:
+    - .claude/commands/furrow:next.md
+    - bin/rws
+    - references/row-layout.md
+    - .furrow/furrow.yaml
+  files_touched:
+    - .claude/commands/furrow:next.md
+    - bin/rws
+    - bin/frw.d/scripts/
+    - references/row-layout.md
+    - .furrow/furrow.yaml
+- id: furrow-self-update-hook
+  title: "furrow-self-update-hook — session-start check for upstream Furrow changes"
+  context: |
+    Furrow is installed from a cloned repo, but nothing reminds the user when
+    upstream has advanced. Since Furrow is the user's own toolchain, main
+    advances whenever any row lands — a stale install can miss new skills,
+    hooks, or CLI commands.
+
+    Side note: user is considering removing the `install.sh --vendor` path
+    entirely (2026-04-22). This TODO assumes all installs are live-tracked
+    against upstream; if vendoring survives, a furrow.yaml opt-out would be
+    revisited, but that's not the intended direction.
+  work_needed: |
+    - Hook script that runs on session start (or post-compact) and checks
+      whether the installed Furrow is behind upstream main.
+    - Detection mechanism: compare installed VERSION vs GitHub main's VERSION
+      (decision baked). Assumes VERSION is bumped regularly. Commit-SHA
+      fallback if VERSION isn't current.
+    - Cache result — 24h TTL default, configurable via furrow.yaml.
+    - Respect offline mode (no network access → skip silently).
+    - Notification: session-start stdout message + surfaced in `/furrow:doctor`
+      output. No desktop notifications.
+    - Prompt-only (never auto-update). Aligns with "hard block over
+      auto-correct" feedback memory.
+    - Decide hook location: new `self-update-check.sh` vs extending
+      `auto-install.sh`. `auto-install` handles fresh-install drift (different
+      problem); lean toward new hook.
+    - Store last-check timestamp in `.furrow/_meta.yaml` (or analogous
+      durable location in the install dir).
+  source_type: "brain-dump"
+  status: active
+  created_at: "2026-04-22T15:03:13-04:00"
+  updated_at: "2026-04-22T15:03:13-04:00"
+  urgency: "low"
+  impact: "medium"
+  effort: "small"
+  references:
+    - bin/frw.d/hooks/auto-install.sh
+    - install.sh
+    - .claude/commands/furrow:update.md
+    - .claude/commands/furrow:doctor.md
+    - .furrow/_meta.yaml
+  files_touched:
+    - bin/frw.d/hooks/
+    - bin/frw.d/scripts/
+    - .furrow/_meta.yaml
+    - .furrow/almanac/rationale.yaml
+- id: furrow-work-worktree-integration
+  title: "furrow:work auto-creates a git worktree when not already on one"
+  context: |
+    Currently `/furrow:work` creates a row in the current branch. This conflates
+    row lifecycle with branch lifecycle and makes parallel rows impossible
+    without manual worktree setup. Auto-creating a worktree isolates row
+    artifacts, enables clean merge semantics for `/furrow:next`, and lets the
+    user run multiple rows concurrently via tmux/sessionizer (see
+    tmux-sessionizer-integration). Applies to both code-mode and research-mode
+    rows.
+  work_needed: |
+    - Detect whether CWD is already in a worktree for a matching row. If yes,
+      proceed. If no, auto-create (no prompt — decision baked) at a sibling
+      path: `../{repo}-rows/{row-name}/` is the chosen convention.
+    - When the Claude Code session was spawned on main and a worktree is
+      created, the session must explicitly call this out to the user ("row
+      created in worktree at X — your CC session is still on main; next
+      commands should be run from there"). Don't silently split state.
+    - On `/furrow:archive`: prompt the user to merge from main (not automatic),
+      but do NOT auto-remove the worktree. "Archive means done" is true for
+      row state; the worktree stays around for reference until the user
+      removes it.
+    - Handle user abort mid-`/furrow:work` — if worktree was created but the
+      row init failed, clean up the worktree to prevent orphans.
+    - Interaction with Furrow's file-ownership model: worktree creation is
+      orthogonal, but `bin/` commands must resolve `PROJECT_ROOT` correctly
+      from any worktree.
+    - Research-mode rows also get worktrees — they benefit from isolation even
+      when not touching code, and it keeps the flow uniform.
+  source_type: "brain-dump"
+  status: active
+  created_at: "2026-04-22T15:03:13-04:00"
+  updated_at: "2026-04-22T15:03:13-04:00"
+  urgency: "medium"
+  impact: "high"
+  effort: "medium"
+  references:
+    - bin/rws
+    - .claude/commands/furrow:work.md
+    - .claude/commands/furrow:archive.md
+    - skills/ideate.md
+  files_touched:
+    - bin/rws
+    - .claude/commands/furrow:work.md
+    - .claude/commands/furrow:archive.md
+    - skills/ideate.md
+    - .furrow/almanac/rationale.yaml
+- id: low-finding-disposition-policy
+  title: "LOW finding disposition policy — auto-TODO with audit trail"
+  context: |
+    Brain-dump 2026-04-22: "should we address LOW findings?" Review produces
+    findings at LOW/MEDIUM/HIGH. MEDIUM and HIGH have clear handling (block
+    or escalate). LOW has no policy — currently silent technical debt in
+    `reviews/*.yaml` with no downstream action. Over many rows this
+    aggregates into hidden scope.
+
+    Related: log-disposition-discipline (same shape for machine-generated
+    signals). patch-row-concept (patches are one outflow channel for LOW
+    findings that get promoted from TODO).
+  work_needed: |
+    - Auto-convert each LOW finding to a TODO with `source_type: low-finding`
+      at review completion (decision baked). Captures the debt without
+      blocking the row.
+    - TODO body includes finding text, file refs, reviewer rationale, and a
+      back-reference to the source row + review result.
+    - Dispositions are auditable (decision baked). If the user chose 'defer'
+      (or the TODO sits untriaged for long enough), there must be a forcing
+      function to revisit — e.g., `/furrow:triage` surfaces old low-finding
+      TODOs as a dedicated category, or `frw doctor` warns when they exceed
+      a threshold.
+    - LOW findings do NOT auto-compound into MEDIUM/HIGH (decision baked —
+      too magical). But: accumulated LOW findings against a single file
+      should be a reviewer signal and surface in summaries. Track as a
+      "many lows = red flag" heuristic in the review skill.
+    - LOW → patch-row flow: always go through TODO first (decision baked).
+      Patch-row promotion is a manual step; the TODO keeps the debt
+      discoverable until someone commits to fixing it.
+    - Enforcement point: the review step writes both the finding record
+      AND the generated TODO at gate time. Not optional.
+  source_type: "brain-dump"
+  status: active
+  created_at: "2026-04-22T15:03:13-04:00"
+  updated_at: "2026-04-22T15:03:13-04:00"
+  urgency: "medium"
+  impact: "medium"
+  effort: "small"
+  references:
+    - skills/review.md
+    - references/review-methodology.md
+    - references/eval-dimensions.md
+    - schemas/review-result.schema.json
+  files_touched:
+    - skills/review.md
+    - bin/rws
+    - bin/alm
+    - schemas/review-result.schema.json
+    - references/review-methodology.md
+  depends_on:
+    - patch-row-concept
+- id: patch-row-concept
+  title: "patch-row variant — lightweight harness mode for small fixes, bug fixes, accessibility issues"
+  context: |
+    Brain-dump 2026-04-22: "need a 'patch' concept for small fixes that should
+    still go through the harness." The current 7-step row ceremony is right
+    for non-trivial work but overkill for a typo fix, a one-line bug, an
+    accessibility regression, or a minor doc tweak. Those still benefit from
+    state tracking, review, and commit discipline — but don't need
+    ideation/research/plan/spec separately. Without a patch mode, small fixes
+    either bypass the harness entirely (losing the audit trail) or get
+    shoehorned into full rows (ceremony tax).
+
+    Scope includes: typos, one-line bug fixes, accessibility regressions,
+    doc nits, small refactors with obvious intent.
+  work_needed: |
+    - Define the patch-row shape. Probably: collapsed step sequence
+      (scope → implement → review), mandatory review, strict commit scope
+      (single file or small tightly-coupled group).
+    - Patch is a variant of code mode (decision baked — not a third
+      top-level mode). `rws init --mode code --variant patch` or similar
+      shape; prefer variant to avoid doubling the top-level mode surface.
+      Open to pushback during ideation if variant-of-code turns out to be
+      awkward in the state machine.
+    - Scope threshold for promoting patch → full row: LOC count as a soft
+      warn + judgement (decision baked). Harness flags when a patch grows
+      past threshold but user confirms promotion — no silent expansion.
+    - summary.md shape for patch: TBD in the row itself. Probably
+      significantly shorter template; may only need key-findings + diff
+      summary. Decide during implement.
+    - Specialist dispatch for patches: TBD in the row. Torn between
+      "no default, explicit opt-in only" and "specialist inferred from file
+      patterns." Decide during ideation with a concrete patch example in
+      hand.
+    - Scope-change CLIs (row-scope-change-clis-rws-change-mode-and-rws-rena)
+      handle mid-row reshape; this TODO handles starting-state shape. Not
+      redundant.
+  open_questions:
+    - "Does Furrow have any prior 'spike' concept (quick exploratory work) we can model patch after? (None found in current inventory — answer: no. Flag for design work in the row itself.)"
+    - "Is 'variant of code' the right primitive, or does state.json need a first-class `variant` field vs overloading `mode`? Decide in the row — could affect state.schema.json."
+    - "summary.md template shape for patch rows — TBD in row, not here."
+    - "Specialist assignment policy for patches — TBD in row, not here."
+  source_type: "brain-dump"
+  status: active
+  created_at: "2026-04-22T15:03:13-04:00"
+  updated_at: "2026-04-22T15:03:13-04:00"
+  urgency: "medium"
+  impact: "high"
+  effort: "medium"
+  references:
+    - bin/rws
+    - schemas/state.schema.json
+    - schemas/definition.schema.json
+    - .claude/rules/step-sequence.md
+  files_touched:
+    - bin/rws
+    - schemas/
+    - skills/
+    - .claude/rules/step-sequence.md
+    - .furrow/almanac/rationale.yaml
+# --- agent-host-portability-research sourced TODOs ---
+- id: sub-agent-normalization
+  title: "Sub-agent normalization — register specialists as Claude Code agent types with single-source generation"
+  context: |
+    Furrow specialists are currently packaged as slash-command templates
+    (.claude/commands/specialist:*.md + specialists/*.md). Dispatch instructions
+    in skills/shared/specialist-delegation.md, skills/shared/context-isolation.md,
+    and skills/implement.md tell the orchestrator to inline the template body
+    into Agent(prompt=...) with model resolved from frontmatter.
+
+    Failure mode observed 2026-04-22: orchestrator dispatched
+    Task(subagent_type="specialist:test-engineer") during wave-1 pre-review.
+    Claude Code's agent resolver has no such registered type — specialists are
+    slash commands, not agents — so dispatch errored with the full available-agents
+    list. The soft prompt-level norm ("inline the template body") silently allows
+    this class of mis-invocation.
+
+    Registering specialists as actual Claude Code agent types (.claude/agents/*.md)
+    converts soft norms into harness-enforced invariants:
+      1. Dispatch-time validation — typos in specialist names fail immediately
+         instead of silently fabricating or drifting.
+      2. Tool scoping — agent frontmatter can restrict tool allowlist
+         (e.g., relational-db-architect denied Write/Bash, only Read/Grep),
+         giving the harness real teeth instead of prompt-begging.
+      3. Durable persona + model pin — specialist system prompt persists for
+         the whole subagent session (not a user-message the model can drift
+         from), and model selection cannot be fumbled by the orchestrator.
+
+    This aligns with the "hard block over auto-correct" stance (see
+    memory/feedback_hard_block_over_autocorrect.md).
+
+    The cost to avoid: triple-sourced specialist definitions
+    (specialists/*.md + .claude/commands/specialist:*.md + .claude/agents/*.md)
+    drifting out of sync. Mitigation: treat specialists/*.md as the single source
+    of truth; generate the other two at install/update time from it.
+  work_needed: |
+    - Pick single source of truth (proposal: specialists/*.md) and document the
+      generation direction in rationale.yaml.
+    - Extend specialist frontmatter schema to carry what Claude Code agents need:
+      description (one-liner for agent index), tools (allowlist — decide per
+      specialist whether it gets Write/Edit/Bash or is read-only), model.
+      Reconcile with existing Furrow fields (name, type: specialist, model_hint).
+    - Add a generator (likely in bin/frw.d/scripts/ or install.sh) that emits
+      .claude/agents/specialist-{name}.md and .claude/commands/specialist:{name}.md
+      from specialists/*.md. Include a frw doctor check that fails if generated
+      files are stale relative to their source.
+    - Decide tool allowlists per specialist. Minimum: read-only specialists
+      (complexity-skeptic, security-engineer advisory roles) get no Write/Edit/Bash.
+      Implementer specialists (go-specialist, python-specialist) get full toolset
+      but file-ownership is still enforced by prompt + correction-limit hook.
+    - Update skills/shared/specialist-delegation.md and skills/implement.md to
+      prefer Agent(subagent_type="specialist-{name}") with prompt= carrying only
+      the curated per-deliverable context (assignment, acceptance_criteria,
+      file_ownership, summary.md excerpts). Remove the "inline template body"
+      instruction; that content now lives in the registered agent system prompt.
+    - Preserve composition: step-specific modifiers and code-quality skills
+      (red-flags.md, git-conventions.md) still need to reach the subagent. They
+      go in prompt= alongside the assignment, not in the agent system prompt
+      (those are per-call, not per-specialist).
+    - Add rationale.yaml entries for .claude/agents/ and the generator script.
+    - Install.sh must create .claude/agents/ and regenerate on update; auto-install
+      hook should detect missing/stale generated files.
+    - Add an anti-pattern callout in specialist-delegation.md documenting the
+      old inline-template pattern as deprecated (for any row that tries it).
+    - Migration: existing .claude/commands/specialist:*.md files must survive
+      until the generator ships — don't remove them in the same change that
+      introduces the generator.
+  source_type: "open-question"
+  status: active
+  created_at: "2026-04-22T15:03:13-04:00"
+  updated_at: "2026-04-22T15:03:13-04:00"
+  urgency: "medium"
+  impact: "high"
+  effort: "medium"
+  references:
+    - specialists/
+    - .claude/commands/
+    - skills/shared/specialist-delegation.md
+    - skills/shared/context-isolation.md
+    - skills/implement.md
+    - skills/orchestrator.md
+    - bin/frw.d/scripts/
+    - install.sh
+  files_touched:
+    - specialists/
+    - .claude/agents/
+    - .claude/commands/specialist:*.md
+    - skills/shared/specialist-delegation.md
+    - skills/implement.md
+    - install.sh
+    - bin/frw.d/scripts/
+    - .furrow/almanac/rationale.yaml
+  evidence:
+    - "2026-04-22: `Task(subagent_type=\"specialist:test-engineer\")` failed during wave-1 pre-review (agent type not found)."
+    - "2026-04-22: `Task(subagent_type=\"specialist:harness-engineer\")` failed during wave-1 D1 implement (same root cause — specialists aren't registered agents)."
+    - "2026-04-22: Orchestrator observed working inline on multi-deliverable work instead of dispatching sub-agents (see re-evaluate-dispatch-enforcement)."
+- id: tmux-sessionizer-integration
+  title: "tmux sessionizer integration — ship a Furrow-aware layout tied to the focused row"
+  context: |
+    Brain-dump 2026-04-22: "Can I use .tmux-sessionizer to stand up furrow
+    artifacts for me to iterate on?" A repo-root `.tmux-sessionizer` file
+    was recently deleted (prior prototype). The sessionizer should ship with
+    Furrow and tie to the focused row, not just the active worktree. Layout
+    must anticipate the live-review/iteration pattern described in
+    artifact-writing-defaults — panes for transient research files, open
+    questions, reviews that the user watches and comments on in real time.
+    Because it only activates when tmux-sessionizer is installed, shipping it
+    is low-risk (invisible to users who don't use tmux).
+  work_needed: |
+    - Prototype a `.tmux-sessionizer`-compatible script (ship with Furrow)
+      that, given the focused row, opens a layout with: main orchestrator
+      pane, watcher pane tailing state.json and summary.md, and additional
+      panes for transient artifacts (open-questions.md, research/*.md,
+      reviews/*.md — see artifact-writing-defaults).
+    - Layout should be adaptive — not a fixed 4-pane rigid split. Start from
+      a minimal 2-pane (main + watcher) and expand when artifacts appear.
+    - Tie to the focused row, not the worktree. Focus pointer (.furrow/.focused)
+      is the source of truth. When focus changes, the sessionizer should
+      re-layout or switch sessions.
+    - Address race conditions in the ordering of row-create / worktree-create
+      / session-launch. The sessionizer should be robust to being launched
+      before or after the worktree exists (e.g., retry with backoff, or gate
+      on worktree readiness).
+    - Out of scope: `tmux -g focus-events on` (dotfiles concern). Could be a
+      `frw doctor` warning if setting is unfriendly, but not a Furrow install
+      concern.
+  open_questions:
+    - "How to handle the race between row-create, worktree-create, and session-launch cleanly — is there a single canonical 'row ready' signal the sessionizer can wait on?"
+    - "Should focus-pointer changes auto-re-layout an existing session, or require a manual re-launch? Auto-re-layout feels surprising; manual is more predictable."
+  source_type: "brain-dump"
+  status: active
+  created_at: "2026-04-22T15:03:13-04:00"
+  updated_at: "2026-04-22T15:03:13-04:00"
+  urgency: "low"
+  impact: "medium"
+  effort: "small"
+  references:
+    - bin/rws
+    - .furrow/.focused
+    - .furrow/rows/
+  files_touched:
+    - .tmux-sessionizer
+    - bin/frw.d/scripts/
+    - .furrow/almanac/rationale.yaml
+  depends_on:
+    - furrow-work-worktree-integration
+    - artifact-writing-defaults
 - id: install-user-bin-worktree-pinning
   title: "frw install writes ~/.local/bin symlinks pointing at the invocation path, not the canonical source repo"
   context: |
@@ -2082,66 +2611,6 @@
     - bin/frw.d/hooks/auto-install.sh
     - bin/frw.d/scripts/rescue.sh
     - tests/integration/
-  status: active
-# --- Standalone: Merge-Process Skill ---
-- id: merge-process-skill
-  title: "Design a /furrow:merge skill — reconcile worktree branches back into main"
-  context: |
-    Merging completed worktree branches into main is currently ad-hoc and error-prone.
-    Observed failure modes from the Phase 2 merge session (2026-04-22):
-
-    1. **Consumer-project contamination**: Worktrees created by `frw launch-phase` run
-       install.sh-style logic that converts source-repo files (bin/alm, bin/rws, bin/sds,
-       .claude/rules/*) into symlinks pointing back at the source repo. If these
-       "install artifacts" get committed (as happened with parallel-agent-wiring's commit
-       a6eb8ff), a naive merge into main deletes real source files.
-    2. **Main-advance overlap**: Main can cherry-pick or re-apply a worktree's feature
-       commits before the worktree is merged. Straight merge duplicates the work; conflict
-       resolution needs to know which side has the canonical version.
-    3. **Hook cascade lock-out**: A merge conflict in `bin/frw.d/lib/common.sh` breaks every
-       Claude Code PreToolUse hook (because `frw hook *` sources common.sh), blocking all
-       Bash/Edit/Write tools until the file is manually repaired outside Claude Code.
-       Needs pre-merge detection or a bootstrap/rescue path.
-    4. **Stale row references**: Rows in the roadmap can reference TODOs that were
-       superseded or archived; merge prep should flag this.
-    5. **Heredoc false positives**: The script-guard hook matches `*frw.d/*` in the full
-       command string, so commit messages and docs mentioning frw.d/ paths trigger blocks.
-  work_needed: |
-    - Design a `/furrow:merge` command that orchestrates the full reconcile-and-land flow
-    - Pre-merge audit: detect symlink-ification, flag overlapping commits vs main, list
-      artifacts-only additions vs substantive feature changes
-    - Classify each worktree commit: safe / redundant-with-main / destructive / mixed
-    - Auto-resolution strategy for "protected files" (bin/*, .claude/rules/*, .gitignore)
-      — always prefer HEAD when the worktree's change is install-artifact symlink-ification
-    - Pre-merge check: ensure bin/frw.d/lib/common.sh parses (syntax-check before merge
-      creates a window where the hooks themselves break)
-    - Bootstrap rescue: if common.sh gets into a broken state mid-merge, provide a way to
-      restore it that bypasses hook sourcing (e.g., a `frw rescue` subcommand in a file that
-      doesn't depend on common.sh)
-    - Post-merge verification: run `frw doctor`, confirm no bin/ file deletions slipped
-      through, confirm hooks still parse
-    - Artifact reconciliation: for `.furrow/rows/*/` additions, confirm each row is
-      archived and its source_todo is closed in seeds.jsonl
-    - Seeds.jsonl ordering: currently conflict-prone; consider sorting by created_at or
-      grouping by id to reduce conflicts
-    - Script-guard heredoc false positives: either whitelist git commands, or don't match
-      paths inside quoted strings
-  references:
-    - bin/frw.d/scripts/launch-phase.sh
-    - bin/frw.d/hooks/script-guard.sh
-    - bin/frw.d/lib/common.sh
-    - .claude/settings.json
-    - commands/
-  source_type: "brain-dump"
-  created_at: "2026-04-22T00:00:00Z"
-  updated_at: "2026-04-22T00:00:00Z"
-  urgency: "medium"
-  impact: "high"
-  effort: "medium"
-  files_touched:
-    - commands/
-    - bin/frw.d/scripts/
-    - bin/frw.d/hooks/
   status: active
 - id: ac-10-e2e-fixture-split-across-contaminated-stop-a
   title: AC-10 e2e fixture split across contaminated-stop and safe-happy-path
@@ -2251,480 +2720,102 @@
   created_at: "2026-04-23T11:12:30-04:00"
   updated_at: "2026-04-23T11:12:30-04:00"
   source_work_unit: install-and-merge
-# --- agent-host-portability-research sourced TODOs ---
-- id: sub-agent-normalization
-  title: "Sub-agent normalization — register specialists as Claude Code agent types with single-source generation"
-  context: |
-    Furrow specialists are currently packaged as slash-command templates
-    (.claude/commands/specialist:*.md + specialists/*.md). Dispatch instructions
-    in skills/shared/specialist-delegation.md, skills/shared/context-isolation.md,
-    and skills/implement.md tell the orchestrator to inline the template body
-    into Agent(prompt=...) with model resolved from frontmatter.
-
-    Failure mode observed 2026-04-22: orchestrator dispatched
-    Task(subagent_type="specialist:test-engineer") during wave-1 pre-review.
-    Claude Code's agent resolver has no such registered type — specialists are
-    slash commands, not agents — so dispatch errored with the full available-agents
-    list. The soft prompt-level norm ("inline the template body") silently allows
-    this class of mis-invocation.
-
-    Registering specialists as actual Claude Code agent types (.claude/agents/*.md)
-    converts soft norms into harness-enforced invariants:
-      1. Dispatch-time validation — typos in specialist names fail immediately
-         instead of silently fabricating or drifting.
-      2. Tool scoping — agent frontmatter can restrict tool allowlist
-         (e.g., relational-db-architect denied Write/Bash, only Read/Grep),
-         giving the harness real teeth instead of prompt-begging.
-      3. Durable persona + model pin — specialist system prompt persists for
-         the whole subagent session (not a user-message the model can drift
-         from), and model selection cannot be fumbled by the orchestrator.
-
-    This aligns with the "hard block over auto-correct" stance (see
-    memory/feedback_hard_block_over_autocorrect.md).
-
-    The cost to avoid: triple-sourced specialist definitions
-    (specialists/*.md + .claude/commands/specialist:*.md + .claude/agents/*.md)
-    drifting out of sync. Mitigation: treat specialists/*.md as the single source
-    of truth; generate the other two at install/update time from it.
-  work_needed: |
-    - Pick single source of truth (proposal: specialists/*.md) and document the
-      generation direction in rationale.yaml.
-    - Extend specialist frontmatter schema to carry what Claude Code agents need:
-      description (one-liner for agent index), tools (allowlist — decide per
-      specialist whether it gets Write/Edit/Bash or is read-only), model.
-      Reconcile with existing Furrow fields (name, type: specialist, model_hint).
-    - Add a generator (likely in bin/frw.d/scripts/ or install.sh) that emits
-      .claude/agents/specialist-{name}.md and .claude/commands/specialist:{name}.md
-      from specialists/*.md. Include a frw doctor check that fails if generated
-      files are stale relative to their source.
-    - Decide tool allowlists per specialist. Minimum: read-only specialists
-      (complexity-skeptic, security-engineer advisory roles) get no Write/Edit/Bash.
-      Implementer specialists (go-specialist, python-specialist) get full toolset
-      but file-ownership is still enforced by prompt + correction-limit hook.
-    - Update skills/shared/specialist-delegation.md and skills/implement.md to
-      prefer Agent(subagent_type="specialist-{name}") with prompt= carrying only
-      the curated per-deliverable context (assignment, acceptance_criteria,
-      file_ownership, summary.md excerpts). Remove the "inline template body"
-      instruction; that content now lives in the registered agent system prompt.
-    - Preserve composition: step-specific modifiers and code-quality skills
-      (red-flags.md, git-conventions.md) still need to reach the subagent. They
-      go in prompt= alongside the assignment, not in the agent system prompt
-      (those are per-call, not per-specialist).
-    - Add rationale.yaml entries for .claude/agents/ and the generator script.
-    - Install.sh must create .claude/agents/ and regenerate on update; auto-install
-      hook should detect missing/stale generated files.
-    - Add an anti-pattern callout in specialist-delegation.md documenting the
-      old inline-template pattern as deprecated (for any row that tries it).
-    - Migration: existing .claude/commands/specialist:*.md files must survive
-      until the generator ships — don't remove them in the same change that
-      introduces the generator.
-  source_type: "open-question"
+- id: tighten-test-isolation-guard-ac-1-ac-5-wording-vs
+  title: Tighten test-isolation-guard AC-1/AC-5 wording vs literal-vs-behavioral reader divergence
+  context: 'Review of post-install-hygiene flagged divergence: fresh reviewer PASS all 5 dimensions; codex (cross-model) FAIL on correctness + spec-compliance because test-sandbox-guard.sh uses $TMP/fake-repo (not the live repo) and $PROJECT_ROOT/bin/frw self-resets FURROW_ROOT via script-path. The implementation is defensible (tests need working frw; mutating the live repo in a test is unsafe) but the AC wording reads strictly. Follow-up: either rewrite AC-1/AC-5 to match the fake-repo pattern, or add a mocked-frw test variant that truly isolates the harness-invocation layer.'
+  work_needed: |-
+    - Decide: tighten AC wording OR add mocked-frw fixture
+    - If AC rewrite: update definition-shape.md example + any rows referencing AC-1 literal
+    - If mocked-frw: stub that resolves FURROW_ROOT from $TMP instead of script-path
+    - Close by rerunning cross-model review on test-isolation-guard
+  source_type: review-finding
   status: active
-  created_at: "2026-04-22T15:03:13-04:00"
-  updated_at: "2026-04-22T15:03:13-04:00"
-  urgency: "medium"
-  impact: "high"
-  effort: "medium"
-  references:
-    - specialists/
-    - .claude/commands/
-    - skills/shared/specialist-delegation.md
-    - skills/shared/context-isolation.md
-    - skills/implement.md
-    - skills/orchestrator.md
-    - bin/frw.d/scripts/
+  created_at: "2026-04-23T16:08:16-04:00"
+  updated_at: "2026-04-23T16:08:16-04:00"
+  source_work_unit: post-install-hygiene
+- id: clean-up-shellcheck-sc2154-sc2034-in-test-sandbox
+  title: Clean up shellcheck SC2154/SC2034 in test-sandbox-guard.sh and test-install-source-mode.sh
+  context: 'Review of post-install-hygiene flagged shellcheck warnings SC2154 at test-sandbox-guard.sh:64 (eval-assigned variable flagged as unreferenced) and SC2034 at test-install-source-mode.sh:85. Both false-positives for POSIX sh eval-assignment patterns. Annotate with # shellcheck disable or refactor to non-eval pattern.'
+  work_needed: |-
+    - Add # shellcheck disable=SC2154 at :64 of test-sandbox-guard.sh with rationale comment
+    - Add # shellcheck disable=SC2034 at :85 of test-install-source-mode.sh OR refactor the unused-var
+    - shellcheck -s sh should be clean after
+  source_type: review-finding
+  status: active
+  created_at: "2026-04-23T16:08:56-04:00"
+  updated_at: "2026-04-23T16:08:56-04:00"
+  source_work_unit: post-install-hygiene
+  files_touched:
+    - tests/integration/test-sandbox-guard.sh
+    - tests/integration/test-install-source-mode.sh
+- id: clean-up-shellcheck-sc2221-sc2222-in-bin-frw-d-hoo
+  title: Clean up shellcheck SC2221/SC2222 in bin/frw.d/hooks/append-learning.sh:105
+  context: Review of post-install-hygiene flagged a redundant case-pattern alternative at append-learning.sh:105 — '*/learnings.jsonl|*.furrow/rows/*/learnings.jsonl' where the first glob already matches everything the second would match. Functionally correct but not shellcheck-clean. Minor cosmetic cleanup.
+  work_needed: |-
+    - Simplify case pattern to just '*/learnings.jsonl'
+    - Confirm test-promote-learnings + test-migrate-learnings still pass (16+10 assertions)
+    - shellcheck -s sh bin/frw.d/hooks/append-learning.sh should be clean
+  source_type: review-finding
+  status: active
+  created_at: "2026-04-23T16:08:56-04:00"
+  updated_at: "2026-04-23T16:08:56-04:00"
+  source_work_unit: post-install-hygiene
+  files_touched:
+    - bin/frw.d/hooks/append-learning.sh
+- id: harness-level-fix-for-parallel-dispatch-git-index
+  title: Harness-level fix for parallel-dispatch git-index races (worktree-per-deliverable vs mutex vs serial-merge)
+  context: 'post-install-hygiene wave-2 dispatched 6 parallel specialist agents on one shared branch. Result: git index races caused commit message/content swaps (5232e94 has ac-10 message + xdg content; 9463108 has ac-10 content with clarifying message), orphaned-commit resets, and cross-deliverable staging contamination. Three learnings captured. Repeated parallel dispatch will keep hitting this. Fix candidates: (a) each agent runs in a git worktree, merges sequentially; (b) index mutex around commit operations; (c) agents build patches and orchestrator serially applies.'
+  work_needed: |-
+    - Evaluate the 3 candidates against Furrow's harness architecture
+    - Prototype the chosen approach
+    - Validate with a synthetic row that exercises parallel wave-2
+    - Update implement.md skill with the new dispatch contract
+  source_type: review-finding
+  status: active
+  created_at: "2026-04-23T16:08:57-04:00"
+  updated_at: "2026-04-23T16:08:57-04:00"
+  source_work_unit: post-install-hygiene
+- id: rebase-reword-commit-5232e94-message-ac-10-e2e-fix
+  title: Rebase-reword commit 5232e94 message (ac-10-e2e-fixture) OR accept misattribution
+  context: 'Due to wave-2 parallel-dispatch git-index race, commit 5232e94 has message ''test(merge-e2e): add full-pipeline fixture covering all five subphases'' but its tree actually contains the xdg-config-consumer-wiring files (common.sh, bin/rws, stop-ideation.sh, doctor-config-audit.sh, specialist-delegation.md, config-resolution.md, test-config-resolution.sh). Real ac-10 content landed in 9463108. Content is correct; only the attribution is swapped. Cosmetic — can rebase-reword or leave with a review note.'
+  work_needed: |-
+    - Decide: rebase-reword (risks force-push if already pushed), OR add a note in the ultimate /furrow:merge commit
+    - If reword: 'git rebase -i 5110add' and reword 5232e94 to 'feat(config): wire XDG resolver through gate_policy and preferred_specialists consumers'
+  source_type: review-finding
+  status: active
+  created_at: "2026-04-23T16:08:57-04:00"
+  updated_at: "2026-04-23T16:08:57-04:00"
+  source_work_unit: post-install-hygiene
+- id: resolve-test-hook-cascade-sh-no-hooks-source-commo
+  title: Resolve test-hook-cascade.sh 'no hooks source common.sh' invariant after stop-ideation.sh adoption
+  context: 'post-install-hygiene''s xdg-config-consumer-wiring changed stop-ideation.sh to source common.sh (for resolve_config_value) instead of common-minimal.sh. Existing invariant in tests/integration/test-hook-cascade.sh asserts ''no hooks reference lib/common.sh'' — that invariant now breaks. Options: (a) whitelist stop-ideation.sh in the test, (b) split the invariant, (c) move resolve_config_value into common-minimal.sh (rejected in spec: needs yq, not hook-safe).'
+  work_needed: |-
+    - Decide resolution: whitelist (simplest), split (most correct), or move-to-minimal (rejected)
+    - Update test-hook-cascade.sh accordingly
+    - Run test-hook-cascade.sh + adjacent suites to verify no cascade
+  source_type: review-finding
+  status: active
+  created_at: "2026-04-23T16:08:57-04:00"
+  updated_at: "2026-04-23T16:08:57-04:00"
+  source_work_unit: post-install-hygiene
+  files_touched:
+    - tests/integration/test-hook-cascade.sh
+    - bin/frw.d/hooks/stop-ideation.sh
+- id: wire-the-3-latent-git-pre-commit-hooks-bakfiles-ty
+  title: Wire the 3 latent git-pre-commit hooks (bakfiles, typechange, script-modes) or delete them
+  context: 'bin/frw.d/hooks/ contains three latent pre-commit-*.sh hooks that are not referenced from install.sh, .claude/settings.json, or any git-hooks install path: pre-commit-bakfiles.sh (pre-existing), pre-commit-typechange.sh (pre-existing), pre-commit-script-modes.sh (added by this row). They are complete shell scripts with hook_ functions but nothing invokes them. Decide whether to wire them via install.sh writing to .git/hooks/pre-commit, or remove them as dead code.'
+  work_needed: |-
+    - Inventory the three scripts + their intended triggers
+    - Decide: wire via install.sh .git/hooks/pre-commit chain, or delete
+    - If wire: extend install.sh to append each to .git/hooks/pre-commit (or write a dispatcher)
+    - If delete: remove scripts + any references
+  source_type: review-finding
+  status: active
+  created_at: "2026-04-23T16:08:57-04:00"
+  updated_at: "2026-04-23T16:08:57-04:00"
+  source_work_unit: post-install-hygiene
+  files_touched:
+    - bin/frw.d/hooks/pre-commit-bakfiles.sh
+    - bin/frw.d/hooks/pre-commit-typechange.sh
+    - bin/frw.d/hooks/pre-commit-script-modes.sh
     - install.sh
-  files_touched:
-    - specialists/
-    - .claude/agents/
-    - .claude/commands/specialist:*.md
-    - skills/shared/specialist-delegation.md
-    - skills/implement.md
-    - install.sh
-    - bin/frw.d/scripts/
-    - .furrow/almanac/rationale.yaml
-  evidence:
-    - "2026-04-22: `Task(subagent_type=\"specialist:test-engineer\")` failed during wave-1 pre-review (agent type not found)."
-    - "2026-04-22: `Task(subagent_type=\"specialist:harness-engineer\")` failed during wave-1 D1 implement (same root cause — specialists aren't registered agents)."
-    - "2026-04-22: Orchestrator observed working inline on multi-deliverable work instead of dispatching sub-agents (see re-evaluate-dispatch-enforcement)."
-
-- id: furrow-work-worktree-integration
-  title: "furrow:work auto-creates a git worktree when not already on one"
-  context: |
-    Currently `/furrow:work` creates a row in the current branch. This conflates
-    row lifecycle with branch lifecycle and makes parallel rows impossible
-    without manual worktree setup. Auto-creating a worktree isolates row
-    artifacts, enables clean merge semantics for `/furrow:next`, and lets the
-    user run multiple rows concurrently via tmux/sessionizer (see
-    tmux-sessionizer-integration). Applies to both code-mode and research-mode
-    rows.
-  work_needed: |
-    - Detect whether CWD is already in a worktree for a matching row. If yes,
-      proceed. If no, auto-create (no prompt — decision baked) at a sibling
-      path: `../{repo}-rows/{row-name}/` is the chosen convention.
-    - When the Claude Code session was spawned on main and a worktree is
-      created, the session must explicitly call this out to the user ("row
-      created in worktree at X — your CC session is still on main; next
-      commands should be run from there"). Don't silently split state.
-    - On `/furrow:archive`: prompt the user to merge from main (not automatic),
-      but do NOT auto-remove the worktree. "Archive means done" is true for
-      row state; the worktree stays around for reference until the user
-      removes it.
-    - Handle user abort mid-`/furrow:work` — if worktree was created but the
-      row init failed, clean up the worktree to prevent orphans.
-    - Interaction with Furrow's file-ownership model: worktree creation is
-      orthogonal, but `bin/` commands must resolve `PROJECT_ROOT` correctly
-      from any worktree.
-    - Research-mode rows also get worktrees — they benefit from isolation even
-      when not touching code, and it keeps the flow uniform.
-  source_type: "brain-dump"
-  status: active
-  created_at: "2026-04-22T15:03:13-04:00"
-  updated_at: "2026-04-22T15:03:13-04:00"
-  urgency: "medium"
-  impact: "high"
-  effort: "medium"
-  references:
-    - bin/rws
-    - .claude/commands/furrow:work.md
-    - .claude/commands/furrow:archive.md
-    - skills/ideate.md
-  files_touched:
-    - bin/rws
-    - .claude/commands/furrow:work.md
-    - .claude/commands/furrow:archive.md
-    - skills/ideate.md
-    - .furrow/almanac/rationale.yaml
-
-- id: tmux-sessionizer-integration
-  title: "tmux sessionizer integration — ship a Furrow-aware layout tied to the focused row"
-  context: |
-    Brain-dump 2026-04-22: "Can I use .tmux-sessionizer to stand up furrow
-    artifacts for me to iterate on?" A repo-root `.tmux-sessionizer` file
-    was recently deleted (prior prototype). The sessionizer should ship with
-    Furrow and tie to the focused row, not just the active worktree. Layout
-    must anticipate the live-review/iteration pattern described in
-    artifact-writing-defaults — panes for transient research files, open
-    questions, reviews that the user watches and comments on in real time.
-    Because it only activates when tmux-sessionizer is installed, shipping it
-    is low-risk (invisible to users who don't use tmux).
-  work_needed: |
-    - Prototype a `.tmux-sessionizer`-compatible script (ship with Furrow)
-      that, given the focused row, opens a layout with: main orchestrator
-      pane, watcher pane tailing state.json and summary.md, and additional
-      panes for transient artifacts (open-questions.md, research/*.md,
-      reviews/*.md — see artifact-writing-defaults).
-    - Layout should be adaptive — not a fixed 4-pane rigid split. Start from
-      a minimal 2-pane (main + watcher) and expand when artifacts appear.
-    - Tie to the focused row, not the worktree. Focus pointer (.furrow/.focused)
-      is the source of truth. When focus changes, the sessionizer should
-      re-layout or switch sessions.
-    - Address race conditions in the ordering of row-create / worktree-create
-      / session-launch. The sessionizer should be robust to being launched
-      before or after the worktree exists (e.g., retry with backoff, or gate
-      on worktree readiness).
-    - Out of scope: `tmux -g focus-events on` (dotfiles concern). Could be a
-      `frw doctor` warning if setting is unfriendly, but not a Furrow install
-      concern.
-  open_questions:
-    - "How to handle the race between row-create, worktree-create, and session-launch cleanly — is there a single canonical 'row ready' signal the sessionizer can wait on?"
-    - "Should focus-pointer changes auto-re-layout an existing session, or require a manual re-launch? Auto-re-layout feels surprising; manual is more predictable."
-  source_type: "brain-dump"
-  status: active
-  created_at: "2026-04-22T15:03:13-04:00"
-  updated_at: "2026-04-22T15:03:13-04:00"
-  urgency: "low"
-  impact: "medium"
-  effort: "small"
-  references:
-    - bin/rws
-    - .furrow/.focused
-    - .furrow/rows/
-  files_touched:
-    - .tmux-sessionizer
-    - bin/frw.d/scripts/
-    - .furrow/almanac/rationale.yaml
-  depends_on:
-    - furrow-work-worktree-integration
-    - artifact-writing-defaults
-
-- id: furrow-next-semantic-merge
-  title: "furrow:next semantic merge — read row artifacts for intelligent merge + per-deliverable squash"
-  context: |
-    Brain-dump 2026-04-22: "when merging in furrow:next, we should consider
-    the furrow artifacts to understand the reasoning behind the changes and
-    merge intelligently" and "merge trees should collapse commits rather than
-    push all commits." Today, `/furrow:next` merges with whatever git strategy
-    is the default. Row artifacts (definition.objective, acceptance_criteria,
-    plan.json waves, summary.md findings, review verdict) contain the
-    *semantic* shape of the change and should drive commit structure and
-    context surfacing for conflicts.
-
-    Significant overlap with the currently active merge/worktree work —
-    sequence carefully so this doesn't re-decide what that work lands.
-  work_needed: |
-    - Squash policy: per-deliverable as default (decision baked). Each
-      deliverable becomes one commit on the target branch. Falls back to
-      per-row only when the row has a single deliverable or deliverables are
-      trivially coupled.
-    - Generate squash commit messages from artifacts: title from
-      definition.objective or deliverable.name; body from summary.md Key
-      Findings + Recommendations; footer with gate history and specialist
-      assignments for traceability.
-    - Merge vs PR is configurable via furrow.yaml (decision baked). Direct
-      merge is faster; PR preserves review outside Furrow. Projects opt in.
-    - Conflict resolution: surface context to the human first — present the
-      row's rationale alongside any unresolved conflict rather than raw
-      `<<<<<<<` markers. LLM-driven merge is a trust leap, explicitly
-      deferred.
-    - Gate the merge on review verdict — only `pass` rows auto-merge;
-      `needs-revision` blocks; `fail` requires explicit override.
-    - CI signal interaction: if CI ran on individual wave commits and passed,
-      the squashed commit re-runs CI — note this as expected behavior in
-      docs; no special handling needed at the merge layer.
-  open_questions:
-    - "Determinism: which parts of the merge strategy are deterministic (squash, commit-message assembly) vs judgement-requiring (semantic conflict surfacing)? Deterministic parts should be testable end-to-end; non-deterministic parts need a different harness (maybe eval-style)."
-    - "How does this interact with the currently active merge/worktree work? Before implementing, audit that work's landed shape so decisions aren't duplicated or contradicted."
-  source_type: "brain-dump"
-  status: active
-  created_at: "2026-04-22T15:03:13-04:00"
-  updated_at: "2026-04-22T15:03:13-04:00"
-  urgency: "medium"
-  impact: "high"
-  effort: "large"
-  references:
-    - .claude/commands/furrow:next.md
-    - bin/rws
-    - references/row-layout.md
-    - .furrow/furrow.yaml
-  files_touched:
-    - .claude/commands/furrow:next.md
-    - bin/rws
-    - bin/frw.d/scripts/
-    - references/row-layout.md
-    - .furrow/furrow.yaml
-
-- id: furrow-self-update-hook
-  title: "furrow-self-update-hook — session-start check for upstream Furrow changes"
-  context: |
-    Furrow is installed from a cloned repo, but nothing reminds the user when
-    upstream has advanced. Since Furrow is the user's own toolchain, main
-    advances whenever any row lands — a stale install can miss new skills,
-    hooks, or CLI commands.
-
-    Side note: user is considering removing the `install.sh --vendor` path
-    entirely (2026-04-22). This TODO assumes all installs are live-tracked
-    against upstream; if vendoring survives, a furrow.yaml opt-out would be
-    revisited, but that's not the intended direction.
-  work_needed: |
-    - Hook script that runs on session start (or post-compact) and checks
-      whether the installed Furrow is behind upstream main.
-    - Detection mechanism: compare installed VERSION vs GitHub main's VERSION
-      (decision baked). Assumes VERSION is bumped regularly. Commit-SHA
-      fallback if VERSION isn't current.
-    - Cache result — 24h TTL default, configurable via furrow.yaml.
-    - Respect offline mode (no network access → skip silently).
-    - Notification: session-start stdout message + surfaced in `/furrow:doctor`
-      output. No desktop notifications.
-    - Prompt-only (never auto-update). Aligns with "hard block over
-      auto-correct" feedback memory.
-    - Decide hook location: new `self-update-check.sh` vs extending
-      `auto-install.sh`. `auto-install` handles fresh-install drift (different
-      problem); lean toward new hook.
-    - Store last-check timestamp in `.furrow/_meta.yaml` (or analogous
-      durable location in the install dir).
-  source_type: "brain-dump"
-  status: active
-  created_at: "2026-04-22T15:03:13-04:00"
-  updated_at: "2026-04-22T15:03:13-04:00"
-  urgency: "low"
-  impact: "medium"
-  effort: "small"
-  references:
-    - bin/frw.d/hooks/auto-install.sh
-    - install.sh
-    - .claude/commands/furrow:update.md
-    - .claude/commands/furrow:doctor.md
-    - .furrow/_meta.yaml
-  files_touched:
-    - bin/frw.d/hooks/
-    - bin/frw.d/scripts/
-    - .furrow/_meta.yaml
-    - .furrow/almanac/rationale.yaml
-
-- id: patch-row-concept
-  title: "patch-row variant — lightweight harness mode for small fixes, bug fixes, accessibility issues"
-  context: |
-    Brain-dump 2026-04-22: "need a 'patch' concept for small fixes that should
-    still go through the harness." The current 7-step row ceremony is right
-    for non-trivial work but overkill for a typo fix, a one-line bug, an
-    accessibility regression, or a minor doc tweak. Those still benefit from
-    state tracking, review, and commit discipline — but don't need
-    ideation/research/plan/spec separately. Without a patch mode, small fixes
-    either bypass the harness entirely (losing the audit trail) or get
-    shoehorned into full rows (ceremony tax).
-
-    Scope includes: typos, one-line bug fixes, accessibility regressions,
-    doc nits, small refactors with obvious intent.
-  work_needed: |
-    - Define the patch-row shape. Probably: collapsed step sequence
-      (scope → implement → review), mandatory review, strict commit scope
-      (single file or small tightly-coupled group).
-    - Patch is a variant of code mode (decision baked — not a third
-      top-level mode). `rws init --mode code --variant patch` or similar
-      shape; prefer variant to avoid doubling the top-level mode surface.
-      Open to pushback during ideation if variant-of-code turns out to be
-      awkward in the state machine.
-    - Scope threshold for promoting patch → full row: LOC count as a soft
-      warn + judgement (decision baked). Harness flags when a patch grows
-      past threshold but user confirms promotion — no silent expansion.
-    - summary.md shape for patch: TBD in the row itself. Probably
-      significantly shorter template; may only need key-findings + diff
-      summary. Decide during implement.
-    - Specialist dispatch for patches: TBD in the row. Torn between
-      "no default, explicit opt-in only" and "specialist inferred from file
-      patterns." Decide during ideation with a concrete patch example in
-      hand.
-    - Scope-change CLIs (row-scope-change-clis-rws-change-mode-and-rws-rena)
-      handle mid-row reshape; this TODO handles starting-state shape. Not
-      redundant.
-  open_questions:
-    - "Does Furrow have any prior 'spike' concept (quick exploratory work) we can model patch after? (None found in current inventory — answer: no. Flag for design work in the row itself.)"
-    - "Is 'variant of code' the right primitive, or does state.json need a first-class `variant` field vs overloading `mode`? Decide in the row — could affect state.schema.json."
-    - "summary.md template shape for patch rows — TBD in row, not here."
-    - "Specialist assignment policy for patches — TBD in row, not here."
-  source_type: "brain-dump"
-  status: active
-  created_at: "2026-04-22T15:03:13-04:00"
-  updated_at: "2026-04-22T15:03:13-04:00"
-  urgency: "medium"
-  impact: "high"
-  effort: "medium"
-  references:
-    - bin/rws
-    - schemas/state.schema.json
-    - schemas/definition.schema.json
-    - .claude/rules/step-sequence.md
-  files_touched:
-    - bin/rws
-    - schemas/
-    - skills/
-    - .claude/rules/step-sequence.md
-    - .furrow/almanac/rationale.yaml
-
-- id: low-finding-disposition-policy
-  title: "LOW finding disposition policy — auto-TODO with audit trail"
-  context: |
-    Brain-dump 2026-04-22: "should we address LOW findings?" Review produces
-    findings at LOW/MEDIUM/HIGH. MEDIUM and HIGH have clear handling (block
-    or escalate). LOW has no policy — currently silent technical debt in
-    `reviews/*.yaml` with no downstream action. Over many rows this
-    aggregates into hidden scope.
-
-    Related: log-disposition-discipline (same shape for machine-generated
-    signals). patch-row-concept (patches are one outflow channel for LOW
-    findings that get promoted from TODO).
-  work_needed: |
-    - Auto-convert each LOW finding to a TODO with `source_type: low-finding`
-      at review completion (decision baked). Captures the debt without
-      blocking the row.
-    - TODO body includes finding text, file refs, reviewer rationale, and a
-      back-reference to the source row + review result.
-    - Dispositions are auditable (decision baked). If the user chose 'defer'
-      (or the TODO sits untriaged for long enough), there must be a forcing
-      function to revisit — e.g., `/furrow:triage` surfaces old low-finding
-      TODOs as a dedicated category, or `frw doctor` warns when they exceed
-      a threshold.
-    - LOW findings do NOT auto-compound into MEDIUM/HIGH (decision baked —
-      too magical). But: accumulated LOW findings against a single file
-      should be a reviewer signal and surface in summaries. Track as a
-      "many lows = red flag" heuristic in the review skill.
-    - LOW → patch-row flow: always go through TODO first (decision baked).
-      Patch-row promotion is a manual step; the TODO keeps the debt
-      discoverable until someone commits to fixing it.
-    - Enforcement point: the review step writes both the finding record
-      AND the generated TODO at gate time. Not optional.
-  source_type: "brain-dump"
-  status: active
-  created_at: "2026-04-22T15:03:13-04:00"
-  updated_at: "2026-04-22T15:03:13-04:00"
-  urgency: "medium"
-  impact: "medium"
-  effort: "small"
-  references:
-    - skills/review.md
-    - references/review-methodology.md
-    - references/eval-dimensions.md
-    - schemas/review-result.schema.json
-  files_touched:
-    - skills/review.md
-    - bin/rws
-    - bin/alm
-    - schemas/review-result.schema.json
-    - references/review-methodology.md
-  depends_on:
-    - patch-row-concept
-
-- id: artifact-writing-defaults
-  title: "Artifact-writing defaults — long-form outputs go to files as first-class citizens"
-  context: |
-    Brain-dump 2026-04-22: "default to writing long reviews / open questions
-    to a file (i.e. at ideation, research synthesis, planning, etc)."
-    Currently skills vary in whether they push long-form content into
-    summary.md sections (which becomes noisy) or into dedicated files. Open
-    questions, reviewer critiques, deep research notes, and design debates
-    all have the "too big for summary, too important to lose" problem.
-
-    User wants to move the harness toward this style of interaction as a
-    first-class pattern — summary.md is an index + synthesis; deep content
-    lives in purpose-named files. This is a blanket rule, not a threshold
-    rule. Absorbs the prior `scratchpad-md-session-persistent-actionables-layer`
-    TODO (scratchpad is one specific artifact in the general pattern).
-  work_needed: |
-    - Audit each step skill (ideate, research, plan, spec, decompose,
-      implement, review) for places where content belongs in files instead
-      of summary. Rewrite instructions to bias toward file creation.
-    - Define the canonical artifact set. Blurry today — likely candidates:
-      `open-questions.md`, `decisions.md`, `research/*.md`, `reviews/*.md`,
-      `scratchpad.md` (absorbed from prior TODO). Scrape Furrow / CC chat
-      logs for instances where the user has manually requested this pattern
-      to identify real-world artifact types worth canonicalizing.
-    - Artifacts are free-form markdown, not schema-validated (decision
-      baked). These are human/agent writing spaces — structure would
-      suffocate them.
-    - Update `references/row-layout.md` to canonicalize the file structure.
-    - Update `rws regenerate-summary` / `rws validate-summary` to
-      auto-maintain an "Artifacts" section in summary.md that indexes files
-      present in the row.
-    - Consider `rws add-artifact <row> <type> <name>` to stub a file with a
-      minimal template.
-    - Context-budget interaction: artifacts on disk are on-demand (not
-      injected), which makes the step budget easier. Reinforce in context
-      budget docs.
-    - Tie to tmux-sessionizer-integration: live-review/iteration on these
-      files is a key UX — artifacts should be where the user comments and
-      the agent responds.
-    - Backward compat: existing rows with long summary sections stay as-is;
-      convention applies going forward.
-  open_questions:
-    - "Canonical artifact list is blurry today. Before codifying, scrape Furrow + CC chat logs for manual requests to write content to files — those instances are the ground truth for what deserves a first-class slot."
-    - "Does scratchpad.md (absorbed from the prior TODO) have host-portability concerns that still apply here, or is the absorption complete? (Prior TODO called out CC+Pi host-independence — preserve that constraint when designing.)"
-  source_type: "brain-dump"
-  status: active
-  created_at: "2026-04-22T15:03:13-04:00"
-  updated_at: "2026-04-22T15:03:13-04:00"
-  urgency: "medium"
-  impact: "high"
-  effort: "medium"
-  references:
-    - skills/
-    - references/row-layout.md
-    - bin/rws
-  files_touched:
-    - skills/
-    - references/row-layout.md
-    - bin/rws
-    - .furrow/almanac/rationale.yaml
-  absorbs:
-    - scratchpad-md-session-persistent-actionables-layer
-

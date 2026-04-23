@@ -1,0 +1,227 @@
+objective: >-
+  Close the 8 review-findings from the install-and-merge post-ship audit:
+  harden test isolation so integration tests cannot mutate the live worktree,
+  scope cross-model review diffs per deliverable, wire XDG config fields to
+  their runtime consumers, consolidate schema validation for reintegration,
+  fix the rescue.sh exec contract, repair the learnings promotion script,
+  unify specialist symlink handling as install-time artifacts, and add the
+  missing single-fixture AC-10 e2e coverage.
+
+deliverables:
+  - name: test-isolation-guard
+    acceptance_criteria:
+      - "Every integration test under tests/integration/test-install-*.sh and tests/integration/test-upgrade-*.sh runs in a fully sandboxed environment: HOME, XDG_CONFIG_HOME, XDG_STATE_HOME, and FURROW_ROOT all point inside $TMP. No code path can resolve to the live checkout."
+      - "Shared test helper tests/integration/lib/sandbox.sh exports a setup_sandbox function that creates $TMP/{home,config,state,fixture}, exports the four env vars, and returns the fixture dir. All install/upgrade tests adopt it."
+      - "Pre-test snapshot + post-test assertion: before each test, capture the sha256 of targets for .claude/commands/specialist:*.md, bin/alm, bin/rws, bin/sds, .furrow/almanac/todos.yaml, and .claude/rules/*.md. After each test, compare; any drift fails the test with the offending path."
+      - "CI-level guard in tests/integration/run-all.sh: assert 'git status --porcelain' is empty before the suite runs and is empty after. Non-empty on either side is a hard failure with the diff printed."
+      - "Regression test deliberately breaks isolation (points FURROW_ROOT at the repo root) and confirms the guard catches it."
+      - "Docs: a short section in docs/architecture/testing.md describes the sandbox contract and the env-var resolution order every test must honor."
+    specialist: test-engineer
+    file_ownership:
+      - "tests/integration/lib/sandbox.sh"
+      - "tests/integration/helpers.sh"
+      - "tests/integration/run-all.sh"
+      - "tests/integration/test-install-*.sh"
+      - "tests/integration/test-upgrade-*.sh"
+      - "tests/integration/test-sandbox-guard.sh"
+      - "docs/architecture/testing.md"
+
+  - name: script-modes-fix
+    acceptance_criteria:
+      - "All 20 scripts under bin/frw.d/scripts/ that are currently mode 100644 are promoted to 100755 via git update-index --chmod=+x. Spec-time verification (git ls-files -s) confirmed 20 of 30 affected (research's '19' figure was off-by-one); rescue.sh is the one that surfaced the bug (its dispatch site exec's it directly) but the other 19 are latent bugs fixed as a side effect."
+      - "bin/frw rescue --diagnose exits 0 on a clean tree; regression test asserts this under tests/integration/test-rescue.sh."
+      - "New hook bin/frw.d/hooks/pre-commit-script-modes.sh asserts every bin/frw.d/scripts/*.sh is 100755 and fails the commit on any 100644 addition. Hook is registered via install.sh's merge into .claude/settings.json (the project's hook model — not .git/hooks symlinks)."
+      - "No dispatcher special-case: bin/frw's exec path for rescue is identical to every other script."
+      - "Regression test tests/integration/test-script-modes.sh asserts 100% of bin/frw.d/scripts/*.sh are 100755 and fails loudly if any new script lands as 100644."
+    depends_on: [test-isolation-guard]
+    specialist: harness-engineer
+    file_ownership:
+      - "bin/frw.d/hooks/pre-commit-script-modes.sh"
+      - "tests/integration/test-rescue.sh"
+      - "tests/integration/test-script-modes.sh"
+    # Note: script-modes-fix changes the git mode of 20 existing scripts but does NOT
+    # modify their content. File-mode changes are a metadata operation not captured
+    # by content-level file_ownership; the mode-promotion commit is reviewed against
+    # this deliverable's AC by the test-script-modes.sh assertion, not by file_ownership
+    # match. Other deliverables that own those script files by content (e.g.,
+    # cross-model-per-deliverable-diff → cross-model-review.sh) retain their ownership.
+
+  - name: cross-model-per-deliverable-diff
+    acceptance_criteria:
+      - "bin/frw.d/scripts/cross-model-review.sh computes a per-deliverable diff by reading file_ownership globs from definition.yaml and invoking 'git log -p --no-merges <base>..HEAD -- <globs>'. This outputs metadata + patches in one stream, correctly handling non-contiguous commits (unlike 'git diff <first>^..<last>' which would include unrelated commits in the range). --follow is omitted since it is single-path only; renames are not traced — acceptable per scope."
+      - "If a deliverable has no file_ownership declared, the reviewer falls back to base..HEAD with a warning in the review record, and unplanned-changes is marked 'not-applicable' rather than failing."
+      - "Review record (reviews/<deliverable>.json) includes a 'diff_scope' field: {base, commits[], files_matched[]} so the reviewer output is reproducible and auditable."
+      - "Regression test: tests/integration/test-cross-model-scope.sh builds a two-deliverable fixture row where deliverable A legitimately touches only a/, deliverable B legitimately touches only b/. The reviewer for A sees only A's commits; unplanned-changes does not flag B's commits."
+      - "No change to codex invocation contract — only the diff input is scoped. All logic changes live in bin/frw.d/scripts/cross-model-review.sh; bin/frw dispatcher is untouched."
+      - "This deliverable also wires cross-model-review.sh's read of cross_model.provider to the resolve_config_value resolver introduced by xdg-config-consumer-wiring (one-line adoption; the resolver lives in common.sh)."
+    depends_on: [test-isolation-guard, xdg-config-consumer-wiring]
+    specialist: harness-engineer
+    file_ownership:
+      - "bin/frw.d/scripts/cross-model-review.sh"
+      - "tests/integration/test-cross-model-scope.sh"
+
+  - name: reintegration-schema-consolidation
+    acceptance_criteria:
+      - "bin/frw.d/scripts/generate-reintegration.sh validates its output via the same Python Draft2020-12Validator subprocess used by get-reintegration-json — not inline jq subsets. A shared helper bin/frw.d/lib/validate-json.sh exposes a validate_json <schema_path> <json_path> function both scripts call."
+      - "schemas/reintegration.schema.json adds test_results.evidence_path to its required fields (per the AC-R2 contract)."
+      - "Existing generator-side jq validation block (current generate-reintegration.sh lines ~357-400) is removed."
+      - "Regression test: tests/integration/test-reintegration-schema.sh feeds the generator a malformed git state that would produce invalid JSON; asserts the generator exits non-zero with the validator's error message, not a silent pass."
+      - "Second regression: a well-formed run produces JSON that validates against the schema AND round-trips through get-reintegration-json unchanged."
+      - "Forward-looking migration insurance: no reintegration*.json files exist on disk today (research confirmed empty set), so an active migration is a no-op. A migration script bin/frw.d/scripts/migrate-reintegration-evidence-path.sh is still authored and tested — tests/integration/test-reintegration-backcompat.sh constructs a synthetic pre-migration archived file (missing evidence_path) and asserts the script produces a schema-valid output. If future archived rows land before this row merges, the walk-and-migrate path is ready."
+    depends_on: [test-isolation-guard]
+    specialist: harness-engineer
+    file_ownership:
+      - "bin/frw.d/scripts/generate-reintegration.sh"
+      - "bin/frw.d/scripts/get-reintegration-json.sh"
+      - "bin/frw.d/lib/validate-json.sh"
+      - "bin/frw.d/scripts/migrate-reintegration-evidence-path.sh"
+      - "schemas/reintegration.schema.json"
+      - "tests/integration/test-reintegration-schema.sh"
+      - "tests/integration/test-reintegration-backcompat.sh"
+
+  - name: xdg-config-consumer-wiring
+    acceptance_criteria:
+      - "Audit table (docs/architecture/config-resolution.md) lists every field in ~/.config/furrow/config.yaml with its runtime consumer, the resolver call site, and the test that exercises the project→XDG→compiled-in fallback chain. No field is left 'cataloged but unwired'."
+      - "cross_model.provider: resolver helper is available in common.sh; cross-model-review.sh adoption of the helper is delegated to the cross-model-per-deliverable-diff deliverable (which already owns that script and depends on this deliverable). Test under tests/integration/test-config-resolution.sh invokes cross-model-review.sh with project and XDG fixtures to confirm all three layers resolve correctly after both deliverables land."
+      - "gate_policy default: bin/rws gate-policy reads from the resolver; unset project + XDG default both honored; regression test covers each layer. bin/rws change is owned by this deliverable."
+      - "preferred_specialists: CREATES the first runtime consumer (research confirmed zero consumers exist today — write-only at install time). skills/shared/specialist-delegation.md gains a preferred-specialist lookup step that calls resolve_config_value 'preferred_specialists.<role>' during decompose-time selection, with fallback to the current selection logic when unset. Regression test with a project override + an XDG fallback + no-override-default confirms all three layers and the fallback. Specialist-delegation.md change and the xdg schema docs for preferred_specialists (role-name → specialist-name map) are both owned by this deliverable."
+      - "Canonical resolver helper is the existing resolve_config_value() at bin/frw.d/lib/common.sh:121-144 (three-tier: project .furrow/furrow.yaml → XDG ~/.config/furrow/config.yaml → FURROW_ROOT .furrow/furrow.yaml). Research confirmed this helper already implements the desired semantics. A thin caller-side defaulting convention is adopted: consumers use 'value=$(resolve_config_value key) || value=\"default\"'. No new duplicate helper is introduced. Ad-hoc yaml-reads in runtime-facing code (cross-model-review.sh, bin/rws, stop-ideation.sh) are replaced with calls to resolve_config_value."
+      - "Doctor-level audit: bin/frw.d/scripts/doctor-config-audit.sh enumerates every known config field against the resolver's call sites and emits a non-gating warning if any field lacks a consumer. Invoked from the existing doctor subcommand via a single shell-out — bin/frw itself is not modified."
+    depends_on: [test-isolation-guard]
+    specialist: harness-engineer
+    file_ownership:
+      - "bin/frw.d/lib/common.sh"
+      - "bin/frw.d/scripts/doctor-config-audit.sh"
+      - "bin/rws"
+      - "bin/frw.d/hooks/stop-ideation.sh"
+      - "skills/shared/specialist-delegation.md"
+      - "docs/architecture/config-resolution.md"
+      - "tests/integration/test-config-resolution.sh"
+
+  - name: promote-learnings-schema-fix
+    acceptance_criteria:
+      - "Schema canonicalization: research found silent drift — 4 archived rows use an OLD schema (id, timestamp, category, content, context, source_task, source_step, promoted) and only install-and-merge uses the NEW schema (ts, step, kind, summary, detail, tags). This deliverable establishes the new schema as canonical and migrates the 4 old-format rows."
+      - "schemas/learning.schema.json defines the new-schema contract. skills/shared/learnings-protocol.md is updated to document ONLY the new schema; old-schema references removed."
+      - "One-time migration: bin/frw.d/scripts/migrate-learnings-schema.sh rewrites the 4 old-format rows' learnings.jsonl files, mapping old→new fields (timestamp→ts, source_step→step, category→kind, content→summary, context→detail; drop promoted/id/source_task). Unmappable records are logged to a migration-report.md in the row directory for manual review rather than silently dropped."
+      - "commands/lib/promote-learnings.sh reads ONLY the new schema. Output for each learning shows non-null values for summary, kind, step, tags."
+      - "bin/frw.d/hooks/append-learning.sh validates every learnings.jsonl append against schemas/learning.schema.json. Writes that fail validation exit non-zero; append is refused."
+      - "Regression test: tests/integration/test-promote-learnings.sh seeds a fixture row with 3 known new-schema learnings and asserts promote-learnings.sh prints all three with populated fields."
+      - "Regression test: feeding a malformed learning through the append hook exits non-zero with the validator's path-to-error message."
+      - "Regression test: tests/integration/test-migrate-learnings.sh seeds a fixture row with old-schema learnings, runs the migration script, and asserts the resulting file is schema-valid + no fields were silently dropped."
+    depends_on: [test-isolation-guard]
+    specialist: harness-engineer
+    file_ownership:
+      - "commands/lib/promote-learnings.sh"
+      - "bin/frw.d/hooks/append-learning.sh"
+      - "bin/frw.d/scripts/migrate-learnings-schema.sh"
+      - "schemas/learning.schema.json"
+      - "skills/shared/learnings-protocol.md"
+      - "tests/integration/test-promote-learnings.sh"
+      - "tests/integration/test-migrate-learnings.sh"
+      - ".furrow/rows/*/learnings.jsonl"
+
+  - name: specialist-symlink-unification
+    acceptance_criteria:
+      - "All 22 .claude/commands/specialist:*.md entries are removed from the git index. .gitignore continues to exclude the pattern; no specialist symlinks are committed in the source repo."
+      - "install.sh (and bin/frw.d/install.sh) creates the full set of 22 symlinks at install time, pointing to specialists/ under the install dir. Install is the sole producer of these files."
+      - "Install-time validator: after symlink creation, install.sh asserts each symlink resolves to an existing specialists/*.md file; any unresolved target fails installation with the offending name."
+      - "docs/architecture/self-hosting.md (existing, 110 lines from install-and-merge) gains a new 'Specialist symlinks are install-time artifacts' subsection documenting: (a) the 22 symlinks are gitignored and produced by install.sh at install time, (b) install.sh discovers the set via glob 'specialists/*.md' filtered by '_*' prefix, (c) the source-mode self-hosting install recreates them with relative targets ('../../specialists/<name>.md'). A new docs/architecture/install-architecture.md is NOT created — research found self-hosting.md is the natural owner of this section."
+      - "Regression test: tests/integration/test-specialist-symlinks.sh runs install.sh into a fresh fixture AND invokes install.sh against a copy-of-this-repo fixture (self-hosting path); asserts exactly 22 symlinks exist and all resolve, AND that 'git status --porcelain' is empty (symlinks gitignored) in the self-hosting run."
+      - "Self-hosting: in the source repo (this checkout), install.sh produces the same 22 symlinks locally; they do not appear in 'git status' because .gitignore excludes them. The regression test above exercises this path explicitly."
+    depends_on: [test-isolation-guard]
+    specialist: harness-engineer
+    file_ownership:
+      - ".gitignore"
+      - "install.sh"
+      - "bin/frw.d/install.sh"
+      - "docs/architecture/self-hosting.md"
+      - "tests/integration/test-specialist-symlinks.sh"
+      - ".claude/commands/specialist:*.md"
+
+  - name: ac-10-e2e-fixture
+    acceptance_criteria:
+      - "tests/integration/test-merge-e2e.sh gains a new fixture 'full-pipeline' that exercises AC-10 end-to-end: install-artifact contamination + legitimate feature commits + one protected-file conflict, running through all five /furrow:merge subphases (audit → classify → resolve-plan → execute → verify)."
+      - "Existing contaminated-stop and safe-happy-path fixtures remain untouched as focused sub-phase coverage."
+      - "Final-state assertions after the new fixture runs: (a) frw doctor exits 0, (b) all bin/frw.d/hooks/*.sh parse cleanly, (c) seeds.jsonl sort invariant holds, (d) todos.yaml sort invariant holds, (e) bin/alm, bin/rws, bin/sds remain executable (mode 100755)."
+      - "Uses the test-isolation-guard sandbox helper (setup_sandbox) — this fixture must not mutate the live worktree under any failure mode. The sandbox guard's 'git status --porcelain empty' assertion is gitignore-aware, so the 22 install-time specialist symlinks produced by install.sh (specialist-symlink-unification deliverable) do not appear in the check and cannot cause flakes when both deliverables land in the same wave."
+      - "Fixture seed data + git commit log are deterministic (fixed dates/authors via GIT_COMMITTER_DATE etc.) so assertions are reproducible across machines."
+    specialist: test-engineer
+    depends_on: [test-isolation-guard]
+    file_ownership:
+      - "tests/integration/test-merge-e2e.sh"
+      - "tests/integration/fixtures/merge-e2e/full-pipeline/**"
+
+context_pointers:
+  - path: .furrow/almanac/todos.yaml
+    note: "Entries 2146-2253 — full context and work_needed for the 8 review-findings."
+  - path: .furrow/almanac/roadmap.yaml
+    note: "Phase 1 rationale: 'Test-isolation fix leads — tests corrupted live-repo symlinks, a safety issue.'"
+  - path: .furrow/rows/install-and-merge/definition.yaml
+    note: "Shipped policy baseline: install-time artifacts, XDG paths, merge-policy schema. Do not redesign these — this row enforces/extends them."
+  - path: tests/integration/test-install-*.sh
+    note: "Primary target for the isolation audit; current tests resolved env vars outside $TMP."
+  - path: tests/integration/test-upgrade-*.sh
+    note: "Same isolation concern as test-install-*."
+  - path: tests/integration/test-merge-e2e.sh
+    note: "Contains contaminated-stop and safe-happy-path; gains full-pipeline fixture."
+  - path: bin/frw.d/scripts/rescue.sh
+    note: "Committed 100644 — must go to 100755."
+  - path: bin/frw
+    note: "Dispatcher for cross-model-review; gains per-deliverable diff scoping."
+  - path: bin/frw.d/scripts/cross-model-review.sh
+    note: "Computes the diff passed to codex; rewire to use commit-range per deliverable."
+  - path: bin/frw.d/scripts/generate-reintegration.sh
+    note: "Inline jq validation block to remove; replace with shared validator helper."
+  - path: bin/frw.d/scripts/get-reintegration-json.sh
+    note: "Existing Python Draft2020-12Validator call — pattern to replicate."
+  - path: schemas/reintegration.schema.json
+    note: "Add test_results.evidence_path to required; single source of truth."
+  - path: bin/frw.d/lib/common.sh
+    note: "Resolver helpers; gains resolve_config_value for XDG wiring."
+  - path: commands/lib/promote-learnings.sh
+    note: "Schema mismatch — reads (title, category) but jsonl has (summary, kind, step, tags)."
+  - path: .gitignore
+    note: "Line 30 excludes .claude/commands/specialist:* — policy stays; remove the 14 tracked entries to match."
+  - path: install.sh
+    note: "Install-time producer of the 22 specialist symlinks after unification."
+  - path: docs/architecture/self-hosting.md
+    note: "Existing 110-line file from install-and-merge — extend with the specialist-symlinks-as-install-artifacts subsection."
+  - path: bin/frw.d/lib/common.sh
+    symbols: ["resolve_config_value"]
+    note: "Existing three-tier resolver at lines 121-144 — canonical consumer for xdg-config-consumer-wiring; do not duplicate."
+  - path: bin/frw.d/scripts/check-artifacts.sh
+    symbols: []
+    note: "Reference impl (lines 77-106) for reading file_ownership via yq — pattern to reuse in cross-model-per-deliverable-diff."
+  - path: bin/frw.d/scripts/validate-definition.sh
+    note: "Existing Draft202012Validator invocation pattern (lines 36-55) — extract into the shared bin/frw.d/lib/validate-json.sh helper."
+  - path: specialists/_meta.yaml
+    note: "Specialist manifest; informational only — install.sh uses glob discovery, not this file."
+  - path: .furrow/rows/post-install-hygiene/research/synthesis.md
+    note: "Research synthesis consolidating the 4 per-topic findings — primary plan-time reference."
+  - path: docs/architecture/config-resolution.md
+    note: "Audit table documenting each config field and its runtime consumer."
+  - path: docs/architecture/testing.md
+    note: "Sandbox contract and env-var resolution order for integration tests."
+
+constraints:
+  - "Safety-first ordering: test-isolation-guard lands before every other deliverable that adds or modifies integration tests. Enforced by explicit depends_on entries on script-modes-fix, cross-model-per-deliverable-diff, reintegration-schema-consolidation, xdg-config-consumer-wiring, promote-learnings-schema-fix, specialist-symlink-unification, and ac-10-e2e-fixture — making test-isolation-guard the single wave-1 deliverable."
+  - "Canonical resolver reuse: xdg-config-consumer-wiring MUST use the existing resolve_config_value() in common.sh, not introduce a second helper. If the existing function needs extension (e.g., a default-value variant), the extension happens in place rather than via a parallel helper."
+  - "Back-compat: no change to definition.yaml, state.json, or reintegration.schema.json public shape beyond the additive test_results.evidence_path requirement; existing rows' reviews must continue to validate (migrate archived rows if needed)."
+  - "No live-worktree mutation under any test failure mode — once test-isolation-guard lands, every subsequent deliverable's tests must use setup_sandbox."
+  - "POSIX sh in all shell scripts; bash-only features require an explicit shebang."
+  - "Schemas are authoritative: inline jq subsets are forbidden in validation paths — use the Python Draft2020-12Validator via the shared validate-json.sh helper."
+  - "Single resolver rule for XDG config: every field read goes through bin/frw.d/lib/common.sh resolve_config_value; ad-hoc yaml parsing in scripts is a review-blocker."
+  - "Specialist symlinks never committed in the source repo; install.sh is the sole producer for both source and consumer checkouts."
+  - "Scope discipline: no architectural redesign. The research step produced three in-scope expansions that are explicitly blessed — (R1) script-modes-fix covers all 20 non-executable scripts rather than rescue.sh only; (R2) promote-learnings-schema-fix migrates 4 old-format rows to the new canonical schema; (R3) xdg-config-consumer-wiring creates the first preferred_specialists runtime consumer in skills/shared/specialist-delegation.md. Any FURTHER expansion past these ACs requires opening a follow-up TODO and stopping."
+
+gate_policy: supervised
+
+source_todos:
+  - audit-test-install-sh-and-test-upgrade-sh-for-live
+  - bin-frw-d-scripts-rescue-sh-committed-as-100644-di
+  - codex-cross-model-reviewer-flags-other-deliverable
+  - generate-reintegration-sh-should-use-canonical-sch
+  - audit-xdg-config-fields-for-runtime-consumers-pref
+  - commands-lib-promote-learnings-sh-reads-null-for-e
+  - unify-tracked-14-vs-gitignored-8-specialist-symlin
+  - ac-10-e2e-fixture-split-across-contaminated-stop-a
