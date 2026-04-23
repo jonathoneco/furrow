@@ -17,6 +17,17 @@ TESTS_RUN=0
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 export PROJECT_ROOT
 
+# Source the sandbox library. setup_sandbox is the single source of truth for
+# HOME, XDG_CONFIG_HOME, XDG_STATE_HOME, and FURROW_ROOT; tests call it before
+# invoking any harness binary. See docs/architecture/testing.md.
+# shellcheck source=lib/sandbox.sh
+. "$(dirname "${BASH_SOURCE[0]}")/lib/sandbox.sh"
+
+# Point the sandbox guard at this checkout so snapshot_guard_targets and
+# assert_no_worktree_mutation enumerate the live protected-path set.
+SANDBOX_PROJECT_ROOT="$PROJECT_ROOT"
+export SANDBOX_PROJECT_ROOT
+
 # --- Test environment setup ---
 
 # setup_test_env
@@ -90,9 +101,20 @@ setup_fixture() {
   export FIXTURE_DIR WORK_DIR
 }
 
-# Resolve roots for tests — install root and project root are the same in tests
-FURROW_ROOT="$PROJECT_ROOT"
-export FURROW_ROOT
+# Sandbox contract: setup_sandbox() (in lib/sandbox.sh) is the single source
+# of truth for HOME, XDG_CONFIG_HOME, XDG_STATE_HOME, and FURROW_ROOT. Every
+# test under test-install-*.sh and test-upgrade-*.sh MUST call setup_sandbox
+# before invoking any harness binary (frw, rws, alm, sds, install.sh) so that
+# FURROW_ROOT resolves under $TMP/fixture and cannot mutate the live worktree.
+#
+# For backward compatibility with tests that do not yet adopt setup_sandbox,
+# a transitional default FURROW_ROOT=$PROJECT_ROOT is set ONLY if the caller
+# has not already exported one. Install/upgrade tests override this default
+# via setup_sandbox. See docs/architecture/testing.md.
+if [ -z "${FURROW_ROOT:-}" ]; then
+  FURROW_ROOT="$PROJECT_ROOT"
+  export FURROW_ROOT
+fi
 export PROJECT_ROOT
 
 # teardown_fixture

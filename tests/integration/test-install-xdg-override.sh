@@ -16,8 +16,9 @@ source "$SCRIPT_DIR/helpers.sh"
 
 echo "=== test-install-xdg-override.sh (AC-C) ==="
 
-FURROW_ROOT="$PROJECT_ROOT"
-export FURROW_ROOT
+# Sandbox the four env vars inside $TMP; snapshot protected paths.
+setup_sandbox >/dev/null
+snapshot_guard_targets
 
 # ---------------------------------------------------------------------------
 # Helper: create minimal consumer tree with fake .bak files staged
@@ -51,7 +52,7 @@ test_xdg_override_creates_install_state() {
   _make_consumer_with_baks "$fixture_dir"
 
   XDG_STATE_HOME="$xdg_dir" \
-  "$FURROW_ROOT/bin/frw" install \
+  "$PROJECT_ROOT/bin/frw" install \
     --project "$fixture_dir" \
     --xdg-state-home "$xdg_dir" \
     > /dev/null 2>&1
@@ -80,7 +81,7 @@ test_install_state_schema_fields() {
   _make_consumer_with_baks "$fixture_dir"
 
   XDG_STATE_HOME="$xdg_dir" \
-  "$FURROW_ROOT/bin/frw" install \
+  "$PROJECT_ROOT/bin/frw" install \
     --project "$fixture_dir" \
     --xdg-state-home "$xdg_dir" \
     > /dev/null 2>&1
@@ -121,7 +122,7 @@ test_bak_files_moved_to_xdg() {
   _make_consumer_with_baks "$fixture_dir"
 
   XDG_STATE_HOME="$xdg_dir" \
-  "$FURROW_ROOT/bin/frw" install \
+  "$PROJECT_ROOT/bin/frw" install \
     --project "$fixture_dir" \
     --xdg-state-home "$xdg_dir" \
     > /dev/null 2>&1
@@ -179,7 +180,7 @@ test_xdg_config_bootstrap_fresh_install() {
   # Run install — XDG_CONFIG_HOME redirected so real ~/.config is untouched
   XDG_CONFIG_HOME="$cfg_dir" \
   XDG_STATE_HOME="$xdg_dir" \
-  "$FURROW_ROOT/bin/frw" install \
+  "$PROJECT_ROOT/bin/frw" install \
     --project "$fixture_dir" \
     --xdg-state-home "$xdg_dir" \
     > /dev/null 2>&1
@@ -234,7 +235,7 @@ test_xdg_config_bootstrap_idempotent() {
   # First install
   XDG_CONFIG_HOME="$cfg_dir" \
   XDG_STATE_HOME="$xdg_dir" \
-  "$FURROW_ROOT/bin/frw" install \
+  "$PROJECT_ROOT/bin/frw" install \
     --project "$fixture_dir" \
     --xdg-state-home "$xdg_dir" \
     > /dev/null 2>&1
@@ -242,7 +243,7 @@ test_xdg_config_bootstrap_idempotent() {
   # Second install (idempotency check)
   XDG_CONFIG_HOME="$cfg_dir" \
   XDG_STATE_HOME="$xdg_dir" \
-  "$FURROW_ROOT/bin/frw" install \
+  "$PROJECT_ROOT/bin/frw" install \
     --project "$fixture_dir" \
     --xdg-state-home "$xdg_dir" \
     > /dev/null 2>&1
@@ -265,5 +266,8 @@ run_test test_install_state_schema_fields
 run_test test_bak_files_moved_to_xdg
 run_test test_xdg_config_bootstrap_fresh_install
 run_test test_xdg_config_bootstrap_idempotent
+
+# Sandbox guard: fail the suite if any protected path was mutated.
+assert_no_worktree_mutation
 
 print_summary

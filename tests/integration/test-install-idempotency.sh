@@ -14,8 +14,11 @@ source "$SCRIPT_DIR/helpers.sh"
 
 echo "=== test-install-idempotency.sh (AC-C, AC-H) ==="
 
-FURROW_ROOT="$PROJECT_ROOT"
-export FURROW_ROOT
+setup_sandbox >/dev/null
+snapshot_guard_targets
+# Sandbox the four env vars inside $TMP; snapshot the protected path set.
+# Tests invoke the harness via PROJECT_ROOT; setup_sandbox repoints
+# FURROW_ROOT at $TMP/fixture.
 
 # ---------------------------------------------------------------------------
 # Helper: create minimal consumer fixture
@@ -48,7 +51,7 @@ test_idempotent_install() {
 
   # First install
   XDG_STATE_HOME="$xdg_dir" \
-  "$FURROW_ROOT/bin/frw" install \
+  "$PROJECT_ROOT/bin/frw" install \
     --project "$fixture_dir" \
     --xdg-state-home "$xdg_dir" \
     > /dev/null 2>&1
@@ -64,7 +67,7 @@ test_idempotent_install() {
 
   # Second install
   XDG_STATE_HOME="$xdg_dir" \
-  "$FURROW_ROOT/bin/frw" install \
+  "$PROJECT_ROOT/bin/frw" install \
     --project "$fixture_dir" \
     --xdg-state-home "$xdg_dir" \
     > /dev/null 2>&1
@@ -102,7 +105,7 @@ test_migration_version_monotonic() {
 
   # First install
   XDG_STATE_HOME="$xdg_dir" \
-  "$FURROW_ROOT/bin/frw" install \
+  "$PROJECT_ROOT/bin/frw" install \
     --project "$fixture_dir" \
     --xdg-state-home "$xdg_dir" \
     > /dev/null 2>&1
@@ -118,7 +121,7 @@ test_migration_version_monotonic() {
 
   # Second install
   XDG_STATE_HOME="$xdg_dir" \
-  "$FURROW_ROOT/bin/frw" install \
+  "$PROJECT_ROOT/bin/frw" install \
     --project "$fixture_dir" \
     --xdg-state-home "$xdg_dir" \
     > /dev/null 2>&1
@@ -133,7 +136,7 @@ test_migration_version_monotonic() {
 
   # Run again to compare
   XDG_STATE_HOME="$xdg_dir" \
-  "$FURROW_ROOT/bin/frw" install \
+  "$PROJECT_ROOT/bin/frw" install \
     --project "$fixture_dir" \
     --xdg-state-home "$xdg_dir" \
     > /dev/null 2>&1
@@ -151,5 +154,8 @@ test_migration_version_monotonic() {
 # ---------------------------------------------------------------------------
 run_test test_idempotent_install
 run_test test_migration_version_monotonic
+
+# Sandbox guard: fail the suite if any protected path was mutated.
+assert_no_worktree_mutation
 
 print_summary
