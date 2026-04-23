@@ -1,0 +1,34 @@
+{
+  "type": "spec",
+  "dimensions": [
+    {
+      "name": "testability",
+      "verdict": "pass",
+      "evidence": "The acceptance criteria are mostly mechanical and command-verifiable, using explicit files, exit codes, grep/jq/stat checks, and expected stderr/stdout behavior."
+    },
+    {
+      "name": "completeness",
+      "verdict": "fail",
+      "evidence": "Several deliverables are not fully refined in the provided spec content, notably `promote-learnings-schema-fix.md`, `reintegration-schema-consolidation.md`, and `test-isolation-guard.md`, whose AC/test sections are truncated or incomplete."
+    },
+    {
+      "name": "consistency",
+      "verdict": "fail",
+      "evidence": "`specialist-symlink-unification.md` says 14 tracked `specialist:*.md` entries are removed, while the upstream acceptance criteria require all 22 entries to be removed from the git index."
+    },
+    {
+      "name": "test-scenario-coverage",
+      "verdict": "fail",
+      "evidence": "Multiple non-trivial ACs lack complete WHEN/THEN/verification scenarios in the supplied spec, especially in the truncated `promote-learnings`, `reintegration`, and `test-isolation` sections."
+    },
+    {
+      "name": "implementability",
+      "verdict": "pass",
+      "evidence": "The spec gives concrete file paths, function/script names, behaviors, and command patterns that are sufficient for implementation of the described changes."
+    }
+  ],
+  "overall": "fail",
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-23T18:38:09Z"
+}
