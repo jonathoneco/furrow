@@ -15,6 +15,10 @@ source "$SCRIPT_DIR/helpers.sh"
 
 echo "=== test-install-source-mode.sh (AC-A, AC-B) ==="
 
+# Sandbox the four env vars inside $TMP; snapshot protected paths.
+setup_sandbox >/dev/null
+snapshot_guard_targets
+
 # ---------------------------------------------------------------------------
 # test_source_mode_detection
 # ---------------------------------------------------------------------------
@@ -166,5 +170,8 @@ run_test test_source_mode_detection
 run_test test_symlink_validator_resolves
 run_test test_source_repo_not_copied_to_target
 run_test test_gitignore_bootstrap_skipped_in_source_mode
+
+# Sandbox guard: fail the suite if any protected path was mutated.
+assert_no_worktree_mutation
 
 print_summary
