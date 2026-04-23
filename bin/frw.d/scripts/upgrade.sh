@@ -126,6 +126,131 @@ _upgrade_update_state_file() {
 }
 
 # ---------------------------------------------------------------------------
+# _upgrade_record_migration_applied <state_file> <migration_id>
+# Appends <migration_id> to install-state.json's migrations_applied array
+# (deduped). Atomic. No-op when <migration_id> is already recorded.
+# Used for migrations that run in addition to the migration_version bump
+# (e.g., pre-XDG specialists move) so a second run can detect "already done".
+# ---------------------------------------------------------------------------
+_upgrade_record_migration_applied() {
+  _urma_file="$1"
+  _urma_id="$2"
+
+  [ -f "$_urma_file" ] || return 0
+
+  # Idempotent append: only add if not already present.
+  if jq -e --arg id "$_urma_id" \
+      '(.migrations_applied // []) | index($id)' \
+      "$_urma_file" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  _urma_tmp="${_urma_file}.tmp.$$"
+  jq --arg id "$_urma_id" \
+    '.migrations_applied = ((.migrations_applied // []) + [$id] | unique)' \
+    "$_urma_file" > "$_urma_tmp" 2>/dev/null && mv "$_urma_tmp" "$_urma_file"
+}
+
+# ---------------------------------------------------------------------------
+# _upgrade_migration_applied <state_file> <migration_id>
+# Exit 0 if <migration_id> is in migrations_applied, exit 1 otherwise.
+# ---------------------------------------------------------------------------
+_upgrade_migration_applied() {
+  _uma_file="$1"
+  _uma_id="$2"
+  [ -f "$_uma_file" ] || return 1
+  jq -e --arg id "$_uma_id" \
+    '((.migrations_applied // []) | index($id)) != null' \
+    "$_uma_file" >/dev/null 2>&1
+}
+
+# ---------------------------------------------------------------------------
+# _upgrade_migrate_pre_xdg_specialists <project_root> <xdg_config_home> <state_file>
+# Migrates pre-XDG .claude/specialists/*.md to the XDG tier-2 location at
+# $XDG_CONFIG_HOME/furrow/specialists/. Uses cp -a (not mv) so the legacy
+# .claude/specialists/ directory remains as a rollback/diagnostic path;
+# after copy, the legacy dir is replaced with a symlink to the XDG dir for
+# back-compat (mirrors the .claude/furrow.yaml symlink pattern).
+#
+# Idempotent: no-op when
+#   (a) .claude/specialists/ is absent (already migrated / never existed), or
+#   (b) .claude/specialists/ is already a symlink (previous migration), or
+#   (c) migrations_applied already contains "pre_xdg_specialists".
+#
+# Does NOT overwrite XDG files that already exist — existing user-global
+# specialists take precedence over the legacy copy.
+#
+# Returns 0 on success or no-op, 1 on failure.
+# ---------------------------------------------------------------------------
+_upgrade_migrate_pre_xdg_specialists() {
+  _umps_proj="$1"
+  _umps_cfg="$2"
+  _umps_state="$3"
+
+  _umps_legacy="${_umps_proj}/.claude/specialists"
+  _umps_xdg_dir="${_umps_cfg}/furrow/specialists"
+
+  # (a) already recorded → no-op
+  if _upgrade_migration_applied "$_umps_state" "pre_xdg_specialists"; then
+    return 0
+  fi
+
+  # (b) legacy dir absent → nothing to migrate; record as applied so future
+  #     runs short-circuit without re-checking the filesystem.
+  if [ ! -d "$_umps_legacy" ]; then
+    _upgrade_record_migration_applied "$_umps_state" "pre_xdg_specialists"
+    return 0
+  fi
+
+  # (c) legacy path is already a symlink → previously migrated; record + exit.
+  if [ -L "$_umps_legacy" ]; then
+    _upgrade_record_migration_applied "$_umps_state" "pre_xdg_specialists"
+    return 0
+  fi
+
+  # Proceed with migration. Ensure XDG target dir exists.
+  mkdir -p "$_umps_xdg_dir"
+
+  # Copy each .md (preserving mode/timestamps). Skip files that already exist
+  # at XDG — tier-2 files are authoritative if the user pre-populated them.
+  _umps_any=0
+  for _umps_src in "$_umps_legacy"/*.md; do
+    [ -e "$_umps_src" ] || continue
+    _umps_any=1
+    _umps_base="$(basename "$_umps_src")"
+    _umps_dst="${_umps_xdg_dir}/${_umps_base}"
+    if [ -e "$_umps_dst" ]; then
+      continue
+    fi
+    # Atomic per-file: cp to tmp then mv. cp -a preserves mode/timestamps.
+    _umps_tmp="${_umps_dst}.tmp.$$"
+    if ! cp -a "$_umps_src" "$_umps_tmp"; then
+      rm -f "$_umps_tmp"
+      log_error "frw upgrade: failed to copy ${_umps_src} → ${_umps_dst}"
+      return 1
+    fi
+    mv "$_umps_tmp" "$_umps_dst"
+  done
+
+  # Replace legacy dir with a symlink to the XDG dir for back-compat.
+  # Skip when the legacy dir contained no .md files (preserve odd layouts).
+  if [ "$_umps_any" = "1" ]; then
+    # Only rename when removing is safe: legacy must be a real dir with only
+    # tracked .md files copied above. We keep it conservative: move it aside
+    # with a .pre-xdg suffix, then symlink.
+    _umps_backup="${_umps_legacy}.pre-xdg"
+    # If a prior attempt left a .pre-xdg dir, leave it; don't clobber.
+    if [ ! -e "$_umps_backup" ]; then
+      mv "$_umps_legacy" "$_umps_backup"
+      ln -s "$_umps_xdg_dir" "$_umps_legacy"
+    fi
+  fi
+
+  _upgrade_record_migration_applied "$_umps_state" "pre_xdg_specialists"
+  return 0
+}
+
+# ---------------------------------------------------------------------------
 # _upgrade_migrate_pre_xdg <from_path> <xdg_config_home>
 # Migrates a pre-XDG install:
 #   - Copies .claude/furrow.yaml keys to $XDG_CONFIG_HOME/furrow/config.yaml
@@ -218,6 +343,7 @@ frw_upgrade() {
 
   # --- Detect if migration is needed ---
   _needs_migration=0
+  _legacy_specialists="${PROJECT_ROOT:-$(pwd)}/.claude/specialists"
   if [ "$_cur_ver" = "$CURRENT_MIGRATION_VERSION" ]; then
     _needs_migration=0  # already current
   elif [ -n "$_from_path" ] && [ -f "$_from_path" ] && [ ! -L "$_from_path" ]; then
@@ -226,9 +352,21 @@ frw_upgrade() {
     _needs_migration=1  # XDG config doesn't exist yet
   fi
 
+  # Pre-XDG specialists migration may need to run even when migration_version
+  # is already "1.0" (e.g., legacy specialists dir left behind after a
+  # partial earlier migration). Signal it separately so --check reports it.
+  _needs_specialists=0
+  if [ -d "$_legacy_specialists" ] && [ ! -L "$_legacy_specialists" ]; then
+    if ! _upgrade_migration_applied "$_state_file" "pre_xdg_specialists"; then
+      _needs_specialists=1
+    fi
+  fi
+
   # --- Check mode ---
   if [ "$_mode" = "check" ]; then
-    if [ "$_needs_migration" = "0" ] && [ "$_cur_ver" = "$CURRENT_MIGRATION_VERSION" ]; then
+    if [ "$_needs_migration" = "0" ] && \
+       [ "$_needs_specialists" = "0" ] && \
+       [ "$_cur_ver" = "$CURRENT_MIGRATION_VERSION" ]; then
       printf 'frw upgrade: install is current (migration_version=%s)\n' "$_cur_ver"
       exit 0
     else
@@ -237,6 +375,9 @@ frw_upgrade() {
       if [ -n "$_from_path" ] && [ -f "$_from_path" ] && [ ! -L "$_from_path" ]; then
         printf 'frw upgrade: legacy config detected at %s\n' "$_from_path"
       fi
+      if [ "$_needs_specialists" = "1" ]; then
+        printf 'frw upgrade: legacy specialists detected at %s\n' "$_legacy_specialists"
+      fi
       exit 10
     fi
   fi
@@ -244,24 +385,38 @@ frw_upgrade() {
   # --- Apply mode ---
 
   # Already current: idempotent no-op (only last_upgrade_at would change — skip)
+  # Note: we still run the specialists sub-migration when needed, even when
+  # migration_version is already 1.0 — it is tracked separately.
   if [ "$_cur_ver" = "$CURRENT_MIGRATION_VERSION" ] && \
      [ -f "${_xdg_cfg}/furrow/config.yaml" ] && \
-     [ -f "${_xdg_cfg}/furrow/promotion-targets.yaml" ]; then
+     [ -f "${_xdg_cfg}/furrow/promotion-targets.yaml" ] && \
+     [ "$_needs_specialists" = "0" ]; then
     printf 'frw upgrade: already at migration_version=%s — no changes needed\n' "$_cur_ver"
     exit 0
   fi
 
   printf 'frw upgrade: applying migration %s → %s\n' "$_cur_ver" "$CURRENT_MIGRATION_VERSION"
 
-  # Perform XDG migration
-  if ! _upgrade_migrate_pre_xdg "$_from_path" "$_xdg_cfg"; then
-    log_error "frw upgrade: migration failed"
-    exit 1
+  # Perform XDG migration (config.yaml + promotion-targets.yaml) only when
+  # the base migration is still pending. Once at 1.0, skip the config step
+  # but still run the specialists sub-migration below.
+  if [ "$_cur_ver" != "$CURRENT_MIGRATION_VERSION" ]; then
+    if ! _upgrade_migrate_pre_xdg "$_from_path" "$_xdg_cfg"; then
+      log_error "frw upgrade: migration failed"
+      exit 1
+    fi
+
+    # Update install-state.json with new migration_version
+    if ! _upgrade_update_state_file "$_state_file" "$CURRENT_MIGRATION_VERSION"; then
+      log_error "frw upgrade: failed to update install-state.json"
+      exit 1
+    fi
   fi
 
-  # Update install-state.json with new migration_version
-  if ! _upgrade_update_state_file "$_state_file" "$CURRENT_MIGRATION_VERSION"; then
-    log_error "frw upgrade: failed to update install-state.json"
+  # Pre-XDG specialists migration (idempotent; safe when already applied).
+  if ! _upgrade_migrate_pre_xdg_specialists \
+        "${PROJECT_ROOT:-$(pwd)}" "$_xdg_cfg" "$_state_file"; then
+    log_error "frw upgrade: pre-XDG specialists migration failed"
     exit 1
   fi
 
