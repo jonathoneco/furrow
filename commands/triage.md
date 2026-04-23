@@ -160,6 +160,20 @@ Legend: `──` hard dep · `~~` inferred (foundational/merge) · `···` inde
 |------|-------|----------------|
 ```
 
+**active-observations** (optional — include only when `.furrow/almanac/roadmap.yaml` has a non-empty `active_observations` key):
+
+Placement: after the phase table / conflict-zones block, before the per-phase detail sections. Omit entirely if the key is absent or empty.
+
+```markdown
+## Active Observations
+
+Observations whose triggers have fired — re-examination pending user action.
+
+- `{id}` (`{kind}`) — {title}
+  - _Activation_: {activation_reason}
+  - Resolve: `alm observe resolve {id} ...` • Dismiss: `alm observe dismiss {id} ...`
+```
+
 **phase** (required, repeating — one per phase):
 ```markdown
 ## Phase {N} — {Title} — {Status}

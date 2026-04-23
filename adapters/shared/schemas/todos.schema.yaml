@@ -54,7 +54,6 @@ items:
         - brain-dump
         - manual
         - legacy
-        - decision-review
       description: "How this TODO was extracted"
     seed_id:
       type: string
