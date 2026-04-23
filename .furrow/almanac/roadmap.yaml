@@ -1,563 +1,664 @@
-schema_version: "2.0"
+schema_version: '1.0'
 metadata:
   project: furrow
-  generated_at: "2026-04-22T00:00:00Z"
-  total_phases: 7
+  generated_at: '2026-04-23T13:00:40-04:00'
+  total_phases: 8
   completed_phases: 0
-  active_todos: 39
-  done_todos: 22
 dependency_graph:
   nodes:
-    - id: install-architecture-overhaul
-      phase: 1
-      row: install-and-merge
-      status: active
-    - id: merge-process-skill
-      phase: 1
-      row: install-and-merge
-      status: active
-    - id: config-cleanup
-      phase: 1
-      row: install-and-merge
-      status: active
-    - id: worktree-reintegration-summary
-      phase: 1
-      row: install-and-merge
-      status: active
-    - id: post-merge-watch-list
-      phase: 1
-      row: post-ship-reexamination
-      status: active
-    - id: decision-review-todo-type
-      phase: 1
-      row: post-ship-reexamination
-      status: active
-    - id: almanac-graph-primitives
-      phase: 2
-      row: almanac-graph-and-promotion
-      status: active
-    - id: seeds-concept
-      phase: 2
-      row: almanac-graph-and-promotion
-      status: active
-    - id: ambient-context-promotion
-      phase: 2
-      row: almanac-graph-and-promotion
-      status: active
-    - id: unified-isolated-review
-      phase: 3
-      row: review-unification
-      status: active
-    - id: gate-dimension-deduplication
-      phase: 3
-      row: review-unification
-      status: active
-    - id: specialist-template-warning-escalation
-      phase: 3
-      row: specialist-quality
-      status: active
-    - id: specialist-quality-validation
-      phase: 3
-      row: specialist-quality
-      status: active
-    - id: apply-nate-jones-skill
-      phase: 3
-      row: specialist-quality
-      status: active
-    - id: effort-selection-alongside-model
-      phase: 3
-      row: specialist-quality
-      status: active
-    - id: brain-dump-triage-command
-      phase: 4
-      row: triage-pipeline
-      status: active
-    - id: triage-and-braindump-ideation
-      phase: 4
-      row: triage-pipeline
-      status: active
-    - id: roadmap-todo-integration
-      phase: 4
-      row: roadmap-handoff
-      status: active
-    - id: furrow-next-phase-lifecycle
-      phase: 4
-      row: roadmap-handoff
-      status: active
-    - id: todo-context-references
-      phase: 4
-      row: todo-and-research
-      status: active
-    - id: research-methodology-design
-      phase: 4
-      row: todo-and-research
-      status: active
-    - id: research-documentation-detection
-      phase: 4
-      row: todo-and-research
-      status: active
-    - id: cli-architecture-overhaul
-      phase: 5
-      row: cli-architecture
-      status: active
-    - id: cli-breakup-script-guard
-      phase: 5
-      row: cli-architecture
-      status: active
-    - id: register-deliverable-command
-      phase: 5
-      row: cli-architecture
-      status: active
-    - id: work-folder-structure-and-cleanup
-      phase: 5
-      row: folder-structure
-      status: active
-    - id: parallel-agent-orchestration-adoption
-      phase: 6
-      row: orchestration-polish
-      status: active
-    - id: re-evaluate-dispatch-enforcement
-      phase: 6
-      row: orchestration-polish
-      status: active
-    - id: user-action-integration
-      phase: 6
-      row: orchestration-polish
-      status: active
-    - id: sprint-inspired-planning
-      phase: 6
-      row: sprint-and-spikes
-      status: active
-    - id: spike-row-mode
-      phase: 6
-      row: sprint-and-spikes
-      status: active
-    - id: harness-lifecycle-ux
-      phase: 6
-      row: harness-lifecycle-ux
-      status: active
-    - id: collaborative-surfaces
-      phase: 6
-      row: collaborative-surfaces
-      status: active
-    - id: adapters-audit
-      phase: 7
-      row: audits-and-mining
-      status: active
-    - id: mine-v1-harness
-      phase: 7
-      row: audits-and-mining
-      status: active
-    - id: mine-claude-code
-      phase: 7
-      row: audits-and-mining
-      status: active
-    - id: memetic-algorithms-research
-      phase: 7
-      row: exploratory-research
-      status: active
-    - id: design-pattern-context-construction
-      phase: 7
-      row: exploratory-research
-      status: active
-    - id: furrow-tui-dashboard
-      phase: 7
-      row: furrow-tui
-      status: active
-  edges:
-    - from: install-and-merge
-      to: almanac-graph-and-promotion
-      type: inferred
-      reason: "foundational — stable merge/install pipeline before structural graph work"
-    - from: almanac-graph-and-promotion
-      to: triage-pipeline
-      type: inferred
-      reason: "merge-implication — triage reads seed graph"
-    - from: almanac-graph-and-promotion
-      to: roadmap-handoff
-      type: inferred
-      reason: "merge-implication — roadmap/next surfaces promoted context"
-    - from: almanac-graph-and-promotion
-      to: todo-and-research
-      type: inferred
-      reason: "merge-implication — TODO schema + research read almanac"
-    - from: almanac-graph-and-promotion
-      to: sprint-and-spikes
-      type: inferred
-      reason: "foundational — seed graph before sprint/spike patterns"
-    - from: review-unification
-      to: todo-and-research
-      type: inferred
-      reason: "merge-implication — review pipeline stable before research-to-docs + schema work"
-    - from: triage-pipeline
-      to: cli-architecture
-      type: inferred
-      reason: "merge-implication — command experience informs CLI structure"
-    - from: roadmap-handoff
-      to: cli-architecture
-      type: inferred
-      reason: "merge-implication — command experience informs CLI structure"
-    - from: cli-architecture
-      to: folder-structure
-      type: inferred
-      reason: "foundational — CLI boundaries before folder restructure"
-    - from: cli-architecture
-      to: harness-lifecycle-ux
-      type: inferred
-      reason: "foundational — CLI decisions gate verb rename and status line"
-  waves:
-    - wave: 1
-      todos:
-        [
-          install-architecture-overhaul,
-          config-cleanup,
-          merge-process-skill,
-          post-merge-watch-list,
-          worktree-reintegration-summary,
-          decision-review-todo-type,
-        ]
-    - wave: 2
-      todos: [almanac-graph-primitives, seeds-concept, ambient-context-promotion]
-    - wave: 3
-      todos:
-        [
-          unified-isolated-review,
-          gate-dimension-deduplication,
-          specialist-template-warning-escalation,
-          specialist-quality-validation,
-          apply-nate-jones-skill,
-          effort-selection-alongside-model,
-        ]
-    - wave: 4
-      todos:
-        [
-          brain-dump-triage-command,
-          todo-context-references,
-          roadmap-todo-integration,
-          research-documentation-detection,
-          triage-and-braindump-ideation,
-          furrow-next-phase-lifecycle,
-          research-methodology-design,
-        ]
-    - wave: 5
-      todos:
-        [
-          cli-architecture-overhaul,
-          cli-breakup-script-guard,
-          register-deliverable-command,
-          work-folder-structure-and-cleanup,
-        ]
-    - wave: 6
-      todos:
-        [
-          parallel-agent-orchestration-adoption,
-          re-evaluate-dispatch-enforcement,
-          user-action-integration,
-          sprint-inspired-planning,
-          spike-row-mode,
-          harness-lifecycle-ux,
-          collaborative-surfaces,
-        ]
-    - wave: 7
-      todos:
-        [
-          adapters-audit,
-          mine-v1-harness,
-          mine-claude-code,
-          memetic-algorithms-research,
-          design-pattern-context-construction,
-          furrow-tui-dashboard,
-        ]
-  cycles: []
+  - id: ac-10-e2e-fixture-split-across-contaminated-stop-a
+    label: AC-10 e2e fixture split across contaminated-stop and safe-happy-path
+    phase: 1
+    status: active
+    depends_on: []
+  - id: adapters-audit
+    label: "Adapters pass \u2014 check for atrophy, modularization decay, internal consistency"
+    phase: 7
+    status: active
+    depends_on: []
+  - id: ambient-context-promotion
+    label: "Ambient context promotion system \u2014 row\u2192project\u2192global knowledge graduation"
+    phase: 3
+    status: active
+    depends_on: []
+  - id: apply-nate-jones-skill
+    label: Apply Nate Jones harness skill patterns to Furrow
+    phase: 8
+    status: active
+    depends_on: []
+  - id: artifact-writing-defaults
+    label: "Artifact-writing defaults \u2014 long-form outputs go to files as first-class citizens"
+    phase: 6
+    status: active
+    depends_on: []
+  - id: audit-test-install-sh-and-test-upgrade-sh-for-live
+    label: Audit test-install-*.sh and test-upgrade-*.sh for live-worktree mutation
+    phase: 1
+    status: active
+    depends_on: []
+  - id: audit-xdg-config-fields-for-runtime-consumers-pref
+    label: Audit XDG config fields for runtime consumers (preferred_specialists, cross_model.provider)
+    phase: 1
+    status: active
+    depends_on: []
+  - id: bin-frw-d-scripts-rescue-sh-committed-as-100644-di
+    label: bin/frw.d/scripts/rescue.sh committed as 100644; dispatcher exec fails
+    phase: 1
+    status: active
+    depends_on: []
+  - id: brain-dump-triage-command
+    label: "Brain dump + triage command \u2014 collaborative ideation, TODO extraction, roadmap bootstrap fields"
+    phase: 6
+    status: active
+    depends_on:
+    - parallel-agent-orchestration-adoption
+  - id: cli-architecture-overhaul
+    label: "CLI architecture overhaul \u2014 Go rewrite of frw/rws/alm/sds with modularization, structured logging, introspection"
+    phase: 2
+    status: active
+    depends_on: []
+  - id: codex-cross-model-reviewer-flags-other-deliverable
+    label: Codex cross-model reviewer flags other deliverables' commits as unplanned
+    phase: 1
+    status: active
+    depends_on: []
+  - id: collaborative-surfaces
+    label: "Document-based collaboration \u2014 markdown + comment threading, Notion integration"
+    phase: 6
+    status: active
+    depends_on: []
+  - id: commands-lib-promote-learnings-sh-reads-null-for-e
+    label: commands/lib/promote-learnings.sh reads null for every learning
+    phase: 1
+    status: active
+    depends_on: []
+  - id: design-pattern-context-construction
+    label: Context construction driven by design pattern thinking
+    phase: 8
+    status: active
+    depends_on: []
+  - id: effort-selection-alongside-model
+    label: "Add effort_hint to specialists and step skills \u2014 decouple reasoning depth from model identity"
+    phase: 3
+    status: active
+    depends_on: []
+  - id: furrow-next-phase-lifecycle
+    label: "furrow:next as full phase lifecycle \u2014 merge, update roadmap, handoff, launch"
+    phase: 4
+    status: active
+    depends_on: []
+  - id: furrow-next-semantic-merge
+    label: "furrow:next semantic merge \u2014 read row artifacts for intelligent merge + per-deliverable squash"
+    phase: 4
+    status: active
+    depends_on: []
+  - id: furrow-self-update-hook
+    label: "furrow-self-update-hook \u2014 session-start check for upstream Furrow changes"
+    phase: 7
+    status: active
+    depends_on: []
+  - id: furrow-tui-dashboard
+    label: Furrow TUI / agent-dashboard integration
+    phase: 7
+    status: active
+    depends_on: []
+  - id: furrow-work-worktree-integration
+    label: furrow:work auto-creates a git worktree when not already on one
+    phase: 4
+    status: active
+    depends_on: []
+  - id: gate-dimension-deduplication
+    label: Extract shared gate dimensions (seed-sync, dual-review) into reusable definitions
+    phase: 7
+    status: active
+    depends_on: []
+  - id: generate-reintegration-sh-should-use-canonical-sch
+    label: generate-reintegration.sh should use canonical schema, not inline jq-subset
+    phase: 1
+    status: active
+    depends_on: []
+  - id: harness-lifecycle-ux
+    label: "Harness UX \u2014 sow/reap verbs, status line, installation/exploration skill"
+    phase: 7
+    status: active
+    depends_on:
+    - cli-architecture-overhaul
+  - id: install-user-bin-worktree-pinning
+    label: frw install writes ~/.local/bin symlinks pointing at the invocation path, not the canonical source repo
+    phase: 4
+    status: active
+    depends_on: []
+  - id: low-finding-disposition-policy
+    label: "LOW finding disposition policy \u2014 auto-TODO with audit trail"
+    phase: 6
+    status: active
+    depends_on:
+    - patch-row-concept
+  - id: memetic-algorithms-research
+    label: Research memetic algorithms for LLM orchestration
+    phase: 8
+    status: active
+    depends_on: []
+  - id: merge-process-skill
+    label: "Design a /furrow:merge skill \u2014 reconcile worktree branches back into main"
+    phase: 4
+    status: active
+    depends_on: []
+  - id: mine-claude-code
+    label: Mine Claude Code for reusable patterns and capabilities
+    phase: 8
+    status: active
+    depends_on: []
+  - id: mine-v1-harness
+    label: Mine v1 harness for learnings, insights, and research
+    phase: 8
+    status: active
+    depends_on: []
+  - id: parallel-agent-orchestration-adoption
+    label: "Built-in team orchestration isn't being used \u2014 diagnose and fix"
+    phase: 3
+    status: active
+    depends_on: []
+  - id: patch-row-concept
+    label: "patch-row variant \u2014 lightweight harness mode for small fixes, bug fixes, accessibility issues"
+    phase: 6
+    status: active
+    depends_on: []
+  - id: post-merge-watch-list
+    label: "Post-merge watch-list \u2014 track behavioral signals to validate after rows merge"
+    phase: 7
+    status: active
+    depends_on: []
+  - id: research-documentation-detection
+    label: Detect when research output should be documentation instead
+    phase: 8
+    status: active
+    depends_on: []
+  - id: research-methodology-design
+    label: "Research methodology for systems design \u2014 beyond naive web search"
+    phase: 8
+    status: active
+    depends_on: []
+  - id: seeds-concept
+    label: "Seeds as the task management primitive \u2014 unified work graph, in-row tracking, gating, and alm delegation"
+    phase: 5
+    status: active
+    depends_on:
+    - cli-architecture-overhaul
+  - id: specialist-quality-validation
+    label: Establish a validation mechanism for specialist template quality
+    phase: 3
+    status: active
+    depends_on: []
+  - id: specialist-template-warning-escalation
+    label: Escalate specialist template warnings to structured observability
+    phase: 3
+    status: active
+    depends_on: []
+  - id: spike-row-mode
+    label: "Spike row mode \u2014 implementation-flavored research with throwaway prototypes"
+    phase: 6
+    status: active
+    depends_on: []
+  - id: sprint-inspired-planning
+    label: "Sprint-inspired work planning \u2014 retros, velocity, multi-row coordination, observability"
+    phase: 7
+    status: active
+    depends_on: []
+  - id: sub-agent-normalization
+    label: "Sub-agent normalization \u2014 register specialists as Claude Code agent types with single-source generation"
+    phase: 3
+    status: active
+    depends_on: []
+  - id: support-sharded-todos-d-directory-to-reduce-merge
+    label: Support sharded todos.d/ directory to reduce merge-conflict surface
+    phase: 7
+    status: active
+    depends_on: []
+  - id: tmux-sessionizer-integration
+    label: "tmux sessionizer integration \u2014 ship a Furrow-aware layout tied to the focused row"
+    phase: 6
+    status: active
+    depends_on:
+    - furrow-work-worktree-integration
+    - artifact-writing-defaults
+  - id: todo-context-references
+    label: TODOs with context references from dump and active sessions
+    phase: 7
+    status: active
+    depends_on: []
+  - id: unified-isolated-review
+    label: Unify Phase B and cross-model review into a single isolated-review script
+    phase: 6
+    status: active
+    depends_on: []
+  - id: unify-tracked-14-vs-gitignored-8-specialist-symlin
+    label: Unify tracked (14) vs .gitignored (8) specialist symlinks
+    phase: 1
+    status: active
+    depends_on: []
+  - id: user-action-integration
+    label: Integration points for actions the user must take
+    phase: 7
+    status: active
+    depends_on: []
+  - id: work-folder-structure-and-cleanup
+    label: Structure .furrow/rows/ to prevent unbounded growth
+    phase: 8
+    status: active
+    depends_on:
+    - brain-dump-triage-command
 conflict_zones:
-  - phase: 5
-    file_pattern: "bin/rws, bin/frw.d/"
-    work_units: [cli-architecture, folder-structure]
-    severity: medium
-    mitigation: "cli-architecture merges first"
-  - phase: 6
-    file_pattern: "skills/, commands/"
-    work_units: [orchestration-polish, harness-lifecycle-ux]
-    severity: low
-    mitigation: "different subsystems within shared dirs"
+- phase: 3
+  file_pattern: specialists/
+  work_units:
+  - effort-and-model-routing
+  - sub-agent-normalization
+  severity: medium
+  mitigation: sequential ordering within phase
+- phase: 3
+  file_pattern: bin/frw.d/scripts/
+  work_units:
+  - effort-and-model-routing
+  - sub-agent-normalization
+  severity: medium
+  mitigation: sequential ordering within phase
+- phase: 3
+  file_pattern: references/specialist-template.md
+  work_units:
+  - effort-and-model-routing
+  - sub-agent-normalization
+  severity: medium
+  mitigation: sequential ordering within phase
+- phase: 4
+  file_pattern: bin/rws
+  work_units:
+  - next-merge-pipeline
+  - worktree-integration
+  severity: medium
+  mitigation: sequential ordering within phase
+- phase: 6
+  file_pattern: skills/
+  work_units:
+  - artifacts-and-row-variants
+  - review-surfaces
+  severity: medium
+  mitigation: sequential ordering within phase
+- phase: 6
+  file_pattern: .furrow/almanac/rationale.yaml
+  work_units:
+  - artifacts-and-row-variants
+  - triage-ux
+  severity: medium
+  mitigation: sequential ordering within phase
+- phase: 6
+  file_pattern: skills/review.md
+  work_units:
+  - artifacts-and-row-variants
+  - review-surfaces
+  severity: medium
+  mitigation: sequential ordering within phase
+- phase: 7
+  file_pattern: skills/
+  work_units:
+  - dashboards-and-lifecycle
+  - post-seeds-retriage
+  severity: medium
+  mitigation: sequential ordering within phase
 phases:
-  - number: 1
-    title: "Install & Merge Foundation"
-    status: planned
-    rationale: "Recurring commit/merge issues across this repo and consumer projects. Two parallel rows: install-and-merge (install architecture + /furrow:merge skill + reintegration summary, all sharing bin/frw.d/ hook surface) and post-ship-reexamination (watch-list + decision-review TODO type — structurally decoupled primitive for post-evidence re-examination)."
-    parallelism: "install-and-merge || post-ship-reexamination"
-    rows:
-      - branch: work/install-and-merge
-        description: "Install architecture + ~/.config/furrow/ tier + /furrow:merge skill + worktree reintegration summary"
-        todos:
-          [
-            install-architecture-overhaul,
-            config-cleanup,
-            merge-process-skill,
-            worktree-reintegration-summary,
-          ]
-        estimated_sessions: 5
-        key_files:
-          [
-            install.sh,
-            bin/frw.d/install.sh,
-            bin/frw.d/scripts/launch-phase.sh,
-            bin/frw.d/hooks/,
-            bin/frw.d/lib/common.sh,
-            bin/frw,
-            commands/,
-            commands/next.md,
-            skills/implement.md,
-            skills/shared/context-isolation.md,
-            .furrow/,
-          ]
-        conflict_risk: none
-        completed_at: null
-      - branch: work/post-ship-reexamination
-        description: "Almanac watch-list primitive + decision-review TODO schema type — structured post-evidence re-examination"
-        todos: [post-merge-watch-list, decision-review-todo-type]
-        estimated_sessions: 2
-        key_files:
-          [
-            .furrow/almanac/,
-            bin/alm,
-            schemas/todos.schema.yaml,
-            adapters/shared/schemas/todos.schema.yaml,
-            skills/review.md,
-            skills/shared/summary-protocol.md,
-          ]
-        conflict_risk: none
-        completed_at: null
-  - number: 2
-    title: "Almanac Graph, Seeds, and Promotion"
-    status: planned
-    rationale: "Foundational graph primitives, seed concept, and the promotion system that graduates row-level knowledge up the tier chain. Consolidated into one row because the previous split (almanac-and-seeds || ambient-promotion) couldn't actually parallelize — both rewrite bin/alm and .furrow/almanac/, with mitigation already requiring sequential merge. Building them together means the graph design accommodates promotion from day 1."
-    parallelism: "almanac-graph-and-promotion (single row)"
-    rows:
-      - branch: work/almanac-graph-and-promotion
-        description: "First-class seed graph, seeds concept, and context promotion (row to project to global)"
-        todos: [almanac-graph-primitives, seeds-concept, ambient-context-promotion]
-        estimated_sessions: 7
-        key_files:
-          [
-            bin/alm,
-            bin/sds,
-            .furrow/almanac/,
-            skills/,
-            references/,
-            commands/lib/,
-          ]
-        conflict_risk: none
-        completed_at: null
-  - number: 3
-    title: "Review & Specialist System"
-    status: planned
-    rationale: "Unify review machinery and raise specialist quality bar before downstream command changes consume reviews and specialists."
-    parallelism: "review-unification || specialist-quality"
-    rows:
-      - branch: work/review-unification
-        description: "Unify Phase B and cross-model review into one script; dedupe shared gate dimensions"
-        todos: [unified-isolated-review, gate-dimension-deduplication]
-        estimated_sessions: 3
-        key_files:
-          [
-            bin/frw.d/scripts/cross-model-review.sh,
-            skills/review.md,
-            skills/ideate.md,
-            skills/shared/eval-protocol.md,
-            commands/review.md,
-            evals/gates/,
-            evals/dimensions/,
-          ]
-        conflict_risk: low
-        completed_at: null
-      - branch: work/specialist-quality
-        description: "Specialist warning escalation, quality validation, Nate Jones skill pattern, effort_hint frontmatter"
-        todos:
-          [
-            specialist-template-warning-escalation,
-            specialist-quality-validation,
-            apply-nate-jones-skill,
-            effort-selection-alongside-model,
-          ]
-        estimated_sessions: 4
-        key_files:
-          [
-            specialists/,
-            references/specialist-template.md,
-            skills/implement.md,
-            skills/,
-            bin/frw.d/scripts/,
-          ]
-        conflict_risk: low
-        completed_at: null
-  - number: 4
-    title: "Command Pipeline & Planning UX"
-    status: planned
-    rationale: "Command layer matures after agent wiring, reviews, and graph primitives stabilize. Re-split by theme (not by subsystem): each row owns a distinct file scope — triage-pipeline owns commands/triage.md, roadmap-handoff owns commands/next.md + templates/, todo-and-research owns TODO schema + research surface. Eliminates the latent cross-row conflict on commands/triage.md + commands/next.md that existed in the previous command-pipeline/planning-ux split."
-    parallelism: "triage-pipeline || roadmap-handoff || todo-and-research"
-    rows:
-      - branch: work/triage-pipeline
-        description: "Brain-dump triage command + triage/brain-dump ideation ergonomics"
-        todos: [brain-dump-triage-command, triage-and-braindump-ideation]
-        estimated_sessions: 2
-        key_files:
-          [
-            commands/triage.md,
-            commands/,
-            skills/ideate.md,
-            bin/alm,
-          ]
-        conflict_risk: low
-        completed_at: null
-      - branch: work/roadmap-handoff
-        description: "Roadmap integration + furrow:next phase lifecycle — the /roadmap → /next pipeline"
-        todos: [roadmap-todo-integration, furrow-next-phase-lifecycle]
-        estimated_sessions: 2
-        key_files:
-          [
-            commands/next.md,
-            commands/triage.md,
-            templates/,
-            templates/roadmap.md.tmpl,
-            bin/frw.d/scripts/launch-phase.sh,
-            .furrow/rows/,
-          ]
-        conflict_risk: low
-        completed_at: null
-      - branch: work/todo-and-research
-        description: "TODO schema context refs + research methodology + research-to-docs detection"
-        todos:
-          [
-            todo-context-references,
-            research-methodology-design,
-            research-documentation-detection,
-          ]
-        estimated_sessions: 2
-        key_files:
-          [
-            commands/work-todos.md,
-            bin/alm,
-            skills/research.md,
-            commands/lib/promote-components.sh,
-            skills/review.md,
-          ]
-        conflict_risk: low
-        completed_at: null
-  - number: 5
-    title: "CLI Architecture & Folder Cleanup"
-    status: planned
-    rationale: "CLI architecture decision gates downstream lifecycle UX. cli-architecture merges first to stabilize bin/ boundaries before folder restructure."
-    parallelism: "cli-architecture || folder-structure"
-    rows:
-      - branch: work/cli-architecture
-        description: "CLI architecture overhaul, script-guard breakup, register-deliverable CLI gap"
-        todos:
-          [
-            cli-architecture-overhaul,
-            cli-breakup-script-guard,
-            register-deliverable-command,
-          ]
-        estimated_sessions: 4
-        key_files:
-          [
-            bin/alm,
-            bin/rws,
-            bin/sds,
-            bin/frw.d/scripts/,
-            bin/frw.d/hooks/script-guard.sh,
-          ]
-        conflict_risk: medium
-        completed_at: null
-      - branch: work/folder-structure
-        description: ".furrow/rows/ structure to prevent unbounded growth"
-        todos: [work-folder-structure-and-cleanup]
-        estimated_sessions: 2
-        key_files:
-          [
-            bin/rws,
-            commands/archive.md,
-            references/row-layout.md,
-          ]
-        conflict_risk: low
-        completed_at: null
-  - number: 6
-    title: "Orchestration & Lifecycle"
-    status: planned
-    rationale: "Polish orchestration patterns, add sprint/spike modes, and land lifecycle-UX verb renames. Four rows run in parallel; mostly distinct subsystems."
-    parallelism: "orchestration-polish || sprint-and-spikes || harness-lifecycle-ux || collaborative-surfaces"
-    rows:
-      - branch: work/orchestration-polish
-        description: "Parallel agent adoption, dispatch-enforcement review, user-action lifecycle"
-        todos:
-          [
-            parallel-agent-orchestration-adoption,
-            re-evaluate-dispatch-enforcement,
-            user-action-integration,
-          ]
-        estimated_sessions: 2
-        key_files:
-          [
-            skills/implement.md,
-            skills/shared/context-isolation.md,
-            bin/rws,
-            skills/shared/user-actions.md,
-          ]
-        conflict_risk: low
-        completed_at: null
-      - branch: work/sprint-and-spikes
-        description: "Sprint-inspired planning (retros, velocity, multi-row coordination) + spike row mode"
-        todos: [sprint-inspired-planning, spike-row-mode]
-        estimated_sessions: 4
-        key_files:
-          [skills/, evals/dimensions/, .furrow/almanac/, commands/triage.md]
-        conflict_risk: low
-        completed_at: null
-      - branch: work/harness-lifecycle-ux
-        description: "sow/reap verbs, status line design, installation/exploration skill"
-        todos: [harness-lifecycle-ux]
-        estimated_sessions: 4
-        key_files: [commands/, skills/, install.sh, .claude/settings.json]
-        conflict_risk: low
-        completed_at: null
-      - branch: work/collaborative-surfaces
-        description: "Document-based collaboration — markdown + comment threading, Notion integration"
-        todos: [collaborative-surfaces]
-        estimated_sessions: 3
-        key_files: [skills/, adapters/]
-        conflict_risk: none
-        completed_at: null
-  - number: 7
-    title: "Audits & Exploration"
-    status: planned
-    rationale: "Low-urgency items. Insights feed back into earlier work. TUI is aspirational."
-    parallelism: "audits-and-mining || exploratory-research || furrow-tui"
-    rows:
-      - branch: work/audits-and-mining
-        description: "Adapters audit, mine v1 harness, mine Claude Code"
-        todos: [adapters-audit, mine-v1-harness, mine-claude-code]
-        estimated_sessions: 4
-        key_files: [adapters/, evals/, references/specialist-template.md]
-        conflict_risk: none
-        completed_at: null
-      - branch: work/exploratory-research
-        description: "Memetic algorithms for LLM orchestration, design-pattern context construction"
-        todos: [memetic-algorithms-research, design-pattern-context-construction]
-        estimated_sessions: 3
-        key_files: [references/, docs/]
-        conflict_risk: none
-        completed_at: null
-      - branch: work/furrow-tui
-        description: "Furrow TUI / agent-dashboard integration"
-        todos: [furrow-tui-dashboard]
-        estimated_sessions: 3
-        key_files: []
-        conflict_risk: none
-        completed_at: null
+- number: 1
+  title: "Post-install hygiene \u2014 test isolation, review pipeline, install asymmetry"
+  status: planned
+  rationale: "Post-merge cleanup from install-and-merge (shipped 2026-04-22). Test-isolation fix leads \u2014 tests corrupted live-repo symlinks, a safety issue. Bundled so 8 small fixes amortize one branch\
+    \ instead of 8 tiny ones."
+  work_units:
+  - index: 1
+    branch_name: work/post-install-hygiene
+    description: Cleanup from install-and-merge post-ship review
+    todos:
+    - audit-test-install-sh-and-test-upgrade-sh-for-live
+    - codex-cross-model-reviewer-flags-other-deliverable
+    - audit-xdg-config-fields-for-runtime-consumers-pref
+    - generate-reintegration-sh-should-use-canonical-sch
+    - bin-frw-d-scripts-rescue-sh-committed-as-100644-di
+    - commands-lib-promote-learnings-sh-reads-null-for-e
+    - unify-tracked-14-vs-gitignored-8-specialist-symlin
+    - ac-10-e2e-fixture-split-across-contaminated-stop-a
+    key_files: []
+    conflict_risk: low
+    depends_on: []
+    completed_at: null
+    why_together: Same source review; same subsystem (install/test/review pipeline); bundling avoids 8 tiny branches.
+- number: 2
+  title: "CLI Go rewrite \u2014 foundational language migration"
+  status: planned
+  rationale: "Go rewrite of frw/rws/alm/sds. Decision 2026-04-23: Go (over TypeScript), all-in (no bash quick-wins phase). Rewrites the exact infrastructure Phase 3+ builds on, so it must land first. Absorbs\
+    \ cli-ergonomics-pass, cli-breakup-script-guard, register-deliverable-command, and log-disposition-discipline \u2014 their implementations live in the new Go CLI rather than transitional bash."
+  work_units:
+  - index: 1
+    branch_name: work/cli-go-rewrite
+    description: Rewrite frw/rws/alm/sds in Go with modularization, structured logging, introspection
+    todos:
+    - cli-architecture-overhaul
+    key_files:
+    - .furrow/almanac/rationale.yaml
+    - bin/
+    - cmd/
+    - install.sh
+    - internal/
+    - schemas/
+    - tests/integration/
+    conflict_risk: low
+    depends_on: []
+    completed_at: null
+    why_together: "Single large migration \u2014 every downstream row builds on the new binaries."
+- number: 3
+  title: "Dispatch + ambient contract \u2014 foundational for downstream skills"
+  status: planned
+  rationale: Sub-agent dispatch shape, ambient-layer contract, and specialist quality signal. These reshape contracts that Phase 4-6 skills/commands write against. Landing them after the Go rewrite means
+    generators and ambient-layer tooling are built in Go from the start.
+  work_units:
+  - index: 1
+    branch_name: work/sub-agent-normalization
+    description: Register specialists as Claude Code agent types; generator; quality validation
+    todos:
+    - sub-agent-normalization
+    - parallel-agent-orchestration-adoption
+    - specialist-quality-validation
+    - specialist-template-warning-escalation
+    key_files:
+    - .claude/agents/
+    - .claude/commands/specialist:*.md
+    - .furrow/almanac/rationale.yaml
+    - bin/frw.d/scripts/
+    - evals/
+    - install.sh
+    - references/specialist-template.md
+    - skills/implement.md
+    - skills/shared/context-isolation.md
+    - skills/shared/specialist-delegation.md
+    - specialists/
+    conflict_risk: medium
+    depends_on:
+    - per-step-model-routing
+    - specialist-expansion
+    completed_at: null
+    why_together: "All four touch specialist dispatch shape, registration, and quality gating \u2014 same module."
+  - index: 2
+    branch_name: work/ambient-context
+    description: Promote rationale/learnings/manifest into unified living-docs ambient layer
+    todos:
+    - ambient-context-promotion
+    key_files:
+    - .furrow/almanac/
+    - bin/alm
+    - commands/lib/
+    conflict_risk: low
+    depends_on: []
+    completed_at: null
+    why_together: "Standalone \u2014 reshapes ambient contract before Phase 4 writes against it."
+  - index: 3
+    branch_name: work/effort-and-model-routing
+    description: Effort selection alongside per-step model routing
+    todos:
+    - effort-selection-alongside-model
+    key_files:
+    - bin/frw.d/scripts/
+    - references/specialist-template.md
+    - skills/
+    - specialists/
+    conflict_risk: medium
+    depends_on: []
+    completed_at: null
+    why_together: "Touches specialists/ frontmatter \u2014 sequence with sub-agent-normalization (same files)."
+- number: 4
+  title: "Worktree + merge pipeline \u2014 /furrow:work and /furrow:next overhaul"
+  status: planned
+  rationale: Row-to-branch coupling (worktree) and branch-to-main coupling (semantic merge). Every future row uses these. Depends on Phase 2 CLI stabilization since merge logic lives in bin/frw.d/scripts/
+    (now Go).
+  work_units:
+  - index: 1
+    branch_name: work/worktree-integration
+    description: furrow:work auto-creates worktree; install-time user-bin pinning
+    todos:
+    - furrow-work-worktree-integration
+    - install-user-bin-worktree-pinning
+    key_files:
+    - .claude/commands/furrow:archive.md
+    - .claude/commands/furrow:work.md
+    - .furrow/almanac/rationale.yaml
+    - bin/frw.d/hooks/auto-install.sh
+    - bin/frw.d/install.sh
+    - bin/frw.d/scripts/rescue.sh
+    - bin/rws
+    - skills/ideate.md
+    - tests/integration/
+    conflict_risk: medium
+    depends_on: []
+    completed_at: null
+    why_together: Worktree lifecycle owned by one branch.
+  - index: 2
+    branch_name: work/next-merge-pipeline
+    description: Semantic merge with per-deliverable squash; phase lifecycle; merge skill
+    todos:
+    - furrow-next-semantic-merge
+    - furrow-next-phase-lifecycle
+    - merge-process-skill
+    key_files:
+    - .claude/commands/furrow:next.md
+    - .furrow/furrow.yaml
+    - bin/frw.d/hooks/
+    - bin/frw.d/scripts/
+    - bin/frw.d/scripts/launch-phase.sh
+    - bin/frw.d/scripts/merge-to-main.sh
+    - bin/rws
+    - commands/
+    - commands/next.md
+    - references/row-layout.md
+    conflict_risk: medium
+    depends_on: []
+    completed_at: null
+    why_together: All modify /furrow:next flow; shared commit-msg and squash code path.
+- number: 5
+  title: "Seeds primitive \u2014 deterministic work graph replacing LLM-reasoned dependencies"
+  status: planned
+  rationale: Foundational task-management primitive. Cross-row work graph + in-row task tracking in one unified graph, owned by sds. alm delegates to sds for triage/roadmap queries. Absorbs almanac-graph-primitives.
+    Must land after Go rewrite (graph engine belongs in Go).
+  work_units:
+  - index: 1
+    branch_name: work/seeds
+    description: Seed data model, edge types, lifecycle; sds CLI as graph engine; alm delegation
+    todos:
+    - seeds-concept
+    key_files:
+    - .furrow/almanac/
+    - bin/alm
+    - bin/rws
+    - bin/sds
+    - references/
+    - skills/
+    - templates/
+    conflict_risk: low
+    depends_on:
+    - cli-architecture-overhaul
+    completed_at: null
+    why_together: "Single large primitive \u2014 alm-side wiring and sds core ship together."
+- number: 6
+  title: "Artifacts, reviews, row variants \u2014 UX patterns for collaboration"
+  status: planned
+  rationale: Artifact-first content discipline, patch/spike row variants, review surfaces, and the triage/brain-dump commands that drive them. All depend on seeds for task tracking and on Phase 3 ambient
+    contract.
+  work_units:
+  - index: 1
+    branch_name: work/artifacts-and-row-variants
+    description: Blanket file-artifact rule; patch-row and spike-row modes; LOW-finding policy
+    todos:
+    - artifact-writing-defaults
+    - patch-row-concept
+    - spike-row-mode
+    - low-finding-disposition-policy
+    key_files:
+    - .claude/rules/step-sequence.md
+    - .furrow/almanac/rationale.yaml
+    - bin/alm
+    - bin/rws
+    - evals/dimensions/
+    - references/definition-shape.md
+    - references/review-methodology.md
+    - references/row-layout.md
+    - schemas/
+    - schemas/review-result.schema.json
+    - skills/
+    - skills/review.md
+    conflict_risk: high
+    depends_on:
+    - patch-row-concept
+    completed_at: null
+    why_together: Artifact conventions + lightweight row shapes are the same design conversation.
+  - index: 2
+    branch_name: work/review-surfaces
+    description: Unified isolated review + collaborative surfaces
+    todos:
+    - collaborative-surfaces
+    - unified-isolated-review
+    key_files:
+    - adapters/
+    - bin/frw.d/scripts/cross-model-review.sh
+    - commands/review.md
+    - skills/
+    - skills/ideate.md
+    - skills/review.md
+    - skills/shared/eval-protocol.md
+    conflict_risk: medium
+    depends_on: []
+    completed_at: null
+    why_together: Review/ambient-context loop; same skill files.
+  - index: 3
+    branch_name: work/triage-ux
+    description: Brain-dump triage command + tmux sessionizer for live review
+    todos:
+    - brain-dump-triage-command
+    - tmux-sessionizer-integration
+    key_files:
+    - .furrow/almanac/rationale.yaml
+    - .tmux-sessionizer
+    - bin/frw.d/scripts/
+    - commands/
+    - commands/next.md
+    - commands/triage.md
+    - commands/work-todos.md
+    - templates/roadmap.md.tmpl
+    conflict_risk: medium
+    depends_on:
+    - artifact-writing-defaults
+    - furrow-work-worktree-integration
+    - parallel-agent-orchestration-adoption
+    completed_at: null
+    why_together: Triage/brain-dump UX and the panes that watch those artifacts in real time.
+- number: 7
+  title: Post-seeds re-triage + dashboards + lifecycle
+  status: planned
+  rationale: "Several TODOs may be subsumed, simplified, or re-shaped once seeds lands \u2014 re-triage them here rather than designing against pre-seeds assumptions. Plus dashboards, self-update, and harness\
+    \ lifecycle UX which build on stable foundations."
+  work_units:
+  - index: 1
+    branch_name: work/post-seeds-retriage
+    description: "Re-evaluate these after seeds lands \u2014 scope may shrink or subsume"
+    todos:
+    - sprint-inspired-planning
+    - post-merge-watch-list
+    - support-sharded-todos-d-directory-to-reduce-merge
+    - gate-dimension-deduplication
+    - todo-context-references
+    - user-action-integration
+    key_files:
+    - .furrow/almanac/
+    - bin/alm
+    - bin/rws
+    - commands/triage.md
+    - commands/work-todos.md
+    - evals/dimensions/
+    - evals/gates/
+    - skills/
+    - skills/shared/
+    - skills/shared/gate-evaluator.md
+    - todos.yaml
+    conflict_risk: medium
+    depends_on: []
+    completed_at: null
+    why_together: Each one has an overlap with seeds semantics. Re-triage instead of pre-planning.
+  - index: 2
+    branch_name: work/dashboards-and-lifecycle
+    description: TUI dashboard, harness sow/reap verbs + status line, adapters audit, self-update
+    todos:
+    - furrow-tui-dashboard
+    - harness-lifecycle-ux
+    - adapters-audit
+    - furrow-self-update-hook
+    key_files:
+    - .claude/settings.json
+    - .furrow/_meta.yaml
+    - .furrow/almanac/rationale.yaml
+    - adapters/
+    - bin/frw.d/hooks/
+    - bin/frw.d/scripts/
+    - commands/
+    - install.sh
+    - skills/
+    conflict_risk: medium
+    depends_on:
+    - cli-architecture-overhaul
+    completed_at: null
+    why_together: User-facing polish on stabilized foundations; independent internally but shares rationale/install surface.
+- number: 8
+  title: Research, long-tail, workflow cleanup
+  status: planned
+  rationale: 'Lowest-urgency work: research spikes (mining prior harnesses, methodology), speculative research, and .furrow/rows/ structure cleanup. Run as capacity allows.'
+  work_units:
+  - index: 1
+    branch_name: work/research-mining
+    description: Mine Claude Code, v1 harness, Nate Jones patterns; documentation detection; research methodology
+    todos:
+    - mine-claude-code
+    - mine-v1-harness
+    - apply-nate-jones-skill
+    - research-documentation-detection
+    - research-methodology-design
+    - design-pattern-context-construction
+    key_files:
+    - commands/lib/promote-components.sh
+    - docs/
+    - references/
+    - skills/research.md
+    - skills/review.md
+    conflict_risk: low
+    depends_on: []
+    completed_at: null
+    why_together: Research spikes informing future harness design; same research artifact pattern.
+  - index: 2
+    branch_name: work/memetic-research
+    description: "Memetic algorithms for LLM orchestration \u2014 exploratory"
+    todos:
+    - memetic-algorithms-research
+    key_files: []
+    conflict_risk: low
+    depends_on: []
+    completed_at: null
+    why_together: Standalone research spike; large effort but low urgency.
+  - index: 3
+    branch_name: work/work-folder-cleanup
+    description: Structure .furrow/rows/ to prevent unbounded growth
+    todos:
+    - work-folder-structure-and-cleanup
+    key_files:
+    - bin/rws
+    - commands/archive.md
+    - references/row-layout.md
+    conflict_risk: low
+    depends_on:
+    - brain-dump-triage-command
+    completed_at: null
+    why_together: Standalone housekeeping; depends on brain-dump-triage-command landing first.
 deferred: []
 handoff:
-  template: |-
-    Start with: `/furrow:work {branch} — {description}`
-    Source TODOs in `.furrow/almanac/todos.yaml`: {todo_ids}
-    Key files: {key_files}
-    See `.furrow/almanac/roadmap.yaml` Phase {phase} for rationale.
+  template: "Start with: `/work {branch_name} \u2014 {description}`\nSource TODOs: {todo_ids}\nKey files: {key_files}"

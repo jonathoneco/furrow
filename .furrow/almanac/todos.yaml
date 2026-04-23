@@ -22,11 +22,29 @@
   status: done
   updated_at: "2026-04-03T08:30:00Z"
 - id: brain-dump-triage-command
-  title: "Brain dump triage command to turn notes into actionable TODOs"
+  title: "Brain dump + triage command — collaborative ideation, TODO extraction, roadmap bootstrap fields"
   context: |
     The process of taking unstructured brain dump notes, sorting them
     semantically, and converting them into structured todos.yaml entries
     was done manually this session. This should be a repeatable command.
+
+    Both /furrow:triage and the brain-dump command must include back-and-forth
+    ideation before mechanical processing — this is the collaborate pattern
+    from the model routing TODO applied to planning commands. Triage ideation:
+    before grouping, ask about priorities, surface unclear items, identify
+    hidden dependencies, challenge assumptions about ordering. Brain dump
+    ideation: organize → ask clarifying questions → consolidate → iterate →
+    THEN create TODOs. Not mechanical extraction.
+
+    **Absorbs `triage-and-braindump-ideation` (2026-04-23)**: same commands,
+    same collaboration protocol — folded into this row.
+
+    **Absorbs remnant of `roadmap-todo-integration` (2026-04-23)**: handoff
+    prompts (commands/next.md) and TODO consolidation (commands/triage.md
+    section 6a) already cover the core roadmap-integration functionality. The
+    only remnants were "persist bootstrap fields in ROADMAP.md entries" and
+    "auto-detect TODO overlap for merge suggestions" — both are natural
+    additions to this command row.
   work_needed: |
     - Create a /brain-dump or /dump-triage command
     - Intake: raw text (conversation, notes, voice-to-text, markdown)
@@ -35,22 +53,44 @@
     - Step 3: Convert approved clusters into todos.yaml entries with proper schema
     - Step 4: Assign triage metadata (urgency, impact, effort)
     - Optionally trigger /work-roadmap to regenerate the roadmap
+    - (From absorbed triage-and-braindump-ideation) Update commands/triage.md to add a
+      collaboration step before phase grouping
+    - (From absorbed triage-and-braindump-ideation) Define the ideation protocol for both
+      commands: what questions to ask, when to stop iterating
+    - (From absorbed triage-and-braindump-ideation) Reuse the shared collaboration protocol
+      from ideation steps
+    - (From absorbed triage-and-braindump-ideation) Ensure commands do not extract TODOs
+      mechanically — iterate first
+    - (From absorbed roadmap-todo-integration) Persist formal "bootstrap" fields in
+      ROADMAP.md entries (ready-to-go tackling prompts per TODO)
+    - (From absorbed roadmap-todo-integration) Auto-detect TODO overlap and suggest merges
+      during roadmap handling
   references:
     - "todos.yaml"
     - "commands/work-todos.md"
     - "commands/work-roadmap.md"
+    - "commands/triage.md"
+    - "commands/next.md"
+    - "skills/ideate.md"
+    - "templates/roadmap.md.tmpl"
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-04T00:00:00Z"
+  updated_at: "2026-04-23T00:00:00Z"
   urgency: "medium"
   impact: "high"
   effort: "medium"
   files_touched:
     - "commands/"
     - "commands/work-todos.md"
+    - "commands/triage.md"
+    - "commands/next.md"
+    - "templates/roadmap.md.tmpl"
   depends_on:
     - parallel-agent-orchestration-adoption # inferred: merge-implication — skills/ stable before command layer
   status: active
+  absorbs:
+    - triage-and-braindump-ideation
+    - roadmap-todo-integration
 - id: claude-md-docs-routing
   title: "CLAUDE.md should reference docs routing"
   context: |
@@ -469,34 +509,6 @@
   impact: "low"
   effort: "small"
   status: done
-- id: roadmap-todo-integration
-  title: "Roadmap provides tackling prompts and merges TODOs"
-  context: |
-    ROADMAP.md should provide a ready-to-go prompt for tackling each TODO —
-    not just a description but a bootstrapping instruction. Additionally,
-    TODOs should be mergeable as part of roadmap handling when multiple
-    TODOs converge on the same work.
-  work_needed: |
-    - Handoff prompts (commands/next.md) and TODO consolidation (commands/triage.md section 6a) already cover the core functionality
-    - Remaining: persist formal "bootstrap" fields in ROADMAP.md entries
-    - Remaining: auto-detection of TODO overlap for merge suggestions
-  references:
-    - "ROADMAP.md"
-    - "templates/roadmap.md.tmpl"
-    - "commands/triage.md"
-    - "commands/next.md"
-  source_type: "brain-dump"
-  created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-03T17:00:00Z"
-  urgency: "low"
-  impact: "medium"
-  effort: "medium"
-  files_touched:
-    - "templates/roadmap.md.tmpl"
-    - "commands/triage.md"
-    - "commands/next.md"
-  # Cluster: Context & Design Patterns
-  status: active
 - id: script-access-restrictions
   title: "Restrict direct access to internal/dependency scripts"
   context: |
@@ -527,7 +539,7 @@
     - "bin/frw.d/hooks/"
   status: done
 - id: seeds-concept
-  title: "Seeds as the task management primitive — work graph, in-row tracking, and gating"
+  title: "Seeds as the task management primitive — unified work graph, in-row tracking, gating, and alm delegation"
   context: |
     Seeds are the fundamental task management primitive for Furrow. They operate at
     two levels:
@@ -560,6 +572,20 @@
     and rws delegate graph functionality to sds — alm for planning (triage,
     roadmap), rws for row-level operations (gating, step transitions, wave
     ordering, deliverable dependencies).
+
+    **Absorbs `almanac-graph-primitives` (2026-04-23)**: the alm-side wiring
+    (triage/roadmap reading the seed graph instead of LLM-reasoning) is the
+    same scope — "alm is the planning surface, seeds are the graph engine" is
+    the thesis of both TODOs. Rolled into work_needed below.
+
+    **Post-seeds re-triage candidates**: `sprint-inspired-planning` (explicitly
+    references cross-row seeds), `post-merge-watch-list` (watches likely become
+    a seed type), `support-sharded-todos-d-directory` (may be rendered moot by
+    seeds-as-graph-nodes). Re-evaluate after seeds lands.
+
+    **Implementation note**: seeds-concept lands after cli-architecture-overhaul
+    (Go rewrite). The graph engine belongs in Go — edge types, queries, and
+    traversals are painful in bash and painless in Go.
   work_needed: |
     - Define the seed data model: id, title, type, status, priority, edges, metadata
     - Design edge types: blocks, depends-on, informs, produces, supersedes
@@ -572,17 +598,37 @@
     - Consider whether seeds replace plan.json's implicit dependency tracking
     - Design cross-row ↔ within-row edge semantics (deliverable depends on external seed, row produces downstream seeds)
     - Prototype with a multi-deliverable row to validate both levels and cross-row connections
+    - (From absorbed almanac-graph-primitives) Wire alm triage to query sds for dependency
+      ordering instead of inferring through LLM reasoning
+    - (From absorbed almanac-graph-primitives) Wire alm roadmap generation to read seed edges
+      for phase grouping
+    - (From absorbed almanac-graph-primitives) Add alm commands that delegate graph queries
+      to sds (e.g., alm deps, alm critical-path)
+    - (From absorbed almanac-graph-primitives) Ensure roadmap generation reads the explicit
+      seed graph for phase ordering
+    - (From absorbed almanac-graph-primitives) Consider visualization pass-through
+      (alm renders, sds provides data)
+    - (From absorbed almanac-graph-primitives) Design how alm surfaces seed graph state in
+      roadmap.yaml and roadmap.md
   source_type: "brain-dump"
   created_at: "2026-04-02T00:00:00Z"
-  updated_at: "2026-04-02T00:00:00Z"
-  urgency: "low"
+  updated_at: "2026-04-23T00:00:00Z"
+  urgency: "medium"
   impact: "high"
   effort: "large"
   files_touched:
+    - "bin/sds"
+    - "bin/alm"
+    - "bin/rws"
     - "skills/"
     - "references/"
     - "templates/"
+    - ".furrow/almanac/"
   status: active
+  depends_on:
+    - cli-architecture-overhaul
+  absorbs:
+    - almanac-graph-primitives
 # Cluster: Harness UX / Ergonomics
 - id: skill-loading-visible-internals
   title: "Skill loading exposes internals — should be seamless"
@@ -889,44 +935,6 @@
     - adapters/
   status: active
 # --- Bundle C: Almanac Graph Primitives ---
-- id: almanac-graph-primitives
-  title: "Almanac calls seeds for graph management — triage, roadmap, and planning consume the seed graph"
-  context: |
-    Almanac (alm) is the high-level work planning surface: TODO management, roadmapping,
-    documentation upkeep, learnings. It delegates graph management to seeds (sds) rather
-    than owning graph primitives itself. When alm triage needs dependency ordering, it
-    queries the seed graph. When alm roadmap needs phase grouping, it reads seed edges.
-
-    The responsibility split:
-    - **alm**: planning surface — TODOs, roadmap generation, knowledge lifecycle, docs
-    - **sds**: graph engine — nodes, edges, dependency types, queries, validation
-
-    This TODO covers wiring alm's planning operations to consume the seed graph instead
-    of inferring dependencies through LLM reasoning. alm triage, alm next, and roadmap
-    generation should all read from sds rather than reasoning about relationships.
-  work_needed: |
-    - Wire alm triage to query sds for dependency ordering instead of inferring
-    - Wire alm roadmap generation to read seed edges for phase grouping
-    - Add alm commands that delegate graph queries to sds (e.g., alm deps, alm critical-path)
-    - Ensure roadmap generation reads the explicit seed graph for phase ordering
-    - Consider visualization pass-through (alm renders, sds provides data)
-    - Design how alm surfaces seed graph state in roadmap.yaml and roadmap.md
-  references:
-    - bin/alm
-    - .furrow/almanac/todos.yaml
-    - .furrow/almanac/roadmap.yaml
-  source_type: brain-dump
-  created_at: "2026-04-04T00:00:00Z"
-  updated_at: "2026-04-04T00:00:00Z"
-  urgency: medium
-  impact: high
-  effort: large
-  files_touched:
-    - bin/alm
-    - .furrow/almanac/
-  depends_on:
-    - cli-architecture-overhaul # inferred: foundational — CLI architecture gates where to build features
-  status: active
 # --- Standalone: Apply Nate Jones Harness Skill ---
 - id: apply-nate-jones-skill
   title: "Apply Nate Jones harness skill patterns to Furrow"
@@ -949,41 +957,99 @@
   status: active
 # --- Bundle A: CLI Architecture ---
 - id: cli-architecture-overhaul
-  title: "CLI architecture overhaul — functionality over script routing, modularization, Go evaluation"
+  title: "CLI architecture overhaul — Go rewrite of frw/rws/alm/sds with modularization, structured logging, introspection"
   context: |
-    The CLIs (alm, rws, sds) are currently shell scripts that route to other shell scripts.
-    They should be functionality-first, reducing context burden on agents, with clean verticals
-    per CLI. Related questions: should they be modularized into subcommand libraries? Should
-    they move to Go for type safety and testability? The harness also lacks self-understanding —
-    it doesn't know its own tool inventory, and past conversations contain patterns that should
-    be extracted into CLI features.
+    The CLIs (frw, rws, alm, sds) are currently shell scripts routing to other shell
+    scripts. Shell is actively painful at current scope: ARG_MAX bugs in alm triage
+    (hit 2026-04-23 at 90 TODOs), no type safety, no structured logging, brittle
+    error handling, and increasingly complex sub-dispatch logic.
+
+    Decision 2026-04-23: rewrite in **Go**. Single-binary distribution, strong
+    stdlib for YAML/JSON, clean CLI ergonomics, fast startup, shell-native feel,
+    simple install story. TypeScript was the alternative — rejected because the
+    node dependency weakens the install story and type-sharing with agent code
+    isn't a near-term need.
+
+    Decision 2026-04-23: all-in — no bash quick-wins phase. Ergonomics decisions
+    from `cli-ergonomics-pass` become design input; their implementation lands in
+    the rewrite, not in transitional bash.
+
+    The harness also lacks self-understanding — it doesn't know its own tool
+    inventory, and past conversations contain patterns that should be extracted
+    into CLI features. This row includes building that introspection as a
+    first-class feature of the new Go CLIs.
   work_needed: |
-    - Audit current CLI architecture: what's script routing vs real logic
-    - Define clean verticals for each CLI (alm = knowledge, rws = rows, sds = seeds)
-    - Evaluate Go vs shell tradeoffs (testability, type safety, portability, development speed)
-    - Design modularization strategy (subcommand libraries, shared utilities)
-    - Add harness self-understanding: CLI should be able to describe its own capabilities
-    - Mine past Furrow conversations for patterns that should become CLI features
-    - Reduce context burden: CLIs should handle complexity so skills don't have to
+    - **Language decision**: Go (baked). Confirm runtime (Go 1.22+), module layout,
+      dependency policy (prefer stdlib, minimal 3rd-party).
+    - **Module layout**: one Go module per CLI (cmd/frw, cmd/rws, cmd/alm, cmd/sds)
+      sharing an internal package for row/state/schema/seed primitives. Replaces
+      cli-breakup-script-guard (absorbed) — breakup becomes the rewrite's module
+      architecture by construction.
+    - **Command-surface spec**: inherit decisions from cli-ergonomics-pass
+      (absorbed as design input): strict section-name validation with self-teaching
+      errors, auto-regenerate summary on missing file, `frw set-field`/`frw patch`
+      split, `rws update-deliverable` first-class, no `frw checkpoint` CLI,
+      introspection via `frw help` / `rws help` / `alm help` / `sds help`. Same
+      for `register-deliverable-command` (absorbed).
+    - **Structured logging** (absorbs log-disposition-discipline): ship structured
+      log emission (JSON lines with level, category, row context, suggested action)
+      from day one. End-of-session comb converts persistent-category entries into
+      TODOs. Global log at `.furrow/logs/warnings.jsonl` with row/file context
+      attached.
+    - **Schema handling**: Go structs generated from schemas/*.schema.json; types
+      shared across CLIs via the internal package. Validation is type-level, not
+      hand-rolled.
+    - **Hook invocation**: bash hooks in bin/frw.d/hooks/ stay shell (they're
+      simple and shell-interactive-friendly), invoked by the Go harness.
+      Re-evaluate if any hook grows complex enough to warrant porting.
+    - **Install story**: `go install` for single-binary distribution. install.sh
+      either drops Go-binary build step or curls release artifacts. Preserve the
+      offline/vendored case if still supported.
+    - **Mine past conversations** for CLI features: scrape Furrow history for
+      user-requested-but-never-added patterns (e.g., manual file-writing requests
+      that should be `rws add-artifact`).
+    - **Introspection**: `frw help` (and rws/alm/sds) describe their own
+      capabilities. One canonical discovery point for agents, so they don't guess
+      or read source. Plus: `--format human|json|table` on data-returning commands.
+    - **Migration plan**: phase the rewrite in a single row with multiple
+      deliverables (per CLI). Each CLI can be shipped independently once its
+      module reaches parity; bash version stays until Go version lands per CLI.
+    - **Testing**: Go test coverage for each command, integration tests driving
+      the Go binary against real .furrow/ fixtures (replaces current
+      tests/integration/*.sh which may stay shell or migrate selectively).
+    - **Cross-CLI state mutations**: the internal package is the only writer to
+      state.json, summary.md, seeds.jsonl, etc. Each CLI imports it. Prevents
+      the current "rws calls alm calls rws" shell-dispatch tangle.
   references:
-    - bin/alm
+    - bin/frw
     - bin/rws
+    - bin/alm
     - bin/sds
     - bin/frw.d/scripts/
+    - bin/frw.d/hooks/
+    - schemas/
+    - install.sh
+    - tests/integration/
   source_type: brain-dump
   created_at: "2026-04-04T00:00:00Z"
-  updated_at: "2026-04-04T00:00:00Z"
-  urgency: medium
+  updated_at: "2026-04-23T00:00:00Z"
+  urgency: high
   impact: high
   effort: large
   files_touched:
-    - bin/alm
-    - bin/rws
-    - bin/sds
-    - bin/frw.d/scripts/
-  depends_on:
-    - brain-dump-triage-command # inferred: merge-implication — command experience informs CLI architecture
+    - bin/
+    - cmd/
+    - internal/
+    - schemas/
+    - install.sh
+    - tests/integration/
+    - .furrow/almanac/rationale.yaml
   status: active
+  absorbs:
+    - cli-breakup-script-guard
+    - cli-ergonomics-pass
+    - register-deliverable-command
+    - log-disposition-discipline
 # --- Bundle D: Harness Lifecycle UX ---
 - id: harness-lifecycle-ux
   title: "Harness UX — sow/reap verbs, status line, installation/exploration skill"
@@ -1700,39 +1766,6 @@
     - commands/triage.md
     - bin/rws
   status: active
-- id: triage-and-braindump-ideation
-  title: "Ideation loops in triage and brain dump commands"
-  context: |
-    Both /furrow:triage and the brain dump command should include back-and-forth
-    ideation before mechanical processing. This is the collaborate pattern from the
-    model routing TODO applied to planning commands.
-
-    Triage ideation: before grouping, ask about priorities, surface unclear items,
-    identify hidden dependencies, challenge assumptions about ordering, create
-    clarity where it's lacking.
-
-    Brain dump ideation: organize → ask clarifying questions → consolidate →
-    iterate back and forth → THEN create TODOs. Not mechanical TODO extraction.
-  work_needed: |
-    - Update commands/triage.md to add a collaboration step before phase grouping
-    - Create a brain dump command (commands/brain-dump.md or extend work-todos.md)
-    - Define the ideation protocol for both: what questions to ask, when to stop iterating
-    - Consider reusing the shared collaboration protocol from ideation steps
-    - Ensure the commands don't just extract TODOs mechanically
-  references:
-    - commands/triage.md
-    - commands/work-todos.md
-    - skills/ideate.md
-  source_type: brain-dump
-  created_at: "2026-04-07T00:00:00Z"
-  updated_at: "2026-04-07T00:00:00Z"
-  urgency: medium
-  impact: high
-  effort: medium
-  files_touched:
-    - commands/triage.md
-    - commands/work-todos.md
-  status: active
 - id: unified-isolated-review
   title: "Unify Phase B and cross-model review into a single isolated-review script"
   context: |
@@ -1777,38 +1810,6 @@
     - "skills/shared/eval-protocol.md"
     - "commands/review.md"
   status: active
-- id: cli-breakup-script-guard
-  title: "Break up rws/alm/sds into frw.d/-style internal modules and extend script-guard"
-  context: |
-    Currently only frw dispatches to bin/frw.d/. The other CLIs (rws, alm, sds)
-    are monolithic scripts. When they're broken into internal modules (similar to
-    frw.d/scripts/), the script-guard.sh hook must be extended to cover those
-    new internal paths. The guard's frw.d/ substring match may already cover this
-    if modules land under frw.d/, but if a different directory structure is chosen
-    (e.g., rws.d/, alm.d/), the hook pattern needs updating.
-  work_needed: |
-    - Break rws, alm, sds into dispatcher + internal modules
-    - Choose directory structure (frw.d/ umbrella vs separate *.d/ dirs)
-    - Extend script-guard.sh to cover new internal module paths
-    - Update integration tests for expanded guard coverage
-  references:
-    - "bin/rws"
-    - "bin/alm"
-    - "bin/sds"
-    - "bin/frw.d/hooks/script-guard.sh"
-  source_work_unit: "script-safety"
-  source_type: "review-finding"
-  created_at: "2026-04-10T00:00:00Z"
-  updated_at: "2026-04-10T00:00:00Z"
-  urgency: "low"
-  impact: "medium"
-  effort: "large"
-  files_touched:
-    - "bin/rws"
-    - "bin/alm"
-    - "bin/sds"
-    - "bin/frw.d/hooks/script-guard.sh"
-  status: active
 # --- Standalone: Gate Dimension Deduplication ---
 - id: gate-dimension-deduplication
   title: "Extract shared gate dimensions (seed-sync, dual-review) into reusable definitions"
@@ -1840,37 +1841,6 @@
     - evals/dimensions/
     - skills/shared/gate-evaluator.md
   status: active
-# --- Standalone: Register-Deliverable CLI Gap ---
-- id: register-deliverable-command
-  title: "Add rws register-deliverable command — separate registration from completion"
-  context: |
-    The only way to register deliverables in state.json is `rws complete-deliverable`,
-    which sets status to "completed". At the decompose step, deliverables need to be
-    registered with status "not_started" and wave assignment, but there's no command for
-    this. The workaround is direct jq mutation of state.json, which violates the
-    CLI-mediated state mutation principle. Discovered during dual-review-delegation
-    decompose step.
-  work_needed: |
-    - Add `rws register-deliverable <name> <deliverable> [--wave N]` command
-    - Sets deliverable status to "not_started" with wave assignment and corrections 0
-    - If deliverable already registered, error (don't overwrite)
-    - Update complete-deliverable to require deliverable already be registered
-    - Consider: should decompose step auto-register from plan.json? (rws register-from-plan)
-  references:
-    - bin/rws
-    - skills/decompose.md
-    - .claude/rules/cli-mediation.md
-  source_work_unit: "dual-review-delegation"
-  source_type: open-question
-  created_at: "2026-04-10T00:00:00Z"
-  updated_at: "2026-04-10T00:00:00Z"
-  urgency: medium
-  impact: medium
-  effort: small
-  files_touched:
-    - bin/rws
-  status: active
-# --- Standalone: Effort Selection Alongside Model Selection ---
 - id: effort-selection-alongside-model
   title: "Add effort_hint to specialists and step skills — decouple reasoning depth from model identity"
   context: |
@@ -2179,6 +2149,9 @@
   work_needed: '- Either merge the two fixtures into one that runs all five phases end-to-end, or add a third fixture combining contamination + protected-conflict + approved-execute + verify-green\n- Tighten assertion: final state on main branch should be clean (doctor green, hooks intact, sort invariants hold)\n- Keep existing per-phase tests; this is a single new e2e scenario'
   source_type: review-finding
   status: active
+  urgency: low
+  impact: low
+  effort: small
   created_at: "2026-04-23T11:12:29-04:00"
   updated_at: "2026-04-23T11:12:29-04:00"
   source_work_unit: install-and-merge
@@ -2188,6 +2161,9 @@
   work_needed: '- Audit each field in ~/.config/furrow/config.yaml for a runtime reader (cross_model.provider, gate_policy default, preferred_specialists)\n- Wire missing consumers through bin/frw.d/lib/common.sh resolver helpers\n- Add integration tests: test-config-resolution.sh should cover each field''s project->XDG->compiled-in fallback'
   source_type: review-finding
   status: active
+  urgency: medium
+  impact: medium
+  effort: small
   created_at: "2026-04-23T11:12:29-04:00"
   updated_at: "2026-04-23T11:12:29-04:00"
   source_work_unit: install-and-merge
@@ -2197,6 +2173,9 @@
   work_needed: '- Replace inline jq validation in generate-reintegration.sh with subprocess call to Python Draft2020-12Validator against schemas/reintegration.schema.json (mirror get-reintegration-json implementation)\n- Also add test_results.evidence_path to the schema''s required fields (currently missing per AC-R2 contract)\n- Add regression test covering a malformed generator-output case'
   source_type: review-finding
   status: active
+  urgency: medium
+  impact: medium
+  effort: small
   created_at: "2026-04-23T11:12:29-04:00"
   updated_at: "2026-04-23T11:12:29-04:00"
   source_work_unit: install-and-merge
@@ -2206,6 +2185,9 @@
   work_needed: '- Trace FURROW_ROOT / HOME / XDG_* usage in tests/integration/test-install-*.sh and tests/integration/test-upgrade-*.sh\n- Ensure every test fully sandboxes: HOME=$TMP, FURROW_ROOT=$TMP/fixture, no live-repo symlink creation\n- Add a test-sanity guard: before-and-after snapshot of .claude/commands/specialist:*.md targets; fail test if any changed outside the fixture\n- Consider a CI pre-test hook: ''git status --porcelain'' empty before tests, and empty after'
   source_type: review-finding
   status: active
+  urgency: high
+  impact: medium
+  effort: small
   created_at: "2026-04-23T11:12:30-04:00"
   updated_at: "2026-04-23T11:12:30-04:00"
   source_work_unit: install-and-merge
@@ -2215,6 +2197,9 @@
   work_needed: '- Decide contract: is rescue.sh standalone-executable (100755) or sourced/interpreted-via-sh (100644)?\n- If standalone: git update-index --chmod=+x bin/frw.d/scripts/rescue.sh\n- If interpreter-invoked: change bin/frw line 207 to route rescue through ''sh "$script"'' and document why rescue is special\n- Add test asserting ''frw rescue --diagnose'' exits 0 on a clean tree'
   source_type: review-finding
   status: active
+  urgency: medium
+  impact: low
+  effort: small
   created_at: "2026-04-23T11:12:30-04:00"
   updated_at: "2026-04-23T11:12:30-04:00"
   source_work_unit: install-and-merge
@@ -2224,6 +2209,9 @@
   work_needed: '- In bin/frw cross-model-review, compute per-deliverable commit range instead of base..HEAD\n- Use git log --follow --pretty=format:%H -- <file_ownership_globs> to get commits that touched this deliverable''s files\n- Constrain the diff passed to codex to only those commits\n- Regression: run cross-model-review on a multi-deliverable row and confirm unplanned-changes no longer flags cross-deliverable work'
   source_type: review-finding
   status: active
+  urgency: medium
+  impact: high
+  effort: small
   created_at: "2026-04-23T11:12:30-04:00"
   updated_at: "2026-04-23T11:12:30-04:00"
   source_work_unit: install-and-merge
@@ -2233,6 +2221,9 @@
   work_needed: '- Update promote-learnings.sh to read the actual jsonl schema (summary, kind, step, tags)\n- Or: migrate learnings.jsonl to the expected schema and document\n- Add a validate-learning.sh invocation on append to prevent further drift\n- Regression: promote-learnings on a row with known learnings displays non-null summaries'
   source_type: review-finding
   status: active
+  urgency: low
+  impact: low
+  effort: small
   created_at: "2026-04-23T11:12:30-04:00"
   updated_at: "2026-04-23T11:12:30-04:00"
   source_work_unit: install-and-merge
@@ -2242,6 +2233,9 @@
   work_needed: '- Evaluate cost/benefit vs current sort-by-id discipline (which already reduces conflict incidence substantially)\n- If pursued: alm loader reads todos.yaml + todos.d/*.yaml into one collection; add normalize-todos --shard / --unshard; update validate schema\n- Back-compat: todos.yaml continues to work if todos.d/ is empty'
   source_type: review-finding
   status: active
+  urgency: low
+  impact: medium
+  effort: large
   created_at: "2026-04-23T11:12:30-04:00"
   updated_at: "2026-04-23T11:12:30-04:00"
   source_work_unit: install-and-merge
@@ -2251,6 +2245,9 @@
   work_needed: '- Decide: track all 22 committed (update .gitignore to remove or scope the pattern), OR remove the 14 tracked ones and treat all as install-time artifacts\n- Document the decision in references/install-architecture.md\n- Update install.sh to match the chosen model\n- Regression: test that a fresh consumer install produces the documented set'
   source_type: review-finding
   status: active
+  urgency: low
+  impact: low
+  effort: small
   created_at: "2026-04-23T11:12:30-04:00"
   updated_at: "2026-04-23T11:12:30-04:00"
   source_work_unit: install-and-merge
@@ -2350,70 +2347,6 @@
     - "2026-04-22: `Task(subagent_type=\"specialist:test-engineer\")` failed during wave-1 pre-review (agent type not found)."
     - "2026-04-22: `Task(subagent_type=\"specialist:harness-engineer\")` failed during wave-1 D1 implement (same root cause — specialists aren't registered agents)."
     - "2026-04-22: Orchestrator observed working inline on multi-deliverable work instead of dispatching sub-agents (see re-evaluate-dispatch-enforcement)."
-
-- id: cli-ergonomics-pass
-  title: "CLI ergonomics pass — fix friction points surfaced during 2026-04 brain-dump"
-  context: |
-    A brain-dump session on 2026-04-22 surfaced a cluster of CLI surface-level
-    friction points hit during real row work. None individually justify a row;
-    together they're a cohesive UX pass. Agents should not need to post-process
-    CLI output with ad-hoc Python or memorize which commands exist — the CLI
-    should carry enough affordance to guide correct use, and the instructional
-    content that makes the agent aware of how to call CLIs must be explicit
-    and discoverable.
-
-    Note: symlink issues mentioned in the original brain-dump are being
-    addressed by furrow-work-worktree-integration and are not in scope here.
-  work_needed: |
-    - `alm triage` default output: include waves, urgency/impact/effort, deps
-      without requiring Python post-processing. Support `--format
-      human|json|table` — human as default for terminal use, JSON preserved
-      for tooling.
-    - `rws update-summary` section names: keep strict validation, but show the
-      valid list in the error message (not just "invalid section: X"). Error
-      should be self-teaching.
-    - `rws update-summary` auto-regenerates `summary.md` when missing instead
-      of erroring — no more manual `regenerate-summary` round-trip before the
-      first update.
-    - `frw update-state`: split into `frw set-field <path> <value>` for simple
-      cases and `frw patch <jq>` for complex cases. Decision baked — split
-      chosen over single-command-with-clearer-help for surface clarity.
-    - `rws update-deliverable <row> <deliverable> <status>` as a first-class
-      command. Mid-deliverable rework happens rarely but is a supported flow;
-      absence forced workarounds.
-    - `frw checkpoint` does NOT get a CLI counterpart. Decision baked —
-      checkpointing is a summary-update convention driven by the slash command.
-      If scripting need emerges later, revisit.
-    - `frw help` (and `rws help`, `alm help`, `sds help`): introspection of
-      available commands with common usage patterns. One canonical discovery
-      point so the agent doesn't guess or read source. Applies to all four
-      CLIs.
-    - Agent awareness of CLI evolution: when any CLI emits "unknown command"
-      or "invalid args", the error must include a one-line pointer to
-      `references/furrow-commands.md`. Agent-side: explicit instruction in
-      `skills/work-context.md` to consult that reference before guessing CLI
-      invocations.
-  source_type: "brain-dump"
-  status: active
-  created_at: "2026-04-22T15:03:13-04:00"
-  updated_at: "2026-04-22T15:03:13-04:00"
-  urgency: "medium"
-  impact: "medium"
-  effort: "medium"
-  references:
-    - bin/frw
-    - bin/rws
-    - bin/alm
-    - bin/sds
-    - references/furrow-commands.md
-    - skills/work-context.md
-  files_touched:
-    - bin/frw
-    - bin/rws
-    - bin/alm
-    - bin/sds
-    - references/furrow-commands.md
-    - skills/work-context.md
 
 - id: furrow-work-worktree-integration
   title: "furrow:work auto-creates a git worktree when not already on one"
@@ -2794,70 +2727,4 @@
     - .furrow/almanac/rationale.yaml
   absorbs:
     - scratchpad-md-session-persistent-actionables-layer
-
-- id: log-disposition-discipline
-  title: "Log disposition discipline — structured logs + periodic comb for TODOs"
-  context: |
-    Brain-dump 2026-04-22: "we should make a todo to do something about these
-    logs." CLIs and hooks emit WARN/INFO messages about things that *should*
-    be addressed later (missing specialist templates, deprecated patterns,
-    advisory suggestions), but those messages scroll past and vanish. No
-    follow-up mechanism exists. This is the "falls through the cracks"
-    problem for machine-generated signals, analogous to
-    low-finding-disposition-policy for human review findings.
-
-    Emerging adjacent signal (2026-04-22): user is "tempted to move the CLIs
-    over to golang or typescript" because of this and other scope growth
-    (structured logging, richer error types, JSON output, introspection).
-    Not acted on here, but flagged — if that migration happens, it would
-    drastically change the shape of this work. Capture that as a separate
-    consideration rather than blocking on it.
-  work_needed: |
-    - Inventory current WARN/INFO emissions across `bin/frw*`, `bin/rws`,
-      `bin/alm`, `bin/sds`, and all hooks. Categorize: transient (safe to
-      ignore) vs persistent (should become a TODO).
-    - Define a structured log format for persistent-category messages —
-      e.g., `FURROW-WARN [category]: message (suggest: todo|doc|patch)`.
-      Requires structured logging from hooks/CLIs (decision baked — yes,
-      structured is required). This expands scope; see the CLI-rewrite
-      signal noted in context.
-    - Log-then-comb capture mechanism (decision baked): hooks and CLIs
-      append to a durable log, and a periodic comb step (probably at
-      end-of-session or `/furrow:triage`) sweeps the log and converts
-      persistent entries into TODOs.
-    - Log location: global with context attachment (decision baked, with
-      note — user was torn). Reasoning: most of these logs drive harness
-      iteration, so per-row means "go hunting." Global log (e.g.,
-      `.furrow/logs/warnings.jsonl`) with row/file context attached to each
-      entry keeps discovery cheap while preserving contextuality.
-    - Unified intake with low-finding-disposition-policy (decision baked).
-      Both flow into the TODO system; outflow diverges (patch-row vs doc
-      update vs plain TODO).
-    - Depends on cli-ergonomics-pass — that work may reshape how CLIs emit
-      errors/warnings (particularly the `frw help` introspection and
-      error-message improvements), which affects the format basis this
-      TODO standardizes on.
-  open_questions:
-    - "Should the CLI-rewrite consideration (Go/TS) be a separate standalone TODO? If the rewrite is likely, some of the structured-logging work here becomes moot. Flag for user decision before this row starts."
-  source_type: "brain-dump"
-  status: active
-  created_at: "2026-04-22T15:03:13-04:00"
-  updated_at: "2026-04-22T15:03:13-04:00"
-  urgency: "low"
-  impact: "medium"
-  effort: "medium"
-  references:
-    - bin/frw
-    - bin/rws
-    - bin/alm
-    - bin/sds
-    - bin/frw.d/hooks/
-  files_touched:
-    - bin/
-    - bin/frw.d/hooks/
-    - schemas/
-    - .furrow/logs/
-    - .furrow/almanac/rationale.yaml
-  depends_on:
-    - cli-ergonomics-pass
 
