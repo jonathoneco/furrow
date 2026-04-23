@@ -305,15 +305,17 @@ if [ -d "${ROW_DIR}/reviews" ]; then
 fi
 
 # --- build test_results ---
-if [ -n "$_evidence_path" ]; then
-  _test_results="$(jq -n \
-    --argjson pass "$_test_pass" \
-    --arg evidence_path "$_evidence_path" \
-    '{pass: $pass, evidence_path: $evidence_path}'
-  )"
-else
-  _test_results='{"pass": false}'
+# Schema requires test_results.evidence_path. When no review record
+# exists, emit a sentinel so the document validates; the /furrow:merge
+# consumer treats "reviews/none.md" as "no review evidence present".
+if [ -z "$_evidence_path" ]; then
+  _evidence_path="reviews/none.md"
 fi
+_test_results="$(jq -n \
+  --argjson pass "$_test_pass" \
+  --arg evidence_path "$_evidence_path" \
+  '{pass: $pass, evidence_path: $evidence_path}'
+)"
 
 # --- build merge_hints ---
 _merge_hints="$(jq -n \
@@ -354,59 +356,33 @@ _reint_json="$(jq -n \
   }'
 )"
 
-# --- validate against schema (jq-based) ---
-_validate_result="$(printf '%s' "$_reint_json" | jq -r '
-  def check_required(obj; fields):
-    fields | map(
-      if obj[.] == null then "missing:" + . else empty end
-    ) | .[];
+# --- validate against schema (shared Draft 2020-12 helper) ---
+# Source the shared validator and schema relative to this script's own
+# location (the harness ships bin/frw.d/scripts/, bin/frw.d/lib/, and
+# schemas/ together; resolving relative to the script makes this work
+# under sandbox fixtures that don't clone the full harness layout).
+_SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+_HARNESS_ROOT="$(cd "$_SCRIPT_DIR/../../.." && pwd)"
+# shellcheck source=../lib/validate-json.sh
+. "$_SCRIPT_DIR/../lib/validate-json.sh"
+_SCHEMA_PATH="$_HARNESS_ROOT/schemas/reintegration.schema.json"
 
-  def check_pattern(val; pat):
-    if (val | type) != "string" then "not-string"
-    elif (val | test(pat) | not) then "pattern-mismatch"
-    else "ok"
-    end;
+# Write to a temp file first so we can validate the actual on-disk JSON
+# (identical to what consumers will read after the atomic rename).
+_tmp_json="${REINT_JSON}.tmp.$$"
+printf '%s' "$_reint_json" | jq --sort-keys '.' > "$_tmp_json" 2>/dev/null || {
+  rm -f "$_tmp_json"
+  printf 'generate-reintegration: failed to serialize JSON\n' >&2
+  exit 4
+}
 
-  . as $doc |
-
-  # Required top-level fields
-  (check_required($doc; ["schema_version","row_name","branch","base_sha","head_sha","generated_at","commits","files_changed","decisions","open_items","test_results"]) // empty),
-
-  # schema_version must be "1.0"
-  (if $doc.schema_version != "1.0" then "invalid:schema_version" else empty end),
-
-  # row_name pattern
-  (if ($doc.row_name | type) == "string" and ($doc.row_name | test("^[a-z][a-z0-9]*(-[a-z0-9]+)*$") | not) then "pattern:row_name" else empty end),
-
-  # branch pattern
-  (if ($doc.branch | type) == "string" and ($doc.branch | test("^[A-Za-z0-9._/-]+$") | not) then "pattern:branch" else empty end),
-
-  # sha patterns
-  (if ($doc.base_sha | type) == "string" and ($doc.base_sha | test("^[0-9a-f]{7,40}$") | not) then "pattern:base_sha" else empty end),
-  (if ($doc.head_sha | type) == "string" and ($doc.head_sha | test("^[0-9a-f]{7,40}$") | not) then "pattern:head_sha" else empty end),
-
-  # commits array
-  (if ($doc.commits | type) != "array" then "type:commits"
-   elif ($doc.commits | length) == 0 then "empty:commits"
-   else empty end),
-
-  # test_results.pass is boolean
-  (if ($doc.test_results.pass | type) != "boolean" then "type:test_results.pass" else empty end)
-
-' 2>/dev/null)"
-
-if [ -n "$_validate_result" ]; then
-  printf 'generate-reintegration: schema validation failed: %s\n' "$_validate_result" >&2
+if ! validate_json "$_SCHEMA_PATH" "$_tmp_json"; then
+  rm -f "$_tmp_json"
+  printf 'generate-reintegration: schema validation failed\n' >&2
   exit 3
 fi
 
 # --- write reintegration.json atomically ---
-_tmp_json="${REINT_JSON}.tmp.$$"
-printf '%s' "$_reint_json" | jq --sort-keys '.' > "$_tmp_json" 2>/dev/null || {
-  rm -f "$_tmp_json"
-  printf 'generate-reintegration: failed to write JSON\n' >&2
-  exit 4
-}
 mv "$_tmp_json" "$REINT_JSON"
 
 # --- render markdown ---
