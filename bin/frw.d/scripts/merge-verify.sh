@@ -165,7 +165,7 @@ frw_merge_verify() {
   _rescue_path="${FURROW_ROOT}/bin/frw.d/scripts/rescue.sh"
 
   if [ ! -f "$_rescue_path" ]; then
-    _c5_evidence="rescue.sh not found at $rescue_path"
+    _c5_evidence="rescue.sh not found at $_rescue_path"
     _overall_pass=0
   elif ! sh -n "$_rescue_path" 2>/dev/null; then
     _c5_evidence="rescue.sh fails sh -n syntax check"
