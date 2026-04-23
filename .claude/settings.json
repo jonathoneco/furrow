@@ -8,7 +8,8 @@
           { "type": "command", "command": "frw hook ownership-warn" },
           { "type": "command", "command": "frw hook validate-definition" },
           { "type": "command", "command": "frw hook correction-limit" },
-          { "type": "command", "command": "frw hook verdict-guard" }
+          { "type": "command", "command": "frw hook verdict-guard" },
+          { "type": "command", "command": "frw hook append-learning" }
         ]
       },
       {
