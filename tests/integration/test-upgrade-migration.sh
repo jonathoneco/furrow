@@ -229,10 +229,193 @@ test_source_repo_guard() {
 }
 
 # ---------------------------------------------------------------------------
+# test_pre_xdg_specialists_migration — MEDIUM-6
+# Simulates a pre-XDG install with .claude/specialists/*.md populated and
+# no XDG specialists dir. Verifies upgrade:
+#   (a) copies the .md files to $XDG_CONFIG_HOME/furrow/specialists/
+#   (b) preserves content (byte-for-byte)
+#   (c) replaces .claude/specialists with a symlink to the XDG dir
+#   (d) moves the legacy dir aside to .claude/specialists.pre-xdg
+#   (e) records the migration in install-state.json migrations_applied
+#   (f) second --apply is a no-op (no new files, no state churn)
+# ---------------------------------------------------------------------------
+test_pre_xdg_specialists_migration() {
+  local fixture_dir xdg_cfg_dir xdg_state_dir
+  fixture_dir="$(_make_tmp_dir)"
+  xdg_cfg_dir="$(_make_tmp_dir)"
+  xdg_state_dir="$(_make_tmp_dir)"
+
+  "$FIXTURE_MAKER" "$fixture_dir"
+
+  # Populate legacy .claude/specialists/ with two .md files
+  mkdir -p "${fixture_dir}/.claude/specialists"
+  printf '# harness-engineer (legacy user override)\nreasoning: legacy\n' \
+    > "${fixture_dir}/.claude/specialists/harness-engineer.md"
+  printf '# shell-specialist (legacy user override)\nreasoning: legacy\n' \
+    > "${fixture_dir}/.claude/specialists/shell-specialist.md"
+
+  local harness_hash_before shell_hash_before
+  harness_hash_before="$(sha256sum "${fixture_dir}/.claude/specialists/harness-engineer.md" | awk '{print $1}')"
+  shell_hash_before="$(sha256sum "${fixture_dir}/.claude/specialists/shell-specialist.md" | awk '{print $1}')"
+
+  # Write initial install-state.json (migration_version="0")
+  local slug
+  slug="$(_compute_slug "$fixture_dir")"
+  local state_file="${xdg_state_dir}/furrow/${slug}/install-state.json"
+  _write_state_json "$state_file" "$slug" "$fixture_dir" "0"
+
+  # Run upgrade
+  local exit_code=0
+  _frw_upgrade "$fixture_dir" "$xdg_cfg_dir" "$xdg_state_dir" --apply \
+    --from "${fixture_dir}/.claude/furrow.yaml" || exit_code=$?
+
+  assert_exit_code "frw upgrade --apply exits 0 (with pre-XDG specialists)" 0 "$exit_code"
+
+  # (a) XDG specialists exist
+  local xdg_harness="${xdg_cfg_dir}/furrow/specialists/harness-engineer.md"
+  local xdg_shell="${xdg_cfg_dir}/furrow/specialists/shell-specialist.md"
+  assert_file_exists "XDG specialists/harness-engineer.md created" "$xdg_harness"
+  assert_file_exists "XDG specialists/shell-specialist.md created" "$xdg_shell"
+
+  # (b) content preserved byte-for-byte
+  local harness_hash_after shell_hash_after
+  harness_hash_after="$(sha256sum "$xdg_harness" | awk '{print $1}')"
+  shell_hash_after="$(sha256sum "$xdg_shell" | awk '{print $1}')"
+
+  TESTS_RUN=$((TESTS_RUN + 1))
+  if [ "$harness_hash_before" = "$harness_hash_after" ]; then
+    printf "  PASS: (b) harness-engineer.md content preserved\n"
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    printf "  FAIL: (b) harness-engineer.md content changed during migration\n" >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+
+  TESTS_RUN=$((TESTS_RUN + 1))
+  if [ "$shell_hash_before" = "$shell_hash_after" ]; then
+    printf "  PASS: (b) shell-specialist.md content preserved\n"
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    printf "  FAIL: (b) shell-specialist.md content changed during migration\n" >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+
+  # (c) .claude/specialists is a symlink to XDG dir
+  local legacy_link="${fixture_dir}/.claude/specialists"
+  TESTS_RUN=$((TESTS_RUN + 1))
+  if [ -L "$legacy_link" ]; then
+    local link_target
+    link_target="$(readlink "$legacy_link")"
+    printf "  PASS: (c) .claude/specialists is a symlink -> %s\n" "$link_target"
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    printf "  FAIL: (c) .claude/specialists is not a symlink\n" >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+
+  # Symlink resolves to a file with matching content
+  assert_file_exists "(c) symlink resolves: harness-engineer.md reachable via legacy path" \
+    "${legacy_link}/harness-engineer.md"
+
+  # (d) legacy dir moved aside
+  assert_file_exists "(d) .claude/specialists.pre-xdg/ backup exists" \
+    "${fixture_dir}/.claude/specialists.pre-xdg/harness-engineer.md"
+
+  # (e) install-state.json records the migration
+  local recorded
+  recorded="$(jq -r '(.migrations_applied // []) | index("pre_xdg_specialists") // "null"' \
+               "$state_file" 2>/dev/null)"
+  TESTS_RUN=$((TESTS_RUN + 1))
+  if [ "$recorded" != "null" ] && [ -n "$recorded" ]; then
+    printf "  PASS: (e) migrations_applied contains 'pre_xdg_specialists'\n"
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    printf "  FAIL: (e) migrations_applied missing 'pre_xdg_specialists'\n" >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+
+  # Capture hashes for idempotency check
+  local cfg_hash1 xdg_hash1 state_hash1
+  cfg_hash1="$(sha256sum "${xdg_cfg_dir}/furrow/config.yaml" | awk '{print $1}')"
+  xdg_hash1="$(sha256sum "$xdg_harness" | awk '{print $1}')"
+  # Exclude volatile last_upgrade_at for state-hash comparison
+  state_hash1="$(jq 'del(.last_upgrade_at)' "$state_file" | sha256sum | awk '{print $1}')"
+
+  # (f) Second --apply is a no-op
+  local exit2=0
+  _frw_upgrade "$fixture_dir" "$xdg_cfg_dir" "$xdg_state_dir" --apply \
+    --from "${fixture_dir}/.claude/furrow.yaml" || exit2=$?
+
+  assert_exit_code "second frw upgrade --apply exits 0 (idempotent)" 0 "$exit2"
+
+  local cfg_hash2 xdg_hash2 state_hash2
+  cfg_hash2="$(sha256sum "${xdg_cfg_dir}/furrow/config.yaml" | awk '{print $1}')"
+  xdg_hash2="$(sha256sum "$xdg_harness" | awk '{print $1}')"
+  state_hash2="$(jq 'del(.last_upgrade_at)' "$state_file" | sha256sum | awk '{print $1}')"
+
+  TESTS_RUN=$((TESTS_RUN + 1))
+  if [ "$cfg_hash1" = "$cfg_hash2" ] && \
+     [ "$xdg_hash1" = "$xdg_hash2" ] && \
+     [ "$state_hash1" = "$state_hash2" ]; then
+    printf "  PASS: (f) second --apply is a no-op (no file or state churn)\n"
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    printf "  FAIL: (f) second --apply changed files or state\n" >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# test_already_migrated_specialists_no_op
+# Verifies that when .claude/specialists/ is absent (already migrated or
+# never existed), upgrade still records the sub-migration and is a no-op
+# on subsequent runs — no phantom XDG specialists dir is created.
+# ---------------------------------------------------------------------------
+test_already_migrated_specialists_no_op() {
+  local fixture_dir xdg_cfg_dir xdg_state_dir
+  fixture_dir="$(_make_tmp_dir)"
+  xdg_cfg_dir="$(_make_tmp_dir)"
+  xdg_state_dir="$(_make_tmp_dir)"
+
+  "$FIXTURE_MAKER" "$fixture_dir"
+  # Deliberately no .claude/specialists/ present
+
+  local slug
+  slug="$(_compute_slug "$fixture_dir")"
+  local state_file="${xdg_state_dir}/furrow/${slug}/install-state.json"
+  _write_state_json "$state_file" "$slug" "$fixture_dir" "0"
+
+  local exit_code=0
+  _frw_upgrade "$fixture_dir" "$xdg_cfg_dir" "$xdg_state_dir" --apply \
+    --from "${fixture_dir}/.claude/furrow.yaml" || exit_code=$?
+
+  assert_exit_code "frw upgrade --apply exits 0 (no legacy specialists)" 0 "$exit_code"
+
+  # No phantom specialists dir created
+  assert_file_not_exists "no phantom XDG specialists dir when nothing to migrate" \
+    "${xdg_cfg_dir}/furrow/specialists/harness-engineer.md"
+
+  # migrations_applied still records the sub-migration (so future runs skip)
+  local recorded
+  recorded="$(jq -r '(.migrations_applied // []) | index("pre_xdg_specialists") // "null"' \
+               "$state_file" 2>/dev/null)"
+  TESTS_RUN=$((TESTS_RUN + 1))
+  if [ "$recorded" != "null" ] && [ -n "$recorded" ]; then
+    printf "  PASS: migrations_applied records 'pre_xdg_specialists' even when absent\n"
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    printf "  FAIL: migrations_applied missing 'pre_xdg_specialists' on empty path\n" >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 echo ""
 run_test test_migration_fixture_end_to_end
 run_test test_source_repo_guard
+run_test test_pre_xdg_specialists_migration
+run_test test_already_migrated_specialists_no_op
 
 print_summary
