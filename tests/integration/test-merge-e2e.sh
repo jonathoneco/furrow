@@ -712,14 +712,425 @@ test_safe_e2e_verify_idempotent() {
   fi
 }
 
+# ─── Full-pipeline fixture: exercises all 5 merge subphases (AC-10) ────────
+#
+# Combined conditions fixture. Unlike contaminated-stop (halts at execute) and
+# safe-happy-path (no conflicts), full-pipeline stages every in-scope
+# contamination class AND a real three-way conflict, then drives the whole
+# pipeline through a successful verify. Asserts final-state invariants after
+# verify: frw doctor, hook parse, sort invariants, executable modes.
+#
+# Determinism: every git commit runs with GIT_COMMITTER_DATE/GIT_AUTHOR_DATE
+# and fixed author/committer identity, so two back-to-back runs produce
+# byte-identical commit SHAs (AC-9). Seed content is copied verbatim from
+# tests/integration/fixtures/merge-e2e/full-pipeline/.
+#
+# Sandbox: the fixture is created under setup_sandbox's fixture dir so the
+# live worktree is never mutated under any failure mode (AC-7, AC-8).
+
+FULL_FIXTURE_SRC="${TESTS_DIR}/fixtures/merge-e2e/full-pipeline"
+
+# Deterministic commit identity for every fixture commit (AC-9)
+FULL_FIXED_DATE="2026-03-15T12:00:00Z"
+FULL_FIXED_NAME="Full Pipeline Fixture"
+FULL_FIXED_EMAIL="fixture@furrow.test"
+
+# Scaffold the minimum file set that `frw doctor FULL_REPO` requires to
+# exit 0. Doctor is highly opinionated about a Furrow install's layout;
+# this helper writes empty/placeholder files for every file-existence check.
+# Any divergence from doctor.sh's required set shows up as a doctor failure
+# and is caught by AC-3 — keeping the scaffold here in one place makes the
+# required set explicit.
+_full_scaffold_furrow_skeleton() {
+  _root="$1"
+
+  # Step skills (7 files, <= 50 lines each — within doctor's line budget)
+  for _step in ideate research plan spec decompose implement review; do
+    printf '# %s step\n' "$_step" > "${_root}/skills/${_step}.md"
+    printf 'outcomes: []\n' > "${_root}/evals/gates/${_step}.yaml"
+  done
+  printf '# work-context\n' > "${_root}/skills/work-context.md"
+
+  # Shared skill protocols (spec 12 + 13)
+  printf '# learnings-protocol\n' > "${_root}/skills/shared/learnings-protocol.md"
+  printf '# git-conventions\n' > "${_root}/skills/shared/git-conventions.md"
+  printf '# gate-evaluator\n' > "${_root}/skills/shared/gate-evaluator.md"
+
+  # Commands (spec 11 + 12)
+  for _cmd in checkpoint archive status review reground redirect; do
+    printf '# %s\n' "$_cmd" > "${_root}/commands/${_cmd}.md"
+  done
+  for _libcmd in validate-learning append-learning promote-learnings; do
+    printf '#!/bin/sh\n' > "${_root}/commands/lib/${_libcmd}.sh"
+  done
+
+  # Hooks (spec 09 + 10) — zero-length files satisfy doctor's existence check
+  : > "${_root}/bin/frw.d/hooks/stop-ideation.sh"
+  : > "${_root}/bin/frw.d/hooks/validate-definition.sh"
+  : > "${_root}/bin/frw.d/hooks/validate-summary.sh"
+  # Additional hook files referenced by AC-4 (sh -n parse check)
+  printf '#!/bin/sh\n# fixture hook\n' > "${_root}/bin/frw.d/hooks/post-step.sh"
+  printf '#!/bin/sh\n# fixture hook\n' > "${_root}/bin/frw.d/hooks/pre-commit.sh"
+
+  # Gate/artifact scripts (spec 11)
+  printf '#!/bin/sh\n' > "${_root}/bin/frw.d/scripts/run-gate.sh"
+  printf '#!/bin/sh\n' > "${_root}/bin/frw.d/scripts/check-artifacts.sh"
+  printf '#!/bin/sh\n' > "${_root}/bin/frw.d/scripts/merge-to-main.sh"
+
+  # Research mode references + dimensions (spec 14)
+  printf '# research mode\n' > "${_root}/references/research-mode.md"
+  printf 'name: research-implement\n' > "${_root}/evals/dimensions/research-implement.yaml"
+  printf 'name: research-spec\n' > "${_root}/evals/dimensions/research-spec.yaml"
+
+  # Schemas referenced by --research tier
+  printf 'objective: test\n' > "${_root}/schemas/definition.schema.json"
+  printf '{}\n' > "${_root}/schemas/state.schema.json"
+
+  # bin/frw.d lib placeholders (parse cleanly for verify's shell_syntax check)
+  printf '#!/bin/sh\n# common.sh\nlog_info() { :; }\n' > "${_root}/bin/frw.d/lib/common.sh"
+  printf '#!/bin/sh\n# common-minimal.sh\nlog_error() { :; }\n' > "${_root}/bin/frw.d/lib/common-minimal.sh"
+
+  # Claude settings — empty hooks object keeps doctor's hook-registration
+  # check happy when there are no '^# Hook:' marked hook scripts.
+  printf '{"hooks":{}}\n' > "${_root}/.claude/settings.json"
+
+  # Top-level binaries — real shell scripts, mode 755 (AC-6)
+  printf '#!/bin/sh\n# alm\n' > "${_root}/bin/alm"
+  printf '#!/bin/sh\n# rws\n' > "${_root}/bin/rws"
+  printf '#!/bin/sh\n# sds\n' > "${_root}/bin/sds"
+  chmod 755 "${_root}/bin/alm" "${_root}/bin/rws" "${_root}/bin/sds"
+
+  # README (top-level content so the repo isn't empty before baseline copy)
+  printf '# full-pipeline fixture\n' > "${_root}/README.md"
+}
+
+setup_full_pipeline_fixture() {
+  # Require sandbox so every write lands under $TMP, never the live worktree
+  if [ -z "${SANDBOX_FIXTURE_DIR:-}" ]; then
+    SANDBOX_FIXTURE_DIR="$(setup_sandbox)"
+    export SANDBOX_FIXTURE_DIR
+  fi
+
+  FULL_REPO="${SANDBOX_FIXTURE_DIR}/full-pipeline-repo"
+  rm -rf "$FULL_REPO"
+  mkdir -p "$FULL_REPO"
+  export FULL_REPO
+
+  # Export fixed dates + identity so every git commit below is reproducible.
+  # POSIX sh: set + export on separate lines (not VAR=val cmd inline).
+  GIT_AUTHOR_DATE="$FULL_FIXED_DATE"
+  GIT_COMMITTER_DATE="$FULL_FIXED_DATE"
+  GIT_AUTHOR_NAME="$FULL_FIXED_NAME"
+  GIT_COMMITTER_NAME="$FULL_FIXED_NAME"
+  GIT_AUTHOR_EMAIL="$FULL_FIXED_EMAIL"
+  GIT_COMMITTER_EMAIL="$FULL_FIXED_EMAIL"
+  export GIT_AUTHOR_DATE GIT_COMMITTER_DATE \
+         GIT_AUTHOR_NAME GIT_COMMITTER_NAME \
+         GIT_AUTHOR_EMAIL GIT_COMMITTER_EMAIL
+
+  (
+    cd "$FULL_REPO"
+    git init -q -b main
+    git config user.email "$FULL_FIXED_EMAIL"
+    git config user.name "$FULL_FIXED_NAME"
+    # Lock git config so merge commits are deterministic.
+    git config commit.gpgsign false
+    git config init.defaultBranch main
+
+    # Pre-create every directory doctor/verify walk over so the scaffolder
+    # can write files without mkdir -p in each line.
+    mkdir -p bin/frw.d/lib bin/frw.d/hooks bin/frw.d/scripts \
+             skills/shared commands/lib \
+             references evals/gates evals/dimensions \
+             schemas .furrow/almanac .furrow/seeds .furrow/rows \
+             .claude/rules .claude/commands
+
+    # Copy checked-in seed blobs (todos.yaml, seeds.jsonl, rationale.yaml,
+    # merge-policy.yaml) into the fixture repo.
+    cp "${FULL_FIXTURE_SRC}/baseline/.furrow/almanac/todos.yaml" \
+       .furrow/almanac/todos.yaml
+    cp "${FULL_FIXTURE_SRC}/baseline/.furrow/almanac/rationale.yaml" \
+       .furrow/almanac/rationale.yaml
+    cp "${FULL_FIXTURE_SRC}/baseline/.furrow/seeds/seeds.jsonl" \
+       .furrow/seeds/seeds.jsonl
+    # Custom fixture policy. Lives under fixtures/.../baseline/policy/
+    # (not baseline/schemas/) because the repo's .gitignore excludes
+    # schemas/** globally — moving it here keeps the policy source-tracked.
+    cp "${FULL_FIXTURE_SRC}/baseline/policy/merge-policy.yaml" \
+       schemas/merge-policy.yaml
+
+    # Generate the rest of the doctor-required skeleton procedurally.
+    _full_scaffold_furrow_skeleton "$FULL_REPO"
+
+    # Base version of the conflict file (both branches diverge from this).
+    cp "${FULL_FIXTURE_SRC}/worktree-feature/step-sequence-base.md" \
+       .claude/rules/step-sequence.md
+
+    git add -A
+    git commit -q -m "initial: full-pipeline main skeleton"
+
+    # Main-side edit to the conflict file (happens before branching so both
+    # sides touch it after a common base; actually we branch FIRST then edit
+    # main, to guarantee divergent parents).
+    git checkout -q -b work/full-pipeline-row
+
+    # ---- Worktree branch: 4 commits exercising audit/classify/resolve ----
+
+    # Commit 1 (feat): safe source under bin/frw.d/scripts/
+    cp "${FULL_FIXTURE_SRC}/worktree-feature/new-feature.sh" \
+       bin/frw.d/scripts/new-feature.sh
+    chmod 755 bin/frw.d/scripts/new-feature.sh
+    git add bin/frw.d/scripts/new-feature.sh
+    git commit -q -m "feat: add new-feature script"
+
+    # Commit 2 (chore): install-artifact contamination (bin/*.bak matches
+    # merge-audit's _is_install_artifact patterns; the spec's initially
+    # suggested .claude/commands/specialist:foo.md path is NOT detected by
+    # current audit code and is outside this deliverable's scope to extend).
+    cp bin/alm bin/alm.bak
+    git add bin/alm.bak
+    git commit -q -m "chore: add alm backup (install artifact)"
+
+    # Commit 3 (chore): edit the protected-ish conflict file on the
+    # worktree side. Combined with the main-side edit below, this forces a
+    # real three-way conflict resolve-plan must address.
+    cp "${FULL_FIXTURE_SRC}/worktree-feature/step-sequence-worktree.md" \
+       .claude/rules/step-sequence.md
+    git add .claude/rules/step-sequence.md
+    git commit -q -m "chore: update step-sequence rules (worktree)"
+
+    # Commit 4 (feat): another safe source file.
+    cp "${FULL_FIXTURE_SRC}/worktree-feature/another-feature.sh" \
+       bin/frw.d/scripts/another-feature.sh
+    chmod 755 bin/frw.d/scripts/another-feature.sh
+    git add bin/frw.d/scripts/another-feature.sh
+    git commit -q -m "feat: add another-feature script"
+
+    # ---- Back to main: stage the conflicting edit on the SAME file ----
+    git checkout -q main
+    cp "${FULL_FIXTURE_SRC}/worktree-feature/step-sequence-main.md" \
+       .claude/rules/step-sequence.md
+    git add .claude/rules/step-sequence.md
+    git commit -q -m "chore: update step-sequence rules (main)"
+  )
+
+  # merge-* scripts compute the state dir from FURROW_ROOT's basename, NOT
+  # PROJECT_ROOT's. Since we leave FURROW_ROOT pointing at the live project
+  # (so the harness scripts stay on their real implementations), the state
+  # files land under the live project's slug.
+  FULL_STATE_DIR="${XDG_STATE_HOME:-${HOME}/.local/state}/furrow/$(basename "$PROJECT_ROOT")/merge-state"
+  export FULL_STATE_DIR
+  FULL_MERGE_ID=""
+  export FULL_MERGE_ID
+}
+
+teardown_full_pipeline_fixture() {
+  # Unset the deterministic env vars so they don't leak into later tests.
+  unset GIT_AUTHOR_DATE GIT_COMMITTER_DATE \
+        GIT_AUTHOR_NAME GIT_COMMITTER_NAME \
+        GIT_AUTHOR_EMAIL GIT_COMMITTER_EMAIL
+  rm -rf "${FULL_REPO:-}" 2>/dev/null || true
+  if [ -n "${FULL_STATE_DIR:-}" ] && [ -n "${FULL_MERGE_ID:-}" ]; then
+    rm -rf "${FULL_STATE_DIR}/${FULL_MERGE_ID}" 2>/dev/null || true
+  fi
+}
+
+# Single test function that drives all five subphases and asserts final-state
+# invariants. Keeping it monolithic mirrors the spec's Scenario 3 which
+# groups the phases as a single pipeline check.
+test_full_pipeline_runs_all_five_subphases() {
+  printf '  --- test_full_pipeline_runs_all_five_subphases ---\n'
+
+  _full_policy="${FULL_REPO}/schemas/merge-policy.yaml"
+
+  # === Subphase 1: audit =====================================================
+  _audit_exit=0
+  PROJECT_ROOT="$FULL_REPO" bash \
+    "${PROJECT_ROOT}/bin/frw.d/scripts/merge-audit.sh" \
+    "work/full-pipeline-row" "$_full_policy" \
+    > /tmp/full_audit_out 2>/dev/null || _audit_exit=$?
+
+  FULL_MERGE_ID="$(grep "^merge_id=" /tmp/full_audit_out 2>/dev/null \
+    | cut -d= -f2 || echo '')"
+  export FULL_MERGE_ID
+
+  # audit should exit 3 (install-artifact blocker present).
+  assert_exit_code "full-pipeline audit exits 3 (install artifact blocker)" \
+    3 "$_audit_exit"
+
+  _audit_json="${FULL_STATE_DIR}/${FULL_MERGE_ID}/audit.json"
+  assert_file_exists "full-pipeline audit.json created" "$_audit_json"
+
+  # AC-1 / Scenario 1: install artifact flagged.
+  TESTS_RUN=$((TESTS_RUN + 1))
+  _artifact_hit="$(jq -r \
+    '.install_artifact_additions | any(. == "bin/alm.bak")' \
+    "$_audit_json" 2>/dev/null || echo 'false')"
+  if [ "$_artifact_hit" = "true" ]; then
+    printf '  PASS: audit.json flags bin/alm.bak as install artifact\n'
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    printf '  FAIL: audit.json missing bin/alm.bak install-artifact entry\n' >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+
+  # === Subphase 2: classify ==================================================
+  _classify_exit=0
+  (PROJECT_ROOT="$FULL_REPO" bash \
+    "${PROJECT_ROOT}/bin/frw.d/scripts/merge-classify.sh" \
+    "$FULL_MERGE_ID" 2>/dev/null) || _classify_exit=$?
+
+  # classify should exit 4 (destructive commits present on worktree)
+  assert_exit_code "full-pipeline classify exits 4 (destructive commits)" \
+    4 "$_classify_exit"
+  assert_file_exists "full-pipeline classify.json created" \
+    "${FULL_STATE_DIR}/${FULL_MERGE_ID}/classify.json"
+
+  # === Subphase 3: resolve-plan ==============================================
+  _plan_exit=0
+  (PROJECT_ROOT="$FULL_REPO" bash \
+    "${PROJECT_ROOT}/bin/frw.d/scripts/merge-resolve-plan.sh" \
+    "$FULL_MERGE_ID" 2>/dev/null) || _plan_exit=$?
+
+  assert_exit_code "full-pipeline resolve-plan exits 5 (approval required)" \
+    5 "$_plan_exit"
+
+  _plan_json="${FULL_STATE_DIR}/${FULL_MERGE_ID}/plan.json"
+  assert_file_exists "full-pipeline plan.json created" "$_plan_json"
+  assert_json_field "full-pipeline plan approved defaults false" \
+    "$_plan_json" ".approved" "false"
+
+  # AC-1 / Scenario 2: plan has at least one entry for the conflict.
+  TESTS_RUN=$((TESTS_RUN + 1))
+  _n_entries="$(jq '.resolutions | length' "$_plan_json" 2>/dev/null || echo 0)"
+  if [ "$_n_entries" -ge 1 ]; then
+    printf '  PASS: plan.json has %s resolution entries\n' "$_n_entries"
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    printf '  FAIL: plan.json has no resolution entries\n' >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+
+  # === Subphase 4: execute ===================================================
+  # Approve the plan, clear any protected-path sentinels, then run execute.
+  jq '.approved = true
+      | .approved_at = "2026-04-22T00:00:00Z"
+      | .approved_by = "full-pipeline-fixture"' \
+    "$_plan_json" > "${_plan_json}.tmp" \
+    && mv "${_plan_json}.tmp" "$_plan_json"
+
+  _await_dir="${FULL_STATE_DIR}/${FULL_MERGE_ID}/awaiting"
+  if [ -d "$_await_dir" ]; then
+    # Our policy keeps the conflict file out of `protected` so no sentinels
+    # should be present; remove any just-in-case.
+    rm -f "${_await_dir}"/* 2>/dev/null || true
+  fi
+
+  _exec_exit=0
+  (cd "$FULL_REPO" && PROJECT_ROOT="$FULL_REPO" bash \
+    "${PROJECT_ROOT}/bin/frw.d/scripts/merge-execute.sh" \
+    "$FULL_MERGE_ID" 2>/dev/null) || _exec_exit=$?
+
+  assert_exit_code "full-pipeline execute exits 0 (approved merge commits)" \
+    0 "$_exec_exit"
+
+  _execute_json="${FULL_STATE_DIR}/${FULL_MERGE_ID}/execute.json"
+  assert_file_exists "full-pipeline execute.json created" "$_execute_json"
+  assert_json_field "full-pipeline execute.json status is complete" \
+    "$_execute_json" ".status" "complete"
+
+  # === Subphase 5: verify ====================================================
+  _verify_exit=0
+  (cd "$FULL_REPO" && PROJECT_ROOT="$FULL_REPO" bash \
+    "${PROJECT_ROOT}/bin/frw.d/scripts/merge-verify.sh" \
+    "$FULL_MERGE_ID" 2>/dev/null) || _verify_exit=$?
+
+  assert_exit_code "full-pipeline verify exits 0 (all checks green)" \
+    0 "$_verify_exit"
+
+  _verify_json="${FULL_STATE_DIR}/${FULL_MERGE_ID}/verify.json"
+  assert_file_exists "full-pipeline verify.json created" "$_verify_json"
+  assert_json_field "full-pipeline verify.json overall is pass" \
+    "$_verify_json" ".overall" "pass"
+
+  # === Final-state invariants (AC-3 .. AC-6) =================================
+
+  # AC-3: frw doctor exits 0 inside FULL_REPO
+  _doctor_exit=0
+  "${PROJECT_ROOT}/bin/frw" doctor "$FULL_REPO" >/dev/null 2>&1 \
+    || _doctor_exit=$?
+  assert_exit_code "full-pipeline frw doctor exits 0 post-merge" \
+    0 "$_doctor_exit"
+
+  # AC-4: every bin/frw.d/hooks/*.sh parses via sh -n
+  TESTS_RUN=$((TESTS_RUN + 1))
+  _hook_syntax_fail=0
+  for _h in "${FULL_REPO}"/bin/frw.d/hooks/*.sh; do
+    [ -f "$_h" ] || continue
+    if ! sh -n "$_h" 2>/dev/null; then
+      _hook_syntax_fail=$((_hook_syntax_fail + 1))
+    fi
+  done
+  if [ "$_hook_syntax_fail" -eq 0 ]; then
+    printf '  PASS: all bin/frw.d/hooks/*.sh parse cleanly\n'
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    printf '  FAIL: %s hook(s) fail sh -n\n' "$_hook_syntax_fail" >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+
+  # AC-5: sort invariants — verify.json records sort_invariant as pass.
+  # This reuses the verify subphase's existing check rather than duplicating
+  # the invariant logic here.
+  TESTS_RUN=$((TESTS_RUN + 1))
+  _sort_pass="$(jq -r \
+    '.checks[] | select(.name == "sort_invariant") | .pass' \
+    "$_verify_json" 2>/dev/null || echo 'missing')"
+  # The check_result helper emits .pass as a jq boolean (true/false). The
+  # safe-fixture tests above also read "true" on success — keep consistent.
+  if [ "$_sort_pass" = "true" ]; then
+    printf '  PASS: verify.json records sort_invariant=true\n'
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    printf '  FAIL: verify.json sort_invariant=%s (expected true)\n' \
+      "$_sort_pass" >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+
+  # AC-6: bin/alm, bin/rws, bin/sds remain executable (mode 755)
+  TESTS_RUN=$((TESTS_RUN + 1))
+  _mode_alm="$(stat -c '%a' "${FULL_REPO}/bin/alm" 2>/dev/null || echo 'x')"
+  _mode_rws="$(stat -c '%a' "${FULL_REPO}/bin/rws" 2>/dev/null || echo 'x')"
+  _mode_sds="$(stat -c '%a' "${FULL_REPO}/bin/sds" 2>/dev/null || echo 'x')"
+  _modes="${_mode_alm} ${_mode_rws} ${_mode_sds}"
+  if [ "$_modes" = "755 755 755" ]; then
+    printf '  PASS: bin/{alm,rws,sds} modes remain 755\n'
+    TESTS_PASSED=$((TESTS_PASSED + 1))
+  else
+    printf '  FAIL: bin/{alm,rws,sds} modes = %s (expected 755 755 755)\n' \
+      "$_modes" >&2
+    TESTS_FAILED=$((TESTS_FAILED + 1))
+  fi
+}
+
 # ─── Main ───────────────────────────────────────────────────────────────────
 
 main() {
   printf 'test-merge-e2e.sh\n'
   printf '==============================\n'
 
+  # Snapshot protected paths BEFORE any fixture runs; EXIT trap asserts no
+  # drift after teardowns. Sandbox guards pair snapshot_guard_targets +
+  # assert_no_worktree_mutation — see tests/integration/lib/sandbox.sh (AC-8).
+  if [ -z "${TMP:-}" ]; then
+    TMP="$(mktemp -d)"
+    export TMP
+  fi
+  mkdir -p "${TMP}/home" "${TMP}/config" "${TMP}/state" "${TMP}/fixture"
+  snapshot_guard_targets
+
   setup_e2e_fixture
-  trap 'teardown_e2e_fixture; teardown_safe_e2e_fixture' EXIT INT TERM
+  trap 'teardown_e2e_fixture; teardown_safe_e2e_fixture; teardown_full_pipeline_fixture; assert_no_worktree_mutation' EXIT INT TERM
 
   # E2E_MERGE_ID is set inside test functions
   E2E_MERGE_ID=""
@@ -742,6 +1153,10 @@ main() {
   run_test test_safe_e2e_verify_green
   run_test test_safe_e2e_verify_detects_regression
   run_test test_safe_e2e_verify_idempotent
+
+  printf '\n=== Full-pipeline fixture subtest (AC-10: all 5 subphases) ===\n'
+  setup_full_pipeline_fixture
+  run_test test_full_pipeline_runs_all_five_subphases
 
   print_summary
 }
