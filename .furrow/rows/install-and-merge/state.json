@@ -2,8 +2,8 @@
   "name": "install-and-merge",
   "title": "Install architecture + ~/.config/furrow/ tier + /furrow:merge skill + worktree reintegration summary",
   "description": "Install architecture + ~/.config/furrow/ tier + /furrow:merge skill + worktree reintegration summary",
-  "step": "implement",
-  "step_status": "not_started",
+  "step": "review",
+  "step_status": "completed",
   "steps_sequence": [
     "ideate",
     "research",
@@ -126,6 +126,13 @@
       "decided_by": "manual",
       "evidence": "User rewound: pre-step evaluation was incorrect or step needs rework",
       "timestamp": "2026-04-22T23:53:24Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Round-3 corrections landed in 11 commits addressing all 5 HIGH + 3 MEDIUM findings from round-2 re-review. HIGH-1 rws update-summary reintegration-block corruption fixed in two stages (541118a strip-before-replace, c9cf0f0 extract-after-strip — both modes closed). HIGH-2 get-reintegration-json now validates via Draft2020-12 (9576e0a) with exit 3 + named-field stderr. HIGH-3 test_safe_e2e_verify_green root cause was frw doctor running against stripped-down fixture; guarded behind .furrow/skills/commands presence + tightened assertion to exit 0 + added negative regression test (72d9919). HIGH-4 merge_validate_policy now routes yq->json->Python Draft7Validator vs schemas/merge-policy.schema.json across all 5 merge scripts (c965d18). HIGH-5 rescue_path typo fixed (4a4ee1e). MEDIUM-6 pre-XDG specialists migration in upgrade.sh with migrations_applied tracking (18afe55 + b55e6c0). MEDIUM-7 removed dead _get_machine_merge_details (8351a85). MEDIUM-8 round-trip + schema-invalid subtests (be0a1e8). Hygiene: 9dc6202 todos.yaml sort to satisfy validate-sort-invariant. 35/35 integration suites green; 60/60 reintegration subtests; 56/56 merge-e2e; 26/26 upgrade-migration. Cross-repo symlink pollution surfaced + reverted during session; flagged as review scope (test-isolation audit for install/upgrade suites).",
+      "timestamp": "2026-04-23T05:59:18Z"
     }
   ],
   "force_stop_at": null,
@@ -135,8 +142,8 @@
   "seed_id": "furrow-b0f2",
   "epic_seed_id": null,
   "created_at": "2026-04-22T17:24:42Z",
-  "updated_at": "2026-04-22T23:53:24Z",
-  "archived_at": null,
+  "updated_at": "2026-04-23T14:31:36Z",
+  "archived_at": "2026-04-23T14:31:36Z",
   "source_todo": null,
   "gate_policy_init": "supervised"
 }

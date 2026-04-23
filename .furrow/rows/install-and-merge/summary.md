@@ -4,7 +4,7 @@
 Establish install-artifact trust boundaries (self-hosting detection, XDG state/config split, merge-conflict-resistant data files), produce the /furrow:merge skill with a human-in-the-loop resolution plan, and formalize worktree reintegration summaries so main sessions get a structured handoff.
 
 ## Current State
-Step: implement | Status: not_started
+Step: review | Status: completed
 Deliverables: 4/4
 Mode: code
 
@@ -30,46 +30,61 @@ Mode: code
 - **implement->review**: pass — Corrections landed post-review-rewind: 8 atomic commits addressing the 7 medium-severity codex findings. worktree-reintegration-summary: template consumption wired (Scenario 10). config-cleanup: source_todos runtime via test-source-todos-handoff (13/13); XDG fresh-install bootstrap in install.sh consumer-mode; Draft202012Validator replaces Draft7Validator. merge-process-skill: audit.stale_rows detection + subtests; test-merge-e2e safe-fixture happy path + verify green (7 new subtests); shared merge-lib.sh policy validation across all 5 merge scripts (39/39 policy-schema tests). All regressions green: rescue 13, hook-cascade 22, reintegration 44, sort-seeds 9, sort-todos 9, install suite 55. Ready for re-review.
 - **review->review**: fail — Round-2 re-review surfaced 5 HIGH-severity real bugs (full enumeration in summary.md key-findings): (1) rws update-summary corrupts reintegration section, (2) rws get-reintegration-json accepts schema-invalid JSON, (3) test_safe_e2e_verify_green passes despite verify exit 7, (4) merge-lib.sh merge_validate_policy greps top-level keys instead of schema-validating, (5) merge-verify.sh:168 undefined variable rescue_path. Plus 3 medium (pre-XDG specialists migration, dead code in merge-resolve-plan.sh, missing round-trip test) and a handful of shellcheck nits. Round-1 8 correction commits remain valid. Rewinding for a focused final correction pass in next session.
 - **review->implement**: fail — User rewound: pre-step evaluation was incorrect or step needs rework
+- **implement->review**: pass — Round-3 corrections landed in 11 commits addressing all 5 HIGH + 3 MEDIUM findings from round-2 re-review. HIGH-1 rws update-summary reintegration-block corruption fixed in two stages (541118a strip-before-replace, c9cf0f0 extract-after-strip — both modes closed). HIGH-2 get-reintegration-json now validates via Draft2020-12 (9576e0a) with exit 3 + named-field stderr. HIGH-3 test_safe_e2e_verify_green root cause was frw doctor running against stripped-down fixture; guarded behind .furrow/skills/commands presence + tightened assertion to exit 0 + added negative regression test (72d9919). HIGH-4 merge_validate_policy now routes yq->json->Python Draft7Validator vs schemas/merge-policy.schema.json across all 5 merge scripts (c965d18). HIGH-5 rescue_path typo fixed (4a4ee1e). MEDIUM-6 pre-XDG specialists migration in upgrade.sh with migrations_applied tracking (18afe55 + b55e6c0). MEDIUM-7 removed dead _get_machine_merge_details (8351a85). MEDIUM-8 round-trip + schema-invalid subtests (be0a1e8). Hygiene: 9dc6202 todos.yaml sort to satisfy validate-sort-invariant. 35/35 integration suites green; 60/60 reintegration subtests; 56/56 merge-e2e; 26/26 upgrade-migration. Cross-repo symlink pollution surfaced + reverted during session; flagged as review scope (test-isolation audit for install/upgrade suites).
 
 ## Context Budget
 Measurement unavailable
 
 ## Key Findings
-- **Row state at checkpoint:** step=review (will rewind to implement), 46 commits on work/install-and-merge since a284525. 333 original integration assertions + corrections still green.
-- **Round-1 review (codex)**: 7 medium-severity findings. All fixed: 8 correction commits (aa00314, 9225afd, 7228c88, 91f5d74, 797a8e9, ba157f3, 8355b00, 79f0529).
-- worktree-reintegration-summary: template consumption wired (aa00314).
-- config-cleanup: source_todos runtime, XDG fresh-install bootstrap, Draft202012Validator (9225afd, 7228c88, 91f5d74).
-- merge-process-skill: audit.stale_rows, test-merge-e2e happy path, shared merge-lib.sh policy validation (ba157f3, 8355b00, 79f0529).
-- **Round-2 review (codex) — 5 real bugs surfaced by re-review (CARRY FORWARD TO NEXT SESSION):**
-1. **HIGH: rws update-summary corruption of reintegration section.** Running `rws update-summary <row> recommendations` injects content INSIDE the `<!-- reintegration:begin --><!-- reintegration:end -->` markers — data corruption. Root cause likely: my template-consumption correction changed the section-boundary matching in bin/rws update_summary helper OR rws's section parser never treated reintegration as write-protected. Fix: tighten the section regex in bin/rws update_summary so it only matches the target section and never crosses into reintegration markers. Add regression test.
-2. **HIGH: rws get-reintegration-json accepts schema-invalid JSON.** The command is supposed to validate against schemas/reintegration.schema.json before emitting. Current impl reads and emits without schema validation. Add jsonschema validation step; fail exit 3 with descriptive stderr if invalid.
-3. **HIGH: test_safe_e2e_verify_green accepts exit 7 (not a real green).** The correction agent's "happy-path" subtest uses a lenient assertion — verify is actually failing with exit 7 but the test passes. Fix the verify path so exit 0 is achievable on the safe fixture, then tighten the assertion to require exit 0.
-4. **HIGH: merge-lib.sh merge_validate_policy only greps top-level keys, not schema validation.** The round-1 correction was supposed to add schema validation via schemas/merge-policy.schema.json — got a lighter grep-based check instead. Refactor to use jsonschema (Python) or jq+structural checks against the schema.
-5. **HIGH: merge-verify.sh:168 uses undefined variable `rescue_path` (SC2154).** Declare it before use.
-- **Medium-severity carry-forward:**
-6. upgrade.sh doesn't migrate pre-XDG `.claude/specialists/` (round-1 finding that wasn't prioritised).
-7. merge-resolve-plan.sh:111 `_get_machine_merge_details()` is dead code (SC2329).
-8. No test for round-trip: generate-reintegration + regular update-summary on a non-reintegration section should not corrupt reintegration (related to #1).
-- **Low-severity carry-forward:**
-- source_todo + source_todos mutual exclusivity: spec wording is ambiguous; current impl allows both per back-compat discipline. Needs spec clarification in next session.
-- SC2097/SC2098/SC3001 shellcheck nits in several test files (minor POSIX compliance).
-- readlink -f portability (Linux-only vs cross-platform decision).
-- **False positives logged in per-deliverable reviews/*.json:** codex's unplanned-changes dimension uses full base..HEAD diff rather than per-deliverable commit range, flagging every deliverable's changes as "unplanned" during other deliverables' reviews.
-- **Fresh-Claude reviewer still gated by ANTHROPIC_API_KEY absence** (OAuth incompatible with --bare). Codex cross-model provides the generator-evaluator separation.
+- **Review Phase A: all 4 deliverables PASS** — 33/33 acceptance criteria met, all artifact globs present, seed (furrow-b0f2) is open.
+- **Review Phase B (codex cross-model): all 4 "fail"** — synthesized analysis splits the 20 dimension verdicts (4 deliverables × 5 dimensions) into:
+- 4 false positives on `unplanned-changes` (known codex bug: uses full base..HEAD diff per review, so every deliverable sees other deliverables' legitimate work).
+- 3 false positives on `code-quality` SC2148 for hook fragments (fragments are sourced, not executed — SC2148 does not apply).
+- 1 false positive on install-architecture `correctness`: codex claims "8 committed symlinks target ../../../furrow/specialists/" — those 8 are .gitignored (see `.gitignore:30`), the 14 committed ones all resolve to `../../specialists/` per AC-2.
+- 1 false positive on config-cleanup `correctness`: "rws state init never writes source_todos" — AC-6 does not require this; it requires schema + /furrow:next handoff + back-compat, all present.
+- 1 false positive on merge-process-skill `spec-compliance`: "missing orchestrator" — /furrow:merge slash command IS the orchestrator; no `frw merge` CLI wrapper is by design (human-in-the-loop between phases).
+- **Legitimate round-3 findings (all MEDIUM or below, none HIGH)** — documented in `reviews/<deliverable>.json`:
+- **MEDIUM (worktree-reintegration-summary)**: `generate-reintegration.sh` uses inline jq-subset validation (lines 357-400) rather than the canonical `schemas/reintegration.schema.json` via Python `Draft2020-12Validator`. HIGH-2 fix applied this pattern to `get-reintegration-json` but not to the generator. Follow-up: unify both under the schema validator.
+- **MEDIUM (merge-process-skill)**: AC-10 splits its e2e coverage across two fixtures — a contaminated fixture stops at unapproved-execute, and the approved-execute+verify happy path uses a separate safe fixture with no contamination or protected-file conflict. AC-10 specifies a single unified fixture. Follow-up: unify or add a combined fixture.
+- **MEDIUM (config-cleanup)**: XDG runtime consumer wiring is incomplete for `preferred_specialists` and `cross_model.provider` — fields are written to `~/.config/furrow/config.yaml` but no runtime reader consumes them. Follow-up: audit every XDG field for an actual consumer and either wire or remove.
+- **LOW**: SC2295 in rescue.sh, SC2038 in generate-reintegration.sh, SC3001 process substitutions in two `#!/bin/sh` files, schema missing `test_results.evidence_path` required. `bin/frw.d/scripts/rescue.sh` mode 100644 (from earlier in session, not a review finding).
+- **Synthesized per-deliverable verdicts**:
+- `install-architecture-overhaul`: PASS
+- `config-cleanup`: PASS-with-followup (XDG consumer wiring gap)
+- `worktree-reintegration-summary`: PASS-with-followup (generator schema validation gap)
+- `merge-process-skill`: PASS-with-followup (AC-10 fixture split)
+- **Pattern check**: round-1 found 7 mediums → round-2 surfaced 5 highs + 3 mediums (from deeper second look) → round-3 surfaces 3 mediums + nits, zero highs. Severity trajectory is converging. Per previous session's Recommendation, if round-3 had surfaced new HIGHs, stop and evaluate root cause; since it surfaced only mediums with clear follow-up pathways, the row is ship-ready.
+- **Reviewer coverage**: Phase A deterministic + Phase B codex cross-model. Fresh-Claude reviewer skipped (ANTHROPIC_API_KEY absent; OAuth incompatible with `claude -p --bare`). Generator-evaluator separation is satisfied at the model level via cross-model.
 
 ## Open Questions
-- **Sharded todos.d/** — still deferred (carried from ideation/plan/spec); no change in implement. Review step may revisit.
-- **CI wiring** — furrow.yaml ci_commands entry exists (contamination-check), but whether upstream CI runner actually executes ci_commands on pushes is out of scope here. Review step should verify CI integration or flag as follow-up.
-- **8 gitignored specialist symlinks** — `.gitignore` pre-existing pattern `.claude/commands/specialist:*` means 8 of the 22 specialists are untracked working-tree only. The install-time validator (1i) catches broken targets regardless, but this asymmetry between tracked (14) and untracked (8) specialist symlinks is worth noting. Review step could propose either tracking all 22 or removing the 14 tracked ones to unify.
-- **frw upgrade source-repo guard scope** — the guard uses SOURCE_REPO detection. Confirmed not to write to XDG paths inside source tree. Did cause one unstaged deletion of `.furrow/furrow.yaml` during a sub-agent's test run that the orchestrator restored from HEAD. Review step should confirm no path leaks remain.
-- **Review-step depth** — with 38 commits and 333 assertions, the review step has enough surface to do a meaningful Phase-A audit. Suggest directing review to (i) file-ownership adherence audit, (ii) primitive-reuse audit (wave-3 actually calls wave-1/2 CLIs), (iii) test independence check (run each test-*.sh in isolation), (iv) shellcheck clean sweep.
+- **Ship vs rewind-again decision**: codex gave 4× overall:fail, but 13 of 20 dimension findings are false positives (unplanned-changes × 4, SC2148 × 3, correctness × 2, spec-compliance × 1, others) and 3 of the remaining 7 are minor. The 3 mediums are legitimate but bounded follow-ups. User decides whether to archive (accept mediums as follow-up) or rewind for a 4th correction round.
+- **If archiving**, promote the following as follow-up rows/todos:
+1. `reintegration-generator-schema-validation`: swap generate-reintegration.sh's inline jq-subset validation to Python `Draft2020-12Validator` against `schemas/reintegration.schema.json`; also require `test_results.evidence_path` in the schema.
+2. `merge-ac10-unified-fixture`: extend `test-merge-e2e.sh` with a fixture combining install-artifact contamination + protected-file conflict + approved-execute + verify-green; OR merge the two existing fixtures; OR document the split with AC amendment.
+3. `xdg-config-consumer-wiring`: audit every field in `~/.config/furrow/config.yaml` for a runtime reader; wire `preferred_specialists` resolver and `cross_model.provider` XDG fallback, or remove unused fields.
+4. `rescue-sh-exec-bit`: decide whether `bin/frw.d/scripts/rescue.sh` should be committed 100755 or the dispatcher should invoke via `sh "$script"`.
+5. `test-isolation-install-upgrade`: audit `tests/integration/test-install-*.sh` and `test-upgrade-*.sh` for `$FURROW_ROOT`/`$HOME` usage that resolved outside fixture `$TMP` and poisoned the live worktree during the session.
+6. `specialist-symlink-unification`: the 8 .gitignored specialist symlinks point at adjacent /home/jonco/src/furrow/. Decide: track all 22 committed, or remove the 14 tracked.
+7. `codex-reviewer-unplanned-changes-scope`: codex's per-deliverable diff uses full `base..HEAD`; switch to per-deliverable commit range so cross-deliverable work isn't flagged. Harness-level fix, not row-level.
+8. `sharded-todos-d`: still deferred (carried from ideation).
+- **Draft7 vs Draft2020-12 schema asymmetry**: merge-policy.schema.json uses Draft7, reintegration/definition use Draft2020-12. Internally consistent; external asymmetry. Worth unification decision.
+- **`.claude/specialists.pre-xdg` disposition**: upgrade leaves this as rollback artifact. Decide if intentional forensic surface or cleanup-on-success.
 
 ## Recommendations
-- **Next session**: invoke `/furrow:work`; row lands in implement step (will rewind after this checkpoint). Fresh context budget lets you address the 5 HIGH carry-forward bugs in one focused implementation round.
-- **Recommended sub-agent dispatch plan for next session:**
-- **Dispatch A (worktree-reintegration-summary, harness-engineer)**: HIGH bugs #1 + #2 + medium #8. Files: bin/rws (fix update-summary section-boundary regex + add schema validation to get-reintegration-json), tests/integration/test-reintegration.sh (round-trip regression test + schema-invalid-JSON rejection test).
-- **Dispatch B (merge-process-skill, merge-specialist)**: HIGH bugs #3 + #4 + #5, medium #7. Files: bin/frw.d/scripts/merge-lib.sh (replace grep-based validation with schemas/merge-policy.schema.json jsonschema validation), bin/frw.d/scripts/merge-verify.sh (define rescue_path before use), bin/frw.d/scripts/merge-resolve-plan.sh (remove or wire _get_machine_merge_details), tests/integration/test-merge-e2e.sh (fix the verify-green path so exit 0 is real, tighten assertion). Also add a test that proves merge-lib policy validation catches schema violations (not just top-level keys).
-- **Dispatch C (config-cleanup, harness-engineer, OPTIONAL)**: medium #6 (pre-XDG specialists migration in upgrade.sh). Low priority — only if the user wants to close it.
-- **After corrections land:** `/furrow:review --re-review`. Expected third-round findings: ideally zero new bugs; potentially 1-2 cosmetic shellcheck items.
-- **Session budget awareness**: this session accumulated ~46 commits + 2 review rounds + ~240k tokens. Next session should run tighter — focus on the 5 HIGH bugs in a single dispatch round, one review, decide to ship or cycle once more.
-- **Shippable if corrections complete cleanly:** row is architecturally sound. 333 integration assertions cover the primary paths. Remaining bugs are edge-case correctness (update-summary boundary, verify-green happiness, schema validation completeness) — not foundational.
+- **Recommended: archive the row** and promote the 8 follow-up items listed in Open Questions as separate rows/todos via `/furrow:archive install-and-merge` + `/furrow:work-todos --extract`. The round-3 findings are all MEDIUM or below, with clear scoped follow-up paths; severity trajectory across 3 review rounds (7M → 5H+3M → 3M+0H) is converging.
+- **Archive rationale**:
+- All 33 ACs across 4 deliverables pass Phase A.
+- 49 commits on top of base `a284525`, all conventional, disjoint file_ownership within waves.
+- 35/35 integration suites green; 60/60 reintegration + 56/56 merge-e2e + 26/26 upgrade-migration subtests green.
+- Phase B mediums are follow-up enhancements, not spec violations.
+- Continuing review cycles shows diminishing returns (~240k tokens/round, ~2-3h wall).
+- **Alternative: rewind again for a 4th correction round** — only if the user judges one or more of the 3 mediums as blocking. The generator-schema-validation fix is ~30 min; AC-10 unified fixture is ~1-2h; XDG consumer wiring is ~2-4h (scope-expanding — likely belongs in a separate row).
+- **Archive workflow**:
+1. `rws transition install-and-merge pass manual "..."` to close the `review->review` gate.
+2. `/furrow:archive install-and-merge` to seal the row, write the archive summary, and mark `archived_at`.
+3. `/furrow:work-todos --extract install-and-merge` to promote the 8 follow-ups to `.furrow/almanac/todos.yaml`.
+4. `/furrow:triage` to re-rank roadmap with the new todos.
+5. Worktree-merge prep: run `/furrow:merge install-and-merge` if landing this branch into `main` via the new five-phase workflow (the very workflow this row built).
+- **Meta-observation for the harness itself**: this row produced the merge-skill that should now be dogfood-tested by merging itself. Good first real-world exercise of `/furrow:merge`.
+2. Verify HIGH-1 fix via live round-trip: run `rws update-summary <row> recommendations` on a fresh row with reintegration block present; assert `<!-- reintegration:begin -->...<!-- reintegration:end -->` is byte-identical before/after (and try it across all three sections: key-findings, open-questions, recommendations).
+1. **HIGH: rws update-summary corruption of reintegration section.** Running `rws update-summary <row> recommendations` injects content INSIDE the `<!-- reintegration:begin --><!-- reintegration:end -->` markers — data corruption. Root cause likely: my template-consumption correction changed the section-boundary matching in bin/rws update_summary helper OR rws's section parser never treated reintegration as write-protected. Fix: tighten the section regex in bin/rws update_summary so it only matches the target section and never crosses into reintegration markers. Add regression test.

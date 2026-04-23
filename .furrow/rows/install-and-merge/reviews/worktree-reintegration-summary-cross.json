@@ -13,28 +13,28 @@
     "dimensions": [
       {
         "name": "correctness",
-        "verdict": "fail",
-        "evidence": "Fresh-run repro shows data loss/corruption: after `generate-reintegration`, running `rws update-summary test-row recommendations` changes the reintegration block by injecting `- New rec.` inside `<!-- reintegration:begin --> ... <!-- reintegration:end -->`, so the claimed round-trip behavior does not hold."
+        "verdict": "pass",
+        "evidence": "Targeted run `sh tests/integration/test-reintegration.sh` passed 60/60, including generation, markers, template use, schema-invalid rejection, and update-summary round-trip preservation."
       },
       {
         "name": "test-coverage",
-        "verdict": "fail",
-        "evidence": "`tests/integration/test-reintegration.sh` passes 44/44 but never exercises the failing path of generating reintegration and then updating a normal summary section, so the real round-trip regression is uncovered by tests."
+        "verdict": "pass",
+        "evidence": "`tests/integration/test-reintegration.sh` covers the generator, template fallback/override, launch handoff contract via get-reintegration-json, update-summary rejection, and round-trip preservation."
       },
       {
         "name": "spec-compliance",
         "verdict": "fail",
-        "evidence": "`rws get-reintegration-json` accepted a deliberately schema-invalid `reintegration.json` (bad `generated_at`, missing `files_changed[].category`, invalid `open_items[].urgency`, wrong `merge_hints` types) and exited 0, so the schema contract is not actually enforced."
+        "evidence": "`generate-reintegration.sh` validates with an inline jq subset before writing rather than validating against `schemas/reintegration.schema.json`, and the schema does not require `test_results.evidence_path` despite the stated contract."
       },
       {
         "name": "unplanned-changes",
         "verdict": "fail",
-        "evidence": "The deliverable's `file_ownership` in `.furrow/rows/install-and-merge/definition.yaml` omits `bin/frw.d/scripts/generate-reintegration.sh`, `commands/merge.md`, and `bin/frw.d/scripts/merge-*.sh`, yet those files were modified and no ownership amendment/justification is recorded there."
+        "evidence": "`definition.yaml` file_ownership for this deliverable omits `bin/frw.d/scripts/generate-reintegration.sh`, which is a deliverable implementation file, with no ownership justification there."
       },
       {
         "name": "code-quality",
         "verdict": "fail",
-        "evidence": "Shell quality is below project standard: `shellcheck` reports POSIX violations in `tests/integration/test-reintegration.sh` (`SC3001` process substitution under `#!/bin/sh`) and unsafe filename handling in `bin/frw.d/scripts/generate-reintegration.sh` (`SC2038`)."
+        "evidence": "`shellcheck -S warning` reports SC2038 in `generate-reintegration.sh` and POSIX SC3001 process substitution in `tests/integration/test-reintegration.sh` under `#!/bin/sh`."
       }
     ],
     "verdict": "fail"
@@ -43,5 +43,5 @@
   "corrections": 0,
   "reviewer": "codex",
   "cross_model": true,
-  "timestamp": "2026-04-22T22:03:25Z"
+  "timestamp": "2026-04-23T14:23:13Z"
 }

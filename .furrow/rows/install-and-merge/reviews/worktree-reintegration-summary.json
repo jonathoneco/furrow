@@ -1,33 +1,33 @@
 {
   "deliverable": "worktree-reintegration-summary",
-  "wave": 2,
-  "reviewers": ["phase-a-in-session", "codex-cross-model"],
-  "fresh_claude": "SKIPPED — see install-architecture-overhaul.json",
-  "phase_a": {
-    "verdict": "PASS",
-    "summary": "All 6 ACs (R1-R6) traceable to test scenarios. 40/40 scenarios green."
-  },
-  "phase_b_codex": {
-    "verdict": "FAIL",
-    "dimensions": [
-      {"name": "correctness", "verdict": "FAIL", "evidence": "templates/reintegration.md.tmpl never consumed; generate-reintegration.sh:409-420 hardcodes markdown render."},
-      {"name": "test-coverage", "verdict": "FAIL", "evidence": "Test checks template exists + has markers; never verifies generator reads it."},
-      {"name": "spec-compliance", "verdict": "FAIL", "evidence": "Spec says update-summary reintegration exits 1; bin/rws:2282-2285 exits 3."},
-      {"name": "unplanned-changes", "verdict": "FAIL", "evidence": "Diff includes wave-3 files (false positive: codex compares full base..HEAD)."},
-      {"name": "code-quality", "verdict": "FAIL", "evidence": "SC2038 on generate-reintegration.sh:263."}
-    ]
-  },
-  "evaluator_notes": [
-    {"finding": "templates/reintegration.md.tmpl dead code", "classification": "REAL BUG", "rationale": "AC-R5 says template is 'used when worktree completes without prior content'. Confirmed via ripgrep: generator hardcodes rendering. Template file exists but is never loaded. Either (a) wire generator to read from template, or (b) remove the template and update AC-R5 to match reality. The spec intent was (a)."},
-    {"finding": "update-summary reintegration exit code (impl=3, spec=1)", "classification": "REAL (minor)", "rationale": "The exit code discrepancy is real. Spec §AC-R1 reads 'validate-summary... exit 1 on failure' in places but 'update-summary... exit 3' elsewhere; codex may be reading the wrong section. Impl uses 3 for 'validation error' which matches project's standard exit-code convention (0/1/2/3/4). Worth confirming which the spec actually wants — my read is 3 is correct but codex found a contradicting passage."},
-    {"finding": "unplanned-changes FAIL", "classification": "FALSE POSITIVE", "rationale": "Codex computed diff against base_commit (a284525), which includes ALL work across all waves and Furrow-managed artifacts. Actual deliverable-specific diff is within worktree-reintegration-summary's ownership. Evaluator artifact, not a violation."},
-    {"finding": "SC2038 code-quality FAIL", "classification": "REAL (cosmetic)", "rationale": "SC2038 is 'Use -print0/-0 or -exec + to allow for non-alphanumeric filenames'. Trivial shellcheck fix. Not a bug; style warning."}
+  "timestamp": "2026-04-23T14:26:59Z",
+  "phase_a_verdict": "pass",
+  "phase_b_cross_verdict": "fail",
+  "synthesized_verdict": "pass-with-followup",
+  "synthesized_reason": "Phase A pass; correctness + test-coverage pass (60/60 tests, including round-trip and schema-invalid). Legitimate medium finding: generate-reintegration uses inline validation instead of the canonical schema. Follow-up row should swap it. Not a blocker \u2014 generator output still round-trips through schema-validated get-reintegration-json.",
+  "real_findings": [
+    {
+      "severity": "medium",
+      "dim": "spec-compliance",
+      "note": "generate-reintegration.sh uses jq-based subset validation (lines 357-400) rather than the official schemas/reintegration.schema.json via Python jsonschema. get-reintegration-json was fixed to use the schema (HIGH-2, 9576e0a), but generate still uses the inline subset. Schema is authoritative \u2014 generate should too. Follow-up: swap generate validation to use the same Draft2020-12Validator pattern."
+    },
+    {
+      "severity": "low",
+      "dim": "schema-completeness",
+      "note": "schemas/reintegration.schema.json does not declare test_results.evidence_path as required; the AC-R2 contract implies it is. Follow-up: tighten schema."
+    },
+    {
+      "severity": "low",
+      "dim": "code-quality",
+      "note": "SC2038 in generate-reintegration.sh; SC3001 process substitution in test-reintegration.sh under #!/bin/sh shebang (bash-ism under sh declaration). Minor."
+    }
   ],
-  "overall": "FAIL",
-  "overall_rationale": "Template dead-code is a real AC-R5 gap. Exit-code discrepancy is minor. Bringing template into use would convert to PASS.",
-  "action_items": [
-    {"severity": "medium", "item": "Wire generate-reintegration.sh to load markdown skeleton from templates/reintegration.md.tmpl instead of hardcoded render. Add a test scenario that modifies the template and asserts the change surfaces in the rendered output."},
-    {"severity": "low", "item": "Resolve exit-code discrepancy with spec §AC-R1 (confirm exit 3 or change to exit 1)."},
-    {"severity": "low", "item": "Fix SC2038 on generate-reintegration.sh:263 (use -print0 or -exec)."}
-  ]
+  "false_positives": [
+    "unplanned-changes: \"file_ownership omits generate-reintegration.sh\" \u2014 plan.json wave-2 lists generate-reintegration.sh under this deliverable's ownership. The definition.yaml may not enumerate every sub-file but plan.json is the binding ownership contract."
+  ],
+  "reviewers": {
+    "phase_a": "worktree-reintegration-summary.phase-a.json",
+    "phase_b_cross": "worktree-reintegration-summary-cross.json",
+    "phase_b_fresh_claude": "skipped: ANTHROPIC_API_KEY absent; codex-only satisfies generator-evaluator separation via cross-model"
+  }
 }

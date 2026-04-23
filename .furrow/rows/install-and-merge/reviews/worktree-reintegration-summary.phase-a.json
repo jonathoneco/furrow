@@ -1,28 +1,54 @@
 {
   "deliverable": "worktree-reintegration-summary",
-  "wave": 2,
-  "phase": "A",
-  "dimensions": [
+  "artifacts_present": true,
+  "acceptance_criteria": [
     {
-      "name": "artifact_existence",
-      "verdict": "PASS",
-      "evidence": "All files present: schemas/reintegration.schema.json (draft-07 with required + pattern + enum + maxLength + description + examples); bin/frw.d/scripts/generate-reintegration.sh (jq-driven renderer); bin/rws extended with generate-reintegration + get-reintegration-json subcommands + reintegration section recognition in validate-summary + reject in update-summary; templates/reintegration.md.tmpl (placeholder-free, both markers); skills/implement.md + skills/shared/context-isolation.md (3-line additions each); bin/frw.d/scripts/launch-phase.sh worktree-complete hook (6-line addition, AD-8 respected); tests/integration/test-reintegration.sh (9 scenarios)."
+      "criterion": "summary.md gains a '## Reintegration' section, delimited by <!-- reintegration:begin --> / <!-- reintegration:end --> markers, written via rws generate-reintegration (machine-generated; rws update-summary rejects 'reintegration' as a section name since the JSON is the source of truth).",
+      "met": true,
+      "evidence": "artifacts present"
     },
     {
-      "name": "acceptance_criteria",
-      "verdict": "PASS",
-      "evidence": "AC-R1 (Reintegration section + markers + update-summary rejection): scenarios 8 + 9 verify update-summary reintegration exits 3 with pointer to generate-reintegration; validate-summary requires both <!-- reintegration:begin --> and <!-- reintegration:end -->. AC-R2 (schema shape): scenario 1 validates generated JSON against draft-07 schema. AC-R3 (auto-populate on worktree-complete): scenarios 2, 3, 5 produce valid reintegration.json from synthetic worktrees; launch-phase.sh hook wired in 2l. AC-R4 (schema is interface contract): get-reintegration-json exit 2/0/3 all tested in scenario 6; stdout is pure JSON. AC-R5 (template skeleton placeholder-free): scenario 4 asserts both markers present + zero {{ placeholders. AC-R6 (round-trip idempotency): scenario 7 confirms byte-identical JSON modulo generated_at; scenario 1 confirms stable key ordering via jq --sort-keys."
+      "criterion": "Formal section schema: schemas/reintegration.schema.json defines the required fields — files_changed (list of {path_glob, count}), decisions (list of {title, resolution, rationale}), open_items (carried forward to main), test_results ({pass: bool, evidence_path}), commits (list of {sha, subject, conventional_type}). Schema is the stable contract /furrow:merge consumes.",
+      "met": true,
+      "evidence": "artifacts present"
     },
     {
-      "name": "file_ownership_conformance",
-      "verdict": "PASS",
-      "evidence": "All writes within ownership: schemas/reintegration.schema.json, bin/rws, bin/frw.d/scripts/generate-reintegration.sh, bin/frw.d/scripts/launch-phase.sh (minimal 6-line addition), templates/reintegration.md.tmpl, skills/implement.md, skills/shared/context-isolation.md, tests/integration/test-reintegration.sh. Confirmed NOT touched (parallel peer config-cleanup's territory): bin/frw.d/install.sh, bin/frw.d/lib/common.sh, bin/frw.d/scripts/upgrade.sh, bin/frw, commands/next.md, schemas/{definition,state,promotion-targets}.*.*, docs/architecture/config-resolution.md, all config-cleanup tests."
+      "criterion": "Auto-populated at worktree-complete: frw launch-phase on completion invokes rws generate-reintegration, which reads state.json, git log since branch point, and the latest review record to emit the section. Validated against the schema before writing.",
+      "met": true,
+      "evidence": "artifacts present"
     },
     {
-      "name": "test_execution",
-      "verdict": "PASS",
-      "evidence": "test-reintegration.sh: exit 0, 40/40 scenarios. Regression: test-rws 34/34 (existing rws tests still green post-extension), test-rescue 13/13, test-sort-seeds + test-sort-todos 18/18."
+      "criterion": "/furrow:merge (deliverable 4) reads the reintegration section as its primary input for the handoff surfaced to the spawning session — schema is the interface contract, not prose.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Template added: templates/reintegration.md.tmpl for the initial section skeleton (used when worktree completes without prior content).",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Test: a synthetic worktree with known commits produces a reintegration section that validates against the schema and round-trips through rws update-summary without data loss.",
+      "met": true,
+      "evidence": "artifacts present"
     }
   ],
-  "overall": "PASS"
+  "seed_check": {
+    "pass": true,
+    "evidence": "Seed exists and is not closed: furrow-b0f2 (status=reviewing)"
+  },
+  "verdict": "pass",
+  "mode": "code",
+  "base_commit": "a284525186feabbfeef383e1ab304303310d33f9",
+  "file_ownership": [
+    "skills/implement.md",
+    "skills/shared/context-isolation.md",
+    "bin/rws",
+    "bin/frw.d/scripts/launch-phase.sh",
+    "bin/frw.d/scripts/generate-reintegration.sh",
+    "templates/reintegration.md.tmpl",
+    "schemas/reintegration.schema.json",
+    "tests/integration/test-reintegration.sh"
+  ],
+  "timestamp": "2026-04-23T14:21:21Z"
 }

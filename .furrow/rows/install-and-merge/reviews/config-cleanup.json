@@ -1,35 +1,30 @@
 {
   "deliverable": "config-cleanup",
-  "wave": 2,
-  "reviewers": ["phase-a-in-session", "codex-cross-model"],
-  "fresh_claude": "SKIPPED — see install-architecture-overhaul.json",
-  "phase_a": {
-    "verdict": "PASS",
-    "summary": "All 7 ACs (1-7) have traceable test evidence. 58/58 assertions green."
-  },
-  "phase_b_codex": {
-    "verdict": "FAIL",
-    "dimensions": [
-      {"name": "correctness", "verdict": "FAIL", "evidence": "Fresh `frw install --project` did not create XDG config.yaml or promotion-targets.yaml; upgrade.sh has no pre-XDG specialists migration; launch-phase.sh never consumes state.json.source_todos."},
-      {"name": "test-coverage", "verdict": "FAIL", "evidence": "No test for source_todos runtime consumption in launch-phase.sh; no test for pre-XDG specialists migration."},
-      {"name": "spec-compliance", "verdict": "FAIL", "evidence": "Spec wants source_todo/source_todos mutually exclusive; both validate. Runtime path still only uses roadmap todos[]."},
-      {"name": "unplanned-changes", "verdict": "FAIL", "evidence": "upgrade.sh, promotion-targets.schema.yaml, fixtures outside plan.json ownership (cross-deliverable diff bleed)."},
-      {"name": "code-quality", "verdict": "FAIL", "evidence": "validate-definition.sh uses Draft7Validator against a Draft 2020-12 schema; misses cross-field validation."}
-    ]
-  },
-  "evaluator_notes": [
-    {"finding": "source_todos NOT consumed by launch-phase.sh", "classification": "REAL GAP", "rationale": "AC-6 says source_todos 'threaded end-to-end' through /furrow:next handoff. commands/next.md was updated but the script path (launch-phase.sh which renders prompts on worktree-complete) wasn't. Partially satisfies AC-6 at the command-prose level; fails at the runtime-consumption level. Merits a follow-up row."},
-    {"finding": "frw install fresh-bootstrap of XDG config files missing", "classification": "REAL GAP", "rationale": "AC-3 says promotion-targets.yaml is 'produced'; codex confirmed only `frw upgrade --apply` creates it, not `frw install`. If the user never runs upgrade, the scaffolding doesn't exist. Merits a fix in install.sh consumer-mode path."},
-    {"finding": "source_todo + source_todos mutual exclusivity", "classification": "AMBIGUOUS SPEC", "rationale": "Definition AC-6 says 'Back-compat: definitions using source_todo (singular) still validate and work.' This suggests both variants SHOULD validate (back-compat discipline), but codex reads it as 'one or the other, not both'. Spec could go either way. Current impl accepts both — conservative interpretation of back-compat."},
-    {"finding": "Draft7Validator vs Draft 2020-12", "classification": "REAL BUG", "rationale": "Schema declares draft 2020-12 but validator enforces draft 7. Any Draft 2020-12-specific constructs (prefixItems, dynamicRef, etc.) would silently fail validation. Merits a fix."},
-    {"finding": "unplanned-changes FAIL", "classification": "FALSE POSITIVE (partially)", "rationale": "The files named (upgrade.sh, schemas/promotion-targets.schema.yaml, fixtures) ARE in plan.json wave-2 config-cleanup file_ownership. Codex misread plan.json OR compared against a stale snapshot."}
+  "timestamp": "2026-04-23T14:26:59Z",
+  "phase_a_verdict": "pass",
+  "phase_b_cross_verdict": "fail",
+  "synthesized_verdict": "pass-with-followup",
+  "synthesized_reason": "Phase A pass; Phase B surfaces a legitimate medium (XDG consumer wiring incomplete for preferred_specialists + cross_model.provider reader) plus false positives. The wiring gap is a follow-up enhancement, not a spec violation \u2014 AC-1 wires the config file and helpers; \"every consumer uses the helper\" is not in scope. Document as follow-up.",
+  "real_findings": [
+    {
+      "severity": "medium",
+      "dim": "runtime-wiring",
+      "note": "XDG config consumer wiring may be incomplete: preferred_specialists field in ~/.config/furrow/config.yaml has no runtime consumer; cross-model review still reads project-local furrow.yaml only. Follow-up: audit every XDG config field for an actual reader."
+    },
+    {
+      "severity": "low",
+      "dim": "code-quality",
+      "note": "SC2097/SC2098 in upgrade/promotion-target tests; SC2129 in install.sh. Minor."
+    }
   ],
-  "overall": "FAIL",
-  "overall_rationale": "Two real gaps (source_todos runtime consumption; fresh-install XDG bootstrap) + one real bug (Draft7 vs 2020-12) prevent clean PASS. Phase A tests pass what they cover, but what's covered doesn't include the full AC-6 runtime path or AC-3 fresh-install scenario.",
-  "action_items": [
-    {"severity": "medium", "item": "Wire source_todos into bin/frw.d/scripts/launch-phase.sh handoff prompt rendering (AC-6 runtime path)."},
-    {"severity": "medium", "item": "Extend install.sh consumer-mode path to bootstrap empty ~/.config/furrow/config.yaml and promotion-targets.yaml on first install (AC-3 fresh-install bootstrap)."},
-    {"severity": "medium", "item": "Switch validate-definition.sh to a Draft 2020-12 validator (or downgrade schema $schema to draft-07)."},
-    {"severity": "low", "item": "Spec clarification: is source_todo + source_todos simultaneously a validation error, or back-compat-allowed both-are-fine?"}
-  ]
+  "false_positives": [
+    "correctness: \"rws state init never writes source_todos\" \u2014 AC-6 specifies schema + /furrow:next handoff + back-compat; does not require rws init to accept --source-todos. Current impl matches the AC. Would be a future enhancement, not a spec violation.",
+    "spec-compliance: \"XDG config is helper/scaffolding\" \u2014 partially correct but AC-3 explicitly declares promotion-targets scaffolding-only; AC-1/2 do require runtime consumption and some of that is incomplete (see runtime-wiring finding above).",
+    "unplanned-changes: Same cross-deliverable diff bleed."
+  ],
+  "reviewers": {
+    "phase_a": "config-cleanup.phase-a.json",
+    "phase_b_cross": "config-cleanup-cross.json",
+    "phase_b_fresh_claude": "skipped: ANTHROPIC_API_KEY absent; codex-only satisfies generator-evaluator separation via cross-model"
+  }
 }
