@@ -2540,25 +2540,55 @@ validate_reintegration_json() {
     return 2
   fi
 
-  _vrj_result="$(jq -r '
-    def check_required(obj; fields):
-      fields | map(
-        if obj[.] == null then "missing:" + . else empty end
-      ) | .[];
+  _vrj_schema="${FURROW_ROOT}/schemas/reintegration.schema.json"
+  if [ ! -f "$_vrj_schema" ]; then
+    printf 'reintegration.json schema not found: %s\n' "$_vrj_schema" >&2
+    return 3
+  fi
 
-    . as $doc |
-    (check_required($doc; ["schema_version","row_name","branch","base_sha","head_sha","generated_at","commits","files_changed","decisions","open_items","test_results"]) // empty),
-    (if $doc.schema_version != "1.0" then "invalid:schema_version" else empty end),
-    (if ($doc.row_name | type) == "string" and ($doc.row_name | test("^[a-z][a-z0-9]*(-[a-z0-9]+)*$") | not) then "pattern:row_name" else empty end),
-    (if ($doc.branch | type) == "string" and ($doc.branch | test("^[A-Za-z0-9._/-]+$") | not) then "pattern:branch" else empty end),
-    (if ($doc.base_sha | type) == "string" and ($doc.base_sha | test("^[0-9a-f]{7,40}$") | not) then "pattern:base_sha" else empty end),
-    (if ($doc.head_sha | type) == "string" and ($doc.head_sha | test("^[0-9a-f]{7,40}$") | not) then "pattern:head_sha" else empty end),
-    (if ($doc.commits | type) != "array" then "type:commits" elif ($doc.commits | length) == 0 then "empty:commits" else empty end),
-    (if ($doc.test_results.pass | type) != "boolean" then "type:test_results.pass" else empty end)
-  ' "$_vrj_file" 2>/dev/null)"
+  # Pre-check: must be parseable JSON before we hand it to jsonschema.
+  if ! jq -e . "$_vrj_file" >/dev/null 2>&1; then
+    printf 'reintegration.json is not valid JSON: %s\n' "$_vrj_file" >&2
+    return 3
+  fi
 
-  if [ -n "$_vrj_result" ]; then
-    printf 'reintegration.json schema validation failed: %s\n' "$_vrj_result" >&2
+  # Full jsonschema validation via Python (Draft 2020-12, matches
+  # validate-definition.sh pattern). Catches additionalProperties, enum,
+  # pattern, type, and const constraints that a grep/jq check can't express.
+  if ! command -v python3 >/dev/null 2>&1; then
+    printf 'reintegration.json validation requires python3\n' >&2
+    return 3
+  fi
+
+  _vrj_errors="$(python3 -c '
+import json, sys
+try:
+    from jsonschema import Draft202012Validator
+except ImportError:
+    print("jsonschema not installed (need >=4.0)", file=sys.stderr)
+    sys.exit(2)
+with open(sys.argv[1]) as f:
+    schema = json.load(f)
+with open(sys.argv[2]) as f:
+    instance = json.load(f)
+validator = Draft202012Validator(schema)
+errs = sorted(validator.iter_errors(instance), key=lambda e: list(e.path))
+for e in errs:
+    path = ".".join(str(p) for p in e.absolute_path) or "(root)"
+    print(f"Schema error at {path}: {e.message}")
+' "$_vrj_schema" "$_vrj_file" 2>&1)"
+  _vrj_py_exit=$?
+
+  # python3 exit semantics here: 0 = ran ok (errors, if any, in stdout);
+  # 1 = typical SystemExit/traceback; 2 = our custom "jsonschema missing".
+  # Anything non-zero means we can't trust stdout — treat as validation failure.
+  if [ "$_vrj_py_exit" -ne 0 ]; then
+    printf '%s\n' "$_vrj_errors" >&2
+    return 3
+  fi
+
+  if [ -n "$_vrj_errors" ]; then
+    printf 'reintegration.json schema validation failed:\n%s\n' "$_vrj_errors" >&2
     return 3
   fi
   return 0
