@@ -1,0 +1,47 @@
+{
+  "deliverable": "install-architecture-overhaul",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "fail",
+        "evidence": "Live check found 8 committed .claude/commands/specialist:*.md symlinks still target ../../../furrow/specialists/* instead of ../../specialists/*; install.sh also sets INSTALL_MODE but still runs CLI symlink bootstrap in source mode."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "fail",
+        "evidence": "tests/integration/test-install-source-mode.sh simulates detection and manually creates symlinks instead of exercising the real install paths, so it missed the 8 bad committed symlinks."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "fail",
+        "evidence": "The specialist symlink interface contract is violated: not all committed specialist command links are source-local ../../specialists/ links."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "fail",
+        "evidence": "plan.json ownership for install-architecture-overhaul omits changed files such as bin/frw, bin/alm, bin/sds, .gitignore, normalize scripts, and many hooks/tests; the repo review artifact records this ownership gap."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "fail",
+        "evidence": "shellcheck exits 1 on deliverable shell surfaces, including SC2148 on multiple hook fragments and SC2295 in bin/frw.d/scripts/rescue.sh."
+      }
+    ],
+    "verdict": "fail"
+  },
+  "overall": "fail",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-23T14:23:08Z"
+}

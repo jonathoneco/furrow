@@ -1,0 +1,31 @@
+{
+  "deliverable": "install-architecture-overhaul",
+  "timestamp": "2026-04-23T14:26:59Z",
+  "phase_a_verdict": "pass",
+  "phase_b_cross_verdict": "fail",
+  "synthesized_verdict": "pass",
+  "synthesized_reason": "Phase A pass; Phase B codex findings are 2 false-positives (correctness/spec-compliance) + 1 known false-positive (unplanned-changes) + 1 partial false-positive (SC2148 hook-fragment) + legitimate minor code-quality and install-hygiene notes that belong in follow-up. No AC violation.",
+  "real_findings": [
+    {
+      "severity": "low",
+      "dim": "code-quality",
+      "note": "SC2295 in rescue.sh (unquoted expansion in pattern context). Minor."
+    },
+    {
+      "severity": "low-medium",
+      "dim": "install-hygiene",
+      "note": "The 8 untracked (.gitignored) specialist symlinks point at adjacent /home/jonco/src/furrow/. Not an AC-2 violation (AC says committed), but legitimate install-hygiene concern. Follow-up: unify tracked vs untracked specialist set."
+    }
+  ],
+  "false_positives": [
+    "correctness: \"8 committed symlinks target ../../../furrow/specialists/\" \u2014 the 8 are .gitignored (see .gitignore:30), not committed. The 14 committed symlinks all resolve to ../../specialists/ per AC-2.",
+    "spec-compliance: Follows from the false correctness finding.",
+    "unplanned-changes: Known codex-reviewer bug \u2014 uses full base..HEAD diff rather than per-deliverable commit range, so every deliverable sees others' legitimate changes.",
+    "code-quality (SC2148): hook fragments are sourced, not executed \u2014 SC2148 does not apply."
+  ],
+  "reviewers": {
+    "phase_a": "install-architecture-overhaul.phase-a.json",
+    "phase_b_cross": "install-architecture-overhaul-cross.json",
+    "phase_b_fresh_claude": "skipped: ANTHROPIC_API_KEY absent; codex-only satisfies generator-evaluator separation via cross-model"
+  }
+}

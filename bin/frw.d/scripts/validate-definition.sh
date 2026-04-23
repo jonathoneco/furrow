@@ -36,15 +36,18 @@ frw_validate_definition() {
       schema_errors=$(python3 -c "
 import json, sys
 try:
-    from jsonschema import validate, ValidationError, Draft7Validator
+    from jsonschema import Draft202012Validator
 except ImportError:
-    print('SKIP: jsonschema not installed', file=sys.stderr)
+    print('SKIP: jsonschema not installed (need >=4.0)', file=sys.stderr)
     sys.exit(0)
 with open(sys.argv[1]) as f:
     schema = json.load(f)
 with open(sys.argv[2]) as f:
     instance = json.load(f)
-validator = Draft7Validator(schema)
+# Use Draft202012Validator to match schema's \$schema declaration
+# (https://json-schema.org/draft/2020-12/schema). The older Draft 7 class
+# silently ignores 2020-12 keywords like unevaluatedProperties.
+validator = Draft202012Validator(schema)
 errs = sorted(validator.iter_errors(instance), key=lambda e: list(e.path))
 for e in errs:
     path = '.'.join(str(p) for p in e.absolute_path) or '(root)'

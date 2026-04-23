@@ -1,0 +1,41 @@
+{
+  "type": "ideation",
+  "dimensions": [
+    {
+      "name": "feasibility",
+      "verdict": "conditional",
+      "evidence": "The objective is achievable in this codebase because install flow, merge flow, and hook infrastructure already exist (`install.sh`, `bin/frw.d/install.sh`, `bin/frw.d/scripts/merge-to-main.sh`, `bin/frw.d/lib/common.sh`). The constraints are implementable, but the package is tightly coupled: XDG relocation, sentinel-based self-hosting detection, rescue bootstrap, and merge UX all touch shared install/runtime paths. Feasibility depends on sequencing `frw rescue` before any destabilizing `common.sh` changes and on defining a migration path for existing installs."
+    },
+    {
+      "name": "alignment",
+      "verdict": "pass",
+      "evidence": "The four deliverables map cleanly to the stated objective: `install-architecture-overhaul` covers trust boundaries and self-hosting detection; `config-cleanup` covers XDG config/state split and durable data placement; `merge-process-skill` covers `/furrow:merge` with human approval; `worktree-reintegration-summary` covers structured handoff back to the main session. Collectively they address install safety, merge process, and reintegration summaries."
+    },
+    {
+      "name": "dependency validity",
+      "verdict": "conditional",
+      "evidence": "The dependency shape is only partially specified. There is an implied order: `install-architecture-overhaul` must precede `config-cleanup`; rescue/bootstrap work must land before any `common.sh` changes; `worktree-reintegration-summary` should define the handoff contract before `/furrow:merge` consumes it. Those dependencies are real, but they are not documented as explicit ordering constraints or contract dependencies in the framing."
+    },
+    {
+      "name": "risk assessment",
+      "verdict": "conditional",
+      "evidence": "The constraints do a good job constraining data safety and merge safety: idempotent upgrades, no data loss, JSONL stability, no protected-file overwrite, XDG compliance, and SOURCE_REPO isolation materially reduce scope creep. The remaining risk is under-specified migration behavior: the framing does not explicitly bound how legacy paths are detected, how stale installs are reconciled, or what files are classified as 'protected' versus machine-managed during merge."
+    },
+    {
+      "name": "completeness",
+      "verdict": "conditional",
+      "evidence": "The deliverable set is close, but one obvious gap remains: migration/verification is only implied, not formalized. Given the back-compat and hook-safety constraints, the framing should explicitly require upgrade-path tests and a bootstrap/recovery contract (`frw rescue`) as deliverable-level acceptance criteria or a dedicated migration sub-deliverable. Without that, success criteria for existing installs and partial-failure recovery are too implicit."
+    }
+  ],
+  "framing_quality": "questionable",
+  "suggested_revisions": [
+    "Add explicit dependency ordering: `install-architecture-overhaul` -> `config-cleanup` -> `worktree-reintegration-summary` -> `merge-process-skill`, with `frw rescue` required before any `bin/frw.d/lib/common.sh` changes.",
+    "Add explicit acceptance criteria for migration safety: legacy install detection, no-copy refusal for `.furrow/SOURCE_REPO`, idempotent re-run behavior, and preservation/migration of existing config and state files.",
+    "Define the protected-file policy for merge in the framing: which files are never auto-overwritten, which files may be machine-merged, and what the human approval artifact looks like.",
+    "Require verification coverage in the framing: install upgrade tests, self-hosting/source-repo detection tests, XDG path resolution tests, JSONL preservation tests, and merge conflict/resolution-plan tests.",
+    "Define the reintegration summary contract explicitly so `/furrow:merge` has a stable input schema rather than relying on prose-only summaries."
+  ],
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-22T17:44:11Z"
+}

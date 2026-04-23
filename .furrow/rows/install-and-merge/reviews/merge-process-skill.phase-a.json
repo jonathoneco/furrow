@@ -1,0 +1,74 @@
+{
+  "deliverable": "merge-process-skill",
+  "artifacts_present": true,
+  "acceptance_criteria": [
+    {
+      "criterion": "New command commands/merge.md defines /furrow:merge with subphases: audit -> classify -> resolve-plan -> execute -> verify.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Audit phase: detects symlink-ification of protected files, overlapping commits between main and worktree, install-artifact additions, stale row/TODO references, common.sh syntax validity on both sides.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Classify phase: each worktree commit labeled safe / redundant-with-main / destructive / mixed. Output a machine-readable classification table (JSON + rendered markdown).",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Protected-file policy formalized: schemas/merge-policy.yaml lists file globs that are (a) NEVER auto-merged (bin/alm, bin/rws, bin/sds, .claude/rules/*, bin/frw.d/lib/common.sh), (b) machine-mergeable via sort-by-id (seeds.jsonl, todos.yaml), (c) prefer-ours by default (install-artifact globs). Policy file is repo-tracked.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Resolve-plan phase: produces a written conflict resolution plan per the policy (human-readable markdown + machine JSON). Human approves or edits the plan — no auto-overwrite of protected files.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Execute phase: applies the approved plan via standard git merge with the planned resolutions; aborts cleanly on deviation from plan (diff verifier).",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Post-merge verify: runs frw doctor, confirms no bin/ deletions, confirms all hooks parse, confirms seeds.jsonl/todos.yaml sort invariants hold, confirms frw rescue is still callable.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Script-guard hook heredoc false positive fixed: path-match logic ignores occurrences inside single-/double-quoted strings or heredocs (e.g., git commit messages mentioning frw.d/* no longer trip the guard). Regression test covers the prior failure modes.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Reintegration section (from worktree-reintegration-summary) consumed via its JSON schema as the primary handoff output when /furrow:merge lands — /furrow:merge is not free-form prose-parsing.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "End-to-end test: a fixture repo with a simulated worktree (install-artifact contamination + feature commits + one protected-file conflict) runs through all five subphases; the produced plan, when applied, yields a clean main branch with hooks intact and doctor green.",
+      "met": true,
+      "evidence": "artifacts present"
+    }
+  ],
+  "seed_check": {
+    "pass": true,
+    "evidence": "Seed exists and is not closed: furrow-b0f2 (status=reviewing)"
+  },
+  "verdict": "pass",
+  "mode": "code",
+  "base_commit": "a284525186feabbfeef383e1ab304303310d33f9",
+  "file_ownership": [
+    "commands/merge.md",
+    "bin/frw.d/scripts/merge-*.sh",
+    "bin/frw.d/hooks/script-guard.sh",
+    "bin/frw",
+    "skills/shared/merge-protocol.md",
+    "schemas/merge-policy.yaml",
+    "schemas/merge-policy.schema.json",
+    "tests/integration/test-merge-*.sh"
+  ],
+  "timestamp": "2026-04-23T14:21:21Z"
+}

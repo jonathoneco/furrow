@@ -182,6 +182,9 @@ Before requesting a step transition:
 5. On "yes": call `rws transition <name> pass manual "<evidence summary>"`.
 6. On "no": ask what needs to change, address feedback, return to step 2.
 
+## Worktree-Complete Hook
+When a tmux session exits after worktree work, `launch-phase.sh` fires `rws generate-reintegration <row>` via `tmux set-hook session-closed`. This produces `.furrow/rows/<row>/reintegration.json` — the handoff artifact for `/furrow:merge`. Do not run `rws generate-reintegration` manually during implement; it runs automatically on session close.
+
 ## Learnings
 Append reusable insights to `.furrow/rows/{name}/learnings.jsonl`.
 Read `skills/shared/learnings-protocol.md` for schema and categories.

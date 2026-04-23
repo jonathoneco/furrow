@@ -51,9 +51,20 @@ Code generation:
   validate-definition <path>  Validate definition.yaml schema
   validate-naming <type> <name>
 
+Normalization:
+  normalize-seeds             Sort .furrow/seeds/seeds.jsonl by (created_at, id)
+  normalize-todos             Sort .furrow/almanac/todos.yaml by (created_at, id)
+
 Lifecycle:
-  merge-to-main <name>        Merge archived row branch to main
+  merge-to-main <name>        Merge archived row branch to main (legacy)
+  merge-audit <branch> <policy>  Phase 1: audit branch for contamination
+  merge-classify <merge_id>   Phase 2: classify commits safe/destructive/mixed
+  merge-resolve-plan <id>     Phase 3: generate resolution plan
+  merge-execute <merge_id>    Phase 4: execute approved plan
+  merge-verify <merge_id>     Phase 5: post-merge invariant checks
+  merge-sort-union <path> <key>  Sort-union JSONL/YAML for machine_mergeable
   migrate-to-furrow [--dry-run]
+  upgrade [--check|--apply] [--from <path>]
   run-integration-tests [pattern]
 
 Info:
@@ -149,12 +160,51 @@ case "$cmd" in
     . "$FURROW_ROOT/bin/frw.d/scripts/merge-to-main.sh"
     frw_merge_to_main "$@"
     ;;
+  merge-audit)
+    . "$FURROW_ROOT/bin/frw.d/scripts/merge-audit.sh"
+    frw_merge_audit "$@"
+    ;;
+  merge-classify)
+    . "$FURROW_ROOT/bin/frw.d/scripts/merge-classify.sh"
+    frw_merge_classify "$@"
+    ;;
+  merge-resolve-plan)
+    . "$FURROW_ROOT/bin/frw.d/scripts/merge-resolve-plan.sh"
+    frw_merge_resolve_plan "$@"
+    ;;
+  merge-execute)
+    . "$FURROW_ROOT/bin/frw.d/scripts/merge-execute.sh"
+    frw_merge_execute "$@"
+    ;;
+  merge-verify)
+    . "$FURROW_ROOT/bin/frw.d/scripts/merge-verify.sh"
+    frw_merge_verify "$@"
+    ;;
+  merge-sort-union)
+    exec "$FURROW_ROOT/bin/frw.d/scripts/merge-sort-union.sh" "$@"
+    ;;
   migrate-to-furrow)
     . "$FURROW_ROOT/bin/frw.d/scripts/migrate-to-furrow.sh"
     frw_migrate_to_furrow "$@"
     ;;
+  upgrade)
+    . "$FURROW_ROOT/bin/frw.d/lib/common-minimal.sh"
+    . "$FURROW_ROOT/bin/frw.d/scripts/upgrade.sh"
+    frw_upgrade "$@"
+    ;;
   run-integration-tests)
     exec /bin/bash -c '. "$1/bin/frw.d/scripts/run-integration-tests.sh" && frw_run_integration_tests "${@:2}"' _ "$FURROW_ROOT" "$@"
+    ;;
+  normalize-seeds)
+    . "$FURROW_ROOT/bin/frw.d/scripts/normalize-seeds.sh"
+    frw_normalize_seeds "$@"
+    ;;
+  normalize-todos)
+    . "$FURROW_ROOT/bin/frw.d/scripts/normalize-todos.sh"
+    frw_normalize_todos "$@"
+    ;;
+  rescue)
+    exec "$FURROW_ROOT/bin/frw.d/scripts/rescue.sh" "$@"
     ;;
   launch-phase)
     exec "$FURROW_ROOT/bin/frw.d/scripts/launch-phase.sh" "$@"

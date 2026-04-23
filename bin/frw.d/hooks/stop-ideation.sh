@@ -15,6 +15,9 @@
 #   0 — valid (or not in ideation step, or autonomous mode)
 #   2 — missing required fields (blocking)
 
+# shellcheck source=../lib/common-minimal.sh
+. "${FURROW_ROOT}/bin/frw.d/lib/common-minimal.sh"
+
 hook_stop_ideation() {
   work_dir="$(find_focused_row)"
 

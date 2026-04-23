@@ -1,0 +1,47 @@
+{
+  "deliverable": "config-cleanup",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "fail",
+        "evidence": "Focused tests pass, but actual consumers are not wired: cross-model review still reads only project .furrow/.claude config, rws ignores XDG gate defaults, preferred_specialists has no runtime use, and rws state init never writes source_todos."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "fail",
+        "evidence": "source_todos test exercises a local helper plus commands/next.md text, not the real handoff/runtime path; no tests catch missing XDG wiring for cross_model.provider, gate_policy defaults, or preferred_specialists."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "fail",
+        "evidence": "XDG config is implemented as helper/scaffolding but not as the specified global defaults tier for the relevant consumers; source_todos is schema/doc-only and not threaded into state initialization."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "fail",
+        "evidence": "config-cleanup ownership lists only 8 paths, but the change set includes many tests, fixtures, upgrade scripts, install.sh, merge/reintegration files, hooks, and .furrow artifacts without deliverable-specific ownership justification."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "fail",
+        "evidence": "shellcheck exits 1 on changed surfaces, including SC2097/SC2098 in upgrade/promotion-target tests and SC2129 in bin/frw.d/install.sh."
+      }
+    ],
+    "verdict": "fail"
+  },
+  "overall": "fail",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-23T14:23:00Z"
+}

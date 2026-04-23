@@ -1,0 +1,35 @@
+{
+  "deliverable": "merge-process-skill",
+  "timestamp": "2026-04-23T14:26:59Z",
+  "phase_a_verdict": "pass",
+  "phase_b_cross_verdict": "fail",
+  "synthesized_verdict": "pass-with-followup",
+  "synthesized_reason": "Phase A pass; 56/56 e2e subtests + 152 total merge-test assertions green. Legitimate medium: AC-10 fixture split. Orchestration pattern is intentional. Follow-up: unify AC-10 fixture coverage.",
+  "real_findings": [
+    {
+      "severity": "medium",
+      "dim": "test-coverage",
+      "note": "AC-10 calls for a single e2e fixture with install-artifact contamination + protected-file conflict running through all five subphases. Current impl splits this: the contaminated fixture stops at unapproved-execute, and the happy-path approved-execute+verify uses a separate safe fixture with no contamination. Follow-up: merge the two fixtures or add a third that combines contamination + conflict + approved execute + verify."
+    },
+    {
+      "severity": "low",
+      "dim": "orchestration-design",
+      "note": "No top-level frw merge CLI orchestrator; /furrow:merge slash command orchestrates via Claude. This is architectural by design (Claude is the human-in-the-loop approver between phases), not a spec violation. A future frw merge wrapper for CI scenarios is a follow-up."
+    },
+    {
+      "severity": "low",
+      "dim": "code-quality",
+      "note": "SC3001 process substitution in merge-sort-union.sh under #!/bin/sh. Minor."
+    }
+  ],
+  "false_positives": [
+    "spec-compliance: \"missing orchestrator\" \u2014 see orchestration-design note above. By design.",
+    "unplanned-changes: Same cross-deliverable diff bleed.",
+    "code-quality (SC2148 on script-guard.sh): hook fragment, not a standalone script."
+  ],
+  "reviewers": {
+    "phase_a": "merge-process-skill.phase-a.json",
+    "phase_b_cross": "merge-process-skill-cross.json",
+    "phase_b_fresh_claude": "skipped: ANTHROPIC_API_KEY absent; codex-only satisfies generator-evaluator separation via cross-model"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "type": "spec",
+  "dimensions": [
+    {
+      "name": "testability",
+      "verdict": "pass",
+      "evidence": "Most acceptance criteria are mechanically checkable with explicit files, exit codes, path rules, schema contracts, and timing/idempotency expectations."
+    },
+    {
+      "name": "completeness",
+      "verdict": "fail",
+      "evidence": "The provided specs do not fully refine several listed deliverables/ACs, notably `source_todos` runtime wiring and the full `frw upgrade` migration behavior for legacy config/specialists installs."
+    },
+    {
+      "name": "consistency",
+      "verdict": "fail",
+      "evidence": "The config spec names `gate_policy_default`, while the acceptance criteria call for a global `gate_policy` default, indicating a contract mismatch."
+    },
+    {
+      "name": "test-scenario-coverage",
+      "verdict": "fail",
+      "evidence": "The specs name test files and broad coverage areas, but they do not provide explicit WHEN/THEN scenarios with concrete verification commands for each non-trivial criterion."
+    },
+    {
+      "name": "implementability",
+      "verdict": "fail",
+      "evidence": "A developer can start on many parts, but missing edge-case behavior for migration/back-compat paths means common implementation questions remain unresolved."
+    }
+  ],
+  "overall": "fail",
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-22T18:29:55Z"
+}

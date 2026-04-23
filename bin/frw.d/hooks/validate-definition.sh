@@ -11,6 +11,9 @@
 #   2 — file not found
 #   3 — validation failure
 
+# shellcheck source=../lib/common-minimal.sh
+. "${FURROW_ROOT}/bin/frw.d/lib/common-minimal.sh"
+
 hook_validate_definition() {
   input="$(cat)"
   tool_name="$(echo "${input}" | jq -r '.tool_name // ""' 2>/dev/null)" || tool_name=""

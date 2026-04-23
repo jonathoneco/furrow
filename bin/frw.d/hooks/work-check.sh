@@ -3,6 +3,9 @@
 # Hook: Stop (matcher: empty)
 # Non-blocking — informational only. Always returns 0.
 
+# shellcheck source=../lib/common-minimal.sh
+. "${FURROW_ROOT}/bin/frw.d/lib/common-minimal.sh"
+
 hook_work_check() {
   # Collect all active rows
   active_units=""

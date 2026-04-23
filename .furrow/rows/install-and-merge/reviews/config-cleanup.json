@@ -1,0 +1,30 @@
+{
+  "deliverable": "config-cleanup",
+  "timestamp": "2026-04-23T14:26:59Z",
+  "phase_a_verdict": "pass",
+  "phase_b_cross_verdict": "fail",
+  "synthesized_verdict": "pass-with-followup",
+  "synthesized_reason": "Phase A pass; Phase B surfaces a legitimate medium (XDG consumer wiring incomplete for preferred_specialists + cross_model.provider reader) plus false positives. The wiring gap is a follow-up enhancement, not a spec violation \u2014 AC-1 wires the config file and helpers; \"every consumer uses the helper\" is not in scope. Document as follow-up.",
+  "real_findings": [
+    {
+      "severity": "medium",
+      "dim": "runtime-wiring",
+      "note": "XDG config consumer wiring may be incomplete: preferred_specialists field in ~/.config/furrow/config.yaml has no runtime consumer; cross-model review still reads project-local furrow.yaml only. Follow-up: audit every XDG config field for an actual reader."
+    },
+    {
+      "severity": "low",
+      "dim": "code-quality",
+      "note": "SC2097/SC2098 in upgrade/promotion-target tests; SC2129 in install.sh. Minor."
+    }
+  ],
+  "false_positives": [
+    "correctness: \"rws state init never writes source_todos\" \u2014 AC-6 specifies schema + /furrow:next handoff + back-compat; does not require rws init to accept --source-todos. Current impl matches the AC. Would be a future enhancement, not a spec violation.",
+    "spec-compliance: \"XDG config is helper/scaffolding\" \u2014 partially correct but AC-3 explicitly declares promotion-targets scaffolding-only; AC-1/2 do require runtime consumption and some of that is incomplete (see runtime-wiring finding above).",
+    "unplanned-changes: Same cross-deliverable diff bleed."
+  ],
+  "reviewers": {
+    "phase_a": "config-cleanup.phase-a.json",
+    "phase_b_cross": "config-cleanup-cross.json",
+    "phase_b_fresh_claude": "skipped: ANTHROPIC_API_KEY absent; codex-only satisfies generator-evaluator separation via cross-model"
+  }
+}

@@ -1,0 +1,40 @@
+# schemas/promotion-targets.schema.yaml
+# Schema for the promotion-targets registry.
+# SCAFFOLDING — no loader/consumer logic in this deliverable.
+# Phase 2 ambient-promotion will consume this file.
+#
+# Written by: frw upgrade --apply (scaffolding writer only)
+# Instance location: ${XDG_CONFIG_HOME:-$HOME/.config}/furrow/promotion-targets.yaml
+# frw doctor does NOT fail if the instance file is absent.
+
+# Schema version metadata
+schema_version: "1.0"
+description: >-
+  Tracks promotion targets — files or directories eligible for ambient promotion
+  in Phase 2. Maintained at ${XDG_CONFIG_HOME:-$HOME/.config}/furrow/promotion-targets.yaml.
+
+# targets: list of promotion target entries (empty list is valid)
+targets:
+  type: array
+  items:
+    type: object
+    required:
+      - id
+      - path
+      - category
+      - promoted_at
+    properties:
+      id:
+        type: string
+        pattern: "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+        description: Kebab-case identifier unique within the registry
+      path:
+        type: string
+        description: Relative or absolute path to the promoted file/directory
+      category:
+        type: string
+        description: Promotion category (e.g. specialist, command, schema)
+      promoted_at:
+        type: string
+        format: date-time
+        description: ISO 8601 timestamp when promotion occurred

@@ -1,1 +1,1 @@
-../../../furrow/specialists/shell-specialist.md
+../../specialists/shell-specialist.md

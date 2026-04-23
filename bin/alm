@@ -2456,6 +2456,16 @@ Run 'alm <command> --help' for command-specific usage.
 USAGE
 }
 
+# --- Normalization helper ---
+
+# normalize_todos — call frw normalize-todos if frw is available.
+# Runs after any write that mutates todos.yaml.
+normalize_todos() {
+  if command -v frw >/dev/null 2>&1; then
+    frw normalize-todos 2>/dev/null || true
+  fi
+}
+
 # --- Dependency check ---
 
 require_cmd yq
@@ -2467,7 +2477,7 @@ cmd="${1:-help}"
 shift 2>/dev/null || true
 
 case "$cmd" in
-  add)         cmd_add "$@" ;;
+  add)         cmd_add "$@"; normalize_todos ;;
   extract)     cmd_extract "$@" ;;
   list)        cmd_list "$@" ;;
   show)        cmd_show "$@" ;;

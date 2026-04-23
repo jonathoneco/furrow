@@ -1,0 +1,62 @@
+{
+  "deliverable": "config-cleanup",
+  "artifacts_present": true,
+  "acceptance_criteria": [
+    {
+      "criterion": "XDG config tier wired: ~/.config/furrow/config.yaml (XDG_CONFIG_HOME) holds global defaults — cross_model.provider, gate_policy default, preferred specialists.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "~/.config/furrow/specialists/ supported as a shared specialists directory; project-local specialists/ take precedence, global is fallback.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "promotion-targets.yaml registry SCAFFOLDING ONLY: a schema file (schemas/promotion-targets.schema.yaml) and an empty ~/.config/furrow/promotion-targets.yaml are produced; no loader/consumer logic in this deliverable. Phase 2 ambient-promotion lights it up.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Resolution chain documented and implemented: PROJECT_ROOT (.furrow/) -> XDG_CONFIG_HOME (~/.config/furrow/) -> FURROW_ROOT (install dir).",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "FURROW_ROOT/PROJECT_ROOT resolver updated to accommodate the third tier; regression test confirms project overrides global overrides compiled-in, and $XDG_CONFIG_HOME override is honored.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "source_todos (array) threaded end-to-end: schema extended from source_todo (singular) to source_todos: [id, ...]; /furrow:next handoff prompts include all listed ids when definition.yaml declares them. Back-compat: definitions using source_todo (singular) still validate and work.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Migration path for existing installs: frw upgrade subcommand detects old config locations (.claude/furrow.yaml, pre-XDG specialists/), moves/symlinks to new XDG paths, is idempotent, and records migration_version in install-state.json. Migration test fixture exercises the old→new transition end-to-end.",
+      "met": true,
+      "evidence": "artifacts present"
+    }
+  ],
+  "seed_check": {
+    "pass": true,
+    "evidence": "Seed exists and is not closed: furrow-b0f2 (status=reviewing)"
+  },
+  "verdict": "pass",
+  "mode": "code",
+  "base_commit": "a284525186feabbfeef383e1ab304303310d33f9",
+  "file_ownership": [
+    "bin/frw.d/install.sh",
+    "bin/frw.d/lib/common.sh",
+    "bin/frw.d/lib/common-minimal.sh",
+    "bin/frw.d/scripts/upgrade.sh",
+    "bin/frw",
+    "commands/next.md",
+    ".furrow/furrow.yaml",
+    "schemas/definition.schema.json",
+    "schemas/state.schema.json",
+    "schemas/promotion-targets.schema.yaml",
+    "docs/architecture/config-resolution.md"
+  ],
+  "timestamp": "2026-04-23T14:21:21Z"
+}

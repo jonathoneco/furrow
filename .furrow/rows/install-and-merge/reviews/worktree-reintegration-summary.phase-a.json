@@ -1,0 +1,54 @@
+{
+  "deliverable": "worktree-reintegration-summary",
+  "artifacts_present": true,
+  "acceptance_criteria": [
+    {
+      "criterion": "summary.md gains a '## Reintegration' section, delimited by <!-- reintegration:begin --> / <!-- reintegration:end --> markers, written via rws generate-reintegration (machine-generated; rws update-summary rejects 'reintegration' as a section name since the JSON is the source of truth).",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Formal section schema: schemas/reintegration.schema.json defines the required fields — files_changed (list of {path_glob, count}), decisions (list of {title, resolution, rationale}), open_items (carried forward to main), test_results ({pass: bool, evidence_path}), commits (list of {sha, subject, conventional_type}). Schema is the stable contract /furrow:merge consumes.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Auto-populated at worktree-complete: frw launch-phase on completion invokes rws generate-reintegration, which reads state.json, git log since branch point, and the latest review record to emit the section. Validated against the schema before writing.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "/furrow:merge (deliverable 4) reads the reintegration section as its primary input for the handoff surfaced to the spawning session — schema is the interface contract, not prose.",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Template added: templates/reintegration.md.tmpl for the initial section skeleton (used when worktree completes without prior content).",
+      "met": true,
+      "evidence": "artifacts present"
+    },
+    {
+      "criterion": "Test: a synthetic worktree with known commits produces a reintegration section that validates against the schema and round-trips through rws update-summary without data loss.",
+      "met": true,
+      "evidence": "artifacts present"
+    }
+  ],
+  "seed_check": {
+    "pass": true,
+    "evidence": "Seed exists and is not closed: furrow-b0f2 (status=reviewing)"
+  },
+  "verdict": "pass",
+  "mode": "code",
+  "base_commit": "a284525186feabbfeef383e1ab304303310d33f9",
+  "file_ownership": [
+    "skills/implement.md",
+    "skills/shared/context-isolation.md",
+    "bin/rws",
+    "bin/frw.d/scripts/launch-phase.sh",
+    "bin/frw.d/scripts/generate-reintegration.sh",
+    "templates/reintegration.md.tmpl",
+    "schemas/reintegration.schema.json",
+    "tests/integration/test-reintegration.sh"
+  ],
+  "timestamp": "2026-04-23T14:21:21Z"
+}

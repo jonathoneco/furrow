@@ -1,0 +1,33 @@
+{
+  "deliverable": "worktree-reintegration-summary",
+  "timestamp": "2026-04-23T14:26:59Z",
+  "phase_a_verdict": "pass",
+  "phase_b_cross_verdict": "fail",
+  "synthesized_verdict": "pass-with-followup",
+  "synthesized_reason": "Phase A pass; correctness + test-coverage pass (60/60 tests, including round-trip and schema-invalid). Legitimate medium finding: generate-reintegration uses inline validation instead of the canonical schema. Follow-up row should swap it. Not a blocker \u2014 generator output still round-trips through schema-validated get-reintegration-json.",
+  "real_findings": [
+    {
+      "severity": "medium",
+      "dim": "spec-compliance",
+      "note": "generate-reintegration.sh uses jq-based subset validation (lines 357-400) rather than the official schemas/reintegration.schema.json via Python jsonschema. get-reintegration-json was fixed to use the schema (HIGH-2, 9576e0a), but generate still uses the inline subset. Schema is authoritative \u2014 generate should too. Follow-up: swap generate validation to use the same Draft2020-12Validator pattern."
+    },
+    {
+      "severity": "low",
+      "dim": "schema-completeness",
+      "note": "schemas/reintegration.schema.json does not declare test_results.evidence_path as required; the AC-R2 contract implies it is. Follow-up: tighten schema."
+    },
+    {
+      "severity": "low",
+      "dim": "code-quality",
+      "note": "SC2038 in generate-reintegration.sh; SC3001 process substitution in test-reintegration.sh under #!/bin/sh shebang (bash-ism under sh declaration). Minor."
+    }
+  ],
+  "false_positives": [
+    "unplanned-changes: \"file_ownership omits generate-reintegration.sh\" \u2014 plan.json wave-2 lists generate-reintegration.sh under this deliverable's ownership. The definition.yaml may not enumerate every sub-file but plan.json is the binding ownership contract."
+  ],
+  "reviewers": {
+    "phase_a": "worktree-reintegration-summary.phase-a.json",
+    "phase_b_cross": "worktree-reintegration-summary-cross.json",
+    "phase_b_fresh_claude": "skipped: ANTHROPIC_API_KEY absent; codex-only satisfies generator-evaluator separation via cross-model"
+  }
+}

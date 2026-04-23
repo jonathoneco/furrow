@@ -1,0 +1,29 @@
+{
+  "type": "plan",
+  "dimensions": [
+    {
+      "name": "coverage",
+      "verdict": "pass",
+      "evidence": "`.furrow/rows/install-and-merge/definition.yaml` defines 4 deliverables, and `.furrow/rows/install-and-merge/plan.json` assigns each exactly once across waves 1-3 with no duplicates."
+    },
+    {
+      "name": "feasibility",
+      "verdict": "pass",
+      "evidence": "Wave ordering in `.furrow/rows/install-and-merge/plan.json` respects all `depends_on` edges from `definition.yaml`, and wave 2 explicitly keeps `config-cleanup` and `worktree-reintegration-summary` on disjoint file ownership."
+    },
+    {
+      "name": "specificity",
+      "verdict": "pass",
+      "evidence": "Every assignment in `.furrow/rows/install-and-merge/plan.json` includes a concrete `specialist` plus non-empty `file_ownership` globs, with consultants and skills also specified."
+    },
+    {
+      "name": "research-grounding",
+      "verdict": "pass",
+      "evidence": "`.furrow/rows/install-and-merge/architecture-decisions.md` records AD-1 through AD-9 with explicit citations to concrete research files and sections, not just symbolic references."
+    }
+  ],
+  "overall": "pass",
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-22T18:12:34Z"
+}
