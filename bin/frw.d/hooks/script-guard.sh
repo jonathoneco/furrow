@@ -3,20 +3,23 @@
 # Hook: PreToolUse (matcher: Bash)
 # Receives JSON on stdin with tool_name and tool_input.
 # Return 2 to block if command executes a frw.d/ script; return 0 otherwise.
-# Read-only commands (cat, grep, head, etc.) are allowed via allowlist.
 #
-# Strategy (v2 — token-aware):
-# Before checking for frw.d/ references, strip:
-#   1. Single-quoted strings ('...')      — data, not commands
-#   2. Double-quoted strings ("...")      — data, not commands
-#   3. Heredoc bodies (<<WORD...WORD)     — data, not commands
-#   4. Shell comments (# ...)             — not commands
-# Then apply the block check only to the remaining "shell token" text.
-# This prevents false positives when the literal string appears inside a
-# heredoc body, a quoted argument, or a comment.
+# Strategy (v3 — execution-only blocklist):
+# Previously the guard used a narrow allowlist of read verbs (cat, grep, ...)
+# and blocked everything else. That rejected legitimate read/edit/analyze
+# operations (sed -n '40,80p' bin/frw.d/foo.sh, awk, vim, git diff, etc.).
 #
-# The tokenizer is conservative: when in doubt, the token stays (may block).
-# The variable-substitution workaround (d=frw.d) still works as before.
+# The new policy is: block ONLY clear execution patterns, allow everything
+# else. Execution is detected by tokenizing the stripped shell text and
+# checking for a frw.d/ path at command-execution position:
+#   - First token of a command chain is a frw.d/ path (direct invocation)
+#   - First token is an interpreter (sh, bash, zsh, dash, ksh, exec, source, .)
+#     and the first non-flag argument is a frw.d/ path
+#   - sh -n / bash -n is a syntax check, not execution — allowed
+#
+# Before tokenizing, the input is run through shell_strip_data_regions to
+# remove quoted strings, heredoc bodies, and comments (so literal frw.d/
+# inside a commit message or printf arg doesn't false-positive).
 
 # shellcheck source=../lib/common-minimal.sh
 . "${FURROW_ROOT}/bin/frw.d/lib/common-minimal.sh"
@@ -153,28 +156,51 @@ hook_script_guard() {
     *) return 0 ;;
   esac
 
-  # Shell tokens reference frw.d/ — allow only if it matches a read-only pattern.
-  # Read-only verbs: cat, grep, rg, head, tail, less, more, wc, file, ls,
-  # stat, diff, md5sum, sha256sum, hexdump, od, strings, readlink, realpath, sh -n
-  case "$stripped" in
-    cat\ *"frw.d/"*|cat\ -*)            return 0 ;; # cat [-n] path
-    grep\ *"frw.d/"*|grep\ -*)          return 0 ;; # grep [-flags] path
-    rg\ *"frw.d/"*|rg\ -*)             return 0 ;; # ripgrep
-    head\ *"frw.d/"*|head\ -*)         return 0 ;; # head [-n] path
-    tail\ *"frw.d/"*|tail\ -*)         return 0 ;; # tail [-n] path
-    less\ *"frw.d/"*)                  return 0 ;; # less path
-    more\ *"frw.d/"*)                  return 0 ;; # more path
-    wc\ *"frw.d/"*|wc\ -*)            return 0 ;; # wc [-l] path
-    file\ *"frw.d/"*)                  return 0 ;; # file path
-    ls\ *"frw.d/"*|ls\ -*)            return 0 ;; # ls [-la] path
-    stat\ *"frw.d/"*)                  return 0 ;; # stat path
-    diff\ *"frw.d/"*)                  return 0 ;; # diff path
-    readlink\ *"frw.d/"*)              return 0 ;; # readlink path
-    realpath\ *"frw.d/"*)              return 0 ;; # realpath path
-    "sh -n"*"frw.d/"*)                return 0 ;; # sh -n (syntax check)
-  esac
+  # Detect execution patterns. awk tokenizes the stripped command and exits
+  # non-zero when a frw.d/ path appears at command-execution position.
+  # All read/edit/analyze operations fall through to allow.
+  if printf '%s\n' "$stripped" | awk '
+    BEGIN { blocked = 0 }
+    {
+      line = $0
+      # Collapse multi-char shell separators to single ";" so split works.
+      gsub(/&&/, " ; ", line); gsub(/\|\|/, " ; ", line)
+      gsub(/\|/,  " ; ", line); gsub(/&/,     " ; ", line)
+      n = split(line, cmds, /[[:space:]]*;[[:space:]]*/)
+      for (p = 1; p <= n; p++) {
+        cmd = cmds[p]
+        gsub(/^[[:space:]]+/, "", cmd); gsub(/[[:space:]]+$/, "", cmd)
+        if (cmd == "") continue
+        m = split(cmd, tok, /[[:space:]]+/)
+        first = tok[1]
+        # Direct execution: first token IS a frw.d/ path
+        if (first ~ /bin\/frw\.d\//) { blocked = 1; continue }
+        # Interpreter/source/exec followed by a frw.d/ path
+        if (first == "sh" || first == "bash" || first == "zsh" ||
+            first == "dash" || first == "ksh" || first == "source" ||
+            first == "." || first == "exec") {
+          has_n = 0
+          for (j = 2; j <= m; j++) {
+            t = tok[j]
+            if (t == "") continue
+            if (t == "-n") { has_n = 1; continue }
+            if (t ~ /^-/) continue
+            # First non-flag argument
+            if (t ~ /bin\/frw\.d\//) {
+              # sh -n / bash -n is syntax check only, not execution
+              if (has_n && (first == "sh" || first == "bash")) break
+              blocked = 1
+            }
+            break
+          }
+        }
+      }
+    }
+    END { exit blocked }
+  '; then
+    return 0  # awk exit 0 → no execution pattern detected, allow
+  fi
 
-  # Not a recognized read-only command — block
   log_error "bin/frw.d/ scripts are internal — use frw, rws, alm, or sds"
   return 2
 }

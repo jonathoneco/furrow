@@ -2045,6 +2045,74 @@
     - bin/frw.d/lib/common.sh
     - .furrow/
   status: done
+- id: install-user-bin-worktree-pinning
+  title: "frw install writes ~/.local/bin symlinks pointing at the invocation path, not the canonical source repo"
+  context: |
+    Observed 2026-04-23 after merging install-and-merge Phase 1:
+
+    1. frw launch-phase creates a worktree (e.g., ../furrow-install-and-merge/)
+    2. Claude Code session starts in the worktree
+    3. SessionStart hook auto-install.sh fires: runs `frw install --check .`,
+       which fails for a fresh worktree, then runs `frw install --project .`
+    4. bin/frw.d/install.sh lines 745-754 write user-bin symlinks:
+         _src="$FURROW_ROOT/bin/$_cli"
+         symlink "$_src" "$_user_bin/$_cli"
+       FURROW_ROOT here is the WORKTREE path (frw was invoked from within
+       the worktree), so `~/.local/bin/frw` gets repointed to
+       `../../src/furrow-<row-name>/bin/frw`.
+    5. When the worktree is removed post-merge, all four symlinks (frw, alm,
+       rws, sds) become broken. Claude Code Bash hooks then fail with
+       "frw: command not found" until manually repaired.
+
+    This is a follow-up to install-architecture-overhaul (shipped in
+    install-and-merge Phase 1). That row added the .furrow/SOURCE_REPO
+    sentinel for source-vs-consumer detection, but:
+      a) Worktrees of the source repo ALSO have the sentinel (tracked file),
+         so they pass the source-mode check.
+      b) Even in source mode, the user-bin symlink-writing at install.sh
+         line 745+ still points at FURROW_ROOT (= invocation path).
+      c) auto-install.sh has no worktree detection — it runs every session.
+
+    This will recur on every Phase launch until fixed.
+  work_needed: |
+    - Detect when FURROW_ROOT is a git worktree (not the main worktree).
+      Portable check: `git -C "$FURROW_ROOT" rev-parse --git-common-dir`
+      returns a path different from `--git-dir` when inside a secondary
+      worktree. Or: read .git (it's a file in a worktree, a dir in the main).
+    - In that case, either:
+      (a) Resolve FURROW_ROOT to the main worktree's path before writing
+          user-bin symlinks (use `git worktree list --porcelain` | first
+          entry), or
+      (b) Skip writing user-bin symlinks entirely in source-mode worktrees
+          — the user already has them from the canonical install.
+    - Option (a) is more robust; option (b) is simpler and matches user
+      intent (don't rewrite my existing install).
+    - Update auto-install.sh to also detect "I'm in a worktree of the
+      source repo" and skip the auto-repair flow. Instead log a one-line
+      notice that this is a worktree install.
+    - Add a test: `tests/integration/test-install-worktree-safety.sh`
+      that simulates a worktree environment and asserts user-bin symlinks
+      are not repointed.
+    - Consider: should `frw rescue` detect and auto-fix broken worktree-
+      anchored symlinks in ~/.local/bin as a one-shot repair?
+  references:
+    - bin/frw.d/install.sh
+    - bin/frw.d/hooks/auto-install.sh
+    - bin/frw.d/scripts/launch-phase.sh
+    - install.sh
+  source_work_unit: "install-and-merge"
+  source_type: "review-finding"
+  created_at: "2026-04-23T00:00:00Z"
+  updated_at: "2026-04-23T00:00:00Z"
+  urgency: "high"
+  impact: "high"
+  effort: "small"
+  files_touched:
+    - bin/frw.d/install.sh
+    - bin/frw.d/hooks/auto-install.sh
+    - bin/frw.d/scripts/rescue.sh
+    - tests/integration/
+  status: active
 # --- Standalone: Merge-Process Skill ---
 - id: merge-process-skill
   title: "Design a /furrow:merge skill — reconcile worktree branches back into main"
