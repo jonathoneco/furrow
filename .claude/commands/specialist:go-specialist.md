@@ -1,1 +1,0 @@
-../../specialists/go-specialist.md

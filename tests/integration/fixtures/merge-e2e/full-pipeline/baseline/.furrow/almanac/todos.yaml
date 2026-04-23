@@ -1,0 +1,6 @@
+- id: todo-001
+  title: first fixture todo
+  created_at: "2026-01-01T00:00:00Z"
+- id: todo-002
+  title: second fixture todo
+  created_at: "2026-01-02T00:00:00Z"

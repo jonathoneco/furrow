@@ -1,0 +1,3 @@
+# Minimal rationale manifest for full-pipeline fixture.
+# Empty components list — doctor reports "all 0 rationale paths exist on disk".
+components: []

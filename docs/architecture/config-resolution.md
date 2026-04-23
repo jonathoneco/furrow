@@ -128,3 +128,26 @@ preserving forward compatibility with Phase 2 additions.
   global config.
 - **Constraint `constraints[4]`**: `$XDG_CONFIG_HOME` must be honored; path never
   hardcoded in shell code.
+
+---
+
+## Field → Consumer → Test Audit
+
+Every field in `~/.config/furrow/config.yaml` must have at least one runtime
+consumer and a regression test covering the project → XDG → compiled-in
+precedence chain. `bin/frw.d/scripts/doctor-config-audit.sh` enumerates this
+table at doctor-time and emits a non-gating warning for any field with zero
+call sites.
+
+| Field | Runtime consumer(s) | Resolver call site | Test coverage |
+|-------|---------------------|--------------------|----------------|
+| `cross_model.provider` | `bin/frw.d/scripts/cross-model-review.sh` (adopted by wave-3 `cross-model-per-deliverable-diff`; lines 79, 280, 446, 631) | `resolve_config_value "cross_model.provider"` (via the wave-3 deliverable) | `tests/integration/test-config-resolution.sh::test_three_tier_precedence` exercises the full chain for `cross_model.provider`; wave-3 adds a reviewer-level integration test. |
+| `gate_policy` | `bin/rws::read_gate_policy` (called by `rws transition` at line ~1648) and `bin/frw.d/hooks/stop-ideation.sh` | `resolve_config_value gate_policy` | `tests/integration/test-config-resolution.sh::test_gate_policy_chain` (project override / XDG fallback / compiled-in default). |
+| `preferred_specialists.<role>` | `skills/shared/specialist-delegation.md` decompose-time selection step | `resolve_config_value "preferred_specialists.${role}"` | `tests/integration/test-config-resolution.sh::test_preferred_specialists_chain` (project override / XDG fallback / unset → exit 1 / fallback logic). |
+| `promotion_targets_path` | (none — SCAFFOLDING; Phase 2 lights this up) | (no call site yet) | N/A (doctor audit emits a WARN until a consumer lands). |
+
+**Canonical resolver** is `resolve_config_value` in `bin/frw.d/lib/common.sh`
+(lines ~121-151). No wrapper or default-accepting variant exists; callers use
+the `value=$(resolve_config_value key) || value="default"` idiom.
+Duplicating the helper is a review-blocker (see definition.yaml constraint
+"Canonical resolver reuse").
