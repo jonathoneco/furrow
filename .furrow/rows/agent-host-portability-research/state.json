@@ -1,0 +1,44 @@
+{
+  "name": "agent-host-portability-research",
+  "title": "Evaluate migrating Furrow harness to a pluggable agent host",
+  "description": "Evaluate migrating Furrow harness to a pluggable agent host",
+  "step": "plan",
+  "step_status": "not_started",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {},
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "4-deliverable research row; dual outside-voice review (fresh sonnet + codex gpt-5.4) returned revise-and-proceed; 9 revisions applied (Agent SDK added to matrix as 6th row; Pi-bias neutralized to 'leading candidate'; interface scope tightened to inventory+sketch; spike retargeted from /work-ideate to rws-status+one-gated-Write+one-subagent; source tiering T1-T5 added; matrix axes locked before scoring; memo AC quantified with blocker+tradeoff; session-4 abort constraint added); schema valid; summary valid across all three sections; 7 open questions logged for research step.",
+      "timestamp": "2026-04-22T17:50:52Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "5-deliverable research row reshaped to research+implementation. 9 parallel research agents complete (R1-R6, R8-R10). Pi as primary target, upstream-only, compose @tintinweb/pi-subagents. pi-permission-system rejected per R9 — Pi's native tool_call is superset of CC PreToolUse. session_before_compact stronger than CC post-compact. Dual-host parity principle added: every host-independent improvement applies to both bindings. R10 adopts integrated (typed schema blocks, typed produces, pattern library, stagnation safeguard, specialist packaging). Memory learn-from integrated (3 adopt, 5 defer, 1 skip). Install hardening per R9. RPC-mode T4 experiment gates cross-model review. 9 open questions for plan step. Almanac TODO logged for rws change-mode CLI gap.",
+      "timestamp": "2026-04-22T18:56:27Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": null,
+  "mode": "research",
+  "base_commit": "a284525186feabbfeef383e1ab304303310d33f9",
+  "seed_id": "furrow-21ef",
+  "epic_seed_id": null,
+  "created_at": "2026-04-22T17:22:51Z",
+  "updated_at": "2026-04-23T15:52:05Z",
+  "archived_at": null,
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}
