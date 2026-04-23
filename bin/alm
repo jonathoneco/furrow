@@ -535,10 +535,13 @@ cmd_triage() {
   _old_trap=$(trap -p EXIT | sed "s/^trap -- '//;s/' EXIT$//")
   trap "rm -f \"$python_errors\"; $_old_trap" EXIT
 
-  graph_output=$(python3 -c "
+  # NOTE: todos JSON is piped via stdin (not argv) to avoid ARG_MAX limits.
+  # At ~90 active TODOs with prose bodies, the JSON exceeds typical ARG_MAX
+  # (~128 KB) and `python3 -c "$script" "$todos"` fails with E2BIG.
+  graph_output=$(printf '%s' "$todos" | python3 -c "
 import json, sys
 
-todos = json.loads(sys.argv[1])
+todos = json.load(sys.stdin)
 
 # Filter: only active and blocked TODOs (skip done, deferred)
 active = [t for t in todos if t.get('status', 'active') not in ('done', 'deferred')]
@@ -633,7 +636,7 @@ result = {
 }
 
 print(json.dumps(result))
-" "$todos" 2>"$python_errors") || {
+" 2>"$python_errors") || {
     cat "$python_errors" >&2
     die "triage: graph analysis failed" 3
   }
