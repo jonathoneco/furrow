@@ -71,6 +71,12 @@ type RowStepArtifact = {
 	exists: boolean;
 	scaffold_supported?: boolean;
 	incomplete?: boolean;
+	validation?: {
+		status?: string;
+		summary?: string;
+		finding_count?: number;
+		findings?: Array<{ code?: string; severity?: string; message?: string }>;
+	};
 };
 
 type RowStatusData = {
@@ -135,10 +141,19 @@ type RowStatusData = {
 		gate_policy?: string | null;
 		boundary?: string | null;
 		next_step?: string | null;
+		action?: string | null;
 		approval_required?: boolean;
 		ready_to_advance?: boolean;
+		evidence?: {
+			blocker_count?: number;
+			latest_gate?: Record<string, any> | null;
+			artifact_validation?: {
+				by_status?: Record<string, number>;
+				total?: number;
+			};
+		};
 	};
-	blockers?: Array<{ code?: string; message?: string; path?: string }>;
+	blockers?: Array<{ code?: string; category?: string; severity?: string; message?: string; path?: string; confirmation_path?: string }>;
 	warnings?: Array<{ code?: string; message?: string; path?: string }>;
 };
 
@@ -177,6 +192,10 @@ type CompleteData = {
 		state?: string;
 	};
 	limitations?: string[];
+	artifact_validation?: {
+		by_status?: Record<string, number>;
+		total?: number;
+	};
 };
 
 type RowInitData = {
@@ -204,6 +223,22 @@ type RowScaffoldData = {
 	created?: Array<{ id?: string; label?: string; path?: string }>;
 	current_step_artifacts?: RowStepArtifact[];
 	note?: string;
+};
+
+type ArchiveData = {
+	row: {
+		name: string;
+		step: string;
+		step_status: string;
+		archived: boolean;
+		archived_at?: string | null;
+		updated_at?: string | null;
+	};
+	paths?: {
+		state?: string;
+		checkpoint_evidence?: string;
+	};
+	review_gate?: Record<string, any> | null;
 };
 
 type CliResult<T = any> = {
@@ -313,7 +348,11 @@ function formatStatusWarnings(data?: RowStatusData): string[] {
 function formatBlockers(data?: RowStatusData): string[] {
 	const blockers = data?.blockers ?? [];
 	if (blockers.length === 0) return ["- none"];
-	return blockers.map((blocker) => `- ${blocker.code ?? "blocked"}: ${blocker.message ?? "unspecified blocker"}`);
+	return blockers.map((blocker) => {
+		const prefix = [blocker.category, blocker.severity].filter(Boolean).join("/");
+		const confirmation = blocker.confirmation_path ? ` :: fix: ${blocker.confirmation_path}` : "";
+		return `- ${prefix ? `[${prefix}] ` : ""}${blocker.code ?? "blocked"}: ${blocker.message ?? "unspecified blocker"}${confirmation}`;
+	});
 }
 
 function formatCurrentStepArtifacts(artifacts: RowStepArtifact[]): string[] {
@@ -322,7 +361,11 @@ function formatCurrentStepArtifacts(artifacts: RowStepArtifact[]): string[] {
 		const state = artifact.exists
 			? (artifact.incomplete ? "present, incomplete scaffold" : "present")
 			: "missing";
-		return `- [${state}] ${artifact.label}: ${artifact.path}`;
+		const validationStatus = artifact.validation?.status ? ` :: validation=${artifact.validation.status}` : "";
+		const validationSummary = artifact.validation?.finding_count
+			? ` (${artifact.validation.finding_count} finding${artifact.validation.finding_count === 1 ? "" : "s"})`
+			: (artifact.validation?.summary ? ` (${artifact.validation.summary})` : "");
+		return `- [${state}] ${artifact.label}: ${artifact.path}${validationStatus}${validationSummary}`;
 	});
 }
 
@@ -342,12 +385,21 @@ function formatSeed(seed?: RowStatusData["seed"]): string[] {
 
 function formatCheckpoint(checkpoint?: RowStatusData["checkpoint"]): string[] {
 	if (!checkpoint?.boundary) return ["- no next stage boundary available"];
-	return [
+	const lines = [
 		`- boundary: ${checkpoint.boundary}`,
+		`- action: ${checkpoint.action ?? (checkpoint.next_step ? "transition" : "unknown")}`,
 		`- gate policy: ${checkpoint.gate_policy ?? "unknown"}`,
 		`- approval required: ${checkpoint.approval_required ? "yes" : "no"}`,
 		`- ready to advance: ${checkpoint.ready_to_advance ? "yes" : "no"}`,
 	];
+	if (checkpoint.evidence?.artifact_validation?.by_status) {
+		const byStatus = checkpoint.evidence.artifact_validation.by_status;
+		lines.push(`- artifact validation: pass=${byStatus.pass ?? 0} warn=${byStatus.warn ?? 0} fail=${byStatus.fail ?? 0} missing=${byStatus.missing ?? 0}`);
+	}
+	if (checkpoint.evidence?.latest_gate?.boundary) {
+		lines.push(`- latest gate: ${checkpoint.evidence.latest_gate.boundary} (${checkpoint.evidence.latest_gate.outcome ?? "unknown"})`);
+	}
+	return lines;
 }
 
 function deliverableProgress(counts?: RowStatusData["row"]["deliverables"]["counts"]): string {
@@ -483,11 +535,19 @@ function pickRecommendedAction(status: RowStatusData, doctorData?: DoctorData): 
 	if (missingArtifacts.length > 0) {
 		return `Run /work to scaffold the active step artifact(s): ${missingArtifacts.map((artifact) => artifact.label).join(", ")}.`;
 	}
-	if (status.checkpoint?.approval_required && row.step_status === "completed" && status.checkpoint.next_step) {
-		return `This supervised boundary is ready. Run /work --confirm to advance from ${row.step} to ${status.checkpoint.next_step}.`;
+	if (status.checkpoint?.approval_required && row.step_status === "completed" && status.checkpoint.boundary) {
+		if (status.checkpoint.action === "archive") {
+			return `This supervised review boundary is ready. Run /work --confirm to archive ${row.name}.`;
+		}
+		if (status.checkpoint.next_step) {
+			return `This supervised boundary is ready. Run /work --confirm to advance from ${row.step} to ${status.checkpoint.next_step}.`;
+		}
 	}
 	if (row.step_status !== "completed") {
 		return `Continue the ${row.step} step. When the current step is done enough, run /work --complete to record completion and surface the checkpoint.`;
+	}
+	if (row.archived) {
+		return `${row.name} is archived. Start a new row with /work <description> when you are ready for the next slice.`;
 	}
 	return `Stay in ${row.step} until blockers are clear or a valid next step is advertised.`;
 }
@@ -643,6 +703,7 @@ function formatWorkView(
 		scaffolded?: Array<{ label?: string; path?: string }>;
 		completed?: boolean;
 		transitionedTo?: string;
+		archived?: boolean;
 	}
 ): string {
 	const row = status.row;
@@ -684,6 +745,9 @@ function formatWorkView(
 	}
 	if (options.transitionedTo) {
 		lines.push("", `Advanced to ${options.transitionedTo} after explicit confirmation.`);
+	}
+	if (options.archived) {
+		lines.push("", "Archived the row after explicit confirmation.");
 	}
 	lines.push("", `Recommended next action: ${pickRecommendedAction(status, options.doctor)}`);
 	return lines.join("\n");
@@ -805,6 +869,7 @@ export default function furrowExtension(pi: ExtensionAPI) {
 			let completeResult: CompleteData | undefined;
 			const scaffolded: Array<{ label?: string; path?: string }> = [];
 			let transitionedTo: string | undefined;
+			let archived = false;
 			let completed = false;
 
 			if (parsed.description) {
@@ -965,10 +1030,14 @@ export default function furrowExtension(pi: ExtensionAPI) {
 				if (refreshedStatus.envelope?.data) status = refreshedStatus.envelope.data;
 			}
 
-			if (status.row.step_status === "completed" && status.checkpoint?.next_step && (status.blockers?.length ?? 0) === 0) {
+			if (status.row.step_status === "completed" && status.checkpoint?.boundary && (status.blockers?.length ?? 0) === 0) {
 				let confirmed = parsed.confirm;
+				const checkpointTarget = status.checkpoint.action === "archive"
+					? `archive ${status.row.name}`
+					: `advance to ${status.checkpoint.next_step}`;
 				const checkpointText = [
-					`Boundary: ${status.checkpoint.boundary ?? `${status.row.step}->${status.checkpoint.next_step}`}`,
+					`Boundary: ${status.checkpoint.boundary ?? `${status.row.step}->${status.checkpoint.next_step ?? "archive"}`}`,
+					`Action: ${status.checkpoint.action ?? "transition"}`,
 					`Gate policy: ${status.checkpoint.gate_policy ?? "unknown"}`,
 					"",
 					"Seed:",
@@ -984,7 +1053,7 @@ export default function furrowExtension(pi: ExtensionAPI) {
 						await publish(
 							pi,
 							ctx,
-							`${formatWorkView(status, { doctor: doctorData, resolvedBy, scaffolded, completed })}\n\nSupervised checkpoint requires explicit confirmation. Re-run with --confirm to advance to ${status.checkpoint.next_step}.`,
+							`${formatWorkView(status, { doctor: doctorData, resolvedBy, scaffolded, completed })}\n\nSupervised checkpoint requires explicit confirmation. Re-run with --confirm to ${checkpointTarget}.`,
 							{ kind: "work-pending-confirmation", status },
 						);
 						await refreshStatus(pi, ctx);
@@ -992,26 +1061,43 @@ export default function furrowExtension(pi: ExtensionAPI) {
 					}
 				}
 				if (confirmed) {
-					const transitionResult = await runFurrowJson<TransitionData>(
-						root,
-						["row", "transition", status.row.name, "--step", status.checkpoint.next_step],
-						ctx.signal,
-					);
-					if (!transitionResult.envelope?.data) {
-						await publishError(pi, ctx, "Furrow work", formatCliError(transitionResult, "Failed to advance at the supervised checkpoint."), {
-							status,
-						});
-						return;
-					}
-					transitionedTo = status.checkpoint.next_step;
-					const refreshedStatus = await runFurrowJson<RowStatusData>(root, ["row", "status", status.row.name], ctx.signal);
-					if (refreshedStatus.envelope?.data) status = refreshedStatus.envelope.data;
-					if (currentStepArtifacts(status).some((artifact) => !artifact.exists && artifact.scaffold_supported)) {
-						const scaffoldResult = await runFurrowJson<RowScaffoldData>(root, ["row", "scaffold", status.row.name], ctx.signal);
-						if (scaffoldResult.envelope?.data) {
-							scaffolded.push(...(scaffoldResult.envelope.data.created ?? []));
-							const refreshedAfterScaffold = await runFurrowJson<RowStatusData>(root, ["row", "status", status.row.name], ctx.signal);
-							if (refreshedAfterScaffold.envelope?.data) status = refreshedAfterScaffold.envelope.data;
+					if (status.checkpoint.action === "archive") {
+						const archiveResult = await runFurrowJson<ArchiveData>(
+							root,
+							["row", "archive", status.row.name],
+							ctx.signal,
+						);
+						if (!archiveResult.envelope?.data) {
+							await publishError(pi, ctx, "Furrow work", formatCliError(archiveResult, "Failed to archive at the supervised checkpoint."), {
+								status,
+							});
+							return;
+						}
+						archived = true;
+						const refreshedStatus = await runFurrowJson<RowStatusData>(root, ["row", "status", status.row.name], ctx.signal);
+						if (refreshedStatus.envelope?.data) status = refreshedStatus.envelope.data;
+					} else if (status.checkpoint.next_step) {
+						const transitionResult = await runFurrowJson<TransitionData>(
+							root,
+							["row", "transition", status.row.name, "--step", status.checkpoint.next_step],
+							ctx.signal,
+						);
+						if (!transitionResult.envelope?.data) {
+							await publishError(pi, ctx, "Furrow work", formatCliError(transitionResult, "Failed to advance at the supervised checkpoint."), {
+								status,
+							});
+							return;
+						}
+						transitionedTo = status.checkpoint.next_step;
+						const refreshedStatus = await runFurrowJson<RowStatusData>(root, ["row", "status", status.row.name], ctx.signal);
+						if (refreshedStatus.envelope?.data) status = refreshedStatus.envelope.data;
+						if (currentStepArtifacts(status).some((artifact) => !artifact.exists && artifact.scaffold_supported)) {
+							const scaffoldResult = await runFurrowJson<RowScaffoldData>(root, ["row", "scaffold", status.row.name], ctx.signal);
+							if (scaffoldResult.envelope?.data) {
+								scaffolded.push(...(scaffoldResult.envelope.data.created ?? []));
+								const refreshedAfterScaffold = await runFurrowJson<RowStatusData>(root, ["row", "status", status.row.name], ctx.signal);
+								if (refreshedAfterScaffold.envelope?.data) status = refreshedAfterScaffold.envelope.data;
+							}
 						}
 					}
 				}
@@ -1020,7 +1106,7 @@ export default function furrowExtension(pi: ExtensionAPI) {
 			await publish(
 				pi,
 				ctx,
-				formatWorkView(status, { doctor: doctorData, resolvedBy, scaffolded, completed, transitionedTo }),
+				formatWorkView(status, { doctor: doctorData, resolvedBy, scaffolded, completed, transitionedTo, archived }),
 				{
 					kind: "work",
 					doctor: doctorResult.envelope,
@@ -1029,6 +1115,7 @@ export default function furrowExtension(pi: ExtensionAPI) {
 					resolvedBy,
 					scaffolded,
 					transitionedTo,
+					archived,
 				},
 			);
 			await refreshStatus(pi, ctx);
