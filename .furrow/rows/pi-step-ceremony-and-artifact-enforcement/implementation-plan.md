@@ -1,16 +1,26 @@
 # Implementation Plan
 
 ## Objective
-Implement the next Furrow-in-Pi slice around a primary `/work`-like entrypoint with supervised stage ceremony, create-on-use active-step scaffolding, blocker surfacing, seed visibility, and backend-canonical mutations.
+Harden backend-canonical `/work` boundaries without thickening TypeScript: add richer step-artifact validation, stronger checkpoint evidence surfaces, a shared blocker taxonomy, and a narrow review->archive boundary that can run inside the existing `/work` loop.
 
 ## Planned work
-1. Inspect backend and Pi adapter gaps against the architecture docs. ✅
-2. Add minimal Go backend support for row init/focus, seed visibility, blocker reporting, and active-step artifact scaffolding. ✅
-3. Build a primary Pi `/work` command that resolves or initializes rows, scaffolds the active step artifact on use, surfaces seed/blocker/checkpoint state, and uses backend commands for mutations. ✅
-4. Update tests and relevant architecture docs if implementation changes planned reality. ✅
-5. Validate Go tests, backend command flows, and Pi headless behavior. ✅
+1. Extend backend current-step artifact semantics beyond presence checks.
+   - add plan-step `implementation-plan.md` as a scaffoldable/current-step artifact
+   - attach per-artifact validation results to `furrow row status` / `row scaffold`
+   - block `row complete` / `row transition` on semantic validation failures, not only scaffold sentinels
+2. Strengthen checkpoint evidence in backend JSON.
+   - expose checkpoint action/evidence in `furrow row status`
+   - persist narrow gate evidence files for backend-mediated transitions
+   - surface transition history and artifact-validation summaries for adapters
+3. Add narrow archive boundary support in the backend and consume it from Pi.
+   - implement `furrow row archive --json` with review-step and review-gate preconditions
+   - treat `review->archive` as a supervised checkpoint action in `/work`
+4. Keep the Pi adapter thin.
+   - render backend validation / checkpoint / blocker metadata
+   - do not duplicate lifecycle rules in TypeScript
+5. Validate the affected backend and Pi flows and then sync docs/row artifacts only where reality changed.
 
-## Landed scope
-- Backend: `row init`, `row focus`, `row scaffold`, enriched `row status`, stricter `row transition`, stricter `row complete`
-- Pi: primary `/work` loop plus richer `/furrow-next`
-- Docs: contract and architecture status updates
+## Landed scope in this session
+- Backend: richer current-step artifact validation, plan-step `implementation-plan.md`, structured blocker taxonomy fields, checkpoint evidence surfaces, gate evidence files, `row archive`
+- Pi: `/work` now renders backend validation/evidence data and can drive the narrow `review->archive` checkpoint through the backend
+- Tests/docs: backend unit coverage extended for validation and archive flows; architecture docs synced to implementation truth

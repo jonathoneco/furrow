@@ -15,13 +15,28 @@
       "evidence": "furrow row transition enforced adjacent ordering, completed-step requirement, current-step blockers, and seed sync; summary regeneration and deeper content validation were not performed",
       "outcome": "pass",
       "timestamp": "2026-04-24T17:50:00Z"
+    },
+    {
+      "boundary": "research-\u003eplan",
+      "decided_by": "manual",
+      "evidence": "furrow row transition enforced adjacent ordering, completed-step requirement, current-step blockers, and seed sync; summary regeneration and deeper content validation were not performed",
+      "outcome": "pass",
+      "timestamp": "2026-04-24T19:54:59Z"
+    },
+    {
+      "boundary": "plan-\u003espec",
+      "decided_by": "manual",
+      "evidence": "furrow row transition enforced adjacent ordering, completed-step requirement, blocker taxonomy checks, seed sync, and per-artifact validation; summary regeneration and evaluator phases were not performed",
+      "evidence_path": "/home/jonco/src/furrow/.furrow/rows/pi-step-ceremony-and-artifact-enforcement/gates/plan-to-spec.json",
+      "outcome": "pass",
+      "timestamp": "2026-04-24T20:08:29Z"
     }
   ],
   "mode": "code",
   "name": "pi-step-ceremony-and-artifact-enforcement",
   "seed_id": "furrow-7427",
   "source_todo": "pi-step-ceremony-and-artifact-enforcement",
-  "step": "research",
+  "step": "spec",
   "step_status": "not_started",
   "steps_sequence": [
     "ideate",
@@ -33,5 +48,5 @@
     "review"
   ],
   "title": "Pi step ceremony and artifact enforcement",
-  "updated_at": "2026-04-24T17:50:00Z"
+  "updated_at": "2026-04-24T20:08:29Z"
 }

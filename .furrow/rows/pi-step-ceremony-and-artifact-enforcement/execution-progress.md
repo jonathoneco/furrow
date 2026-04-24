@@ -1,27 +1,36 @@
 # Execution Progress
 
-## Completed
-- Initialized and focused the dedicated row via `rws init` and `rws focus`.
-- Read the required architecture, Claude-form workflow, step-skill, Pi, and backend authority files.
-- Added Go backend support for:
-  - `furrow row init --json`
-  - `furrow row focus --json`
-  - `furrow row scaffold --json`
-  - enriched `furrow row status --json` seed/blocker/checkpoint/current-step artifact surfaces
-  - stricter `furrow row transition --json` and `furrow row complete --json` blocker enforcement around incomplete active-step artifacts
-- Added a primary Pi `/work` command that:
-  - resolves or initializes the row
-  - requires explicit choice when multiple active rows exist and no focus is set
-  - scaffolds the current step artifact on use through the backend
-  - surfaces blockers, seed state, checkpoint state, and current-step artifacts
-  - uses backend row focus/complete/transition/scaffold commands only
-  - pauses for explicit confirmation at supervised checkpoints in headless and UI flows
-- Updated the backend contract and step-ceremony architecture docs to reflect the landed slice.
-- Validated the new behavior with Go tests, backend command runs, and headless Pi command runs.
+## Completed before this session
+- Landed the minimum usable Pi `/work` slice over the existing adapter in `adapters/pi/furrow.ts`.
+- Added backend support for `furrow row init`, `furrow row focus`, and `furrow row scaffold`.
+- Enriched `furrow row status` with blocker, seed, checkpoint, and current-step artifact surfaces.
+- Tightened backend transition/completion behavior around incomplete active-step scaffold artifacts.
+- Synced architecture docs and roadmap/todo truth to the landed minimum slice.
+
+## Completed in this session
+- Regrounded against README, architecture docs, roadmap/todos, the durable row artifacts, and the live Go/Pi implementation.
+- Revalidated the landed `/work` loop against the actual repo state through `go test`, backend JSON commands, and headless Pi.
+- Added backend per-artifact validation surfaces for the current-step artifacts the backend currently understands.
+- Added plan-step support for `implementation-plan.md` as a scaffoldable/current-step artifact.
+- Tightened `row complete` / `row transition` so semantic artifact validation failures now block advancement in the same backend path as missing/incomplete artifacts.
+- Added checkpoint evidence surfaces to `furrow row status` and durable gate evidence files under `gates/` for backend-mediated transitions.
+- Added a shared blocker taxonomy shape to backend status/error surfaces for adapter reuse.
+- Implemented narrow `furrow row archive --json` support with review-step and review-gate preconditions plus archive checkpoint evidence.
+- Updated the existing Pi `/work` loop to consume backend checkpoint action/evidence data and drive the narrow `review->archive` boundary without adding parallel TS semantics.
+- Updated architecture docs and durable row artifacts to reflect the new repo truth.
+
+## Canonical workflow movement during validation
+- Confirmed the supervised `research->plan` checkpoint through the existing Pi `/work` loop.
+- Confirmed the supervised `plan->spec` checkpoint through the same backend-driven path after validating the new plan-step artifact semantics.
+- The spec step scaffolded `spec.md` on entry; the scaffold was then replaced with a real spec so the row no longer sits behind an artificial scaffold blocker.
 
 ## Current row state
 - Row: `pi-step-ceremony-and-artifact-enforcement`
-- Step: `research`
+- Step: `spec`
 - Step status: `not_started`
-- Seed: `furrow-7427` / `researching`
-- Active blocker: scaffolded `research.md` is intentionally incomplete until the step is actually worked.
+- Seed: `furrow-7427` / `speccing`
+- Checkpoint: `spec->decompose`, supervised approval required, `ready_to_advance=false`
+- Current-step artifact: `spec.md` present with backend validation passing
+
+## Session conclusion
+The next Phase 3 weakness is now narrower than before: the backend owns a first real pass at artifact validation, checkpoint evidence, blocker taxonomy, and archive-boundary handling. The remaining high-value work is deeper review/gate semantics, fuller archive ceremony, and richer implement/review validation rather than another adapter-promotion pass.

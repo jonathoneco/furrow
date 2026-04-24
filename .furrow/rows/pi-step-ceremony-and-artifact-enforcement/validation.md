@@ -1,66 +1,87 @@
 # Validation
 
-## Automated
+## Boundary-hardening validation run
 
 ### `go test ./...`
 - Result: pass
 - Evidence:
   - `?    github.com/jonathoneco/furrow/cmd/furrow [no test files]`
-  - `ok   github.com/jonathoneco/furrow/internal/cli (cached)`
-
-## Backend command checks
-
-### `go run ./cmd/furrow row focus --json`
-- Result: pass
-- Evidence: returns the focused row `pi-step-ceremony-and-artifact-enforcement` via backend JSON.
+  - `ok   github.com/jonathoneco/furrow/internal/cli`
+- Coverage added in this session:
+  - plan-step artifact validation blocking
+  - checkpoint evidence file emission on transition
+  - narrow `row archive` success/blocking semantics
 
 ### `go run ./cmd/furrow row status pi-step-ceremony-and-artifact-enforcement --json`
 - Result: pass
-- Evidence:
-  - surfaces seed state (`furrow-7427`, `researching`, consistent)
-  - surfaces active blocker (`artifact_scaffold_incomplete` for `research.md`)
-  - surfaces checkpoint (`research->plan`, approval required, not ready)
-  - surfaces current-step artifact list with scaffold/incomplete status
+- Evidence before advancing from `plan`:
+  - current-step artifact: `implementation-plan.md`
+  - artifact validation: `pass=1 fail=0 missing=0`
+  - checkpoint action: `transition`
+  - checkpoint boundary: `plan->spec`
+  - checkpoint evidence includes latest gate, seed surface, and artifact-validation summary
 
 ### `go run ./cmd/furrow row scaffold pi-step-ceremony-and-artifact-enforcement --json`
-- Result: pass earlier in the session
-- Evidence: created `definition.yaml` only for the active `ideate` step, marked it incomplete, and did not create downstream step artifacts.
-
-### `go run ./cmd/furrow row complete pi-step-ceremony-and-artifact-enforcement --json`
-- Result: blocked as expected after transition
-- Evidence: backend returns `blocked` with the active-step artifact details while `research.md` still contains the incomplete scaffold marker.
-
-## Pi headless command checks
-
-### `/work --switch pi-step-ceremony-and-artifact-enforcement`
-- Command:
-  - `pi --no-session --no-context-files --no-extensions -e ./adapters/pi/furrow.ts -p '/work --switch pi-step-ceremony-and-artifact-enforcement'`
 - Result: pass
 - Evidence:
-  - prints row / step / blockers / seed / checkpoint / active-step artifacts in headless mode
-  - shows the incomplete `research.md` scaffold as a blocker
+  - `created: []`
+  - backend reports the current plan-step artifact and its validation status
+  - confirms scaffold remains current-step-only
 
-### `/work --switch pi-step-ceremony-and-artifact-enforcement --complete --confirm`
-- Command: run earlier in the session after replacing the ideation scaffold with a real `definition.yaml`
+### `go run ./cmd/furrow row archive pi-step-ceremony-and-artifact-enforcement --json`
+- Result: blocked as expected
+- Evidence:
+  - error code: `blocked`
+  - message: `row "pi-step-ceremony-and-artifact-enforcement" must be at step review before archiving`
+- Meaning:
+  - archive semantics are now backend-owned and refuse invalid lifecycle shortcuts
+
+### `go run ./cmd/furrow row status backend-mediated-row-bookkeeping --json`
 - Result: pass
 - Evidence:
-  - marked the ideate step complete through the backend
-  - advanced `ideate -> research` only with explicit confirmation
-  - scaffolded `research.md` on entry to the new step
-  - updated the linked seed from `ideating` to `researching`
+  - archived row reports `checkpoint.action=null`
+  - checkpoint evidence marks `archived=true`
+  - no blockers are surfaced for the archived row state itself
 
-### `/furrow-next pi-step-ceremony-and-artifact-enforcement`
-- Command:
-  - `pi --no-session --no-context-files --no-extensions -e ./adapters/pi/furrow.ts -p '/furrow-next pi-step-ceremony-and-artifact-enforcement'`
+### `pi --no-session --no-context-files --no-extensions -e ./adapters/pi/furrow.ts -p '/work --switch pi-step-ceremony-and-artifact-enforcement'`
 - Result: pass
-- Evidence: secondary guidance command now includes blockers, seed state, checkpoint data, and current-step artifact status.
+- Evidence:
+  - headless `/work` renders the backend-produced plan-step artifact validation result
+  - checkpoint output includes action, artifact-validation counts, and latest-gate summary
+  - recommended action remains backend-driven (`/work --complete` when step work is done enough)
 
-## Create-on-use scaffolding discipline
-- Verified by backend scaffold output and by the `/work --complete --confirm` transition flow:
-  - `definition.yaml` scaffolded only while `ideate` was active
-  - `research.md` scaffolded only after explicit transition into `research`
-  - downstream artifacts such as `spec.md` and `plan.json` were not created (`spec-missing`, `plan-missing` in manual checks)
+### `pi --no-session --no-context-files --no-extensions -e ./adapters/pi/furrow.ts -p '/work --switch pi-step-ceremony-and-artifact-enforcement --complete --confirm'`
+- Result: pass, with expected canonical mutations
+- Evidence:
+  - backend marked the plan step complete
+  - backend advanced the row through the supervised `plan->spec` boundary
+  - backend scaffolded `spec.md` on entry to `spec`
+  - Pi surfaced the new blocker taxonomy and artifact validation failure for the scaffolded `spec.md`
+- Follow-up:
+  - replaced the scaffolded `spec.md` with a real spec artifact so the durable row state no longer depends on an artificial scaffold blocker
 
-## Lightweight review pass
-- `git diff --check -- adapters/pi/furrow.ts internal/cli/app.go internal/cli/row.go internal/cli/row_workflow.go internal/cli/app_test.go docs/architecture/go-cli-contract.md docs/architecture/pi-step-ceremony-and-artifact-enforcement.md .furrow/rows/pi-step-ceremony-and-artifact-enforcement`
-- Result: pass (no whitespace or merge-marker issues in the touched files)
+### `go run ./cmd/furrow row status pi-step-ceremony-and-artifact-enforcement --json` (post-spec sync)
+- Result: pass
+- Evidence:
+  - current row step: `spec`
+  - current-step artifact: `spec.md`
+  - artifact validation now passes
+  - seed status aligned to `speccing`
+  - checkpoint boundary is `spec->decompose`
+  - `ready_to_advance=false` because the current step has not been canonically completed yet
+
+## Known mismatch retained
+
+### `go run ./cmd/furrow row init --help`
+### `go run ./cmd/furrow row focus --help`
+### `go run ./cmd/furrow row scaffold --help`
+- Result: still mismatch
+- Evidence:
+  - stderr: `unknown flag --help`
+- Note:
+  - leaf-command `--help` is still not implemented for these new row subcommands
+  - help remains available through `go run ./cmd/furrow row` or `go run ./cmd/furrow row help`
+
+## Conclusion
+
+The landed `/work` loop was reconfirmed, and the repo now also has a first real backend-canonical hardening pass for artifact validation, checkpoint evidence, blocker taxonomy, and archive-boundary handling. The remaining gaps are deeper review/gate semantics and fuller archive ceremony, not another adapter-promotion pass.
