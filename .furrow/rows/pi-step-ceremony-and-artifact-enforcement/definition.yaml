@@ -1,0 +1,27 @@
+objective: "Restore Pi's primary Furrow /work-style operating loop with backend-canonical row init/focus, seed-visible guidance, blocker enforcement, supervised checkpoints, and create-on-use current-step scaffolding."
+deliverables:
+  - name: "backend-work-loop-support"
+    acceptance_criteria:
+      - "The Go backend exposes the minimal machine-readable support needed for row init/focus, seed visibility, blocker reporting, and current-step scaffolding."
+      - "Backend-mediated transitions refuse blocked advancement and preserve canonical .furrow semantics."
+  - name: "pi-work-command"
+    acceptance_criteria:
+      - "Pi exposes a primary /work-like command that resolves or initializes a row, surfaces the current stage, seed, blockers, and required current-step artifacts, and uses backend commands for supported mutations."
+      - "The /work flow scaffolds only the active step artifact on use and pauses for explicit confirmation at supervised boundaries."
+  - name: "validation-and-doc-drift"
+    acceptance_criteria:
+      - "Validation covers go test, affected backend commands, blocker surfacing, supervised confirmation behavior, headless Pi command behavior when possible, and create-on-use scaffolding discipline."
+      - "Architecture or planning docs are updated if implementation changes planned reality."
+context_pointers:
+  - path: "docs/architecture/pi-step-ceremony-and-artifact-enforcement.md"
+    note: "Acceptance spec for this slice."
+  - path: "adapters/pi/furrow.ts"
+    note: "Current Pi adapter implementation."
+  - path: "internal/cli/"
+    note: "Current Go backend contract surface."
+constraints:
+  - "All supported workflow mutations must go through backend or CLI authority; no direct state.json edits."
+  - "Keep .furrow canonical and avoid moving lifecycle semantics into TypeScript."
+  - "Prefer hard blockers and loud failure where Furrow or Claude-form workflow semantics require them."
+  - "Artifact existence alone never counts as completion."
+gate_policy: supervised

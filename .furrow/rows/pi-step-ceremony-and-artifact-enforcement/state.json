@@ -1,0 +1,37 @@
+{
+  "archived_at": null,
+  "base_commit": "fc44783a64b5981b69895420adcb7d063fb6a7b6",
+  "branch": null,
+  "created_at": "2026-04-24T17:30:58Z",
+  "deliverables": {},
+  "description": "Pi step ceremony and artifact enforcement",
+  "epic_seed_id": null,
+  "force_stop_at": null,
+  "gate_policy_init": "supervised",
+  "gates": [
+    {
+      "boundary": "ideate-\u003eresearch",
+      "decided_by": "manual",
+      "evidence": "furrow row transition enforced adjacent ordering, completed-step requirement, current-step blockers, and seed sync; summary regeneration and deeper content validation were not performed",
+      "outcome": "pass",
+      "timestamp": "2026-04-24T17:50:00Z"
+    }
+  ],
+  "mode": "code",
+  "name": "pi-step-ceremony-and-artifact-enforcement",
+  "seed_id": "furrow-7427",
+  "source_todo": "pi-step-ceremony-and-artifact-enforcement",
+  "step": "research",
+  "step_status": "not_started",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "title": "Pi step ceremony and artifact enforcement",
+  "updated_at": "2026-04-24T17:50:00Z"
+}
