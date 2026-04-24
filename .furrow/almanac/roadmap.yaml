@@ -630,7 +630,19 @@ phases:
 - number: 5
   title: "Seeds primitive + seed-backed planning surfaces"
   status: planned
-  rationale: Foundational work-graph and planning substrate. Seeds replace TODOs as the canonical task registry, unify cross-row and in-row tracking in one graph owned by sds, and become the source of truth for roadmap/triage inputs. alm remains the planning and knowledge layer, but it projects and synthesizes seed-backed state rather than owning a permanent parallel TODO system. This phase also carries the emerging document-authority model: the almanac should eventually understand canonical vs transitional vs planning vs historical-execution docs, with row artifacts preserving execution truth and promotion flows moving enduring conclusions into broader knowledge surfaces. Must land after Go rewrite (graph engine belongs in Go), and Pi planning/almanac surfaces should be built against this model rather than deepening TODO-specific UX.
+  rationale: >-
+    Foundational work-graph and planning substrate. Seeds replace TODOs as the
+    canonical task registry, unify cross-row and in-row tracking in one graph
+    owned by sds, and become the source of truth for roadmap/triage inputs. alm
+    remains the planning and knowledge layer, but it projects and synthesizes
+    seed-backed state rather than owning a permanent parallel TODO system. This
+    phase also carries the emerging document-authority model: the almanac
+    should eventually understand canonical vs transitional vs planning vs
+    historical-execution docs, with row artifacts preserving execution truth
+    and promotion flows moving enduring conclusions into broader knowledge
+    surfaces. Must land after Go rewrite (graph engine belongs in Go), and Pi
+    planning/almanac surfaces should be built against this model rather than
+    deepening TODO-specific UX.
   rows:
   - index: 1
     branch: work/seeds
