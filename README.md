@@ -104,7 +104,9 @@ into roadmap planning via `/furrow:triage`.
 | `docs/` | Architecture references, git conventions, research findings |
 | `specialists/` | Domain expert agent templates (15 available) |
 | `evals/` | Gate and review evaluation rubrics |
+| `adapters/` | Runtime-specific bindings for Claude Code, Pi, and Agent SDK |
 | `.furrow/almanac/rationale.yaml` | Component inventory with deletion criteria |
 
-Furrow supports both Claude Code (slash commands) and the Anthropic Agent SDK
-(Python callbacks). See `adapters/` for runtime-specific bindings.
+Furrow supports Claude Code, Pi, and the Anthropic Agent SDK through thin
+runtime adapters over the shared backend. See `adapters/` for runtime-specific
+bindings.

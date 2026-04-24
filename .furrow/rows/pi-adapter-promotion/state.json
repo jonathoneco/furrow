@@ -1,0 +1,57 @@
+{
+  "archived_at": "2026-04-24T17:19:03Z",
+  "base_commit": "unknown",
+  "branch": null,
+  "created_at": "2026-04-24T18:00:00Z",
+  "deliverables": {
+    "repo-owned-pi-adapter": {
+      "assigned_to": "pi-adapter",
+      "corrections": 0,
+      "status": "completed",
+      "wave": 1
+    },
+    "compatibility-shim": {
+      "assigned_to": "pi-adapter",
+      "corrections": 0,
+      "status": "completed",
+      "wave": 1
+    },
+    "validation-and-docs": {
+      "assigned_to": "pi-adapter",
+      "corrections": 0,
+      "status": "completed",
+      "wave": 1
+    }
+  },
+  "description": "Promote the proven Pi Furrow extension into a repo-owned adapter layout while keeping the TypeScript layer thin and backend-driven",
+  "epic_seed_id": null,
+  "force_stop_at": null,
+  "gate_policy_init": "supervised",
+  "gates": [
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "archival backfill gate recorded during follow-up archive pass; summary.md and spec.md capture the completed adapter promotion and validation evidence",
+      "timestamp": "2026-04-24T17:19:03Z"
+    }
+  ],
+  "mode": "code",
+  "name": "pi-adapter-promotion",
+  "pending_user_actions": [],
+  "seed_id": "",
+  "source_todo": "pi-adapter-package",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "title": "Pi adapter promotion into repo-owned layout",
+  "updated_at": "2026-04-24T17:19:03Z"
+}

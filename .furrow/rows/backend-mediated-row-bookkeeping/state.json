@@ -1,0 +1,57 @@
+{
+  "archived_at": "2026-04-24T17:19:03Z",
+  "base_commit": "unknown",
+  "branch": null,
+  "created_at": "2026-04-24T15:10:00Z",
+  "deliverables": {
+    "backend-bookkeeping-command": {
+      "assigned_to": "go-backend",
+      "corrections": 0,
+      "status": "completed",
+      "wave": 1
+    },
+    "tests-and-validation": {
+      "assigned_to": "go-backend",
+      "corrections": 0,
+      "status": "completed",
+      "wave": 1
+    },
+    "thin-pi-consumption": {
+      "assigned_to": "pi-adapter",
+      "corrections": 0,
+      "status": "completed",
+      "wave": 1
+    }
+  },
+  "description": "Add the smallest backend-mediated bookkeeping surface needed so Pi-driven Furrow work no longer requires manual state.json edits",
+  "epic_seed_id": null,
+  "force_stop_at": null,
+  "gate_policy_init": "supervised",
+  "gates": [
+    {
+      "boundary": "implement->review",
+      "decided_by": "manual",
+      "evidence": "furrow row transition manual forward transition only; artifact validation, gate-policy enforcement, seed sync, and summary regeneration were not performed",
+      "outcome": "pass",
+      "timestamp": "2026-04-24T16:08:46Z"
+    }
+  ],
+  "mode": "code",
+  "name": "backend-mediated-row-bookkeeping",
+  "pending_user_actions": [],
+  "seed_id": "",
+  "source_todo": "backend-mediated-row-bookkeeping",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "title": "Backend-mediated row bookkeeping for Pi parity",
+  "updated_at": "2026-04-24T17:19:03Z"
+}
