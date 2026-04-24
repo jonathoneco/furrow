@@ -52,14 +52,16 @@ phase_data=$(yq -o=json ".phases[] | select(.number == $phase)" "$roadmap")
 [ -n "$phase_data" ] || { echo "error: phase $phase not found in $roadmap" >&2; exit 1; }
 
 phase_title=$(printf '%s' "$phase_data" | jq -r '.title')
-row_count=$(printf '%s' "$phase_data" | jq -r '.rows | length')
+row_count=$(printf '%s' "$phase_data" | jq -r '(.work_units // .rows) | length')
 
 echo "Phase $phase — $phase_title ($row_count rows)"
 echo ""
 
 # --- process each row ---
-printf '%s' "$phase_data" | jq -c '.rows[]' | while IFS= read -r row; do
-  branch=$(printf '%s' "$row" | jq -r '.branch')
+# Support both the current schema (.work_units with .branch_name) and the
+# legacy schema (.rows with .branch).
+printf '%s' "$phase_data" | jq -c '(.work_units // .rows)[]' | while IFS= read -r row; do
+  branch=$(printf '%s' "$row" | jq -r '.branch_name // .branch')
   description=$(printf '%s' "$row" | jq -r '.description')
   row_name=$(printf '%s' "$branch" | sed 's|^work/||')
   worktree_dir="../${project_name}-${row_name}"
