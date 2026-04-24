@@ -351,31 +351,41 @@ Adapter promotion should remain subordinate to workflow-power preservation.
 ## Implemented minimum slice notes
 
 The current repository implementation now lands the minimum usable slice this
-document called for:
+document called for, plus a first boundary-hardening pass:
 
 - Pi exposes a primary `/work` command over backend-canonical row state
 - the Go backend now supports row init, focus, seed visibility, blocker
-  reporting, and current-step artifact scaffolding
+  reporting, current-step artifact scaffolding, and narrow row archive
+  preconditions
 - `/work` resolves or initializes rows, scaffolds only the active step's
   artifact on use, surfaces seed/blocker/checkpoint state, and requires
   explicit confirmation before supervised advancement
-- backend transitions now block advancement when current-step scaffolded
-  artifacts are still incomplete
+- current-step artifacts now expose backend validation data, and
+  `row complete` / `row transition` block on validation failures rather than
+  only missing files or incomplete scaffold sentinels
+- the plan step now has a scaffoldable/validatable `implementation-plan.md`
+  artifact in the same backend contract surface
+- `furrow row status` now exposes checkpoint action/evidence and gate history,
+  and backend transitions/archive write narrow evidence files under `gates/`
+- `/work` can now consume the backend `review->archive` checkpoint through the
+  existing adapter rather than requiring a parallel lifecycle path
 
 What is still intentionally narrow:
 
-- artifact validation is still presence-plus-incomplete-scaffold detection, not
-  full semantic content validation
-- plan / implement / review still do not have richer artifact-aware completion
-  semantics or gate-engine parity
-- archive remains a secondary command rather than part of a single end-to-end
-  `/work` lifecycle command
+- artifact validation is structural/template-aware, not full semantic or
+  evaluator-grade content validation
+- review execution itself still does not have mature per-deliverable evaluator
+  orchestration or full gate-engine parity
+- archive semantics inside `/work` are still the narrow backend checkpoint path,
+  not the full learnings/component/TODO promotion ceremony
 
 ## Fast follow after this slice
 
 After this slice, next preserved-power targets include:
-- explicit blocker/enforcement matrix in backend contracts
-- richer gate/evaluator parity
+- deeper per-step artifact validation for implement/review and richer semantic checks
+- fuller review execution/evidence surfaces beyond the narrow checkpoint evidence now emitted by backend transitions/archive
+- archive ceremony expansion beyond narrow archival preconditions into promotion/disposition flows
+- continued blocker/enforcement taxonomy alignment across Pi and Claude-compatible flows
 - seeds parity expansion
 - tmux/worktree/session launch surfaces
 - within-row and phase-level parallel orchestration
