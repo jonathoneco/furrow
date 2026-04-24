@@ -252,25 +252,25 @@ func initRow(root, rowName string, opts rowInitOptions) (map[string]any, error) 
 	}
 
 	state := map[string]any{
-		"name":               rowName,
-		"title":              title,
-		"description":        title,
-		"step":               "ideate",
-		"step_status":        "in_progress",
-		"steps_sequence":     defaultStepsSequence(),
-		"deliverables":       map[string]any{},
-		"gates":              []any{},
-		"force_stop_at":      nil,
-		"branch":             nilIfEmpty(branchName),
-		"mode":               mode,
-		"base_commit":        baseCommit,
-		"seed_id":            seedID,
-		"epic_seed_id":       nil,
-		"created_at":         now,
-		"updated_at":         now,
-		"archived_at":        nil,
-		"source_todo":        nilIfEmpty(opts.SourceTodo),
-		"gate_policy_init":   gatePolicy,
+		"name":                 rowName,
+		"title":                title,
+		"description":          title,
+		"step":                 "ideate",
+		"step_status":          "in_progress",
+		"steps_sequence":       defaultStepsSequence(),
+		"deliverables":         map[string]any{},
+		"gates":                []any{},
+		"force_stop_at":        nil,
+		"branch":               nilIfEmpty(branchName),
+		"mode":                 mode,
+		"base_commit":          baseCommit,
+		"seed_id":              seedID,
+		"epic_seed_id":         nil,
+		"created_at":           now,
+		"updated_at":           now,
+		"archived_at":          nil,
+		"source_todo":          nilIfEmpty(opts.SourceTodo),
+		"gate_policy_init":     gatePolicy,
 		"pending_user_actions": []any{},
 	}
 	if err := writeJSONMapAtomic(filepath.Join(rowDir, "state.json"), state); err != nil {
@@ -629,12 +629,12 @@ func currentStepArtifacts(root, rowName string, state map[string]any) []map[stri
 	rowDir := rowDirFor(root, rowName)
 	step := getStringDefault(state, "step", "")
 	artifacts := []struct {
-		ID               string
-		Label            string
-		Path             string
-		Required         bool
+		ID                string
+		Label             string
+		Path              string
+		Required          bool
 		ScaffoldSupported bool
-	}{ }
+	}{}
 
 	switch step {
 	case "ideate":
@@ -653,6 +653,14 @@ func currentStepArtifacts(root, rowName string, state map[string]any) []map[stri
 			Required          bool
 			ScaffoldSupported bool
 		}{ID: "research", Label: "research.md", Path: filepath.Join(rowDir, "research.md"), Required: true, ScaffoldSupported: true})
+	case "plan":
+		artifacts = append(artifacts, struct {
+			ID                string
+			Label             string
+			Path              string
+			Required          bool
+			ScaffoldSupported bool
+		}{ID: "implementation-plan", Label: "implementation-plan.md", Path: filepath.Join(rowDir, "implementation-plan.md"), Required: true, ScaffoldSupported: true})
 	case "spec":
 		artifacts = append(artifacts, struct {
 			ID                string
@@ -683,15 +691,17 @@ func currentStepArtifacts(root, rowName string, state map[string]any) []map[stri
 	result := make([]map[string]any, 0, len(artifacts))
 	for _, artifact := range artifacts {
 		exists := fileExists(artifact.Path)
-		result = append(result, map[string]any{
-			"id":                artifact.ID,
-			"label":             artifact.Label,
-			"path":              artifact.Path,
-			"required":          artifact.Required,
-			"exists":            exists,
+		entry := map[string]any{
+			"id":                 artifact.ID,
+			"label":              artifact.Label,
+			"path":               artifact.Path,
+			"required":           artifact.Required,
+			"exists":             exists,
 			"scaffold_supported": artifact.ScaffoldSupported,
-			"incomplete":        exists && fileContains(artifact.Path, scaffoldMarker),
-		})
+			"incomplete":         exists && fileContains(artifact.Path, scaffoldMarker),
+		}
+		entry["validation"] = validateArtifact(state, entry)
+		result = append(result, entry)
 	}
 	return result
 }
@@ -726,6 +736,8 @@ func scaffoldTemplateForArtifact(state map[string]any, artifact map[string]any) 
 		return fmt.Sprintf("# %s\nobjective: \"TODO: replace this incomplete scaffold with the row objective\"\ndeliverables:\n  - name: \"todo-deliverable\"\n    acceptance_criteria:\n      - \"TODO: replace this incomplete scaffold with real acceptance criteria\"\ncontext_pointers: []\nconstraints: []\ngate_policy: %s\n", scaffoldMarker, gatePolicy), true
 	case "research":
 		return fmt.Sprintf("# Research\n\n> %s — replace this placeholder research scaffold before completing the step.\n\n## Questions\n- TODO: list the research questions this step must answer\n\n## Findings\n- TODO: replace with researched findings\n\n## Sources Consulted\n- TODO: source (tier) — contribution\n", scaffoldMarker), true
+	case "implementation-plan":
+		return fmt.Sprintf("# Implementation Plan\n\n> %s — replace this placeholder plan scaffold before completing the step.\n\n## Objective\n- TODO: describe the boundary-hardening objective for this slice\n\n## Planned work\n1. TODO: list the backend changes\n2. TODO: list the adapter-consuming validation surfaces\n\n## Validation\n- TODO: list the concrete commands and scenarios to validate\n", scaffoldMarker), true
 	case "spec":
 		return fmt.Sprintf("# Spec\n\n> %s — replace this placeholder spec scaffold before completing the step.\n\n## Scope\n- TODO: define what will be built\n\n## Acceptance Criteria\n- TODO: replace with concrete, testable criteria\n\n## Verification\n- TODO: document how the work will be verified\n", scaffoldMarker), true
 	case "plan":
@@ -813,37 +825,70 @@ func rowSeedSurface(root string, state map[string]any) map[string]any {
 }
 
 func rowBlockers(state map[string]any, seed map[string]any, artifacts []map[string]any) []map[string]any {
+	if isArchivedState(state) {
+		return []map[string]any{}
+	}
+
 	blockers := make([]map[string]any, 0)
 	if pending, ok := asSlice(state["pending_user_actions"]); ok && len(pending) > 0 {
-		blockers = append(blockers, map[string]any{"code": "pending_user_actions", "message": fmt.Sprintf("row has %d pending user action(s)", len(pending))})
+		blockers = append(blockers, blocker("pending_user_actions", "user_action", fmt.Sprintf("row has %d pending user action(s)", len(pending)), map[string]any{"count": len(pending)}))
 	}
 	seedState, _ := seed["state"].(string)
 	switch seedState {
 	case "unavailable":
-		blockers = append(blockers, map[string]any{"code": "seed_store_unavailable", "message": "seed store could not be read"})
+		blockers = append(blockers, blocker("seed_store_unavailable", "seed", "seed store could not be read", nil))
 	case "missing_record":
-		blockers = append(blockers, map[string]any{"code": "missing_seed_record", "message": fmt.Sprintf("linked seed %v was not found", seed["id"])})
+		blockers = append(blockers, blocker("missing_seed_record", "seed", fmt.Sprintf("linked seed %v was not found", seed["id"]), map[string]any{"seed_id": seed["id"]}))
 	case "closed":
-		blockers = append(blockers, map[string]any{"code": "closed_seed", "message": fmt.Sprintf("linked seed %v is closed", seed["id"])})
+		blockers = append(blockers, blocker("closed_seed", "seed", fmt.Sprintf("linked seed %v is closed", seed["id"]), map[string]any{"seed_id": seed["id"]}))
 	case "inconsistent":
-		blockers = append(blockers, map[string]any{"code": "seed_status_mismatch", "message": fmt.Sprintf("linked seed %v status %v does not match expected %v", seed["id"], seed["status"], seed["expected_status"])})
+		blockers = append(blockers, blocker("seed_status_mismatch", "seed", fmt.Sprintf("linked seed %v status %v does not match expected %v", seed["id"], seed["status"], seed["expected_status"]), map[string]any{"seed_id": seed["id"], "expected_status": seed["expected_status"], "actual_status": seed["status"]}))
 	}
 	for _, artifact := range artifacts {
 		label, _ := artifact["label"].(string)
-		if required, _ := artifact["required"].(bool); required {
-			if exists, _ := artifact["exists"].(bool); !exists {
-				blockers = append(blockers, map[string]any{"code": "missing_required_artifact", "message": fmt.Sprintf("required current-step artifact %s is missing", label), "path": artifact["path"]})
-				continue
-			}
-			if incomplete, _ := artifact["incomplete"].(bool); incomplete {
-				blockers = append(blockers, map[string]any{"code": "artifact_scaffold_incomplete", "message": fmt.Sprintf("current-step artifact %s is still an incomplete scaffold", label), "path": artifact["path"]})
-			}
+		required, _ := artifact["required"].(bool)
+		if !required {
+			continue
+		}
+		if exists, _ := artifact["exists"].(bool); !exists {
+			blockers = append(blockers, blocker("missing_required_artifact", "artifact", fmt.Sprintf("required current-step artifact %s is missing", label), map[string]any{"path": artifact["path"], "artifact_id": artifact["id"]}))
+			continue
+		}
+		if incomplete, _ := artifact["incomplete"].(bool); incomplete {
+			blockers = append(blockers, blocker("artifact_scaffold_incomplete", "artifact", fmt.Sprintf("current-step artifact %s is still an incomplete scaffold", label), map[string]any{"path": artifact["path"], "artifact_id": artifact["id"]}))
+			continue
+		}
+		if blockingArtifactValidation(artifact) {
+			blockers = append(blockers, blocker("artifact_validation_failed", "artifact", fmt.Sprintf("current-step artifact %s failed validation", label), map[string]any{"path": artifact["path"], "artifact_id": artifact["id"], "finding_codes": validationFindingCodes(artifact)}))
+		}
+	}
+	if getStringDefault(state, "step", "") == "review" && getStringDefault(state, "step_status", "") == "completed" {
+		if _, ok := latestPassingReviewGate(state); !ok {
+			blockers = append(blockers, blocker("archive_requires_review_gate", "archive", "row cannot archive until a passing ->review gate exists", nil))
 		}
 	}
 	return blockers
 }
 
-func rowCheckpointSurface(root, rowName string, state map[string]any, blockers []map[string]any) map[string]any {
+func rowCheckpointSurface(root, rowName string, state map[string]any, blockers []map[string]any, seed map[string]any, artifacts []map[string]any) map[string]any {
+	if isArchivedState(state) {
+		return map[string]any{
+			"gate_policy":       rowGatePolicy(root, rowName, state),
+			"boundary":          nil,
+			"next_step":         nil,
+			"action":            nil,
+			"approval_required": false,
+			"ready_to_advance":  false,
+			"evidence": map[string]any{
+				"latest_gate":         latestGateSummary(state),
+				"artifact_validation": summarizeArtifactValidation(artifacts),
+				"blocker_count":       0,
+				"seed":                seed,
+				"archived":            true,
+			},
+		}
+	}
+
 	steps, _ := stepsSequenceFromState(state)
 	if len(steps) == 0 {
 		steps = defaultStepsSequence()
@@ -852,9 +897,14 @@ func rowCheckpointSurface(root, rowName string, state map[string]any, blockers [
 	idx := indexOfStep(steps, current)
 	boundary := ""
 	nextStep := ""
+	action := ""
 	if idx >= 0 && idx+1 < len(steps) {
 		nextStep = steps[idx+1]
 		boundary = current + "->" + nextStep
+		action = "transition"
+	} else if idx == len(steps)-1 {
+		boundary = current + "->archive"
+		action = "archive"
 	}
 	gatePolicy := rowGatePolicy(root, rowName, state)
 	approvalRequired := gatePolicy == "supervised" && boundary != ""
@@ -863,8 +913,15 @@ func rowCheckpointSurface(root, rowName string, state map[string]any, blockers [
 		"gate_policy":       gatePolicy,
 		"boundary":          nilIfEmpty(boundary),
 		"next_step":         nilIfEmpty(nextStep),
+		"action":            nilIfEmpty(action),
 		"approval_required": approvalRequired,
 		"ready_to_advance":  ready,
+		"evidence": map[string]any{
+			"latest_gate":         latestGateSummary(state),
+			"artifact_validation": summarizeArtifactValidation(artifacts),
+			"blocker_count":       len(blockers),
+			"seed":                seed,
+		},
 	}
 }
 
