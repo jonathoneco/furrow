@@ -1,7 +1,7 @@
 schema_version: '1.0'
 metadata:
   project: furrow
-  generated_at: '2026-04-24T19:30:00Z'
+  generated_at: '2026-04-24T23:25:00Z'
   total_phases: 8
   completed_phases: 1
 dependency_graph:
@@ -77,7 +77,7 @@ dependency_graph:
     depends_on:
     - dual-runtime-target-architecture
   - id: migration-operating-mode
-    label: "Define the migration operating mode \u2014 Furrow/Claude for backend work, Pi for manual adapter exploration until enforcement is stable"
+    label: "Define the migration stance and operating mode \u2014 conservative invariants, aggressive cutovers, Pi-early, Claude-compatible"
     phase: 2
     status: active
     depends_on:
@@ -89,7 +89,7 @@ dependency_graph:
     depends_on:
     - go-cli-contract-v1
   - id: pi-adapter-package
-    label: "Build the Furrow Pi package/extension on top of the stable Go backend"
+    label: "Evolve the existing Furrow Pi adapter on top of the stable Go backend"
     phase: 3
     status: active
     depends_on:
@@ -104,9 +104,16 @@ dependency_graph:
   - id: pi-step-ceremony-and-artifact-enforcement
     label: "Restore Pi /work ceremony, create-on-use artifacts, supervised checkpoints, and seed-visible flow"
     phase: 3
-    status: active
+    status: completed
     depends_on:
     - workflow-power-preservation
+    - pi-adapter-package
+  - id: work-loop-boundary-hardening
+    label: "Harden backend-canonical /work boundaries — richer artifact validation, checkpoint evidence, review/archive semantics, blocker taxonomy"
+    phase: 3
+    status: active
+    depends_on:
+    - pi-step-ceremony-and-artifact-enforcement
     - pi-adapter-package
   - id: parallel-orchestration-and-launch-surfaces
     label: "Preserve Furrow's parallel orchestration and launch surfaces"
@@ -423,11 +430,11 @@ phases:
 - number: 2
   title: "Backend contract + Go rewrite \u2014 canonical core before adapters"
   status: planned
-  rationale: "With post-install hygiene landed, Furrow should freeze the target host strategy, dual-runtime architecture, and Go CLI contract before broad migration work. The portability research remains design input only; implementation proceeds backend-first in-repo. The target is shared backend/artifact semantics with asymmetric UX: Pi is allowed to become the stronger primary runtime, while Claude compatibility is preserved for teammates through thin wrappers and shared backend contracts."
+  rationale: "With post-install hygiene landed, Furrow should freeze the target host strategy, dual-runtime architecture, Go CLI contract, and migration stance before broad migration work. The portability research remains design input only; implementation proceeds backend-first in-repo. The governing stance is now explicit: be conservative about invariants (.furrow canonical state, backend-owned semantics, durable artifacts, shared host semantics) and aggressive about cutovers, simplification, and deleting unnecessary migration shims. Pi is allowed to become the stronger primary runtime, while Claude compatibility is preserved only where it serves a real teammate boundary."
   rows:
   - index: 1
     branch: work/backend-contract
-    description: Freeze the dual-runtime architecture, first Go CLI contract, and migration operating mode
+    description: Freeze the dual-runtime architecture, first Go CLI contract, and migration stance/operating mode
     todos:
     - dual-runtime-target-architecture
     - go-cli-contract-v1
@@ -437,15 +444,16 @@ phases:
     - docs/architecture/go-cli-contract.md
     - docs/architecture/host-strategy-matrix.md
     - docs/architecture/dual-runtime-migration-plan.md
+    - docs/architecture/migration-stance.md
     - .furrow/almanac/roadmap.yaml
     - .furrow/almanac/todos.yaml
     conflict_risk: low
     depends_on: []
     completed_at: null
-    why_together: Contract freeze first — this is the guardrail against repeating the speculative portability spike.
+    why_together: Contract and stance freeze first — this is the guardrail against both speculative portability drift and over-conservative migration drag.
   - index: 2
     branch: work/cli-go-rewrite
-    description: Implement the minimum shared Go backend slice, then expand toward full CLI replacement
+    description: Implement the first decisive shared Go backend cuts, then expand toward full CLI replacement
     todos:
     - cli-architecture-overhaul
     key_files:
@@ -462,39 +470,37 @@ phases:
     - go-cli-contract-v1
     - migration-operating-mode
     completed_at: null
-    why_together: The first goal is the minimum shared backend slice that lets Pi start early without creating Pi-only semantics or leaving the backend stuck in a read-only halfway state.
+    why_together: The first goal is a real shared backend cut that lets Pi start early without creating Pi-only semantics or leaving the backend stuck in a read-only halfway state; from there, prefer finishing real boundaries over layering more shims.
 - number: 3
   title: "Pi staged work loop + adapter + dispatch + ambient contract"
   status: planned
   rationale: >-
-    Once the minimum Go backend slice exists, Pi should come online early as the
-    primary authoring runtime. A project-local Pi operating layer has now
-    validated that direction with `/furrow-overview`, `/furrow-next`,
-    `/furrow-transition`, and `/furrow-complete` over the Go backend. The
-    narrow backend-mediated bookkeeping gap exposed by real use is now closed
-    for the supported existing-row workflow, which means Furrow has reached
-    Level 2 canonical Pi operation for that slice. However, structural parity
-    is not enough: this phase must restore Furrow's supervised staged operating
-    loop in Pi. The next work is now explicitly defined in
-    `docs/architecture/pi-step-ceremony-and-artifact-enforcement.md`:
-    converge toward a primary `/work`-like entrypoint, scaffold current-step
-    artifacts on use, preserve Claude-baseline blockers, make seeds visible in
-    the operator flow, and require supervised checkpoints at canonical
-    boundaries. The `/work` loop should already be almanac-aware while fuller
-    seed-backed planning surfaces are defined separately in
-    `docs/architecture/pi-almanac-operating-model.md` and sequence after seeds
-    lands. Adapter promotion remains important, but it is subordinate to
-    restoring ceremony and enforcement; parallel orchestration remains fast
-    follow within this same phase.
+    Once the first real Go backend slice exists, Pi should come online early as the
+    primary authoring runtime. That has now happened in the existing Furrow
+    adapter at `adapters/pi/furrow.ts`: Pi has `/furrow-overview`, `/furrow-next`, `/furrow-transition`,
+    `/furrow-complete`, and a primary `/work` loop over the Go backend. The
+    narrow backend-mediated bookkeeping gap is closed for the supported flow,
+    and the `pi-step-ceremony-and-artifact-enforcement` slice is now landed:
+    `/work` can resolve or initialize rows, scaffold only the active
+    step artifact, surface blockers / seed state / checkpoint state, and require
+    explicit supervised confirmation before advancement. Phase 3 therefore moves
+    from restoring the loop to hardening it. The next recommended slice is
+    backend-canonical `/work` boundary hardening: richer per-step artifact
+    validation, stronger checkpoint/gate evidence surfaces, review/archive
+    semantics inside the same loop, and explicit blocker taxonomy shared across
+    Pi and Claude-compatible flows. Seed-backed planning and broader almanac
+    surfaces remain sequenced after seeds lands; parallel orchestration remains
+    fast follow within this same phase.
   rows:
   - index: 1
     branch: work/pi-adapter-foundation
-    description: Restore a primary Pi `/work` operating loop, make it almanac-aware, then stabilize/promote the adapter without thickening TS semantics
+    description: Landed primary Pi `/work` loop; next harden backend-canonical work-loop boundaries, then continue evolving the existing adapter without thickening TS semantics
     todos:
     - pi-adapter-package
     - backend-mediated-row-bookkeeping
     - workflow-power-preservation
     - pi-step-ceremony-and-artifact-enforcement
+    - work-loop-boundary-hardening
     - parallel-orchestration-and-launch-surfaces
     key_files:
     - adapters/pi/
@@ -505,6 +511,7 @@ phases:
     - docs/architecture/workflow-power-preservation.md
     - docs/architecture/pi-step-ceremony-and-artifact-enforcement.md
     - docs/architecture/pi-almanac-operating-model.md
+    - docs/architecture/migration-stance.md
     - .claude/rules/cli-mediation.md
     - .claude/rules/step-sequence.md
     - commands/work.md
@@ -518,7 +525,7 @@ phases:
     - cli-architecture-overhaul
     - go-cli-contract-v1
     completed_at: null
-    why_together: Pi is now validated as an early host over the shared backend and the manual-bookkeeping gap is closed for the supported flow; this row now centers on restoring Furrow's primary staged operating loop in Pi — `/work`, create-on-use artifacts, supervised checkpoints, blocker parity, seed-visible guidance, and baseline almanac awareness — and only then promoting/stabilizing the thin adapter around that preserved behavior.
+    why_together: Pi is now validated as an early host over the shared backend, the manual-bookkeeping gap is closed, and the `/work` loop has landed. This row now stays focused on making that loop more Furrow-strong — backend-canonical boundary enforcement, richer artifact and checkpoint semantics, blocker parity, seed-visible guidance, and baseline almanac awareness — before broader adapter polish or parallel launch work. The migration stance here is to preserve invariants while preferring decisive cutovers over new partial-path layering.
   - index: 2
     branch: work/sub-agent-normalization
     description: Register specialists as Claude Code agent types; generator; quality validation
@@ -623,7 +630,7 @@ phases:
 - number: 5
   title: "Seeds primitive + seed-backed planning surfaces"
   status: planned
-  rationale: Foundational work-graph and planning substrate. Seeds replace TODOs as the canonical task registry, unify cross-row and in-row tracking in one graph owned by sds, and become the source of truth for roadmap/triage inputs. alm remains the planning and knowledge layer, but it projects and synthesizes seed-backed state rather than owning a permanent parallel TODO system. Must land after Go rewrite (graph engine belongs in Go), and Pi planning/almanac surfaces should be built against this model rather than deepening TODO-specific UX.
+  rationale: Foundational work-graph and planning substrate. Seeds replace TODOs as the canonical task registry, unify cross-row and in-row tracking in one graph owned by sds, and become the source of truth for roadmap/triage inputs. alm remains the planning and knowledge layer, but it projects and synthesizes seed-backed state rather than owning a permanent parallel TODO system. This phase also carries the emerging document-authority model: the almanac should eventually understand canonical vs transitional vs planning vs historical-execution docs, with row artifacts preserving execution truth and promotion flows moving enduring conclusions into broader knowledge surfaces. Must land after Go rewrite (graph engine belongs in Go), and Pi planning/almanac surfaces should be built against this model rather than deepening TODO-specific UX.
   rows:
   - index: 1
     branch: work/seeds
@@ -650,6 +657,7 @@ phases:
     - pi-almanac-operating-model
     key_files:
     - docs/architecture/pi-almanac-operating-model.md
+    - docs/architecture/almanac-document-authority-model.md
     - docs/architecture/pi-step-ceremony-and-artifact-enforcement.md
     - docs/architecture/workflow-power-preservation.md
     - .furrow/almanac/
@@ -665,7 +673,7 @@ phases:
     - seeds-concept
     - pi-step-ceremony-and-artifact-enforcement
     completed_at: null
-    why_together: Once seeds are canonical, Pi needs explicit planning surfaces beyond `/work`. This row keeps roadmap browse, work creation, triage, and next-work selection tied to seed-backed semantics instead of deepening TODO-bound almanac behavior.
+    why_together: Once seeds are canonical, Pi needs explicit planning surfaces beyond `/work`. This row keeps roadmap browse, work creation, triage, and next-work selection tied to seed-backed semantics instead of deepening TODO-bound almanac behavior. It also carries the design concept that the almanac should eventually browse and synthesize documents by authority class and promotion state, not just by file location.
 - number: 6
   title: "Artifacts, reviews, row variants \u2014 UX patterns for collaboration"
   status: planned

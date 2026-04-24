@@ -1437,15 +1437,22 @@
     state, explore whether a single "living docs" system can unify rationale, learnings,
     and manifest. This requires deep exploration — different promotion types need
     different mechanics.
+
+    This now connects to the emerging documentation-authority model as well:
+    promotion is part of how row-local historical execution truth becomes broader
+    canonical or transitional project knowledge rather than remaining trapped in
+    row artifacts.
   work_needed: |
     - Enumerate all promotion types and their natural triggers (ad-hoc, hindsight, automated, post-review)
     - Design decision journaling: format, storage, when to capture, how to query
     - Design promotion mechanics for each scope (row→project, project→global, harness→harness)
+    - Define how promotion interacts with documentation authority classes (canonical vs transitional vs planning vs historical execution)
     - Define project manifest format (rationale.yaml for consumer projects via frw install)
     - Explore unified "living docs" system vs separate mechanisms per scope
     - Wire alm promote (or equivalent) with configurable targets
     - Consider ~/.config/furrow/ as the global promotion target
   references:
+    - docs/architecture/almanac-document-authority-model.md
     - .furrow/almanac/rationale.yaml
     - commands/lib/promote-learnings.sh
     - commands/lib/promote-components.sh
@@ -2838,17 +2845,23 @@
     must be explicit: Go backend/core, `.furrow/` as canonical state, thin
     Claude and Pi adapters, shared semantics with asymmetric UX, and a Pi-advantaged
     personal runtime that still preserves Claude teammate compatibility.
+
+    The migration stance is now part of this architecture work as well: be
+    conservative about invariants, but aggressive about cutovers and removing
+    unnecessary migration scaffolding.
   work_needed: |
     - Finalize the target architecture document for backend + Claude + Pi
     - Record what belongs in core vs adapters
     - Record what must be shared vs what may diverge by host
     - Record acceptable vs unacceptable host differences
+    - Separate hard invariants from migration choices so implementation tactics stop pretending to be architecture truths
     - Define the repo-shape target for the post-shell world
     - Keep the archived portability research as reference input, not code
   references:
     - docs/architecture/core-adapter-boundary.md
     - docs/architecture/host-strategy-matrix.md
     - docs/architecture/dual-runtime-migration-plan.md
+    - docs/architecture/migration-stance.md
     - docs/architecture/go-cli-contract.md
   source_type: manual
   status: active
@@ -2856,10 +2869,11 @@
   impact: high
   effort: small
   created_at: "2026-04-23T22:00:00Z"
-  updated_at: "2026-04-23T22:00:00Z"
+  updated_at: "2026-04-24T23:10:00Z"
   files_touched:
     - docs/architecture/core-adapter-boundary.md
     - docs/architecture/dual-runtime-migration-plan.md
+    - docs/architecture/migration-stance.md
     - .furrow/almanac/roadmap.yaml
     - .furrow/almanac/todos.yaml
 - id: go-cli-contract-v1
@@ -2869,18 +2883,24 @@
     CLI contract for the future `furrow` binary. This is the boundary that both
     Claude Code and Pi should consume. Without it, adapter work will drift into
     speculative runtime-shaped design again.
+
+    Under the migration stance, the contract should not justify endless
+    partial-path staging once a real operating path exists. It should enable
+    decisive backend-owned workflow boundaries and keep compatibility seams
+    narrow.
   work_needed: |
     - Define command groups and their ownership boundaries
     - Define JSON response envelopes and stable error shapes
     - Define exit-code semantics
     - Identify the first subcommands that must become real in Go
-    - Prioritize the minimum shared backend slice: `furrow almanac validate`, `furrow row list`, `furrow row status`, `furrow row transition`, `furrow doctor`
-    - Ensure the first slice is usable, not just inspectable — avoid a read-only halfway state
+    - Stabilize the first shared backend cut: `furrow almanac validate`, `furrow row list`, `furrow row status`, `furrow row transition`, `furrow doctor`
+    - Expand from there by finishing real backend-owned workflow boundaries, not by accumulating prompt-only or adapter-local stopgaps
     - Keep `row transition` narrow but real if implemented now: adjacent forward mutation only, explicit limitations, no fake lifecycle completeness
-    - Keep wrappers (`frw`, `rws`, `alm`, `sds`) as compatibility layers during migration
+    - Keep wrappers (`frw`, `rws`, `alm`, `sds`) only as compatibility seams during migration
   references:
     - docs/architecture/go-cli-contract.md
     - docs/architecture/core-adapter-boundary.md
+    - docs/architecture/migration-stance.md
     - cmd/furrow/
     - internal/cli/
   source_type: manual
@@ -2889,14 +2909,14 @@
   impact: high
   effort: medium
   created_at: "2026-04-23T22:00:00Z"
-  updated_at: "2026-04-23T22:00:00Z"
+  updated_at: "2026-04-24T23:25:00Z"
   files_touched:
     - docs/architecture/go-cli-contract.md
     - cmd/furrow/
     - internal/
     - bin/
 - id: migration-operating-mode
-  title: Define the migration operating mode (backend-canonical, Pi-early, Claude-compatible)
+  title: Define the migration stance and operating mode (backend-canonical, Pi-early, Claude-compatible)
   context: |
     The practical migration question is not just architecture but workflow:
     how should Furrow be used while the backend comes online, given that Pi is
@@ -2904,15 +2924,22 @@
     needs Claude Code compatibility? The current best answer is: keep semantics
     in the backend, move onto Pi as soon as backend calls are stable enough,
     and preserve Claude as a compatibility frontend for shared project work.
+
+    The sharper stance is now explicit: preserve hard invariants, but be more
+    aggressive about cutovers, simplification, and not letting migration shims
+    become their own long-lived system.
   work_needed: |
     - Record the backend-canonical, Pi-early operating mode explicitly
+    - Record the migration stance explicitly: conservative about invariants, aggressive about cutovers
     - Identify which work can move onto Pi as soon as backend calls are viable
     - Identify which behavior must remain backend-owned rather than extension-owned
     - Document which Claude capabilities are required for teammate viability
+    - Document which compatibility seams are real enough to keep and which should be removed quickly
     - Document the guardrails that prevent runtime-shaped drift during the rewrite
   references:
     - docs/architecture/dual-runtime-migration-plan.md
     - docs/architecture/host-strategy-matrix.md
+    - docs/architecture/migration-stance.md
     - docs/architecture/go-cli-contract.md
     - docs/architecture/core-adapter-boundary.md
   source_type: manual
@@ -2921,9 +2948,10 @@
   impact: high
   effort: small
   created_at: "2026-04-23T22:00:00Z"
-  updated_at: "2026-04-23T22:00:00Z"
+  updated_at: "2026-04-24T23:10:00Z"
   files_touched:
     - docs/architecture/dual-runtime-migration-plan.md
+    - docs/architecture/migration-stance.md
     - .furrow/almanac/roadmap.yaml
     - .furrow/almanac/todos.yaml
 - id: claude-wrapper-compatibility
@@ -2935,11 +2963,16 @@
     artifact compatibility, not equal UX. The existing `frw`, `rws`, `alm`, and
     `sds` surfaces should progressively delegate to the canonical Go backend
     rather than preserve separate domain logic forever.
+
+    Under the migration stance, wrappers are justified only as an active
+    compatibility seam. They should not become a reason to preserve duplicate
+    logic or avoid decisive backend cutovers.
   work_needed: |
     - Define which legacy shell entrypoints stay during migration
     - Decide delegation order from shell to Go
     - Preserve current Claude-facing command UX while moving semantics behind the wrapper
     - Keep Claude support thin enough that it does not block Pi-first sequencing
+    - Remove or freeze wrappers quickly once they stop protecting a real compatibility boundary
     - Add regression coverage for wrapper-to-Go delegation
   references:
     - bin/frw
@@ -2947,46 +2980,43 @@
     - bin/alm
     - bin/sds
     - docs/architecture/go-cli-contract.md
+    - docs/architecture/migration-stance.md
   source_type: manual
   status: active
   urgency: high
   impact: high
   effort: medium
   created_at: "2026-04-23T22:00:00Z"
-  updated_at: "2026-04-23T22:00:00Z"
+  updated_at: "2026-04-24T23:10:00Z"
   files_touched:
     - bin/
     - cmd/
     - internal/
     - tests/integration/
 - id: pi-adapter-package
-  title: Build the Furrow Pi package/extension on the stable backend
+  title: Evolve the existing Furrow Pi adapter on the stable backend
   context: |
-    Pi support should be built fresh once the Go backend contract is stable
-    enough to consume, and it should become the primary authoring runtime as
-    early as practical. The adapter should use the real Pi APIs and compose with
-    selected baseline extensions or equivalent patterns where helpful, but it
-    should not revive the old speculative portability spike.
+    Pi support is no longer hypothetical: the repo now contains the existing
+    Furrow Pi adapter at `adapters/pi/furrow.ts`, and the supported flow has
+    advanced past the old project-local extension stage. Pi can now drive a backend-canonical
+    `/work` loop that resolves or initializes rows, scaffolds only the active
+    step artifact on use, surfaces blockers / seed state / checkpoint state,
+    and requires explicit confirmation before supervised advancement.
 
-    Initial validation landed as a project-local Pi extension (`.pi/extensions/furrow.ts`)
-    that already provides `/furrow-overview`, `/furrow-next`,
-    `/furrow-transition`, and `/furrow-complete` over the Go backend. With
-    backend-mediated row bookkeeping now in place for the supported existing-row
-    workflow, Furrow has reached Level 2 canonical Pi operation for that slice.
-
-    Promotion alone is not sufficient. The adapter now has an explicit
-    preservation spec in `docs/architecture/pi-step-ceremony-and-artifact-enforcement.md`:
-    a primary `/work`-like operating loop, create-on-use artifacts, supervised
-    checkpoints, Claude-baseline blockers, and seed-visible workflow shaping.
-    Adapter promotion stays subordinate to that operating-loop restoration.
+    The adapter work is therefore no longer "build a new adapter" or even just
+    an adapter-packaging exercise. The remaining value is to use the existing
+    Furrow adapter, keep that Pi surface thin, and harden backend-owned semantics
+    around the landed `/work` loop. Under the migration stance, this should mean
+    extending the real adapter path directly rather than creating side paths or
+    new migration-specific adapter layers.
   work_needed: |
-    - Promote the current project-local extension into a small repo-owned `adapters/pi/` layout
-    - Keep `/furrow-overview`, `/furrow-next`, `/furrow-transition`, and `/furrow-complete` thin over backend JSON calls while converging toward a primary `/work`-like entrypoint
+    - Use the existing Furrow adapter in `adapters/pi/` as the canonical Pi adapter entrypoint; do not build a parallel adapter
+    - Keep `/work`, `/furrow-overview`, `/furrow-next`, `/furrow-transition`, and `/furrow-complete` thin over backend JSON calls
     - Wire Pi events/hooks against backend contracts without reimplementing workflow semantics in TS
     - Preserve artifact-aware prompts and mutation guardrails around canonical `.furrow/` state
-    - Carry forward the Level 2 supported existing-row workflow without requiring direct state edits
-    - Use `docs/architecture/pi-step-ceremony-and-artifact-enforcement.md` as the acceptance spec for adapter behavior, not just packaging/layout promotion
-    - Make the primary `/work` entrypoint almanac-aware in the sense defined by `docs/architecture/pi-almanac-operating-model.md`, while sequencing full seed-backed planning surfaces after seeds lands
+    - Carry forward the supported Pi workflow without requiring direct state edits
+    - Use `docs/architecture/pi-step-ceremony-and-artifact-enforcement.md` as the acceptance spec for adapter behavior
+    - Keep only minimal `/work`-level almanac awareness here; sequence fuller seed-backed planning surfaces after seeds lands
     - Decide which baseline Pi extension patterns to compose vs replace
     - Keep TS focused on runtime wiring and orchestration UX rather than lifecycle semantics
     - Add only the next backend-driven capability that real Pi use proves necessary
@@ -2999,8 +3029,7 @@
     - docs/architecture/pi-step-ceremony-and-artifact-enforcement.md
     - docs/architecture/pi-almanac-operating-model.md
     - commands/work.md
-    - adapters/
-    - .pi/extensions/furrow.ts
+    - adapters/pi/
     - .furrow/rows/pi-furrow-operating-layer/
     - .furrow/rows/backend-mediated-row-bookkeeping/
   source_type: manual
@@ -3009,7 +3038,7 @@
   impact: high
   effort: large
   created_at: "2026-04-23T22:00:00Z"
-  updated_at: "2026-04-24T19:00:00Z"
+  updated_at: "2026-04-24T23:25:00Z"
   files_touched:
     - adapters/pi/
     - .pi/extensions/
@@ -3053,48 +3082,82 @@
 - id: pi-step-ceremony-and-artifact-enforcement
   title: Restore Pi /work ceremony, create-on-use artifacts, supervised checkpoints, and seed-visible flow
   context: |
-    Current Pi Furrow flows are canonically backend-mediated for the supported
-    existing-row path, but they still feel thinner than mature Furrow because
-    they preserve structure better than workflow power. Pi can inspect rows,
-    guide next actions, transition, and complete bookkeeping, yet it does not
-    strongly enforce or scaffold the staged flow through ideation, research,
-    plan, spec, decompose, implement, and review.
+    This slice is now landed. The repo contains a primary Pi `/work`
+    loop plus the backend support it needed: `furrow row init`, `furrow row
+    focus`, `furrow row scaffold`, richer `furrow row status`, and stricter
+    `furrow row transition` / `furrow row complete` checks around incomplete
+    active-step scaffold artifacts.
 
-    The clarified preservation target is now explicit: Pi should converge toward
-    a single primary `/work`-like operating loop that regrounds the current
-    stage, surfaces blockers and seed state, scaffolds the active step artifact
-    on use, and pauses at supervised checkpoints using Claude-form blocker
-    semantics unless explicitly revised.
+    The slice restored the basic staged operating feel in Pi without moving
+    lifecycle semantics into TypeScript. What remains now belongs to follow-on
+    hardening work rather than this restoration slice itself.
   work_needed: |
-    - Implement a primary `/work`-like Pi entrypoint concept over backend-canonical state
-    - Make Pi step-aware in a stronger sense: current stage meaning, expected artifacts, and likely next actions
-    - Scaffold only the current step's artifact on use; never treat artifact existence as completion
-    - Surface blockers before advancement, using Claude-form blocker semantics as the baseline
-    - Require explicit supervised confirmation at canonical stage boundaries
-    - Make seed state and intent visible in the operator flow now, not only in backend plumbing
-    - Keep backend semantics canonical while making the host experience feel more like Furrow again
-    - Treat this slice as the prerequisite for trusting Pi as the main Furrow workflow, with parallel orchestration as fast follow
+    - Keep the landed slice stable while later work builds on it
+    - Use it as the prerequisite baseline for the next backend-canonical `/work` hardening slice
+    - Do not reopen this scope by moving deeper lifecycle semantics into TS
   references:
     - docs/architecture/workflow-power-preservation.md
     - docs/architecture/pi-step-ceremony-and-artifact-enforcement.md
     - docs/architecture/pi-parity-ladder.md
     - docs/architecture/go-cli-contract.md
-    - .claude/rules/cli-mediation.md
-    - .claude/rules/step-sequence.md
-    - commands/work.md
-    - references/gate-protocol.md
-    - .pi/extensions/furrow.ts
-    - .furrow/rows/pi-furrow-operating-layer/
+    - adapters/pi/furrow.ts
+    - internal/cli/row.go
+    - internal/cli/row_workflow.go
+    - .furrow/rows/pi-step-ceremony-and-artifact-enforcement/
+  source_type: manual
+  status: done
+  urgency: high
+  impact: high
+  effort: medium
+  created_at: "2026-04-24T18:00:00Z"
+  updated_at: "2026-04-24T22:30:00Z"
+  files_touched:
+    - adapters/pi/
+    - docs/architecture/
+    - cmd/
+    - internal/
+- id: work-loop-boundary-hardening
+  title: Harden backend-canonical /work boundaries — richer artifact validation, checkpoint evidence, review/archive semantics, blocker taxonomy
+  context: |
+    The `/work` loop is now real, which makes the next weakness much
+    clearer. Furrow can now resolve or initialize rows, scaffold the active step
+    artifact, surface blockers/seed/checkpoint state, and require explicit
+    supervised confirmation before supported advancement. But the backend still
+    validates boundaries only shallowly: mostly artifact presence plus the
+    incomplete-scaffold sentinel. Review/archive semantics are still outside the
+    main loop, and blocker/checkpoint reporting is not yet rich enough to serve
+    as the shared authority surface across Pi and Claude-compatible flows.
+
+    This is the next recommended slice inside the existing Phase 3 Pi-adapter
+    row. It should strengthen backend-owned enforcement inside the landed
+    `/work` loop without dragging seed-backed planning or broader almanac
+    semantics forward prematurely.
+  work_needed: |
+    - Define richer per-step artifact validation surfaces beyond incomplete-scaffold detection
+    - Strengthen `furrow row status` checkpoint/gate evidence so adapters can present real boundary rationale without inventing semantics
+    - Bring review/archive preconditions and lifecycle surfaces closer to the same primary `/work` loop
+    - Establish an explicit blocker taxonomy shared across Pi and Claude-compatible flows
+    - Keep seeds-contract work attached to `seeds-concept` and fuller planning/almanac work attached to `pi-almanac-operating-model`
+    - Keep lifecycle/domain semantics backend-owned rather than TS-owned
+  references:
+    - docs/architecture/workflow-power-preservation.md
+    - docs/architecture/pi-step-ceremony-and-artifact-enforcement.md
+    - docs/architecture/go-cli-contract.md
+    - docs/architecture/pi-parity-ladder.md
+    - docs/architecture/pi-almanac-operating-model.md
+    - adapters/pi/furrow.ts
+    - internal/cli/row.go
+    - internal/cli/row_workflow.go
+    - docs/handoffs/pi-step-ceremony-and-artifact-enforcement.md
   source_type: manual
   status: active
   urgency: high
   impact: high
   effort: medium
-  created_at: "2026-04-24T18:00:00Z"
-  updated_at: "2026-04-24T19:00:00Z"
+  created_at: "2026-04-24T22:30:00Z"
+  updated_at: "2026-04-24T23:10:00Z"
   files_touched:
     - adapters/pi/
-    - .pi/extensions/
     - docs/architecture/
     - cmd/
     - internal/
@@ -3114,17 +3177,25 @@
     seed-backed target rather than deepening `todos.yaml`-specific UX. Current
     TODO-backed almanac functionality may remain as temporary compatibility only
     where needed to bridge the migration.
+
+    It also now carries the design concept that the almanac should eventually
+    understand documentation authority classes: canonical vs transitional vs
+    planning vs historical execution, with row artifacts preserving execution
+    truth and promotion flows moving enduring conclusions into broader knowledge
+    surfaces.
   work_needed: |
     - Use `docs/architecture/pi-almanac-operating-model.md` as the authority for Pi planning behavior
     - Keep `/work` primary, but add explicit secondary planning surfaces for roadmap browse, work-item/seed browse, create, triage, and next-work recommendation
     - Make planning surfaces seed-backed rather than long-term TODO-backed
     - Support row init from selected roadmap/seed context through canonical backend flows
-    - Surface almanac validation, rationale, learnings, and observations where they shape planning decisions
+    - Surface almanac validation, rationale, learnings, observations, and documentation authority context where they shape planning decisions
+    - Define how Pi/almanac surfaces should browse or distinguish canonical vs transitional vs planning vs historical-execution docs
     - Preserve roadmap discipline as a strong default with explicit override rather than advisory-only or hard lock-in
     - Keep backend semantics canonical; do not move planning rules into TS
     - Treat widgets/resources/presets as Pi-native fast follow after command-first planning surfaces are stable
   references:
     - docs/architecture/pi-almanac-operating-model.md
+    - docs/architecture/almanac-document-authority-model.md
     - docs/architecture/pi-step-ceremony-and-artifact-enforcement.md
     - docs/architecture/workflow-power-preservation.md
     - docs/architecture/go-cli-contract.md
@@ -3164,7 +3235,7 @@
     decompose/implement flow, and Pi's eventual coordination surfaces rather
     than becoming a disconnected later bucket.
   work_needed: |
-    - Define the minimum preserved orchestration capabilities for within-row and cross-row parallel work
+    - Define the core preserved orchestration capabilities for within-row and cross-row parallel work
     - Connect Pi and backend planning surfaces to real launch/coordination flows rather than manual multitasking
     - Preserve or replace the useful parts of tmux/worktree launch integration in a Pi-first world
     - Keep seeds and decomposition work connected to these coordination needs rather than treating them as unrelated future work
@@ -3184,7 +3255,7 @@
   impact: high
   effort: medium
   created_at: "2026-04-24T18:00:00Z"
-  updated_at: "2026-04-24T19:00:00Z"
+  updated_at: "2026-04-24T23:25:00Z"
   files_touched:
     - docs/architecture/
     - adapters/
@@ -3209,7 +3280,7 @@
     - Keep `furrow row complete <row-name> --json` stable as the narrow bookkeeping surface for the supported flow
     - Preserve atomic writes and unknown-field preservation guarantees
     - Treat broader lifecycle semantics (review/archive/gates) as separate follow-on work, not scope creep inside this slice
-    - Use this result as the baseline for Pi adapter promotion and future parity work
+    - Use this result as the baseline for continued evolution of the existing Pi adapter and future parity work
   references:
     - docs/architecture/go-cli-contract.md
     - docs/architecture/core-adapter-boundary.md
@@ -3267,7 +3338,7 @@
     to prefer Pi as Furrow's primary host once backend-canonical workflow and
     preserved workflow power are stable.
 
-    This TODO exists so Furrow does not stop at "minimum parity." After the
+    This TODO exists so Furrow does not stop at baseline parity. After the
     staged `/work` loop and shared-backend validation are trustworthy, Furrow
     should intentionally exploit Pi-native capabilities to improve orchestration,
     UX, distribution, and operator leverage without moving canonical semantics
@@ -3294,7 +3365,7 @@
   impact: high
   effort: medium
   created_at: "2026-04-24T19:30:00Z"
-  updated_at: "2026-04-24T19:30:00Z"
+  updated_at: "2026-04-24T23:25:00Z"
   files_touched:
     - docs/architecture/
     - adapters/pi/
