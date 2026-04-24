@@ -91,7 +91,13 @@ func (a *App) runRow(args []string) int {
 		return a.runRowTransition(args[1:])
 	case "complete":
 		return a.runRowComplete(args[1:])
-	case "init", "checkpoint", "archive", "summary", "validate":
+	case "init":
+		return a.runRowInit(args[1:])
+	case "focus":
+		return a.runRowFocus(args[1:])
+	case "scaffold":
+		return a.runRowScaffold(args[1:])
+	case "checkpoint", "archive", "summary", "validate":
 		return a.runStubLeaf("furrow row "+args[0], args[1:])
 	case "help", "-h", "--help":
 		a.printRowHelp()
@@ -213,7 +219,9 @@ Usage:
   furrow row status [row-name] [--json]
   furrow row transition <row-name> --step <step> [--json]
   furrow row complete <row-name> [--json]
-  furrow row init ...
+  furrow row init <row-name> [--title <title>] [--mode <code|research>] [--gate-policy <policy>] [--source-todo <id>] [--seed-id <id>] [--json]
+  furrow row focus [row-name|--clear] [--json]
+  furrow row scaffold <row-name> [--current-step] [--json]
   furrow row checkpoint ...
   furrow row archive ...
   furrow row summary ...

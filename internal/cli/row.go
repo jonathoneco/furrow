@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 )
 
 func (a *App) runRowList(args []string) int {
@@ -191,6 +192,16 @@ func (a *App) runRowTransition(args []string) int {
 	if targetIdx != currentIdx+1 {
 		return a.fail("furrow row transition", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("only adjacent forward transitions are supported; current=%q target=%q", currentStep, targetStep)}, flags.json)
 	}
+	if getStringDefault(state, "step_status", "") != "completed" {
+		return a.fail("furrow row transition", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("row %q must have step_status=completed before advancing", rowName)}, flags.json)
+	}
+
+	artifacts := currentStepArtifacts(root, rowName, state)
+	seed := rowSeedSurface(root, state)
+	blockers := rowBlockers(state, seed, artifacts)
+	if len(blockers) > 0 {
+		return a.fail("furrow row transition", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("row %q is blocked from advancing", rowName), details: map[string]any{"blockers": blockers}}, flags.json)
+	}
 
 	now := nowRFC3339()
 	state["step"] = targetStep
@@ -210,11 +221,24 @@ func (a *App) runRowTransition(args []string) int {
 		"boundary":   currentStep + "->" + targetStep,
 		"outcome":    "pass",
 		"decided_by": "manual",
-		"evidence":   "furrow row transition manual forward transition only; artifact validation, gate-policy enforcement, seed sync, and summary regeneration were not performed",
+		"evidence":   "furrow row transition enforced adjacent ordering, completed-step requirement, current-step blockers, and seed sync; summary regeneration and deeper content validation were not performed",
 		"timestamp":  now,
 	})
 	state["gates"] = gates
 	writtenRecord = true
+
+	if seedID, ok := getString(state, "seed_id"); ok && strings.TrimSpace(seedID) != "" {
+		seedRecord, ok, err := latestSeedRecord(root, seedID)
+		if err != nil {
+			return a.fail("furrow row transition", err, flags.json)
+		}
+		if !ok {
+			return a.fail("furrow row transition", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("linked seed %q was not found", seedID)}, flags.json)
+		}
+		if _, err := appendSeedStatus(root, seedRecord, seedStatusForStep(targetStep)); err != nil {
+			return a.fail("furrow row transition", err, flags.json)
+		}
+	}
 
 	if err := writeJSONMapAtomic(statePath, state); err != nil {
 		return a.fail("furrow row transition", &cliError{exit: 4, code: "write_failed", message: fmt.Sprintf("failed to write %s", statePath), details: map[string]any{"path": statePath, "error": err.Error()}}, flags.json)
@@ -235,9 +259,8 @@ func (a *App) runRowTransition(args []string) int {
 		},
 		"limitations": []string{
 			"manual adjacent forward transition only",
-			"artifact validation not performed",
-			"gate policy enforcement not performed",
-			"seed sync not performed",
+			"artifact presence and incomplete scaffold checks were performed, but deeper content validation was not",
+			"supervised confirmation remains adapter-driven rather than CLI-prompted",
 			"summary regeneration not performed",
 			"conditional/fail outcomes not implemented",
 		},
@@ -274,6 +297,19 @@ func (a *App) runRowComplete(args []string) int {
 	}
 	if isArchivedState(state) {
 		return a.fail("furrow row complete", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("row %q is archived", rowName)}, flags.json)
+	}
+
+	artifacts := currentStepArtifacts(root, rowName, state)
+	for _, artifact := range artifacts {
+		if required, _ := artifact["required"].(bool); !required {
+			continue
+		}
+		if exists, _ := artifact["exists"].(bool); !exists {
+			return a.fail("furrow row complete", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("required current-step artifact %v is missing", artifact["label"]), details: map[string]any{"artifact": artifact}}, flags.json)
+		}
+		if incomplete, _ := artifact["incomplete"].(bool); incomplete {
+			return a.fail("furrow row complete", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("current-step artifact %v is still an incomplete scaffold", artifact["label"]), details: map[string]any{"artifact": artifact}}, flags.json)
+		}
 	}
 
 	beforeCounts := summarizeDeliverableCounts(state)
@@ -414,7 +450,14 @@ func buildRowStatusData(root, rowName string, state map[string]any, resolution, 
 	latestGate := latestGateSummary(state)
 	steps, _ := stepsSequenceFromState(state)
 	nextTransitions := nextValidTransitions(state, steps)
+	seed := rowSeedSurface(root, state)
+	artifacts := currentStepArtifacts(root, rowName, state)
+	blockers := rowBlockers(state, seed, artifacts)
+	checkpoint := rowCheckpointSurface(root, rowName, state, blockers)
 	rowWarnings := append([]map[string]any{}, warnings...)
+	if seedState, _ := seed["state"].(string); seedState == "missing" {
+		rowWarnings = append(rowWarnings, map[string]any{"code": "missing_seed", "message": "row has no linked seed; new /work flows should initialize or link one"})
+	}
 	return map[string]any{
 		"resolution": map[string]any{
 			"source":        resolution,
@@ -439,7 +482,7 @@ func buildRowStatusData(root, rowName string, state map[string]any, resolution, 
 			"gates": map[string]any{
 				"count":              gateCount(state),
 				"latest":             latestGate,
-				"pending_blockers":   []any{},
+				"pending_blockers":   blockers,
 				"transition_history": nil,
 			},
 			"artifact_paths": map[string]any{
@@ -450,9 +493,17 @@ func buildRowStatusData(root, rowName string, state map[string]any, resolution, 
 				"plan":        optionalPath(filepath.Join(rowDir, "plan.json")),
 				"reviews_dir": optionalPath(filepath.Join(rowDir, "reviews")),
 			},
+			"current_step": map[string]any{
+				"name":      getStringDefault(state, "step", "unknown"),
+				"artifacts": artifacts,
+				"note":      "artifact existence is never completion",
+			},
 			"next_valid_transitions": nextTransitions,
 		},
-		"warnings": rowWarnings,
+		"seed":       seed,
+		"blockers":   blockers,
+		"checkpoint": checkpoint,
+		"warnings":   rowWarnings,
 	}
 }
 
