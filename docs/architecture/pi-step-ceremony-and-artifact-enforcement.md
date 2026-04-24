@@ -1,6 +1,6 @@
 # Pi step ceremony and artifact enforcement
 
-Status: Proposed
+Status: Implemented (minimum usable slice)
 Owner: Furrow migration
 Related:
 - `docs/architecture/workflow-power-preservation.md`
@@ -347,6 +347,29 @@ The next-value target is restoring Furrow's supervised staged operating loop in
 Pi.
 
 Adapter promotion should remain subordinate to workflow-power preservation.
+
+## Implemented minimum slice notes
+
+The current repository implementation now lands the minimum usable slice this
+document called for:
+
+- Pi exposes a primary `/work` command over backend-canonical row state
+- the Go backend now supports row init, focus, seed visibility, blocker
+  reporting, and current-step artifact scaffolding
+- `/work` resolves or initializes rows, scaffolds only the active step's
+  artifact on use, surfaces seed/blocker/checkpoint state, and requires
+  explicit confirmation before supervised advancement
+- backend transitions now block advancement when current-step scaffolded
+  artifacts are still incomplete
+
+What is still intentionally narrow:
+
+- artifact validation is still presence-plus-incomplete-scaffold detection, not
+  full semantic content validation
+- plan / implement / review still do not have richer artifact-aware completion
+  semantics or gate-engine parity
+- archive remains a secondary command rather than part of a single end-to-end
+  `/work` lifecycle command
 
 ## Fast follow after this slice
 
