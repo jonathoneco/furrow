@@ -568,6 +568,12 @@
     exploration, broad findings are distilled into focused seeds that drive downstream
     steps. But this is secondary to their role as the work graph primitive.
 
+    Decision update: seeds should fully subsume TODOs as the canonical planning
+    primitive. `todos.yaml` may exist only as a temporary compatibility layer during
+    migration; the long-term model is seeds as the single canonical work graph,
+    roadmap as an almanac projection over that graph, and almanac as memory +
+    synthesis rather than duplicate task storage.
+
     The sds CLI is the primary interface for all graph operations. Both alm
     and rws delegate graph functionality to sds — alm for planning (triage,
     roadmap), rws for row-level operations (gating, step transitions, wave
@@ -588,10 +594,15 @@
     traversals are painful in bash and painless in Go.
   work_needed: |
     - Define the seed data model: id, title, type, status, priority, edges, metadata
+    - Define typed graph nodes across multiple scopes: initiative/epic, row-backing seed, decomposed work unit, deliverable, follow-up, watch/deferred work
     - Design edge types: blocks, depends-on, informs, produces, supersedes
     - Define seed lifecycle: open → claimed → active (row) → closed
     - Design how seeds spawn rows and how rows produce seeds
+    - Treat each row as having one primary seed plus optional related child/dependency/follow-up seeds
+    - Replace TODOs as the canonical planning registry; roadmap and triage should read from seeds rather than long-term `todos.yaml` authority
     - Design within-row seed usage: spec creates seeds, decompose reads the graph for waves
+    - Define the operationalization rule: if Furrow orchestrates it, it must be a seed
+    - Enforce no delegation, parallel launch, or independent review without a seed-backed work unit
     - Wire gate checks to query seed status for precondition verification
     - Integrate with sds CLI: sds should become the primary interface for graph operations
     - Design how rws delegates to sds for step transitions, gating, and wave ordering
@@ -2975,6 +2986,7 @@
     - Preserve artifact-aware prompts and mutation guardrails around canonical `.furrow/` state
     - Carry forward the Level 2 supported existing-row workflow without requiring direct state edits
     - Use `docs/architecture/pi-step-ceremony-and-artifact-enforcement.md` as the acceptance spec for adapter behavior, not just packaging/layout promotion
+    - Make the primary `/work` entrypoint almanac-aware in the sense defined by `docs/architecture/pi-almanac-operating-model.md`, while sequencing full seed-backed planning surfaces after seeds lands
     - Decide which baseline Pi extension patterns to compose vs replace
     - Keep TS focused on runtime wiring and orchestration UX rather than lifecycle semantics
     - Add only the next backend-driven capability that real Pi use proves necessary
@@ -2985,6 +2997,7 @@
     - docs/architecture/pi-parity-ladder.md
     - docs/architecture/workflow-power-preservation.md
     - docs/architecture/pi-step-ceremony-and-artifact-enforcement.md
+    - docs/architecture/pi-almanac-operating-model.md
     - commands/work.md
     - adapters/
     - .pi/extensions/furrow.ts
@@ -3085,6 +3098,57 @@
     - docs/architecture/
     - cmd/
     - internal/
+- id: pi-almanac-operating-model
+  title: Build Pi's seed-backed almanac and planning surfaces
+  context: |
+    Pi should not stop at a strong `/work` loop. It also needs explicit planning
+    and knowledge surfaces that help the operator understand project direction,
+    inspect work state, create new work, triage the roadmap, and start rows from
+    the right context. The target model is now explicit in
+    `docs/architecture/pi-almanac-operating-model.md`: `/work` stays primary,
+    planning surfaces are secondary, seeds replace TODOs as the canonical work
+    graph, roadmap becomes an almanac projection over seeds, and almanac itself
+    narrows toward memory + synthesis rather than duplicate task storage.
+
+    This slice should therefore build Pi planning/almanac behavior against the
+    seed-backed target rather than deepening `todos.yaml`-specific UX. Current
+    TODO-backed almanac functionality may remain as temporary compatibility only
+    where needed to bridge the migration.
+  work_needed: |
+    - Use `docs/architecture/pi-almanac-operating-model.md` as the authority for Pi planning behavior
+    - Keep `/work` primary, but add explicit secondary planning surfaces for roadmap browse, work-item/seed browse, create, triage, and next-work recommendation
+    - Make planning surfaces seed-backed rather than long-term TODO-backed
+    - Support row init from selected roadmap/seed context through canonical backend flows
+    - Surface almanac validation, rationale, learnings, and observations where they shape planning decisions
+    - Preserve roadmap discipline as a strong default with explicit override rather than advisory-only or hard lock-in
+    - Keep backend semantics canonical; do not move planning rules into TS
+    - Treat widgets/resources/presets as Pi-native fast follow after command-first planning surfaces are stable
+  references:
+    - docs/architecture/pi-almanac-operating-model.md
+    - docs/architecture/pi-step-ceremony-and-artifact-enforcement.md
+    - docs/architecture/workflow-power-preservation.md
+    - docs/architecture/go-cli-contract.md
+    - commands/work.md
+    - commands/next.md
+    - .furrow/seeds/
+    - .furrow/almanac/
+    - adapters/pi/
+    - .pi/extensions/
+  source_type: manual
+  status: active
+  urgency: high
+  impact: high
+  effort: large
+  created_at: "2026-04-23T20:30:00Z"
+  updated_at: "2026-04-23T20:30:00Z"
+  files_touched:
+    - adapters/pi/
+    - .pi/extensions/
+    - docs/architecture/
+    - cmd/
+    - internal/
+    - .furrow/almanac/
+    - .furrow/seeds/
 - id: parallel-orchestration-and-launch-surfaces
   title: Preserve Furrow's parallel orchestration and launch surfaces
   context: |
@@ -3193,6 +3257,48 @@
     - adapters/
     - tests/integration/
     - docs/architecture/
+- id: pi-native-capability-leverage
+  title: Use Pi-native extensibility to strengthen Furrow after semantic parity is stable
+  context: |
+    Pi provides deep extensibility beyond a thin adapter surface: extensions,
+    event hooks, custom UI, system-prompt shaping, skills, prompt templates,
+    presets, packages, and dynamic resource loading. These are not the current
+    priority over staged parity restoration, but they are one of the main reasons
+    to prefer Pi as Furrow's primary host once backend-canonical workflow and
+    preserved workflow power are stable.
+
+    This TODO exists so Furrow does not stop at "minimum parity." After the
+    staged `/work` loop and shared-backend validation are trustworthy, Furrow
+    should intentionally exploit Pi-native capabilities to improve orchestration,
+    UX, distribution, and operator leverage without moving canonical semantics
+    out of the backend.
+  work_needed: |
+    - Define which Pi-native capability surfaces Furrow should exploit after parity: extensions, system prompt shaping, skills, prompt templates, presets, packages, dynamic resources, and custom UI
+    - Classify each surface by intended role: canonical/shared vs Pi-only ergonomic leverage
+    - Identify concrete fast-follow opportunities once parity is stable (guided `/work` UI, review dialogs, richer status surfaces, dynamic resources, stronger presets, package bundling)
+    - Keep explicit guardrails against moving row/gate/review/seed semantics into TS or prompt-only behavior
+    - Use `docs/architecture/pi-native-capability-leverage.md` as the planning reference for post-parity Pi-native work
+  references:
+    - docs/architecture/pi-native-capability-leverage.md
+    - docs/architecture/host-strategy-matrix.md
+    - docs/architecture/dual-runtime-migration-plan.md
+    - docs/architecture/pi-step-ceremony-and-artifact-enforcement.md
+    - docs/architecture/workflow-power-preservation.md
+    - adapters/pi/
+    - .pi/extensions/
+    - .pi/prompts/
+    - .pi/skills/
+  source_type: manual
+  status: active
+  urgency: medium
+  impact: high
+  effort: medium
+  created_at: "2026-04-24T19:30:00Z"
+  updated_at: "2026-04-24T19:30:00Z"
+  files_touched:
+    - docs/architecture/
+    - adapters/pi/
+    - .pi/
 - id: artifact-informed-handoffs-and-gate-prompts
   title: Use row artifacts as first-class inputs to handoff prompts, orchestration, and gate transitions
   context: |
