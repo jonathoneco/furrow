@@ -54,6 +54,7 @@ It does **not** mean full lifecycle parity.
 - `/furrow-overview`
 - `/furrow-next`
 - `/furrow-transition`
+- `/furrow-complete`
 
 ### What this level allows
 
@@ -111,9 +112,10 @@ That violates the canonical Furrow rule:
 
 ### Current project state
 
-Furrow now reaches Level 2 for the currently supported Pi-driven existing-row workflow:
+Furrow now reaches a stronger Level 2 for the currently supported Pi-driven workflow:
 
-- Pi can inspect rows, guide next actions, transition rows, and complete the narrow bookkeeping path without manual `state.json` edits
+- Pi can inspect, focus, initialize, scaffold, complete, and advance rows through backend commands without manual `state.json` edits in the supported path
+- Pi now exposes a primary `/work` loop that regrounds the active stage, surfaces blockers / seed state / checkpoint state / current-step artifacts, scaffolds only the active step artifact on use, and requires explicit confirmation before supervised advancement
 - the backend remains the only authority for supported row-state mutation
 - deeper review/archive/gate parity still remains intentionally deferred
 
@@ -145,16 +147,17 @@ At this level, Pi and Claude-compatible flows both operate over a much richer sh
 ### Likely required properties
 
 - richer row lifecycle coverage
-  - row init/create
-  - progress bookkeeping
-  - review/archive lifecycle support
+  - deeper review/archive lifecycle support inside the same operating loop, beyond the narrow archive checkpoint now supported
 - clearer gate semantics
   - gate inspection/state
   - precondition enforcement
   - structured blocked/fail outcomes
+  - stronger checkpoint evidence surfaces
 - stronger artifact-aware enforcement
+  - per-step validation beyond scaffold-presence and incomplete-template detection, especially in implement/review
+- explicit blocker taxonomy shared across Pi and Claude-compatible flows
 - broader adapter stability and packaging
-  - Pi adapter promoted from local extension shape into repo-owned adapter layout
+  - continued stabilization of the repo-owned `adapters/pi/` surface
 - thin Claude compatibility layer over the same backend
 - explicit dual-runtime semantic validation
 
@@ -174,33 +177,32 @@ Pi can remain the more capable or ergonomic runtime as long as:
 - early Pi usability over real backend commands
 - explicit next-step guidance in Pi
 - backend-mediated transitions in Pi
-- artifact-aware workflow beginnings
+- backend-mediated row bookkeeping
+- backend-mediated row init / focus / active-step scaffold support
+- a primary Pi `/work` loop over canonical backend state
+- active-step artifact scaffolding on use
+- supervised confirmation before supported advancement
 - canonical `.furrow/` state model preserved
 
-### Recently closed gap
+### Current remaining gaps
 
-- **backend-mediated row bookkeeping**
-
-This was the critical Level 1 -> Level 2 parity step because it removed the remaining manual state-edit requirement from the supported Pi-driven Furrow flow.
-
-### Later gaps
-
-- fuller gate semantics
-- review/archive lifecycle semantics
-- broader artifact enforcement
-- Pi adapter stabilization/promotion
+- fuller review execution and gate semantics beyond the now-landed narrow archive checkpoint/evidence path
+- richer implement/review artifact validation beyond the structural checks now in the backend
+- fuller archive ceremony beyond backend preconditions and archival evidence
 - Claude thin compatibility and dual-runtime validation
 
 ## Recommended sequencing
 
-1. Keep using Pi now for existing-row Furrow work
-2. Close the backend-mediated row bookkeeping gap
-3. Update the Pi operating layer to consume that new backend surface
-4. Then continue widening lifecycle coverage only where real usage shows it is needed
-5. Validate Claude-compatible flows later, after Pi and backend semantics are more settled
+1. Keep using Pi now for backend-canonical staged Furrow work
+2. Use the landed `/work` loop as the default operating path for supported flows
+3. Continue hardening backend-canonical work-loop boundaries:
+   - deepen per-step artifact validation where the current backend checks are still structural
+   - strengthen checkpoint / gate evidence toward fuller review semantics
+   - expand archive ceremony beyond narrow backend preconditions
+   - validate and normalize the shared blocker taxonomy across hosts
+4. Validate Claude-compatible flows later, after those backend semantics are more settled
+5. Expand Pi-native leverage and seed-backed planning after the boundary semantics are trustworthy
 
 ## Decision rule
 
-When deciding what to build next, prefer work that moves Furrow from Level 1 to Level 2:
-
-> eliminate manual row-state edits from Pi-driven Furrow operation before expanding into broader parity work.
+When deciding what to build next, prefer work that strengthens backend-canonical boundary enforcement inside the landed `/work` loop before expanding into broader parity or host-native polish.

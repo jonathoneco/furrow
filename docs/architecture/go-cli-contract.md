@@ -331,12 +331,12 @@ Current returned data includes:
 - resolution source
 - row metadata
 - deliverable counts and per-deliverable items
-- latest gate summary
+- latest gate summary plus transition history
 - canonical artifact paths
-- current-step artifact expectations
+- current-step artifact expectations plus per-artifact validation results
 - seed state surface
-- blocker list
-- checkpoint / next-boundary surface
+- blocker list with a backend-owned taxonomy shape
+- checkpoint / next-boundary surface, including action and evidence summary
 - next valid transitions
 - warnings
 
@@ -372,16 +372,18 @@ baseline before mutation:
 - `step_status=completed` required before advancement
 - current-step required artifact presence
 - incomplete scaffold-template detection
+- backend structural validation for the currently supported step artifacts
 - linked-seed validity / sync when a seed is present
+- durable checkpoint evidence written under `gates/`
 
 It still does **not** enforce:
 
-- deeper artifact-content validation beyond the incomplete-scaffold marker
+- evaluator-grade semantic validation or full gate-engine parity
 - full gate-policy enforcement beyond adapter-driven supervised confirmation
 - summary regeneration
 - conditional/fail outcomes
-- review/archive lifecycle semantics
-- broader gate-engine behavior
+- broader review orchestration behavior
+- richer merge/archive ceremony beyond the narrow archive checkpoint path
 
 Current exit behavior:
 
@@ -399,8 +401,8 @@ semantics.
 
 - active rows only
 - explicit row argument required
-- blocks if the current step's scaffoldable required artifacts are still missing
-  or still marked as incomplete templates
+- blocks if the current step's scaffoldable required artifacts are still missing,
+  still marked as incomplete templates, or fail backend artifact validation
 - marks `step_status=completed`
 - marks object-shaped deliverables as `status=completed`
 - preserves unknown fields
@@ -410,8 +412,8 @@ semantics.
 What it does **not** imply:
 
 - review approval semantics
-- archive semantics
-- gate validation or enforcement
+- full archive ceremony semantics
+- gate evaluation/orchestration parity
 - summary regeneration
 - generic mutation/patch support
 
@@ -420,6 +422,37 @@ Current exit behavior:
 - `0` success
 - `1` usage error
 - `2` blocked row (for example archived)
+- `3` invalid row state / invalid row JSON
+- `4` write failure
+- `5` row or `.furrow` root not found
+
+#### `furrow row archive --json`
+
+Current behavior is narrow but real:
+
+- active rows only
+- explicit row argument required
+- requires:
+  - `step=review`
+  - `step_status=completed`
+  - no current blockers from the shared blocker taxonomy
+  - an existing passing `->review` gate record
+- writes `archived_at` and `updated_at`
+- appends a narrow `review->archive` gate record to `gates[]`
+- writes a durable archive checkpoint evidence file under `gates/`
+
+What it does **not** imply:
+
+- full learnings/component/TODO promotion ceremony
+- broader review orchestration or disposition tracking
+- summary regeneration
+- seed-graph archival follow-up semantics
+
+Current exit behavior:
+
+- `0` success
+- `1` usage error
+- `2` blocked row / unmet archive precondition
 - `3` invalid row state / invalid row JSON
 - `4` write failure
 - `5` row or `.furrow` root not found
@@ -477,23 +510,35 @@ Current behavior:
 - currently supports narrow templates for:
   - `ideate` -> `definition.yaml`
   - `research` -> `research.md`
+  - `plan` -> `implementation-plan.md`
   - `spec` -> `spec.md`
   - `decompose` -> `plan.json`, `team-plan.md`
+- returns refreshed artifact validation data for the current step
 - marks templates with an explicit incomplete-scaffold sentinel so artifact
   existence alone never satisfies completion or transition checks
 - does not precreate downstream artifacts
 
-### Slice 2 — Pi-enabling backend calls
+### Slice 2 — work-loop boundary hardening
 
-Next, implement:
+This slice is now **partially landed** in the current repo:
+
+- richer per-step artifact validation beyond incomplete-scaffold detection
+- stronger checkpoint / gate evidence surfaces in `furrow row status`
+- shared blocker taxonomy suitable for both Pi and future Claude-compatible flows
+- narrow review/archive precondition surfaces folded back into the same operating loop
+- `furrow row archive --json` as the first real backend archive boundary surface
+
+Representative follow-on commands still likely include:
 
 - `furrow gate status --json`
 - `furrow review status --json`
 
-Why second:
+Remaining work in this slice:
 
-- gives Pi enough project and row introspection for a usable authoring workflow
-- still avoids deep merge/review orchestration work too early
+- deeper review execution/evidence semantics beyond the narrow archive checkpoint
+- richer implement/review artifact validation
+- fuller archive ceremony and disposition flows
+- dual-host validation once the boundary contract settles further
 
 ### Slice 3 — Claude compatibility delegation
 
@@ -540,11 +585,11 @@ Example:
 
 What should still be deferred:
 
-- artifact validation
-- seed sync
+- full semantic artifact validation across every step all at once
+- seed-backed planning/almanac semantics beyond the current row-linked slice
 - summary regeneration
-- full gate-policy enforcement
-- review/archive lifecycle parity
+- broader merge/parallel orchestration behavior
+- complete review/archive lifecycle parity in one jump
 
 ## Sequencing rule
 
