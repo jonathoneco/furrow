@@ -200,10 +200,28 @@ func (a *App) runRowTransition(args []string) int {
 	seed := rowSeedSurface(root, state)
 	blockers := rowBlockers(state, seed, artifacts)
 	if len(blockers) > 0 {
-		return a.fail("furrow row transition", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("row %q is blocked from advancing", rowName), details: map[string]any{"blockers": blockers}}, flags.json)
+		return a.fail("furrow row transition", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("row %q is blocked from advancing", rowName), details: map[string]any{"blockers": blockers, "artifact_validation": summarizeArtifactValidation(artifacts)}}, flags.json)
 	}
 
 	now := nowRFC3339()
+	boundary := currentStep + "->" + targetStep
+	evidencePath, err := writeGateEvidence(root, rowName, boundary, map[string]any{
+		"boundary":  boundary,
+		"overall":   "pass",
+		"reviewer":  "furrow row transition",
+		"timestamp": now,
+		"notes":     "backend-canonical checkpoint evidence for the narrow /work loop transition",
+		"phase_a": map[string]any{
+			"step_status_required": getStringDefault(state, "step_status", ""),
+			"seed":                 seed,
+			"artifacts":            artifacts,
+			"artifact_validation":  summarizeArtifactValidation(artifacts),
+			"blockers":             blockers,
+		},
+	})
+	if err != nil {
+		return a.fail("furrow row transition", err, flags.json)
+	}
 	state["step"] = targetStep
 	state["step_status"] = "not_started"
 	state["updated_at"] = now
@@ -218,11 +236,12 @@ func (a *App) runRowTransition(args []string) int {
 		}
 	}
 	gates = append(gates, map[string]any{
-		"boundary":   currentStep + "->" + targetStep,
-		"outcome":    "pass",
-		"decided_by": "manual",
-		"evidence":   "furrow row transition enforced adjacent ordering, completed-step requirement, current-step blockers, and seed sync; summary regeneration and deeper content validation were not performed",
-		"timestamp":  now,
+		"boundary":      boundary,
+		"outcome":       "pass",
+		"decided_by":    "manual",
+		"evidence":      "furrow row transition enforced adjacent ordering, completed-step requirement, blocker taxonomy checks, seed sync, and per-artifact validation; summary regeneration and evaluator phases were not performed",
+		"evidence_path": evidencePath,
+		"timestamp":     now,
 	})
 	state["gates"] = gates
 	writtenRecord = true
@@ -259,10 +278,13 @@ func (a *App) runRowTransition(args []string) int {
 		},
 		"limitations": []string{
 			"manual adjacent forward transition only",
-			"artifact presence and incomplete scaffold checks were performed, but deeper content validation was not",
 			"supervised confirmation remains adapter-driven rather than CLI-prompted",
 			"summary regeneration not performed",
 			"conditional/fail outcomes not implemented",
+		},
+		"checkpoint_evidence": map[string]any{
+			"path":                evidencePath,
+			"artifact_validation": summarizeArtifactValidation(artifacts),
 		},
 	}
 	if flags.json {
@@ -309,6 +331,9 @@ func (a *App) runRowComplete(args []string) int {
 		}
 		if incomplete, _ := artifact["incomplete"].(bool); incomplete {
 			return a.fail("furrow row complete", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("current-step artifact %v is still an incomplete scaffold", artifact["label"]), details: map[string]any{"artifact": artifact}}, flags.json)
+		}
+		if blockingArtifactValidation(artifact) {
+			return a.fail("furrow row complete", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("current-step artifact %v failed validation", artifact["label"]), details: map[string]any{"artifact": artifact}}, flags.json)
 		}
 	}
 
@@ -361,13 +386,129 @@ func (a *App) runRowComplete(args []string) int {
 		"limitations": []string{
 			"bookkeeping only; no transition semantics were performed",
 			"bookkeeping only; no review/archive semantics were performed",
-			"bookkeeping only; no gate validation or summary regeneration was performed",
+			"bookkeeping only; no summary regeneration was performed",
 		},
+		"artifact_validation": summarizeArtifactValidation(artifacts),
 	}
 	if flags.json {
 		return a.okJSON("furrow row complete", data)
 	}
 	_, _ = fmt.Fprintf(a.stdout, "completed bookkeeping for %s\n", rowName)
+	return 0
+}
+
+func (a *App) runRowArchive(args []string) int {
+	positionals, flags, err := parseArgs(args, nil, nil)
+	if err != nil {
+		return a.fail("furrow row archive", err, false)
+	}
+	if len(positionals) != 1 {
+		return a.fail("furrow row archive", &cliError{exit: 1, code: "usage", message: "usage: furrow row archive <row-name> [--json]"}, flags.json)
+	}
+
+	root, err := findFurrowRoot()
+	if err != nil {
+		return a.fail("furrow row archive", &cliError{exit: 5, code: "not_found", message: ".furrow root not found"}, flags.json)
+	}
+
+	rowName := positionals[0]
+	statePath := statePathForRow(root, rowName)
+	if !fileExists(statePath) {
+		return a.fail("furrow row archive", &cliError{exit: 5, code: "not_found", message: fmt.Sprintf("state file not found for row %q", rowName)}, flags.json)
+	}
+	state, err := loadJSONMap(statePath)
+	if err != nil {
+		return a.fail("furrow row archive", &cliError{exit: 3, code: "validation_failed", message: fmt.Sprintf("invalid JSON in %s", statePath), details: map[string]any{"path": statePath}}, flags.json)
+	}
+	if isArchivedState(state) {
+		return a.fail("furrow row archive", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("row %q is already archived", rowName)}, flags.json)
+	}
+	if getStringDefault(state, "step", "") != "review" {
+		return a.fail("furrow row archive", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("row %q must be at step review before archiving", rowName)}, flags.json)
+	}
+	if getStringDefault(state, "step_status", "") != "completed" {
+		return a.fail("furrow row archive", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("row %q must have step_status=completed before archiving", rowName)}, flags.json)
+	}
+
+	artifacts := currentStepArtifacts(root, rowName, state)
+	seed := rowSeedSurface(root, state)
+	blockers := rowBlockers(state, seed, artifacts)
+	if len(blockers) > 0 {
+		return a.fail("furrow row archive", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("row %q is blocked from archiving", rowName), details: map[string]any{"blockers": blockers}}, flags.json)
+	}
+	reviewGate, ok := latestPassingReviewGate(state)
+	if !ok {
+		return a.fail("furrow row archive", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("row %q cannot archive without a passing ->review gate", rowName)}, flags.json)
+	}
+
+	now := nowRFC3339()
+	boundary := "review->archive"
+	evidencePath, err := writeGateEvidence(root, rowName, boundary, map[string]any{
+		"boundary":  boundary,
+		"overall":   "pass",
+		"reviewer":  "furrow row archive",
+		"timestamp": now,
+		"notes":     "backend-canonical archive checkpoint evidence for the narrow /work loop",
+		"phase_a": map[string]any{
+			"review_gate":         latestGateSummary(map[string]any{"gates": []any{reviewGate}}),
+			"seed":                seed,
+			"artifacts":           artifacts,
+			"artifact_validation": summarizeArtifactValidation(artifacts),
+			"blockers":            blockers,
+		},
+	})
+	if err != nil {
+		return a.fail("furrow row archive", err, flags.json)
+	}
+
+	gates, ok := asSlice(state["gates"])
+	if !ok {
+		if state["gates"] == nil {
+			gates = []any{}
+		} else {
+			return a.fail("furrow row archive", &cliError{exit: 3, code: "invalid_state", message: "row state has non-array gates field"}, flags.json)
+		}
+	}
+	gates = append(gates, map[string]any{
+		"boundary":      boundary,
+		"outcome":       "pass",
+		"decided_by":    "manual",
+		"evidence":      "furrow row archive enforced review-complete preconditions, shared blocker taxonomy, and durable archive checkpoint evidence",
+		"evidence_path": evidencePath,
+		"timestamp":     now,
+	})
+	state["gates"] = gates
+	state["archived_at"] = now
+	state["updated_at"] = now
+
+	if err := writeJSONMapAtomic(statePath, state); err != nil {
+		return a.fail("furrow row archive", &cliError{exit: 4, code: "write_failed", message: fmt.Sprintf("failed to write %s", statePath), details: map[string]any{"path": statePath, "error": err.Error()}}, flags.json)
+	}
+
+	data := map[string]any{
+		"row": map[string]any{
+			"name":        rowName,
+			"step":        getStringDefault(state, "step", "review"),
+			"step_status": getStringDefault(state, "step_status", "completed"),
+			"archived":    true,
+			"archived_at": now,
+			"updated_at":  now,
+		},
+		"paths": map[string]any{
+			"state":               statePath,
+			"checkpoint_evidence": evidencePath,
+		},
+		"review_gate": map[string]any{
+			"boundary":      nilIfEmpty(getStringDefault(reviewGate, "boundary", "")),
+			"outcome":       nilIfEmpty(getStringDefault(reviewGate, "outcome", "")),
+			"timestamp":     nilIfEmpty(getStringDefault(reviewGate, "timestamp", "")),
+			"evidence_path": optionalPath(getStringDefault(reviewGate, "evidence_path", "")),
+		},
+	}
+	if flags.json {
+		return a.okJSON("furrow row archive", data)
+	}
+	_, _ = fmt.Fprintf(a.stdout, "archived %s\n", rowName)
 	return 0
 }
 
@@ -453,7 +594,7 @@ func buildRowStatusData(root, rowName string, state map[string]any, resolution, 
 	seed := rowSeedSurface(root, state)
 	artifacts := currentStepArtifacts(root, rowName, state)
 	blockers := rowBlockers(state, seed, artifacts)
-	checkpoint := rowCheckpointSurface(root, rowName, state, blockers)
+	checkpoint := rowCheckpointSurface(root, rowName, state, blockers, seed, artifacts)
 	rowWarnings := append([]map[string]any{}, warnings...)
 	if seedState, _ := seed["state"].(string); seedState == "missing" {
 		rowWarnings = append(rowWarnings, map[string]any{"code": "missing_seed", "message": "row has no linked seed; new /work flows should initialize or link one"})
@@ -483,7 +624,7 @@ func buildRowStatusData(root, rowName string, state map[string]any, resolution, 
 				"count":              gateCount(state),
 				"latest":             latestGate,
 				"pending_blockers":   blockers,
-				"transition_history": nil,
+				"transition_history": gateHistory(state),
 			},
 			"artifact_paths": map[string]any{
 				"row_dir":     rowDir,
@@ -629,10 +770,12 @@ func latestGateSummary(state map[string]any) any {
 		return nil
 	}
 	return map[string]any{
-		"boundary":   nilIfEmpty(getStringDefault(gate, "boundary", "")),
-		"outcome":    nilIfEmpty(getStringDefault(gate, "outcome", "")),
-		"decided_by": nilIfEmpty(getStringDefault(gate, "decided_by", "")),
-		"timestamp":  nilIfEmpty(getStringDefault(gate, "timestamp", "")),
+		"boundary":      nilIfEmpty(getStringDefault(gate, "boundary", "")),
+		"outcome":       nilIfEmpty(getStringDefault(gate, "outcome", "")),
+		"decided_by":    nilIfEmpty(getStringDefault(gate, "decided_by", "")),
+		"timestamp":     nilIfEmpty(getStringDefault(gate, "timestamp", "")),
+		"evidence":      nilIfEmpty(getStringDefault(gate, "evidence", "")),
+		"evidence_path": optionalPath(getStringDefault(gate, "evidence_path", "")),
 	}
 }
 

@@ -393,6 +393,7 @@ func TestRowTransitionJSON(t *testing.T) {
 			"gates":          []any{},
 			"unknown_field":  "keep-me",
 		})
+		writeImplementationPlan(t, root, "transition-row", "# Implementation Plan\n\n## Objective\n- Keep the backend authoritative.\n\n## Planned work\n1. Harden validation.\n2. Emit checkpoint evidence.\n")
 
 		code, payload, stderr := runJSONCommand(t, root, []string{"row", "transition", "transition-row", "--step", "spec", "--json"})
 		if code != 0 {
@@ -412,6 +413,9 @@ func TestRowTransitionJSON(t *testing.T) {
 		gates := state["gates"].([]any)
 		if len(gates) != 1 {
 			t.Fatalf("expected gate record written, got %#v", gates)
+		}
+		if _, err := os.Stat(filepath.Join(root, ".furrow", "rows", "transition-row", "gates", "plan-to-spec.json")); err != nil {
+			t.Fatalf("expected checkpoint evidence file, got err=%v", err)
 		}
 	})
 
@@ -747,6 +751,99 @@ func TestRowInitFocusAndScaffoldJSON(t *testing.T) {
 			t.Fatalf("expected scaffold blocker in payload, got %s", mustJSONPayload(t, payload))
 		}
 	})
+
+	t.Run("plan artifact validation failure blocks completion", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "plan-validation-row", map[string]any{
+			"name":             "plan-validation-row",
+			"title":            "Plan Validation Row",
+			"step":             "plan",
+			"step_status":      "in_progress",
+			"updated_at":       "2026-04-24T18:00:00Z",
+			"archived_at":      nil,
+			"deliverables":     map[string]any{},
+			"gates":            []any{},
+			"gate_policy_init": "supervised",
+		})
+		writeImplementationPlan(t, root, "plan-validation-row", "# Implementation Plan\n\n## Objective\n- TODO\n\n## Planned work\n1. TODO\n")
+
+		code, payload, stderr := runJSONCommand(t, root, []string{"row", "status", "plan-validation-row", "--json"})
+		if code != 0 {
+			t.Fatalf("expected exit 0, got %d stderr=%s", code, stderr)
+		}
+		if !jsonContains(payload, "artifact_validation_failed") {
+			t.Fatalf("expected artifact validation blocker, got %s", mustJSONPayload(t, payload))
+		}
+
+		code, _, _ = runJSONCommand(t, root, []string{"row", "complete", "plan-validation-row", "--json"})
+		if code != 2 {
+			t.Fatalf("expected completion blocked with exit 2, got %d", code)
+		}
+	})
+
+	t.Run("archive succeeds with review gate evidence", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "archive-row", map[string]any{
+			"name":        "archive-row",
+			"title":       "Archive Row",
+			"step":        "review",
+			"step_status": "completed",
+			"updated_at":  "2026-04-24T18:00:00Z",
+			"archived_at": nil,
+			"deliverables": map[string]any{
+				"one": map[string]any{"status": "completed"},
+			},
+			"gates": []any{
+				map[string]any{"boundary": "implement->review", "outcome": "pass", "decided_by": "manual", "timestamp": "2026-04-24T17:59:00Z"},
+			},
+		})
+
+		code, payload, stderr := runJSONCommand(t, root, []string{"row", "archive", "archive-row", "--json"})
+		if code != 0 {
+			t.Fatalf("expected exit 0, got %d stderr=%s payload=%s", code, stderr, mustJSONPayload(t, payload))
+		}
+		row := payload["data"].(map[string]any)["row"].(map[string]any)
+		if row["archived"] != true {
+			t.Fatalf("expected archived=true, got %#v", row)
+		}
+		state := readJSONFile(t, filepath.Join(root, ".furrow", "rows", "archive-row", "state.json"))
+		if archivedAt, _ := state["archived_at"].(string); archivedAt == "" {
+			t.Fatalf("expected archived_at set, got %#v", state["archived_at"])
+		}
+		if _, err := os.Stat(filepath.Join(root, ".furrow", "rows", "archive-row", "gates", "review-to-archive.json")); err != nil {
+			t.Fatalf("expected archive checkpoint evidence file, got err=%v", err)
+		}
+	})
+
+	t.Run("archive blocked without passing review gate", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "archive-blocked", map[string]any{
+			"name":         "archive-blocked",
+			"title":        "Archive Blocked",
+			"step":         "review",
+			"step_status":  "completed",
+			"updated_at":   "2026-04-24T18:00:00Z",
+			"archived_at":  nil,
+			"deliverables": map[string]any{},
+			"gates":        []any{},
+		})
+
+		code, payload, _ := runJSONCommand(t, root, []string{"row", "status", "archive-blocked", "--json"})
+		if code != 0 {
+			t.Fatalf("expected exit 0, got %d", code)
+		}
+		if !jsonContains(payload, "archive_requires_review_gate") {
+			t.Fatalf("expected archive blocker in status, got %s", mustJSONPayload(t, payload))
+		}
+
+		code, _, _ = runJSONCommand(t, root, []string{"row", "archive", "archive-blocked", "--json"})
+		if code != 2 {
+			t.Fatalf("expected archive blocked with exit 2, got %d", code)
+		}
+	})
 }
 
 func TestDoctorJSON(t *testing.T) {
@@ -944,6 +1041,11 @@ func writeRowState(t *testing.T, root, name string, state map[string]any) {
 		t.Fatal(err)
 	}
 	mustWrite(t, filepath.Join(root, ".furrow", "rows", name, "state.json"), string(payload))
+}
+
+func writeImplementationPlan(t *testing.T, root, rowName, content string) {
+	t.Helper()
+	mustWrite(t, filepath.Join(root, ".furrow", "rows", rowName, "implementation-plan.md"), content)
 }
 
 func readJSONFile(t *testing.T, path string) map[string]any {
