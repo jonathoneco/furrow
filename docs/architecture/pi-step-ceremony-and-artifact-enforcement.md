@@ -1,6 +1,8 @@
 # Pi step ceremony and artifact enforcement
 
 Status: Implemented (minimum usable slice)
+Authority: Canonical operating-shape spec with bounded transitional implementation notes
+Time horizon: Enduring operating shape with current migration notes
 Owner: Furrow migration
 Related:
 - `docs/architecture/workflow-power-preservation.md`
@@ -338,7 +340,10 @@ This slice is complete when:
 - implementation work itself leaves durable Furrow artifacts on disk
 - docs/roadmap/todos are updated if implementation changes planned reality
 
-## Sequencing note
+## Transitional sequencing note
+
+> Transitional sequencing note: this section explains migration ordering for this
+> slice family. It is not the enduring operating-shape definition.
 
 This slice takes priority over adapter promotion as a standalone goal.
 
@@ -349,6 +354,10 @@ Pi.
 Adapter promotion should remain subordinate to workflow-power preservation.
 
 ## Implemented minimum slice notes
+
+> Transitional implementation note: this section records what the current repo
+> has landed for this migration slice. It should not silently redefine the
+> enduring operating model described above.
 
 The current repository implementation now lands the minimum usable slice this
 document called for, plus a first boundary-hardening pass:

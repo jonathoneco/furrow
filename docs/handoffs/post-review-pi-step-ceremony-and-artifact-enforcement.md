@@ -1,5 +1,12 @@
 # Handoff: post-review follow-up for `pi-step-ceremony-and-artifact-enforcement`
 
+Status: Historical
+Authority: Historical / execution (post-review truth)
+Time horizon: Row-local
+
+> This document records row-local post-review truth. It should inform planning
+> and follow-up work, but it is not canonical architecture authority.
+
 ## Outcome so far
 
 The minimum usable slice remains landed, and the repo now also contains a first

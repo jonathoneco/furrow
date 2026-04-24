@@ -1,8 +1,15 @@
 # Pi parity ladder
 
+Status: Active
+Authority: Transitional / migration
+Time horizon: Transitional
+
 ## Purpose
 
 Define a practical parity ladder for Furrow's Pi-first migration so the project can distinguish between:
+
+> Transitional framing note: this document is a migration-state guide, not the
+> canonical architecture definition of Furrow.
 
 1. **usable now**
 2. **next canonical milestone**

@@ -1,5 +1,9 @@
 # Go CLI Contract
 
+Status: Active
+Authority: Canonical contract
+Time horizon: Enduring contract with bounded transitional implementation notes
+
 ## Purpose
 
 Define the canonical backend contract Furrow should expose before any real Pi
@@ -224,12 +228,15 @@ During migration, keep these wrappers as compatibility shims:
 They should translate legacy invocations to the canonical Go binary rather than
 preserve independent domain logic.
 
-## Pi-first implementation order
+## Transitional migration sequencing
+
+> Transitional sequencing note: this section is about migration order and current
+> cutover strategy. It is not itself the enduring contract definition.
 
 To let Pi come online early without breaking teammate compatibility in Claude
 Code, implement the Go surface in this order.
 
-### Slice 1 — minimum shared backend
+### Slice 1 — first shared backend cut
 
 Make these commands real first:
 
@@ -248,7 +255,11 @@ Why first:
 
 ### Slice 1 — current implemented behavior
 
-The current repository implementation lands a **usable minimum** for the five
+> Transitional implementation note: this section records the current repo slice
+> so adapters and reviews can operate against reality. It is not the enduring
+> definition of the full contract surface.
+
+The current repository implementation lands a **usable first cut** for the five
 commands above, and now also includes the narrow row-init/focus/scaffold support
 needed for Pi's supervised `/work` loop. This section is the contract truth for
 the implemented slice; broader command-group descriptions elsewhere in this
@@ -291,7 +302,7 @@ Current exit behavior:
 
 Current behavior:
 
-- exists in the minimum slice as the early adapter-facing browse surface
+- exists in the first shared backend cut as the early adapter-facing browse surface
 - reads `.furrow/rows/*/state.json` tolerantly
 - skips unreadable row JSON with warnings rather than failing the whole listing
 - supports:
@@ -520,6 +531,9 @@ Current behavior:
 
 ### Slice 2 — work-loop boundary hardening
 
+> Transitional implementation note: this subsection describes the current repo's
+> migration progress inside the broader contract trajectory.
+
 This slice is now **partially landed** in the current repo:
 
 - richer per-step artifact validation beyond incomplete-scaffold detection
@@ -572,7 +586,7 @@ Avoid two failure modes:
 1. **preflight-only surfaces that leave the backend unusably half-real**
 2. **fake completeness that claims more lifecycle authority than is actually implemented**
 
-For the minimum slice, prefer **narrow but real** semantics.
+For early contract slices, prefer **narrow but real** semantics.
 
 Example:
 
