@@ -1,7 +1,7 @@
 schema_version: '1.0'
 metadata:
   project: furrow
-  generated_at: '2026-04-24T19:00:00Z'
+  generated_at: '2026-04-24T19:30:00Z'
   total_phases: 8
   completed_phases: 1
 dependency_graph:
@@ -128,6 +128,13 @@ dependency_graph:
     depends_on:
     - pi-adapter-package
     - claude-wrapper-compatibility
+  - id: pi-native-capability-leverage
+    label: "Use Pi-native extensibility to strengthen Furrow after semantic parity is stable"
+    phase: 7
+    status: active
+    depends_on:
+    - pi-adapter-package
+    - dual-runtime-parity-validation
   - id: codex-cross-model-reviewer-flags-other-deliverable
     label: Codex cross-model reviewer flags other deliverables' commits as unplanned
     phase: 1
@@ -256,6 +263,13 @@ dependency_graph:
     status: active
     depends_on:
     - cli-architecture-overhaul
+  - id: pi-almanac-operating-model
+    label: Build Pi's seed-backed almanac and planning surfaces
+    phase: 5
+    status: active
+    depends_on:
+    - seeds-concept
+    - pi-step-ceremony-and-artifact-enforcement
   - id: specialist-quality-validation
     label: Establish a validation mechanism for specialist template quality
     phase: 3
@@ -466,13 +480,16 @@ phases:
     converge toward a primary `/work`-like entrypoint, scaffold current-step
     artifacts on use, preserve Claude-baseline blockers, make seeds visible in
     the operator flow, and require supervised checkpoints at canonical
-    boundaries. Adapter promotion remains important, but it is subordinate to
+    boundaries. The `/work` loop should already be almanac-aware while fuller
+    seed-backed planning surfaces are defined separately in
+    `docs/architecture/pi-almanac-operating-model.md` and sequence after seeds
+    lands. Adapter promotion remains important, but it is subordinate to
     restoring ceremony and enforcement; parallel orchestration remains fast
     follow within this same phase.
   rows:
   - index: 1
     branch: work/pi-adapter-foundation
-    description: Restore a primary Pi `/work` operating loop, then stabilize/promote the adapter without thickening TS semantics
+    description: Restore a primary Pi `/work` operating loop, make it almanac-aware, then stabilize/promote the adapter without thickening TS semantics
     todos:
     - pi-adapter-package
     - backend-mediated-row-bookkeeping
@@ -487,6 +504,7 @@ phases:
     - docs/architecture/pi-parity-ladder.md
     - docs/architecture/workflow-power-preservation.md
     - docs/architecture/pi-step-ceremony-and-artifact-enforcement.md
+    - docs/architecture/pi-almanac-operating-model.md
     - .claude/rules/cli-mediation.md
     - .claude/rules/step-sequence.md
     - commands/work.md
@@ -500,7 +518,7 @@ phases:
     - cli-architecture-overhaul
     - go-cli-contract-v1
     completed_at: null
-    why_together: Pi is now validated as an early host over the shared backend and the manual-bookkeeping gap is closed for the supported flow; this row now centers on restoring Furrow's primary staged operating loop in Pi — `/work`, create-on-use artifacts, supervised checkpoints, blocker parity, and seed-visible guidance — and only then promoting/stabilizing the thin adapter around that preserved behavior.
+    why_together: Pi is now validated as an early host over the shared backend and the manual-bookkeeping gap is closed for the supported flow; this row now centers on restoring Furrow's primary staged operating loop in Pi — `/work`, create-on-use artifacts, supervised checkpoints, blocker parity, seed-visible guidance, and baseline almanac awareness — and only then promoting/stabilizing the thin adapter around that preserved behavior.
   - index: 2
     branch: work/sub-agent-normalization
     description: Register specialists as Claude Code agent types; generator; quality validation
@@ -603,10 +621,9 @@ phases:
     completed_at: null
     why_together: All modify /furrow:next flow; shared commit-msg and squash code path.
 - number: 5
-  title: "Seeds primitive \u2014 deterministic work graph replacing LLM-reasoned dependencies"
+  title: "Seeds primitive + seed-backed planning surfaces"
   status: planned
-  rationale: Foundational task-management primitive. Cross-row work graph + in-row task tracking in one unified graph, owned by sds. alm delegates to sds for triage/roadmap queries. Absorbs almanac-graph-primitives.
-    Must land after Go rewrite (graph engine belongs in Go).
+  rationale: Foundational work-graph and planning substrate. Seeds replace TODOs as the canonical task registry, unify cross-row and in-row tracking in one graph owned by sds, and become the source of truth for roadmap/triage inputs. alm remains the planning and knowledge layer, but it projects and synthesizes seed-backed state rather than owning a permanent parallel TODO system. Must land after Go rewrite (graph engine belongs in Go), and Pi planning/almanac surfaces should be built against this model rather than deepening TODO-specific UX.
   rows:
   - index: 1
     branch: work/seeds
@@ -625,7 +642,30 @@ phases:
     depends_on:
     - cli-architecture-overhaul
     completed_at: null
-    why_together: "Single large primitive \u2014 alm-side wiring and sds core ship together."
+    why_together: "Single large primitive — alm-side wiring and sds core ship together."
+  - index: 2
+    branch: work/pi-almanac-planning
+    description: Build seed-backed Pi planning/almanac surfaces — browse, create, triage, recommend, and init rows from seeds
+    todos:
+    - pi-almanac-operating-model
+    key_files:
+    - docs/architecture/pi-almanac-operating-model.md
+    - docs/architecture/pi-step-ceremony-and-artifact-enforcement.md
+    - docs/architecture/workflow-power-preservation.md
+    - .furrow/almanac/
+    - .furrow/seeds/
+    - adapters/pi/
+    - .pi/extensions/
+    - cmd/
+    - internal/
+    - commands/work.md
+    - commands/next.md
+    conflict_risk: medium
+    depends_on:
+    - seeds-concept
+    - pi-step-ceremony-and-artifact-enforcement
+    completed_at: null
+    why_together: Once seeds are canonical, Pi needs explicit planning surfaces beyond `/work`. This row keeps roadmap browse, work creation, triage, and next-work selection tied to seed-backed semantics instead of deepening TODO-bound almanac behavior.
 - number: 6
   title: "Artifacts, reviews, row variants \u2014 UX patterns for collaboration"
   status: planned
@@ -709,7 +749,7 @@ phases:
 - number: 7
   title: Post-seeds re-triage + host validation + dashboards + lifecycle
   status: planned
-  rationale: "Several TODOs may be subsumed, simplified, or re-shaped once seeds lands \u2014 re-triage them here rather than designing against pre-seeds assumptions. After the early Pi adapter and Claude compatibility layers are stable, this phase focuses on shared-backend validation across hosts, plus dashboards, self-update, and lifecycle UX on top of the stabilized core."
+  rationale: "Several TODOs may be subsumed, simplified, or re-shaped once seeds lands \u2014 re-triage them here rather than designing against pre-seeds assumptions. After the early Pi adapter and Claude compatibility layers are stable, this phase focuses on shared-backend validation across hosts, then on Pi-native leverage, dashboards, self-update, and lifecycle UX on top of the stabilized core."
   rows:
   - index: 1
     branch: work/post-seeds-retriage
@@ -780,6 +820,26 @@ phases:
     - cli-architecture-overhaul
     completed_at: null
     why_together: User-facing polish on stabilized foundations; independent internally but shares rationale/install surface.
+  - index: 4
+    branch: work/pi-native-leverage
+    description: Use Pi-native extensibility intentionally after parity is stable — extensions, system prompt shaping, skills, prompts, presets, and packages
+    todos:
+    - pi-native-capability-leverage
+    key_files:
+    - docs/architecture/pi-native-capability-leverage.md
+    - docs/architecture/host-strategy-matrix.md
+    - docs/architecture/dual-runtime-migration-plan.md
+    - adapters/pi/
+    - .pi/extensions/
+    - .pi/prompts/
+    - .pi/skills/
+    - install.sh
+    conflict_risk: low
+    depends_on:
+    - pi-adapter-package
+    - dual-runtime-parity-validation
+    completed_at: null
+    why_together: This is the explicit post-parity planning and implementation surface for turning Pi from a merely compatible host into a more powerful Furrow runtime without moving canonical semantics out of the backend.
 - number: 8
   title: Research, long-tail, workflow cleanup
   status: planned

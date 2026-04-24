@@ -5,6 +5,47 @@ units called *rows* that move through a fixed sequence of steps — from ideatio
 through implementation to review — with quality gates at each boundary. It
 keeps agents focused, prevents drift, and makes multi-session work resumable.
 
+## Guiding principles
+
+Furrow is not just a set of commands. It is a view of how AI-assisted work
+should be structured: staged, observable, reviewable, and durable. These
+principles explain the shape of the harness and the tradeoffs it makes.
+
+- **Workflow over vibes** — AI work should move through explicit stages, not
+  drift through one long chat.
+- **Human pilot, AI engine** — Furrow is designed to amplify human judgment,
+  not replace it. The human remains responsible for direction, tradeoffs, and
+  approval; the AI supplies speed, synthesis, and execution inside a structured
+  workflow.
+- **Enforcement over aspiration** — if something matters, it should be
+  enforced, not merely suggested in a prompt.
+- **Observability as a feature** — row state, artifacts, gates, reviews, and
+  decisions should be inspectable, resumable, and auditable.
+- **Artifacts are first-class** — files are not exhaust from the chat; they are
+  durable workflow inputs and outputs, and later stages should consume them as
+  workflow inputs rather than merely documenting work after the fact.
+- **Thoughtful ideation and planning pay off** — strong early clarification,
+  research, and planning reduce downstream drift and rework.
+- **Orchestration matters** — the active session should do more than generate
+  outputs. It should coordinate stages, load the right context, route work to
+  the right specialist or review path, and stop at the right decision points.
+- **Offload repetitive structure** — Furrow carries workflow state, context,
+  and ceremony so humans can spend attention on judgment instead of repeated
+  bookkeeping.
+- **Canonical state matters** — workflow truth should live in durable,
+  auditable state and artifacts, not only in session memory.
+- **Gated progression over silent advancement** — work should advance because
+  it passed an explicit gate, not because the model informally decided it was
+  done.
+- **Review is a real gate, not a formality** — Furrow separates structural
+  validation from substantive evaluation. **Phase A** checks readiness,
+  required artifacts, protocol compliance, and preconditions. **Phase B**
+  evaluates correctness, quality, risk, and readiness to proceed. Advancement
+  should be earned through evidence, not implied by model confidence.
+- **Shared semantics, host-native ergonomics** — Furrow should preserve the
+  same backend and artifact semantics across hosts, while allowing each runtime
+  to expose those semantics in the way it is best suited to.
+
 ## What does it feel like
 
 You interact with Furrow through slash commands in Claude Code. A typical
