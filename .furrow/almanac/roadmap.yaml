@@ -1,7 +1,7 @@
 schema_version: '1.0'
 metadata:
   project: furrow
-  generated_at: '2026-04-23T13:06:10-04:00'
+  generated_at: '2026-04-24T19:00:00Z'
   total_phases: 8
   completed_phases: 1
 dependency_graph:
@@ -90,11 +90,37 @@ dependency_graph:
     - go-cli-contract-v1
   - id: pi-adapter-package
     label: "Build the Furrow Pi package/extension on top of the stable Go backend"
-    phase: 7
+    phase: 3
     status: active
     depends_on:
     - cli-architecture-overhaul
-    - claude-wrapper-compatibility
+    - go-cli-contract-v1
+  - id: workflow-power-preservation
+    label: "Preserve Furrow's workflow and orchestration power during migration"
+    phase: 3
+    status: active
+    depends_on:
+    - pi-adapter-package
+  - id: pi-step-ceremony-and-artifact-enforcement
+    label: "Restore Pi /work ceremony, create-on-use artifacts, supervised checkpoints, and seed-visible flow"
+    phase: 3
+    status: active
+    depends_on:
+    - workflow-power-preservation
+    - pi-adapter-package
+  - id: parallel-orchestration-and-launch-surfaces
+    label: "Preserve Furrow's parallel orchestration and launch surfaces"
+    phase: 3
+    status: active
+    depends_on:
+    - workflow-power-preservation
+    - pi-adapter-package
+  - id: backend-mediated-row-bookkeeping
+    label: "Remove remaining manual row bookkeeping from Pi-driven Furrow flows"
+    phase: 3
+    status: completed
+    depends_on:
+    - pi-adapter-package
   - id: dual-runtime-parity-validation
     label: "Validate Claude Code and Pi against the same backend contracts and .furrow state"
     phase: 7
@@ -422,21 +448,50 @@ phases:
     - go-cli-contract-v1
     - migration-operating-mode
     completed_at: null
-    why_together: The first goal is the minimum shared backend slice that lets Pi start early without creating Pi-only semantics.
+    why_together: The first goal is the minimum shared backend slice that lets Pi start early without creating Pi-only semantics or leaving the backend stuck in a read-only halfway state.
 - number: 3
-  title: "Pi early-adapter + dispatch + ambient contract"
+  title: "Pi staged work loop + adapter + dispatch + ambient contract"
   status: planned
-  rationale: Once the minimum Go backend slice exists, Pi should come online early as the primary authoring runtime. This phase establishes the first Pi adapter over the shared backend and then continues into sub-agent dispatch shape, ambient-layer contract, and specialist quality signal. Those downstream contracts still belong after the backend freeze, but they no longer need to wait for full Claude wrapper migration.
+  rationale: >-
+    Once the minimum Go backend slice exists, Pi should come online early as the
+    primary authoring runtime. A project-local Pi operating layer has now
+    validated that direction with `/furrow-overview`, `/furrow-next`,
+    `/furrow-transition`, and `/furrow-complete` over the Go backend. The
+    narrow backend-mediated bookkeeping gap exposed by real use is now closed
+    for the supported existing-row workflow, which means Furrow has reached
+    Level 2 canonical Pi operation for that slice. However, structural parity
+    is not enough: this phase must restore Furrow's supervised staged operating
+    loop in Pi. The next work is now explicitly defined in
+    `docs/architecture/pi-step-ceremony-and-artifact-enforcement.md`:
+    converge toward a primary `/work`-like entrypoint, scaffold current-step
+    artifacts on use, preserve Claude-baseline blockers, make seeds visible in
+    the operator flow, and require supervised checkpoints at canonical
+    boundaries. Adapter promotion remains important, but it is subordinate to
+    restoring ceremony and enforcement; parallel orchestration remains fast
+    follow within this same phase.
   rows:
   - index: 1
     branch: work/pi-adapter-foundation
-    description: Bring up the first usable Pi adapter on top of the minimum shared backend slice
+    description: Restore a primary Pi `/work` operating loop, then stabilize/promote the adapter without thickening TS semantics
     todos:
     - pi-adapter-package
+    - backend-mediated-row-bookkeeping
+    - workflow-power-preservation
+    - pi-step-ceremony-and-artifact-enforcement
+    - parallel-orchestration-and-launch-surfaces
     key_files:
     - adapters/pi/
+    - .pi/extensions/
     - docs/architecture/go-cli-contract.md
     - docs/architecture/host-strategy-matrix.md
+    - docs/architecture/pi-parity-ladder.md
+    - docs/architecture/workflow-power-preservation.md
+    - docs/architecture/pi-step-ceremony-and-artifact-enforcement.md
+    - .claude/rules/cli-mediation.md
+    - .claude/rules/step-sequence.md
+    - commands/work.md
+    - commands/next.md
+    - references/gate-protocol.md
     - cmd/
     - internal/
     - install.sh
@@ -445,7 +500,7 @@ phases:
     - cli-architecture-overhaul
     - go-cli-contract-v1
     completed_at: null
-    why_together: Pi should come online as early as the backend can support it; this row intentionally precedes deeper host-agnostic dispatch work.
+    why_together: Pi is now validated as an early host over the shared backend and the manual-bookkeeping gap is closed for the supported flow; this row now centers on restoring Furrow's primary staged operating loop in Pi — `/work`, create-on-use artifacts, supervised checkpoints, blocker parity, and seed-visible guidance — and only then promoting/stabilizing the thin adapter around that preserved behavior.
   - index: 2
     branch: work/sub-agent-normalization
     description: Register specialists as Claude Code agent types; generator; quality validation
@@ -652,9 +707,9 @@ phases:
     completed_at: null
     why_together: Triage/brain-dump UX and the panes that watch those artifacts in real time.
 - number: 7
-  title: Post-seeds re-triage + Pi adapter + dashboards + lifecycle
+  title: Post-seeds re-triage + host validation + dashboards + lifecycle
   status: planned
-  rationale: "Several TODOs may be subsumed, simplified, or re-shaped once seeds lands \u2014 re-triage them here rather than designing against pre-seeds assumptions. After the backend and Claude compatibility layers are stable, this phase also hosts the real Pi adapter/package work and dual-runtime parity validation, followed by dashboards, self-update, and lifecycle UX on top of the stabilized core."
+  rationale: "Several TODOs may be subsumed, simplified, or re-shaped once seeds lands \u2014 re-triage them here rather than designing against pre-seeds assumptions. After the early Pi adapter and Claude compatibility layers are stable, this phase focuses on shared-backend validation across hosts, plus dashboards, self-update, and lifecycle UX on top of the stabilized core."
   rows:
   - index: 1
     branch: work/post-seeds-retriage
