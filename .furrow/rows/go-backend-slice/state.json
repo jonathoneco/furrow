@@ -2,8 +2,8 @@
   "name": "go-backend-slice",
   "title": "Minimum shared Go backend slice",
   "description": "Implement the minimum shared Go backend slice for early shared backend use",
-  "step": "implement",
-  "step_status": "in_progress",
+  "step": "review",
+  "step_status": "completed",
   "steps_sequence": [
     "ideate",
     "research",
@@ -45,7 +45,15 @@
       "corrections": 0
     }
   },
-  "gates": [],
+  "gates": [
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All stated deliverables for the minimum shared Go backend slice are completed and validated in canonical row artifacts.",
+      "timestamp": "2026-04-24T19:24:51Z"
+    }
+  ],
   "pending_user_actions": [],
   "force_stop_at": null,
   "branch": null,
@@ -54,8 +62,8 @@
   "seed_id": null,
   "epic_seed_id": null,
   "created_at": "2026-04-23T22:21:53Z",
-  "updated_at": "2026-04-23T22:38:06Z",
-  "archived_at": null,
+  "updated_at": "2026-04-24T19:24:51Z",
+  "archived_at": "2026-04-24T19:24:51Z",
   "source_todo": null,
   "gate_policy_init": "supervised"
 }
