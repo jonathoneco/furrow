@@ -113,11 +113,19 @@ Unacceptable differences:
 
 Adapters should prefer structured CLI calls such as:
 
+- `furrow almanac validate --json`
+- `furrow row list --json`
 - `furrow row status --json`
 - `furrow row transition <row> --step implement --json`
-- `furrow gate status <row> --json`
-- `furrow review run <row> --json`
 - `furrow doctor --host pi --json`
+
+Current implemented backend slice note:
+
+- the minimum shared slice currently makes `almanac validate`, `row list`,
+  `row status`, `row transition`, and `doctor` real enough for early adapter
+  consumption
+- deeper `gate` and `review` command groups remain future backend work and
+  should not be reimplemented inside adapters meanwhile
 
 ### 5. Shell scripts become migration shims, not long-term core
 
