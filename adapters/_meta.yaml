@@ -3,4 +3,5 @@ component: adapters
 children:
   - agent-sdk
   - claude-code
+  - pi
   - shared

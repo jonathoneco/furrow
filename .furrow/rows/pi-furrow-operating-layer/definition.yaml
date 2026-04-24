@@ -1,0 +1,43 @@
+objective: "Build the first usable Pi-side Furrow operating layer as a thin adapter over the canonical Go backend"
+deliverables:
+  - name: furrow-pi-commands
+    acceptance_criteria:
+      - "Pi exposes furrow-overview, furrow-next, and furrow-transition command surfaces"
+      - "commands shell out to the Go Furrow CLI with --json instead of duplicating lifecycle semantics"
+  - name: backend-mediated-guidance
+    acceptance_criteria:
+      - "furrow-next uses furrow doctor --json and furrow row status --json"
+      - "current row, warnings, next valid transitions, and artifact paths are surfaced honestly"
+  - name: backend-mediated-transition
+    acceptance_criteria:
+      - "furrow-transition resolves the current row, inspects backend-advertised next transitions, and requires explicit confirmation"
+      - "all state mutation goes through furrow row transition <row> --step <step> --json"
+  - name: lightweight-discipline
+    acceptance_criteria:
+      - "Pi resolves explicit or focused rows where needed and refuses to bluff if no row can be resolved"
+      - "lightweight guardrails discourage direct non-canonical mutation of .furrow state files"
+  - name: durable-artifacts-and-validation
+    acceptance_criteria:
+      - "Canonical row artifacts are maintained under this row: definition.yaml, state.json, summary.md, and spec.md"
+      - "backend spot checks and Pi-side workflow validation are captured in canonical row artifacts"
+context_pointers:
+  - path: docs/architecture/go-cli-contract.md
+    note: Backend JSON contract and adapter boundary expectations
+  - path: docs/architecture/core-adapter-boundary.md
+    note: Domain semantics stay in Go; Pi stays thin
+  - path: docs/architecture/dual-runtime-migration-plan.md
+    note: Pi-primary adapter sequencing over shared backend
+  - path: docs/architecture/host-strategy-matrix.md
+    note: Shared semantics, asymmetric UX
+  - path: internal/cli/row.go
+    note: Current row status/list/transition semantics and payload shape
+  - path: internal/cli/doctor.go
+    note: Structural readiness checks Pi should surface before guidance
+constraints:
+  - "Use the Go backend as semantic authority"
+  - "Treat .furrow/ as canonical source of truth"
+  - "Do not duplicate backend lifecycle logic in TypeScript"
+  - "Prefer a project-local Pi extension/command surface over a broader framework build"
+  - "Surface missing canonical row artifacts honestly rather than fabricating state"
+gate_policy: supervised
+mode: code

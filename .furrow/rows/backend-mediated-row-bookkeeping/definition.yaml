@@ -1,0 +1,32 @@
+objective: "Close the narrow backend-mediated row bookkeeping gap exposed by the first Pi operating layer"
+deliverables:
+  - name: backend-bookkeeping-command
+    acceptance_criteria:
+      - "The Go CLI exposes one narrow row bookkeeping command for the supported Pi flow"
+      - "The command updates canonical row state through atomic backend writes and preserves unknown fields"
+  - name: tests-and-validation
+    acceptance_criteria:
+      - "Go tests cover success, blocked, and invalid-state cases for the bookkeeping command"
+      - "Manual validation proves the supported Pi-driven flow no longer requires direct state.json edits"
+  - name: thin-pi-consumption
+    acceptance_criteria:
+      - "Pi can invoke the new backend bookkeeping surface without adding Pi-side lifecycle semantics"
+      - "No direct state-file edits are required for the supported Pi workflow"
+context_pointers:
+  - path: docs/architecture/pi-parity-ladder.md
+    note: Level 2 is defined by removing manual state edits from supported Pi flows
+  - path: docs/architecture/go-cli-contract.md
+    note: Backend JSON contracts and stable exit-code expectations
+  - path: internal/cli/row.go
+    note: Existing row list/status/transition mutation patterns
+  - path: .pi/extensions/furrow.ts
+    note: Current Pi command surface and guardrails
+  - path: .furrow/rows/pi-furrow-operating-layer/summary.md
+    note: Documents the exact manual-bookkeeping gap this row closes
+constraints:
+  - "Keep the backend addition narrow and truthful"
+  - "Do not implement review/archive parity or broaden transition semantics"
+  - "All canonical row-state mutation must go through backend commands"
+  - "Pi must remain a thin backend consumer"
+gate_policy: supervised
+mode: code

@@ -1,0 +1,34 @@
+objective: "Promote the proven Pi Furrow extension into a repo-owned adapter layout while keeping the TypeScript layer thin and backend-driven"
+deliverables:
+  - name: repo-owned-pi-adapter
+    acceptance_criteria:
+      - "The canonical Pi adapter implementation lives at adapters/pi/furrow.ts"
+      - "The adapter continues to call go run ./cmd/furrow ... --json instead of owning workflow semantics"
+  - name: compatibility-shim
+    acceptance_criteria:
+      - ".pi/extensions/furrow.ts remains a thin compatibility shim that re-exports the repo-owned adapter"
+      - "Project-local Pi auto-discovery keeps working without leaving Furrow logic in .pi/"
+  - name: validation-and-docs
+    acceptance_criteria:
+      - "adapters/pi/_meta.yaml and adapters/pi/README.md document the promoted adapter surface"
+      - "summary.md and spec.md capture the promotion outcome, validation, and follow-on guidance in canonical row artifacts"
+context_pointers:
+  - path: docs/architecture/core-adapter-boundary.md
+    note: Backend remains semantic authority while Pi stays thin
+  - path: docs/architecture/go-cli-contract.md
+    note: Stable backend contract the adapter must consume
+  - path: docs/architecture/dual-runtime-migration-plan.md
+    note: Pi-first migration sequencing over shared backend
+  - path: docs/architecture/pi-parity-ladder.md
+    note: Promotion should preserve Level 2 existing-row operation
+  - path: adapters/pi/furrow.ts
+    note: Canonical promoted adapter location
+  - path: .pi/extensions/furrow.ts
+    note: Compatibility shim retained for project-local discovery
+constraints:
+  - "Do not widen backend semantics unless a tiny corrective fix is strictly required"
+  - "Do not add Pi-only workflow semantics or speculative portability abstractions"
+  - "Keep TypeScript focused on runtime wiring rather than workflow semantics"
+  - "Keep durable row context in canonical row artifacts"
+gate_policy: supervised
+mode: code

@@ -1,0 +1,6 @@
+# adapters/pi/ — Pi runtime adapter
+component: pi
+provides:
+  - extension (furrow)
+  - command surfaces (furrow-overview, furrow-next, furrow-transition, furrow-complete)
+  - thin backend mediation and canonical-state mutation guardrails
