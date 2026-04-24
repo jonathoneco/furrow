@@ -1,8 +1,60 @@
 {
-  "_furrow_scaffold": "FURROW-SCAFFOLD-INCOMPLETE",
-  "assignments": {},
+  "created_at": "2026-04-24T23:45:00Z",
+  "created_by": "decompose-step-retrospective",
   "notes": [
-    "Replace this incomplete scaffold with real waves, assignments, and rationale before completing decompose."
+    "Retrospective decomposition for the backend-canonical work-loop boundary-hardening pass that has already landed in the repo.",
+    "The purpose of this artifact is to catch the durable row up to implementation reality without bypassing Furrow ceremony."
   ],
-  "waves": []
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": [
+        "backend-boundary-semantics"
+      ],
+      "assignments": {
+        "backend-boundary-semantics": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "internal/cli/app.go",
+            "internal/cli/row.go",
+            "internal/cli/row_workflow.go",
+            "internal/cli/row_semantics.go",
+            "internal/cli/app_test.go"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 2,
+      "deliverables": [
+        "pi-work-consumption",
+        "docs-and-row-truth-sync"
+      ],
+      "assignments": {
+        "pi-work-consumption": {
+          "specialist": "typescript-specialist",
+          "file_ownership": [
+            "adapters/pi/furrow.ts"
+          ],
+          "skills": []
+        },
+        "docs-and-row-truth-sync": {
+          "specialist": "technical-writer",
+          "file_ownership": [
+            "docs/architecture/go-cli-contract.md",
+            "docs/architecture/pi-parity-ladder.md",
+            "docs/architecture/pi-step-ceremony-and-artifact-enforcement.md",
+            "docs/handoffs/post-review-pi-step-ceremony-and-artifact-enforcement.md",
+            ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/implementation-plan.md",
+            ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/spec.md",
+            ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/execution-progress.md",
+            ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md",
+            ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/handoff.md"
+          ],
+          "skills": []
+        }
+      }
+    }
+  ]
 }
