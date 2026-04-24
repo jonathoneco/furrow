@@ -1,0 +1,41 @@
+objective: "Implement the minimum shared Go backend slice for Furrow without introducing Pi-only semantics"
+deliverables:
+  - name: almanac-validate-json
+    acceptance_criteria:
+      - "furrow almanac validate --json validates todos.yaml, observations.yaml, and roadmap.yaml"
+      - "structured findings are returned for duplicates, dangling references, malformed trigger data, and missing roadmap references"
+  - name: row-browsing-json
+    acceptance_criteria:
+      - "furrow row list --json returns browseable row metadata without strict schema normalization"
+      - "furrow row status --json resolves explicit, focused, and latest-active rows with normalized output"
+  - name: row-transition-json
+    acceptance_criteria:
+      - "furrow row transition --json performs narrow real adjacent forward mutation for active rows only"
+      - "unknown state fields are preserved and limitations are made explicit"
+  - name: backend-doctor-json
+    acceptance_criteria:
+      - "furrow doctor --json reports backend structural readiness, focused-row sanity, and almanac validation summary"
+  - name: durable-artifacts-and-tests
+    acceptance_criteria:
+      - "Canonical row artifacts exist under this row: definition.yaml, state.json, summary.md, and spec.md"
+      - "summary.md captures current state and next-session guidance in the standard row summary shape"
+      - "go test ./... passes"
+context_pointers:
+  - path: docs/architecture/go-cli-contract.md
+    note: Canonical JSON contract and exit-code guidance
+  - path: docs/architecture/core-adapter-boundary.md
+    note: Backend owns semantics; adapters stay thin
+  - path: docs/architecture/dual-runtime-migration-plan.md
+    note: Minimum shared backend slice and migration sequencing
+  - path: docs/architecture/host-strategy-matrix.md
+    note: Shared semantics with asymmetric host UX
+  - path: internal/cli/app.go
+    note: Current Go CLI scaffold to extend surgically
+constraints:
+  - "Implement only the minimum shared backend slice for early Pi use"
+  - "Do not introduce Pi-only semantics or adapter logic"
+  - "Prefer tolerant reads over strict row-state normalization"
+  - "Keep row mutation narrow, atomic, and explicit about limitations"
+  - "Keep durable row context in canonical row artifacts"
+gate_policy: supervised
+mode: code

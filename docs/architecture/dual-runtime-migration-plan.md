@@ -115,12 +115,20 @@ Goal:
 
 Initial target:
 
+- `furrow almanac validate`
+- `furrow row list`
 - `furrow row status`
 - `furrow row transition`
 - `furrow doctor`
-- `furrow almanac validate`
 - JSON envelopes
 - stable exit codes
+
+Current status note:
+
+- the first usable minimum slice is now implemented for those commands
+- `row transition` is intentionally narrow-real rather than full-lifecycle
+- the next session should build the first Pi operating layer on top of that
+  backend slice rather than widening the backend speculatively
 
 ### Phase C — Pi-primary adapter implementation
 
@@ -248,13 +256,15 @@ extension-local logic that becomes the accidental source of truth.
 
 1. finalize the target architecture doc set
 2. finalize the first Go CLI contract surface
-3. implement the minimum shared backend slice (`row status`, `row transition`,
-   `doctor`, `almanac validate`)
-4. begin Pi adapter work as soon as that slice is stable enough to consume
-5. preserve Claude usability through wrapper delegation, but do not block Pi on
+3. implement the minimum shared backend slice (`almanac validate`, `row list`,
+   `row status`, `row transition`, `doctor`)
+4. lock the backend slice to reality in docs and handoff artifacts
+5. begin the first Pi operating layer as soon as that slice is stable enough to
+   consume
+6. preserve Claude usability through wrapper delegation, but do not block Pi on
    full Claude parity
-6. continue deepening backend semantics until both hosts operate safely over the
-   same `.furrow/` contract
+7. continue deepening backend semantics only when real dual-runtime usage shows
+   that the backend contract is too thin
 
 ## Recommendation summary
 
