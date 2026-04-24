@@ -40,25 +40,28 @@ Architecture/docs:
 Durable row artifacts:
 - `.furrow/rows/pi-step-ceremony-and-artifact-enforcement/implementation-plan.md`
 - `.furrow/rows/pi-step-ceremony-and-artifact-enforcement/spec.md`
+- `.furrow/rows/pi-step-ceremony-and-artifact-enforcement/plan.json`
+- `.furrow/rows/pi-step-ceremony-and-artifact-enforcement/team-plan.md`
 - `.furrow/rows/pi-step-ceremony-and-artifact-enforcement/execution-progress.md`
 - `.furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md`
 - `.furrow/rows/pi-step-ceremony-and-artifact-enforcement/handoff.md`
-- `.furrow/rows/pi-step-ceremony-and-artifact-enforcement/state.json` (backend-mediated progression during validation)
+- `.furrow/rows/pi-step-ceremony-and-artifact-enforcement/state.json` (backend-mediated progression during validation and retrospective catch-up)
 
 ## Current row state
 
 - Row: `pi-step-ceremony-and-artifact-enforcement`
-- Step: `spec`
-- Step status: `not_started`
-- Seed: `furrow-7427` / `speccing`
-- Current-step artifact: `spec.md` present and backend-valid
-- Next checkpoint: `spec->decompose` (supervised), not yet ready because the current step has not been completed through the backend
+- Archived: yes
+- Final lifecycle state: `review / completed`
+- Archived at: `2026-04-24T22:15:55Z`
+- Seed: `furrow-7427` / `reviewing`
+- Archive checkpoint evidence: `gates/review-to-archive.json`
+- Focus pointer: cleared through supported backend command after archival
 
 ## Recommended next slice
 
-Stay inside `work-loop-boundary-hardening`, but keep the next increment narrower
-than this session's breadth:
+Stay inside roadmap row `work/pi-adapter-foundation` and todo `work-loop-boundary-hardening`, but continue in a new in-scope row rather than reopening this archived one.
 
+Next implementation emphasis inside that same roadmap scope:
 1. deepen review/gate evidence surfaces beyond the narrow checkpoint evidence now written by transition/archive
 2. add richer implement/review artifact validation, not just structural markdown/JSON checks
 3. expand archive from narrow preconditions into fuller promotion/disposition ceremony
@@ -69,6 +72,8 @@ than this session's breadth:
 - `.furrow/` remains canonical
 - supported mutations go through backend/CLI authority only
 - keep TypeScript thin and backend-driven
+- use the existing Furrow adapter at `adapters/pi/furrow.ts`
 - do not introduce a second/parallel Pi adapter
 - keep seed/almanac follow-ups attached to `seeds-concept` / `pi-almanac-operating-model`
 - only minimal `/work`-level almanac awareness belongs in this Phase 3 row
+- do not continue active implementation in this archived row; open the next in-scope row through supported Furrow mechanisms

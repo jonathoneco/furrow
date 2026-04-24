@@ -24,13 +24,31 @@
 - Confirmed the supervised `plan->spec` checkpoint through the same backend-driven path after validating the new plan-step artifact semantics.
 - The spec step scaffolded `spec.md` on entry; the scaffold was then replaced with a real spec so the row no longer sits behind an artificial scaffold blocker.
 
+## Retrospective catch-up after this session
+- Reconfirmed the session's changes against the live repo.
+- Fixed an almanac/roadmap YAML parse issue so `furrow almanac validate --json` returns green again.
+- Replaced the scaffolded decompose artifacts with real retrospective decomposition artifacts:
+  - `plan.json`
+  - `team-plan.md`
+- Used only supported backend-mediated workflow mutations to catch the row up to implementation reality:
+  - completed `decompose`
+  - advanced `decompose->implement`
+  - completed `implement`
+  - advanced `implement->review`
+  - completed `review`
+  - archived the row through the narrow backend archive boundary
+- Cleared the focused row pointer through `furrow row focus --clear` after archival so the repo no longer points at an archived active context.
+
 ## Current row state
 - Row: `pi-step-ceremony-and-artifact-enforcement`
-- Step: `spec`
-- Step status: `not_started`
-- Seed: `furrow-7427` / `speccing`
-- Checkpoint: `spec->decompose`, supervised approval required, `ready_to_advance=false`
-- Current-step artifact: `spec.md` present with backend validation passing
+- Archived: yes
+- Final lifecycle state: `review / completed`
+- Archived at: `2026-04-24T22:15:55Z`
+- Seed: `furrow-7427` / `reviewing`
+- Gate evidence now includes:
+  - `decompose->implement`
+  - `implement->review`
+  - `review->archive`
 
 ## Session conclusion
-The next Phase 3 weakness is now narrower than before: the backend owns a first real pass at artifact validation, checkpoint evidence, blocker taxonomy, and archive-boundary handling. The remaining high-value work is deeper review/gate semantics, fuller archive ceremony, and richer implement/review validation rather than another adapter-promotion pass.
+The row has now been caught up retrospectively and archived through supported Furrow ceremony rather than being left in a lifecycle/reality mismatch. Future work should continue in a new in-scope row under the same roadmap row (`work/pi-adapter-foundation`) and todo (`work-loop-boundary-hardening`), not by reopening this archived row.

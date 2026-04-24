@@ -51,13 +51,13 @@
   - recommended action remains backend-driven (`/work --complete` when step work is done enough)
 
 ### `pi --no-session --no-context-files --no-extensions -e ./adapters/pi/furrow.ts -p '/work --switch pi-step-ceremony-and-artifact-enforcement --complete --confirm'`
-- Result: pass, with expected canonical mutations
+- Result during the original session: pass, with expected canonical mutations
 - Evidence:
   - backend marked the plan step complete
   - backend advanced the row through the supervised `plan->spec` boundary
   - backend scaffolded `spec.md` on entry to `spec`
   - Pi surfaced the new blocker taxonomy and artifact validation failure for the scaffolded `spec.md`
-- Follow-up:
+- Follow-up in that session:
   - replaced the scaffolded `spec.md` with a real spec artifact so the durable row state no longer depends on an artificial scaffold blocker
 
 ### `go run ./cmd/furrow row status pi-step-ceremony-and-artifact-enforcement --json` (post-spec sync)
@@ -69,6 +69,91 @@
   - seed status aligned to `speccing`
   - checkpoint boundary is `spec->decompose`
   - `ready_to_advance=false` because the current step has not been canonically completed yet
+
+### Review follow-up validation: `go run ./cmd/furrow almanac validate --json`
+- Result: pass
+- Evidence:
+  - all three canonical almanac files now validate
+  - roadmap parsing is green again
+
+### Review follow-up validation: `go run ./cmd/furrow doctor --host pi --json`
+- Result: pass
+- Evidence:
+  - `summary.pass=9`
+  - `summary.fail=0`
+  - focused row remains usable
+
+### Review follow-up validation: `pi --no-session --no-context-files --no-extensions -e ./adapters/pi/furrow.ts -p '/work --switch pi-step-ceremony-and-artifact-enforcement --complete --confirm'`
+- Result: pass, with expected canonical mutations
+- Evidence:
+  - backend marked the spec step complete
+  - backend advanced the row through the supervised `spec->decompose` boundary
+  - backend scaffolded `plan.json` and `team-plan.md` on entry to `decompose`
+  - Pi surfaced both scaffold blockers with the backend-owned blocker taxonomy
+
+### `go run ./cmd/furrow row status pi-step-ceremony-and-artifact-enforcement --json` (decompose scaffold state)
+- Result: pass
+- Evidence:
+  - current row step: `decompose`
+  - current-step artifacts: `plan.json`, `team-plan.md`
+  - both artifacts are scaffolded and backend-invalid by design until replaced with real decompose content
+  - seed status aligned to `decomposing`
+  - checkpoint boundary is `decompose->implement`
+  - `ready_to_advance=false`
+
+### Retrospective catch-up validation: `go run ./cmd/furrow row status pi-step-ceremony-and-artifact-enforcement --json`
+- Result: pass after replacing the decompose scaffolds with real artifacts
+- Evidence:
+  - `plan.json` validation: `pass`
+  - `team-plan.md` validation: `pass`
+  - blockers: `[]`
+
+### Retrospective catch-up validation: `pi --no-session --no-context-files --no-extensions -e ./adapters/pi/furrow.ts -p '/work --switch pi-step-ceremony-and-artifact-enforcement --complete --confirm'` (decompose)
+- Result: pass
+- Evidence:
+  - backend marked `decompose` complete
+  - backend advanced `decompose->implement`
+  - seed advanced to `implementing`
+
+### Retrospective catch-up validation: `pi --no-session --no-context-files --no-extensions -e ./adapters/pi/furrow.ts -p '/work --switch pi-step-ceremony-and-artifact-enforcement --complete --confirm'` (implement)
+- Result: pass
+- Evidence:
+  - backend marked `implement` complete
+  - backend advanced `implement->review`
+  - seed advanced to `reviewing`
+  - a passing `implement->review` gate record was written, satisfying the narrow archive precondition
+
+### Retrospective catch-up validation: `pi --no-session --no-context-files --no-extensions -e ./adapters/pi/furrow.ts -p '/work --switch pi-step-ceremony-and-artifact-enforcement --complete --confirm'` (review/archive)
+- Result: pass
+- Evidence:
+  - backend marked `review` complete
+  - backend archived the row through the backend `review->archive` checkpoint
+  - durable archive evidence was written under `gates/review-to-archive.json`
+
+### `go run ./cmd/furrow row status pi-step-ceremony-and-artifact-enforcement --json` (archived state)
+- Result: pass
+- Evidence:
+  - row reports `archived=true`
+  - final lifecycle state is `review / completed`
+  - latest gate is `review->archive`
+  - checkpoint evidence reports `archived=true`
+
+### `go run ./cmd/furrow row focus --clear --json`
+- Result: pass
+- Evidence:
+  - cleared the focused row pointer after archival
+
+### `go run ./cmd/furrow doctor --host pi --json` (post-archive cleanup)
+- Result: pass with warning only
+- Evidence:
+  - no hard failures remain
+  - current warning is only `no focused row set`, which is expected after clearing focus
+
+### `pi --no-session --no-context-files --no-extensions -e ./adapters/pi/furrow.ts -p '/work --switch pi-step-ceremony-and-artifact-enforcement'`
+- Result: blocked as expected
+- Evidence:
+  - message: `row "pi-step-ceremony-and-artifact-enforcement" is archived`
+  - confirms the archived row is no longer treated as an active `/work` context
 
 ## Known mismatch retained
 
