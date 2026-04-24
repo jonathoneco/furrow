@@ -385,7 +385,7 @@ func TestRowTransitionJSON(t *testing.T) {
 			"name":           "transition-row",
 			"title":          "Transition Row",
 			"step":           "plan",
-			"step_status":    "in_progress",
+			"step_status":    "completed",
 			"updated_at":     "2026-04-23T10:00:00Z",
 			"archived_at":    nil,
 			"steps_sequence": []string{"ideate", "research", "plan", "spec", "decompose", "implement", "review"},
@@ -418,7 +418,7 @@ func TestRowTransitionJSON(t *testing.T) {
 	t.Run("non adjacent blocked", func(t *testing.T) {
 		root := setupFurrowRoot(t)
 		writeValidAlmanac(t, root)
-		writeRowState(t, root, "blocked-row", map[string]any{"name": "blocked-row", "title": "Blocked", "step": "plan", "step_status": "in_progress", "updated_at": "2026-04-23T10:00:00Z", "archived_at": nil, "steps_sequence": []string{"ideate", "research", "plan", "spec", "decompose", "implement", "review"}, "deliverables": map[string]any{}, "gates": []any{}})
+		writeRowState(t, root, "blocked-row", map[string]any{"name": "blocked-row", "title": "Blocked", "step": "plan", "step_status": "completed", "updated_at": "2026-04-23T10:00:00Z", "archived_at": nil, "steps_sequence": []string{"ideate", "research", "plan", "spec", "decompose", "implement", "review"}, "deliverables": map[string]any{}, "gates": []any{}})
 		code, _, _ := runJSONCommand(t, root, []string{"row", "transition", "blocked-row", "--step", "implement", "--json"})
 		if code != 2 {
 			t.Fatalf("expected exit 2, got %d", code)
@@ -428,7 +428,7 @@ func TestRowTransitionJSON(t *testing.T) {
 	t.Run("archived row blocked", func(t *testing.T) {
 		root := setupFurrowRoot(t)
 		writeValidAlmanac(t, root)
-		writeRowState(t, root, "archived-row", map[string]any{"name": "archived-row", "title": "Archived", "step": "plan", "step_status": "in_progress", "updated_at": "2026-04-23T10:00:00Z", "archived_at": "2026-04-23T10:05:00Z", "steps_sequence": []string{"ideate", "research", "plan", "spec", "decompose", "implement", "review"}, "deliverables": map[string]any{}, "gates": []any{}})
+		writeRowState(t, root, "archived-row", map[string]any{"name": "archived-row", "title": "Archived", "step": "plan", "step_status": "completed", "updated_at": "2026-04-23T10:00:00Z", "archived_at": "2026-04-23T10:05:00Z", "steps_sequence": []string{"ideate", "research", "plan", "spec", "decompose", "implement", "review"}, "deliverables": map[string]any{}, "gates": []any{}})
 		code, _, _ := runJSONCommand(t, root, []string{"row", "transition", "archived-row", "--step", "spec", "--json"})
 		if code != 2 {
 			t.Fatalf("expected exit 2, got %d", code)
@@ -607,6 +607,148 @@ func TestRowCompleteJSON(t *testing.T) {
 	})
 }
 
+func TestRowInitFocusAndScaffoldJSON(t *testing.T) {
+	t.Run("row init creates state and seed", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+
+		code, payload, stderr := runJSONCommand(t, root, []string{"row", "init", "my-new-row", "--title", "My New Row", "--source-todo", "go-cli-contract", "--json"})
+		if code != 0 {
+			t.Fatalf("expected exit 0, got %d stderr=%s payload=%s", code, stderr, mustJSONPayload(t, payload))
+		}
+		data := payload["data"].(map[string]any)
+		row := data["row"].(map[string]any)
+		if row["name"] != "my-new-row" {
+			t.Fatalf("expected my-new-row, got %#v", row)
+		}
+		seed := data["seed"].(map[string]any)
+		if seed["id"] == nil {
+			t.Fatalf("expected linked seed, got %#v", seed)
+		}
+		state := readJSONFile(t, filepath.Join(root, ".furrow", "rows", "my-new-row", "state.json"))
+		if state["seed_id"] == nil || state["seed_id"] == "" {
+			t.Fatalf("expected persisted seed_id, got %#v", state["seed_id"])
+		}
+		todosBytes, err := os.ReadFile(filepath.Join(root, ".furrow", "almanac", "todos.yaml"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !bytes.Contains(todosBytes, []byte("seed_id:")) {
+			t.Fatalf("expected todo seed link backfill, got %s", string(todosBytes))
+		}
+	})
+
+	t.Run("row focus set show and clear", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "focus-row", map[string]any{"name": "focus-row", "title": "Focus", "step": "plan", "step_status": "in_progress", "updated_at": "2026-04-24T18:00:00Z", "archived_at": nil, "deliverables": map[string]any{}})
+
+		code, payload, stderr := runJSONCommand(t, root, []string{"row", "focus", "focus-row", "--json"})
+		if code != 0 {
+			t.Fatalf("expected exit 0, got %d stderr=%s", code, stderr)
+		}
+		if payload["data"].(map[string]any)["focused_row"] != "focus-row" {
+			t.Fatalf("expected focus-row, got %#v", payload)
+		}
+		focusedBytes, err := os.ReadFile(filepath.Join(root, ".furrow", ".focused"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if string(focusedBytes) != "focus-row\n" {
+			t.Fatalf("expected .focused to contain focus-row, got %q", string(focusedBytes))
+		}
+
+		code, payload, stderr = runJSONCommand(t, root, []string{"row", "focus", "--json"})
+		if code != 0 {
+			t.Fatalf("expected exit 0, got %d stderr=%s", code, stderr)
+		}
+		if payload["data"].(map[string]any)["focused_row"] != "focus-row" {
+			t.Fatalf("expected focus-row on readback, got %#v", payload)
+		}
+
+		code, payload, stderr = runJSONCommand(t, root, []string{"row", "focus", "--clear", "--json"})
+		if code != 0 {
+			t.Fatalf("expected exit 0, got %d stderr=%s", code, stderr)
+		}
+		if payload["data"].(map[string]any)["focused_row"] != nil {
+			t.Fatalf("expected cleared focus, got %#v", payload)
+		}
+		if _, err := os.Stat(filepath.Join(root, ".furrow", ".focused")); !os.IsNotExist(err) {
+			t.Fatalf("expected .focused removed, got err=%v", err)
+		}
+	})
+
+	t.Run("scaffold creates incomplete current-step artifact and completion is blocked", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "scaffold-row", map[string]any{
+			"name":             "scaffold-row",
+			"title":            "Scaffold Row",
+			"step":             "ideate",
+			"step_status":      "in_progress",
+			"updated_at":       "2026-04-24T18:00:00Z",
+			"archived_at":      nil,
+			"deliverables":     map[string]any{},
+			"gates":            []any{},
+			"gate_policy_init": "supervised",
+		})
+
+		code, payload, stderr := runJSONCommand(t, root, []string{"row", "scaffold", "scaffold-row", "--json"})
+		if code != 0 {
+			t.Fatalf("expected exit 0, got %d stderr=%s", code, stderr)
+		}
+		created := payload["data"].(map[string]any)["created"].([]any)
+		if len(created) != 1 {
+			t.Fatalf("expected 1 created artifact, got %#v", created)
+		}
+		definitionBytes, err := os.ReadFile(filepath.Join(root, ".furrow", "rows", "scaffold-row", "definition.yaml"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !bytes.Contains(definitionBytes, []byte(scaffoldMarker)) {
+			t.Fatalf("expected scaffold marker in definition, got %s", string(definitionBytes))
+		}
+
+		code, payload, stderr = runJSONCommand(t, root, []string{"row", "status", "scaffold-row", "--json"})
+		if code != 0 {
+			t.Fatalf("expected exit 0, got %d stderr=%s", code, stderr)
+		}
+		if !jsonContains(payload, "artifact_scaffold_incomplete") {
+			t.Fatalf("expected incomplete scaffold blocker, got %s", mustJSONPayload(t, payload))
+		}
+
+		code, _, _ = runJSONCommand(t, root, []string{"row", "complete", "scaffold-row", "--json"})
+		if code != 2 {
+			t.Fatalf("expected completion blocked with exit 2, got %d", code)
+		}
+	})
+
+	t.Run("transition blocked by incomplete scaffold", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "transition-blocked", map[string]any{
+			"name":             "transition-blocked",
+			"title":            "Transition Blocked",
+			"step":             "ideate",
+			"step_status":      "completed",
+			"updated_at":       "2026-04-24T18:00:00Z",
+			"archived_at":      nil,
+			"deliverables":     map[string]any{},
+			"gates":            []any{},
+			"gate_policy_init": "supervised",
+		})
+		mustWrite(t, filepath.Join(root, ".furrow", "rows", "transition-blocked", "definition.yaml"), "# "+scaffoldMarker+"\nobjective: \"TODO\"\n")
+
+		code, payload, _ := runJSONCommand(t, root, []string{"row", "transition", "transition-blocked", "--step", "research", "--json"})
+		if code != 2 {
+			t.Fatalf("expected exit 2, got %d", code)
+		}
+		if !jsonContains(payload, "artifact_scaffold_incomplete") {
+			t.Fatalf("expected scaffold blocker in payload, got %s", mustJSONPayload(t, payload))
+		}
+	})
+}
+
 func TestDoctorJSON(t *testing.T) {
 	t.Run("missing root", func(t *testing.T) {
 		temp := t.TempDir()
@@ -696,6 +838,10 @@ func setupFurrowRoot(t *testing.T) string {
 	root := t.TempDir()
 	mustMkdirAll(t, filepath.Join(root, ".furrow", "rows"))
 	mustMkdirAll(t, filepath.Join(root, ".furrow", "almanac"))
+	mustMkdirAll(t, filepath.Join(root, ".furrow", "seeds"))
+	mustWrite(t, filepath.Join(root, ".furrow", "seeds", "config"), "furrow\n")
+	mustWrite(t, filepath.Join(root, ".furrow", "seeds", "seeds.jsonl"), "")
+	mustWrite(t, filepath.Join(root, ".furrow", "seeds", ".lock"), "")
 	return root
 }
 

@@ -249,9 +249,10 @@ Why first:
 ### Slice 1 — current implemented behavior
 
 The current repository implementation lands a **usable minimum** for the five
-commands above. This section is the contract truth for the implemented slice;
-broader command-group descriptions elsewhere in this document remain directional
-for later phases.
+commands above, and now also includes the narrow row-init/focus/scaffold support
+needed for Pi's supervised `/work` loop. This section is the contract truth for
+the implemented slice; broader command-group descriptions elsewhere in this
+document remain directional for later phases.
 
 #### `furrow almanac validate --json`
 
@@ -332,6 +333,10 @@ Current returned data includes:
 - deliverable counts and per-deliverable items
 - latest gate summary
 - canonical artifact paths
+- current-step artifact expectations
+- seed state surface
+- blocker list
+- checkpoint / next-boundary surface
 - next valid transitions
 - warnings
 
@@ -361,11 +366,18 @@ Current mutation updates:
 - append-only minimal transition/gate-like record in `gates[]`
 
 That record is intentionally provisional and does **not** imply full lifecycle
-semantics. The current implementation does **not** enforce:
+semantics. The current implementation now additionally enforces a narrow blocker
+baseline before mutation:
 
-- artifact validation
-- full gate-policy enforcement
-- seed sync
+- `step_status=completed` required before advancement
+- current-step required artifact presence
+- incomplete scaffold-template detection
+- linked-seed validity / sync when a seed is present
+
+It still does **not** enforce:
+
+- deeper artifact-content validation beyond the incomplete-scaffold marker
+- full gate-policy enforcement beyond adapter-driven supervised confirmation
 - summary regeneration
 - conditional/fail outcomes
 - review/archive lifecycle semantics
@@ -387,6 +399,8 @@ semantics.
 
 - active rows only
 - explicit row argument required
+- blocks if the current step's scaffoldable required artifacts are still missing
+  or still marked as incomplete templates
 - marks `step_status=completed`
 - marks object-shaped deliverables as `status=completed`
 - preserves unknown fields
@@ -436,11 +450,43 @@ Current exit behavior:
 - `3` hard backend-readiness checks failed
 - `5` `.furrow` root not found
 
+#### `furrow row init --json`
+
+Current behavior is intentionally narrow but real:
+
+- creates the row directory plus `state.json` and `reviews/`
+- resolves defaults from `.claude/furrow.yaml` when available
+- creates or links a seed and aligns it to the current ideation step
+- can link/backfill a `source_todo` seed reference when needed
+- does **not** precreate downstream step artifacts
+
+#### `furrow row focus --json`
+
+Current behavior:
+
+- reads the current focused row
+- sets focus to an active row
+- clears focus with `--clear`
+- blocks focusing archived rows
+
+#### `furrow row scaffold --json`
+
+Current behavior:
+
+- only scaffolds the **current** step's scaffoldable artifacts
+- currently supports narrow templates for:
+  - `ideate` -> `definition.yaml`
+  - `research` -> `research.md`
+  - `spec` -> `spec.md`
+  - `decompose` -> `plan.json`, `team-plan.md`
+- marks templates with an explicit incomplete-scaffold sentinel so artifact
+  existence alone never satisfies completion or transition checks
+- does not precreate downstream artifacts
+
 ### Slice 2 — Pi-enabling backend calls
 
 Next, implement:
 
-- `furrow row init --json`
 - `furrow gate status --json`
 - `furrow review status --json`
 
