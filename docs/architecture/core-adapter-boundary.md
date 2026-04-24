@@ -1,5 +1,9 @@
 # Core vs Adapter Boundary
 
+Status: Active
+Authority: Canonical
+Time horizon: Enduring
+
 ## Decision
 
 Furrow should be structured as:
@@ -121,7 +125,7 @@ Adapters should prefer structured CLI calls such as:
 
 Current implemented backend slice note:
 
-- the minimum shared slice currently makes `almanac validate`, `row list`,
+- the first shared backend cut currently makes `almanac validate`, `row list`,
   `row status`, `row transition`, and `doctor` real enough for early adapter
   consumption
 - deeper `gate` and `review` command groups remain future backend work and
@@ -194,7 +198,7 @@ Do **not** carry forward unchanged:
 2. define the Go CLI contract
 3. move domain logic behind that contract
 4. preserve Claude through wrappers and existing UX
-5. build the real Pi adapter against the stable backend
+5. evolve the existing Furrow Pi adapter against the stable backend
 
 That order keeps Furrow's durable value in the backend while leaving runtime UX
 replaceable.

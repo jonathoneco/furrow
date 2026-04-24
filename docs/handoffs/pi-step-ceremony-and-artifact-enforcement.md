@@ -1,5 +1,12 @@
 # Handoff: pi-step-ceremony-and-artifact-enforcement
 
+Status: Active historical/execution artifact
+Authority: Historical / execution (slice spec and implementation handoff)
+Time horizon: Row-local
+
+> This document is durable slice history and execution guidance, not canonical
+> system-definition authority.
+
 ## Goal
 
 Implement the next Furrow migration slice so Furrow-in-Pi moves from a thin

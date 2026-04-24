@@ -1,5 +1,9 @@
 # Workflow power preservation
 
+Status: Active
+Authority: Canonical
+Time horizon: Enduring
+
 ## Purpose
 
 Protect Furrow's migration from succeeding structurally while atrophying functionally.

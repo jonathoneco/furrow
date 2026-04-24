@@ -1,11 +1,20 @@
 # Dual-Runtime Migration Plan
 
+Status: Active
+Authority: Transitional / migration
+Time horizon: Transitional
+
 ## Decision
 
 Furrow should migrate **in-repo**, but under a contract-first, backend-first
 plan that explicitly resists runtime-shaped drift.
 
 The target is **not** equal-runtime product parity.
+The migration stance is documented separately in
+`docs/architecture/migration-stance.md`.
+Documentation authority boundaries for canonical vs transitional vs planning vs
+historical docs are documented in
+`docs/architecture/documentation-authority-taxonomy.md`.
 The target is:
 
 - **backend-canonical**
@@ -91,6 +100,24 @@ Mitigation:
    - `frw`, `rws`, `alm`, `sds` remain available while delegating to Go over time
    - teammate viability matters; equal UX does not
 
+## Migration stance
+
+Furrow should be:
+
+- **conservative about invariants**
+- **aggressive about cutovers and simplification**
+
+That means:
+
+- preserve canonical `.furrow/` state, backend mutation authority, backend-owned
+  semantics, durable artifacts, staged workflow, and explicit human decisions
+- avoid parallel implementations when the target path already exists
+- keep shims only where they protect a real compatibility boundary
+- prefer decisive target-shape cuts over prolonged partial-path staging once a
+  real operating path exists
+
+See `docs/architecture/migration-stance.md` for the concrete policy.
+
 ## Migration phases
 
 ### Phase A — architecture freeze
@@ -111,7 +138,7 @@ Goal:
 Goal:
 
 - make the `furrow` binary real enough to become the canonical backend surface
-- unlock Pi early through a minimal but real shared backend slice
+- unlock Pi early through the first real shared backend cut
 
 Initial target:
 
@@ -125,16 +152,16 @@ Initial target:
 
 Current status note:
 
-- the first usable minimum slice is now implemented for those commands
+- the first usable backend slice is now implemented for those commands
 - `row transition` is intentionally narrow-real rather than full-lifecycle
-- the next session should build the first Pi operating layer on top of that
-  backend slice rather than widening the backend speculatively
+- the next steps should prefer finishing real backend-owned workflow boundaries
+  over extending migration shims or speculative parallel paths
 
 ### Phase C — Pi-primary adapter implementation
 
 Goal:
 
-- build a fresh Pi adapter as soon as the backend is stable enough to consume
+- evolve the existing Furrow Pi adapter as soon as the backend is stable enough to consume
 - let the primary authoring workflow move onto Pi early
 - avoid waiting for full Claude delegation before Pi becomes useful
 
@@ -247,7 +274,7 @@ extension-local logic that becomes the accidental source of truth.
    - if it mutates `.furrow/` semantics, it belongs in Go
 3. **No revival of the old portability spike as code**
    - use the archived research as design input only
-4. **Prefer compatibility shims over parallel logic**
+4. **Prefer a single target path plus narrow compatibility seams over parallel logic**
    - avoid split-brain shell/TS/Go semantics
 5. **Keep manual parity claims labeled as provisional**
    - until exercised against real backend commands
@@ -256,7 +283,7 @@ extension-local logic that becomes the accidental source of truth.
 
 1. finalize the target architecture doc set
 2. finalize the first Go CLI contract surface
-3. implement the minimum shared backend slice (`almanac validate`, `row list`,
+3. stabilize the first shared backend cut (`almanac validate`, `row list`,
    `row status`, `row transition`, `doctor`)
 4. lock the backend slice to reality in docs and handoff artifacts
 5. begin the first Pi operating layer as soon as that slice is stable enough to

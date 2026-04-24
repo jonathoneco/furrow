@@ -1,6 +1,8 @@
 # Pi almanac operating model
 
 Status: Proposed
+Authority: Canonical operating model
+Time horizon: Enduring target with transitional sequencing notes
 Owner: Furrow migration
 Related:
 - `docs/architecture/workflow-power-preservation.md`
@@ -9,6 +11,8 @@ Related:
 - `docs/architecture/dual-runtime-migration-plan.md`
 - `docs/architecture/host-strategy-matrix.md`
 - `docs/architecture/pi-native-capability-leverage.md`
+- `docs/architecture/documentation-authority-taxonomy.md`
+- `docs/architecture/almanac-document-authority-model.md`
 - `.furrow/almanac/todos.yaml` (`seeds-concept`)
 - `commands/work.md`
 - `commands/next.md`
@@ -81,9 +85,16 @@ The almanac owns:
 - promoted learnings
 - docs/history/specialists indexes and related knowledge surfaces
 - planning summaries, rendered views, handoffs, and recommendation outputs
+- eventual indexing/synthesis over documentation authority classes
 
 In the target model, the almanac reads and synthesizes canonical work state from
 seeds rather than owning a parallel TODO registry.
+
+It should also eventually understand that not all documents are the same kind of
+truth. Some are canonical, some transitional, some planning, and some row-local
+historical execution artifacts. The almanac should eventually help Furrow browse
+and synthesize those classes explicitly rather than flattening them into one
+undifferentiated documentation layer.
 
 ### Pi
 
@@ -256,6 +267,38 @@ A Pi operator should not need to spelunk YAML manually to answer:
 - what rationale or learnings should shape this?
 - what row should I start from this work item?
 
+## Documentation authority as an almanac concept
+
+The eventual almanac should manage documentation by more than location.
+It should eventually understand:
+
+- authority class
+  - canonical
+  - transitional
+  - planning
+  - historical execution
+- time horizon
+  - enduring
+  - migration/transitional
+  - row-local
+- promotion/disposition path
+  - stay row-local
+  - promote to canonical docs
+  - promote to migration docs
+  - promote to planning surfaces
+
+This does not mean every document needs a heavy schema immediately. It means
+Furrow should eventually know the difference between:
+- canonical architecture/reference truth
+- migration/cutover truth
+- roadmap/planning truth
+- row execution truth
+
+Some of this is already naturally handled by row artifacts.
+Some of it is handled by promotion flows.
+The almanac's future role is to make those relationships explicit and usable.
+See `docs/architecture/almanac-document-authority-model.md`.
+
 ## Almanac scope after TODO retirement
 
 Once seeds are canonical, the almanac should stay focused on:
@@ -326,10 +369,16 @@ The target model is in place when:
 - delegated/parallel/independently reviewed work cannot proceed without seed
   identity
 - review/archive follow-up work becomes seed-backed rather than loose TODOs
+- the almanac can distinguish canonical vs transitional vs planning vs
+  historical execution documentation rather than flattening them into one pool
 - almanac remains the planning/knowledge synthesis layer rather than a duplicate
   task registry
 
 ## Sequencing
+
+> Transitional sequencing note: this section explains how the target model
+> should be phased during migration. It is sequencing guidance, not a redefinition
+> of the enduring planning model above.
 
 This document does **not** change the immediate priority:
 - first restore Pi's staged `/work` loop and ceremony (`Phase 3`)

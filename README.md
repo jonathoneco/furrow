@@ -1,5 +1,9 @@
 # Furrow
 
+Status: Active
+Authority: Canonical
+Time horizon: Enduring
+
 A workflow harness for AI coding agents. Furrow structures work into tracked
 units called *rows* that move through a fixed sequence of steps — from ideation
 through implementation to review — with quality gates at each boundary. It
@@ -48,8 +52,10 @@ principles explain the shape of the harness and the tradeoffs it makes.
 
 ## What does it feel like
 
-You interact with Furrow through slash commands in Claude Code. A typical
-session looks like this:
+Furrow is currently in a dual-host migration. Claude Code remains an important
+host shape, and the repo now also contains a Pi adapter with a primary `/work`
+loop over the same backend-canonical `.furrow/` state. A typical Claude-form
+session still looks like this:
 
 ```
 /furrow:work "add rate limiting to API"   # starts guided ideation
@@ -149,5 +155,8 @@ into roadmap planning via `/furrow:triage`.
 | `.furrow/almanac/rationale.yaml` | Component inventory with deletion criteria |
 
 Furrow supports Claude Code, Pi, and the Anthropic Agent SDK through thin
-runtime adapters over the shared backend. See `adapters/` for runtime-specific
-bindings.
+runtime adapters over the shared backend. The current Furrow Pi adapter lives
+in `adapters/pi/` and should be extended there rather than replaced with a
+parallel adapter. It is aimed at making Pi the stronger primary host without
+moving canonical workflow semantics out of the backend. See `adapters/` for
+runtime-specific bindings.
