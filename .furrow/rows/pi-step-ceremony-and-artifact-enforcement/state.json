@@ -30,13 +30,21 @@
       "evidence_path": "/home/jonco/src/furrow/.furrow/rows/pi-step-ceremony-and-artifact-enforcement/gates/plan-to-spec.json",
       "outcome": "pass",
       "timestamp": "2026-04-24T20:08:29Z"
+    },
+    {
+      "boundary": "spec-\u003edecompose",
+      "decided_by": "manual",
+      "evidence": "furrow row transition enforced adjacent ordering, completed-step requirement, blocker taxonomy checks, seed sync, and per-artifact validation; summary regeneration and evaluator phases were not performed",
+      "evidence_path": "/home/jonco/src/furrow/.furrow/rows/pi-step-ceremony-and-artifact-enforcement/gates/spec-to-decompose.json",
+      "outcome": "pass",
+      "timestamp": "2026-04-24T20:31:33Z"
     }
   ],
   "mode": "code",
   "name": "pi-step-ceremony-and-artifact-enforcement",
   "seed_id": "furrow-7427",
   "source_todo": "pi-step-ceremony-and-artifact-enforcement",
-  "step": "spec",
+  "step": "decompose",
   "step_status": "not_started",
   "steps_sequence": [
     "ideate",
@@ -48,5 +56,5 @@
     "review"
   ],
   "title": "Pi step ceremony and artifact enforcement",
-  "updated_at": "2026-04-24T20:08:29Z"
+  "updated_at": "2026-04-24T20:31:33Z"
 }
