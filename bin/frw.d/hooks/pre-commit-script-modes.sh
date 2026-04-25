@@ -21,10 +21,10 @@ export FURROW_ROOT
 
 main() {
   precommit_init
+  _ev="$(precommit_event_script_modes)"
+  [ -n "$_ev" ] || exit 0
   _ec=0
-  precommit_event_script_modes \
-    | furrow_guard pre_commit_script_modes \
-    | emit_canonical_blocker || _ec=$?
+  printf '%s' "$_ev" | furrow_guard pre_commit_script_modes | emit_canonical_blocker || _ec=$?
   [ "$_ec" -eq 2 ] && exit 1
   exit "$_ec"
 }

@@ -45,12 +45,17 @@ _FRW_PRECOMMIT_PAYLOADS_SOURCED=1
 #     "payload": { "staged_paths": [<path>, ...] } }
 precommit_event_bakfiles() {
   _staged="$(git diff --cached --name-only 2>/dev/null || printf '')"
+  # Empty payload → nothing to emit (Go's requireArray rejects empty
+  # arrays as invocation errors; short-circuit in shell instead).
+  [ -n "$_staged" ] || return 0
   printf '%s' "$_staged" \
     | jq -R -s -c '
         split("\n") | map(select(length > 0)) as $paths
-        | { version: "1",
-            event_type: "pre_commit_bakfiles",
-            payload: { staged_paths: $paths } }
+        | if ($paths | length) == 0 then empty
+          else { version: "1",
+                 event_type: "pre_commit_bakfiles",
+                 payload: { staged_paths: $paths } }
+          end
       '
 }
 
@@ -66,6 +71,7 @@ precommit_event_bakfiles() {
 #     "payload": { "typechange_entries": [{path, new_mode, status}, ...] } }
 precommit_event_typechange() {
   _raw="$(git diff --cached --raw 2>/dev/null || printf '')"
+  [ -n "$_raw" ] || return 0
   # awk one-pass: emit one tab-separated record per raw row (path, new_mode,
   # status), then jq folds them into the JSON array. Combining the three
   # field reads into a single awk replaces the three-awk pattern in the
@@ -82,9 +88,11 @@ precommit_event_typechange() {
     | jq -R -s -c '
         split("\n") | map(select(length > 0)) | map(split("\t"))
         | map({ path: .[0], new_mode: .[1], status: .[2] }) as $entries
-        | { version: "1",
-            event_type: "pre_commit_typechange",
-            payload: { typechange_entries: $entries } }
+        | if ($entries | length) == 0 then empty
+          else { version: "1",
+                 event_type: "pre_commit_typechange",
+                 payload: { typechange_entries: $entries } }
+          end
       '
 }
 
@@ -113,12 +121,15 @@ precommit_event_script_modes() {
           printf '%s\t%s\n' "$_p" "$_m"
         done
   )"
+  [ -n "$_entries" ] || return 0
   printf '%s' "$_entries" \
     | jq -R -s -c '
         split("\n") | map(select(length > 0)) | map(split("\t"))
         | map({ path: .[0], mode: .[1] }) as $entries
-        | { version: "1",
-            event_type: "pre_commit_script_modes",
-            payload: { script_modes: $entries } }
+        | if ($entries | length) == 0 then empty
+          else { version: "1",
+                 event_type: "pre_commit_script_modes",
+                 payload: { script_modes: $entries } }
+          end
       '
 }

@@ -20,10 +20,10 @@ export FURROW_ROOT
 
 main() {
   precommit_init
+  _ev="$(precommit_event_bakfiles)"
+  [ -n "$_ev" ] || exit 0
   _ec=0
-  precommit_event_bakfiles \
-    | furrow_guard pre_commit_bakfiles \
-    | emit_canonical_blocker || _ec=$?
+  printf '%s' "$_ev" | furrow_guard pre_commit_bakfiles | emit_canonical_blocker || _ec=$?
   # Translate canonical block exit (2) to git pre-commit convention (1).
   [ "$_ec" -eq 2 ] && exit 1
   exit "$_ec"
