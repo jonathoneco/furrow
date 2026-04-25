@@ -20,6 +20,8 @@ import {
 	decideOwnershipAction,
 	shouldInterceptForDefinitionValidation,
 	shouldInterceptForOwnershipWarn,
+	runDefinitionValidationHandler,
+	runOwnershipWarnHandler,
 } from "./validate-actions.ts";
 
 const execFileAsync = promisify(execFile);
@@ -69,6 +71,105 @@ context_pointers:
 constraints: []
 gate_policy: bogus_value
 `;
+
+describe("runDefinitionValidationHandler (D4 end-to-end)", () => {
+	test("non-definition path → undefined (no runJson call)", async () => {
+		const calls: string[][] = [];
+		const action = await runDefinitionValidationHandler("write", "/abs/src/foo.ts", async (a) => {
+			calls.push(a);
+			return { data: undefined };
+		});
+		expect(action).toBeUndefined();
+		expect(calls.length).toBe(0);
+	});
+
+	test("write to */definition.yaml + verdict=valid → undefined (silent allow)", async () => {
+		const action = await runDefinitionValidationHandler(
+			"write",
+			"/abs/.furrow/rows/x/definition.yaml",
+			async () => ({ data: { verdict: "valid" } }),
+		);
+		expect(action).toBeUndefined();
+	});
+
+	test("edit to */definition.yaml + verdict=invalid → block with surfaced reason", async () => {
+		const notifyCalls: Array<[string, string]> = [];
+		const action = await runDefinitionValidationHandler(
+			"edit",
+			"/abs/.furrow/rows/x/definition.yaml",
+			async () => ({
+				data: {
+					verdict: "invalid",
+					errors: [{ code: "definition_objective_missing", category: "definition", severity: "block", message: "missing objective", remediation_hint: "add it", confirmation_path: "block" }],
+				},
+			}),
+			(msg, level) => notifyCalls.push([msg, level]),
+		) as any;
+		expect(action.block).toBe(true);
+		expect(action.reason).toContain("missing objective");
+		expect(notifyCalls.length).toBe(1);
+		expect(notifyCalls[0][1]).toBe("error");
+	});
+
+	test("invokes runJson with the spec-required arg shape", async () => {
+		let captured: string[] = [];
+		await runDefinitionValidationHandler(
+			"write",
+			"/abs/.furrow/rows/x/definition.yaml",
+			async (a) => {
+				captured = a;
+				return { data: { verdict: "valid" } };
+			},
+		);
+		expect(captured).toEqual(["validate", "definition", "--path", "/abs/.furrow/rows/x/definition.yaml", "--json"]);
+	});
+});
+
+describe("runOwnershipWarnHandler (D5 end-to-end)", () => {
+	test("read tool → undefined (no interception)", async () => {
+		const action = await runOwnershipWarnHandler("read", "/abs/x", async () => ({ data: { verdict: "in_scope" } }));
+		expect(action).toBeUndefined();
+	});
+
+	test("write + verdict=in_scope → undefined", async () => {
+		const action = await runOwnershipWarnHandler(
+			"write",
+			"/abs/src/x.go",
+			async () => ({ data: { verdict: "in_scope", matched_deliverable: "d", matched_glob: "g" } }),
+		);
+		expect(action).toBeUndefined();
+	});
+
+	test("write + out_of_scope + confirm-yes → { block: false }", async () => {
+		const confirm = mock(async () => true);
+		const action = await runOwnershipWarnHandler(
+			"edit",
+			"/abs/random.txt",
+			async () => ({
+				data: {
+					verdict: "out_of_scope",
+					envelope: { code: "ownership_outside_scope", category: "ownership", severity: "warn", message: "out", remediation_hint: "", confirmation_path: "warn-with-confirm" },
+				},
+			}),
+			confirm,
+		) as any;
+		expect(action.block).toBe(false);
+		expect(confirm).toHaveBeenCalled();
+	});
+
+	test("invokes runJson with the spec-required arg shape", async () => {
+		let captured: string[] = [];
+		await runOwnershipWarnHandler(
+			"write",
+			"/abs/some/path.go",
+			async (a) => {
+				captured = a;
+				return { data: { verdict: "in_scope" } };
+			},
+		);
+		expect(captured).toEqual(["validate", "ownership", "--path", "/abs/some/path.go", "--json"]);
+	});
+});
 
 describe("D4 path-filter gate (shouldInterceptForDefinitionValidation)", () => {
 	test("Write on */definition.yaml → intercept", () => {

@@ -282,6 +282,8 @@ import {
 	decideOwnershipAction,
 	shouldInterceptForDefinitionValidation,
 	shouldInterceptForOwnershipWarn,
+	runDefinitionValidationHandler,
+	runOwnershipWarnHandler,
 	type ValidateDefinitionData,
 	type ValidateOwnershipData,
 } from "./validate-actions.ts";
@@ -909,38 +911,40 @@ export default function furrowExtension(pi: ExtensionAPI) {
 
 	// Pre-write validation handler — D4 of pre-write-validation-go-first.
 	// Intercepts Write/Edit on `*/definition.yaml` and validates against the
-	// canonical schema before the write proceeds.
+	// canonical schema before the write proceeds. Handler logic lives in
+	// runDefinitionValidationHandler (validate-actions.ts) for direct unit testing.
 	pi.on("tool_call", async (event, ctx) => {
 		const root = findFurrowRoot(ctx.cwd);
 		if (!root) return undefined;
 		const absolutePath = normalizePathArg((event.input as any)?.path, ctx.cwd);
-		if (!shouldInterceptForDefinitionValidation(event.toolName, absolutePath)) return undefined;
-
-		const result = await runFurrowJson<ValidateDefinitionData>(
-			root,
-			["validate", "definition", "--path", absolutePath!, "--json"],
-			ctx.signal,
+		return runDefinitionValidationHandler(
+			event.toolName,
+			absolutePath,
+			async (args) => {
+				const result = await runFurrowJson<ValidateDefinitionData>(root, args, ctx.signal);
+				return { data: result.envelope?.data };
+			},
+			ctx.hasUI ? ctx.ui.notify.bind(ctx.ui) : undefined,
 		);
-		return decideValidateDefinitionAction(result.envelope?.data, ctx.hasUI ? ctx.ui.notify.bind(ctx.ui) : undefined);
 	});
 
 	// Ownership warn handler — D5 of pre-write-validation-go-first.
-	// Intercepts every Write/Edit and surfaces an interactive confirm prompt
-	// when the target path is outside the active row's deliverables[].file_ownership.
-	// Step-agnostic by design (verdict comes from the Go validator which never
-	// reads state.json.step).
+	// Handler logic lives in runOwnershipWarnHandler (validate-actions.ts) for
+	// direct unit testing. Step-agnostic by design (verdict comes from the Go
+	// validator which never reads state.json.step).
 	pi.on("tool_call", async (event, ctx) => {
 		const root = findFurrowRoot(ctx.cwd);
 		if (!root) return undefined;
 		const absolutePath = normalizePathArg((event.input as any)?.path, ctx.cwd);
-		if (!shouldInterceptForOwnershipWarn(event.toolName, absolutePath)) return undefined;
-
-		const result = await runFurrowJson<ValidateOwnershipData>(
-			root,
-			["validate", "ownership", "--path", absolutePath!, "--json"],
-			ctx.signal,
+		return runOwnershipWarnHandler(
+			event.toolName,
+			absolutePath,
+			async (args) => {
+				const result = await runFurrowJson<ValidateOwnershipData>(root, args, ctx.signal);
+				return { data: result.envelope?.data };
+			},
+			ctx.hasUI ? ctx.ui.confirm.bind(ctx.ui) : undefined,
 		);
-		return decideOwnershipAction(result.envelope?.data, ctx.hasUI ? ctx.ui.confirm.bind(ctx.ui) : undefined);
 	});
 
 	pi.registerCommand("work", {

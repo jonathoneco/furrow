@@ -441,7 +441,7 @@ func TestHasPlaceholderText(t *testing.T) {
 		{"PlAcEhOlDeR mixed case", true},
 		{"the outbound queue is processed", false}, // 'tbd' substring inside 'outbound'
 		{"Replicates frw validate-definition behavior including TODO/TBD detection", false}, // descriptive prose
-		{"the system has todos in the queue", false}, // 'todo' is part of 'todos' — not first token
+		{"the system has todos in the queue", false},                                        // 'todo' is part of 'todos' — not first token
 		{"", false},
 		{"   ", false},
 	}
