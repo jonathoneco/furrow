@@ -1,26 +1,18 @@
-# verdict-guard.sh — Block direct writes to gate-verdicts/
+# shellcheck shell=sh
+# verdict-guard.sh — Block direct writes to gate-verdicts/ (D3 migrated shim).
 #
 # Hook: PreToolUse (matcher: Write|Edit)
-# Verdicts must be written by the evaluator subagent via shell,
-# not directly by the in-context agent via Write/Edit tools.
+# Backend: internal/cli/guard.go::handlePreWriteVerdict
+# Returns: 0 (allow) | 2 (block)
 #
-# Return codes:
-#   0 — allowed
-#   2 — blocked
+# Verdicts must be written by the evaluator subagent via shell, not the
+# in-context agent via Write/Edit tools. Canonical shim — translation only.
 
-# shellcheck source=../lib/common-minimal.sh
-. "${FURROW_ROOT}/bin/frw.d/lib/common-minimal.sh"
+# shellcheck source=../lib/blocker_emit.sh disable=SC1091
+. "${FURROW_ROOT}/bin/frw.d/lib/blocker_emit.sh"
 
 hook_verdict_guard() {
-  input="$(cat)"
-  target_path="$(echo "$input" | jq -r '.tool_input.file_path // .tool_input.path // ""' 2>/dev/null)" || target_path=""
-
-  case "$target_path" in
-    */gate-verdicts/*|gate-verdicts/*)
-      log_error "gate-verdicts/ is write-protected — verdicts written by evaluator subagent only"
-      return 2
-      ;;
-  esac
-
-  return 0
+  claude_tool_input_to_event pre_write_verdict \
+    | furrow_guard pre_write_verdict \
+    | emit_canonical_blocker
 }

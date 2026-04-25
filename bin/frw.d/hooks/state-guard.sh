@@ -1,23 +1,18 @@
-# state-guard.sh — Block direct state.json writes
+# shellcheck shell=sh
+# state-guard.sh — Block direct writes to state.json (D3 migrated shim).
 #
 # Hook: PreToolUse (matcher: Write|Edit)
-# Receives JSON on stdin with tool_name and tool_input.
-# Return 2 to block if target is state.json; return 0 otherwise.
+# Backend: internal/cli/guard.go::handlePreWriteStateJSON
+# Returns: 0 (allow) | 2 (block)
+#
+# Canonical 4-step shape per shared-contracts §C5: stdin → normalize →
+# guard → emit. No domain logic in this shim.
 
-# shellcheck source=../lib/common-minimal.sh
-. "${FURROW_ROOT}/bin/frw.d/lib/common-minimal.sh"
+# shellcheck source=../lib/blocker_emit.sh disable=SC1091
+. "${FURROW_ROOT}/bin/frw.d/lib/blocker_emit.sh"
 
 hook_state_guard() {
-  input="$(cat)"
-
-  target_path="$(echo "$input" | jq -r '.tool_input.file_path // .tool_input.path // ""' 2>/dev/null)" || target_path=""
-
-  case "$target_path" in
-    */state.json|state.json)
-      log_error "state.json is Furrow-exclusive — use frw update-state"
-      return 2
-      ;;
-  esac
-
-  return 0
+  claude_tool_input_to_event pre_write_state_json \
+    | furrow_guard pre_write_state_json \
+    | emit_canonical_blocker
 }

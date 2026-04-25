@@ -1,96 +1,22 @@
-# stop-ideation.sh — Validate definition completeness during ideation
+# shellcheck shell=sh
+# stop-ideation.sh — Validate definition.yaml completeness during ideation
+# (D3 migrated shim).
 #
 # Hook: Stop (matcher: empty)
-# Validates that definition.yaml has all required fields as a proxy for
-# section-by-section ideation completeness. Hooks cannot read conversation
-# history, so field presence is the enforcement mechanism.
+# Backend: internal/cli/stop_ideation.go::handleStopIdeationCompleteness
+# Returns: 0 (allow / skip) | 2 (block — required fields missing)
 #
-# Required fields: objective, deliverables (>=1), context_pointers (>=1),
-#   constraints, gate_policy
-#
-# In supervised/delegated mode: all fields must be present.
-# In autonomous mode: check is skipped (evaluator validates instead).
-#
-# Return codes:
-#   0 — valid (or not in ideation step, or autonomous mode)
-#   2 — missing required fields (blocking)
+# All domain logic — row resolution, step gating, gate-policy resolution,
+# definition-field reading — lives in lib/stop_payloads.sh (file reads)
+# and Go (field-presence verdict). The shim is translation only.
 
-# Source common.sh to pick up resolve_config_value for gate_policy resolution.
-# common.sh re-sources common-minimal.sh, so all previously available symbols
-# (find_focused_row, log_warning, etc.) remain in scope. This is safe for this
-# hook because it already requires yq for the definition.yaml field check.
-# shellcheck source=../lib/common.sh
-. "${FURROW_ROOT}/bin/frw.d/lib/common.sh"
+# shellcheck source=../lib/blocker_emit.sh disable=SC1091
+. "${FURROW_ROOT}/bin/frw.d/lib/blocker_emit.sh"
+# shellcheck source=../lib/stop_payloads.sh disable=SC1091
+. "${FURROW_ROOT}/bin/frw.d/lib/stop_payloads.sh"
 
 hook_stop_ideation() {
-  work_dir="$(find_focused_row)"
-
-  if [ -z "$work_dir" ]; then
-    return 0
-  fi
-
-  # --- check if in ideation step ---
-
-  step="$(jq -r '.step' "${work_dir}/state.json" 2>/dev/null)" || step=""
-  if [ "${step}" != "ideate" ]; then
-    return 0
-  fi
-
-  # --- check gate policy ---
-  # Resolve via the three-tier config chain (project .furrow/furrow.yaml → XDG
-  # → compiled-in) instead of reading definition.yaml directly. This is the
-  # canonical resolver adopted by xdg-config-consumer-wiring; the prior ad-hoc
-  # yq read is removed.
-
-  def_file="${work_dir}/definition.yaml"
-  gate_policy="$(resolve_config_value gate_policy)" || gate_policy="supervised"
-
-  if [ "${gate_policy}" = "autonomous" ]; then
-    return 0
-  fi
-
-  # --- validate definition.yaml has all required fields ---
-  # Hooks cannot read conversation history, so we validate the
-  # definition file as a proxy for ideation completeness.
-
-  if [ ! -f "${def_file}" ]; then
-    # Definition not yet written — ideation still in progress, no error
-    return 0
-  fi
-
-  if ! command -v yq > /dev/null 2>&1; then
-    echo "yq not available — skipping definition field validation" >&2
-    return 0
-  fi
-
-  missing=""
-
-  # Check scalar fields
-  for field in objective gate_policy; do
-    val="$(yq -r ".${field} // \"\"" "${def_file}" 2>/dev/null)" || val=""
-    if [ -z "${val}" ]; then
-      missing="${missing}  - ${field}\n"
-    fi
-  done
-
-  # Check array fields have >= 1 entry
-  for field in deliverables context_pointers; do
-    count="$(yq -r ".${field} | length" "${def_file}" 2>/dev/null)" || count="0"
-    if [ "${count}" -lt 1 ] 2>/dev/null; then
-      missing="${missing}  - ${field} (need >= 1 entry)\n"
-    fi
-  done
-
-  # Check constraints (should exist, can be scalar or array)
-  constraints="$(yq -r '.constraints // ""' "${def_file}" 2>/dev/null)" || constraints=""
-  if [ -z "${constraints}" ] || [ "${constraints}" = "null" ]; then
-    missing="${missing}  - constraints\n"
-  fi
-
-  if [ -n "${missing}" ]; then
-    printf "Ideation incomplete — definition.yaml missing required fields:\n%b" "${missing}" >&2
-    return 2
-  fi
-
-  return 0
+  _ev="$(stop_event_ideation)"
+  [ -n "$_ev" ] || return 0
+  printf '%s' "$_ev" | furrow_guard stop_ideation_completeness | emit_canonical_blocker
 }
