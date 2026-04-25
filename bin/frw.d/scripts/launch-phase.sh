@@ -52,15 +52,49 @@ phase_data=$(yq -o=json ".phases[] | select(.number == $phase)" "$roadmap")
 [ -n "$phase_data" ] || { echo "error: phase $phase not found in $roadmap" >&2; exit 1; }
 
 phase_title=$(printf '%s' "$phase_data" | jq -r '.title')
-row_count=$(printf '%s' "$phase_data" | jq -r '(.work_units // .rows) | length')
+total_rows=$(printf '%s' "$phase_data" | jq -r '(.work_units // .rows) | length')
 
-echo "Phase $phase — $phase_title ($row_count rows)"
+# Skip rows that are already archived. roadmap.yaml's completed_at is the
+# planning-side signal but is hand-conformed and may lag; state.json's
+# archived_at is the source of truth, so we consult it when the row dir exists.
+all_rows=$(printf '%s' "$phase_data" | jq -c '(.work_units // .rows)[]')
+pending_rows="[]"
+while IFS= read -r row; do
+  [ -n "$row" ] || continue
+  branch=$(printf '%s' "$row" | jq -r '.branch_name // .branch')
+  row_name=${branch#work/}
+  state_file=".furrow/rows/${row_name}/state.json"
+  archived_at=""
+  if [ -f "$state_file" ]; then
+    archived_at=$(jq -r '.archived_at // ""' "$state_file" 2>/dev/null || echo "")
+  fi
+  completed_at=$(printf '%s' "$row" | jq -r '.completed_at // ""')
+  if [ -n "$archived_at" ] || [ -n "$completed_at" ]; then
+    echo "  Skipping ${row_name}: already ${archived_at:+archived $archived_at}${completed_at:+completed $completed_at}"
+    continue
+  fi
+  pending_rows=$(printf '%s' "$pending_rows" | jq -c --argjson r "$row" '. + [$r]')
+done <<EOF
+$all_rows
+EOF
+row_count=$(printf '%s' "$pending_rows" | jq 'length')
+
+if [ "$row_count" -eq 0 ]; then
+  echo "Phase $phase — $phase_title: all $total_rows rows already completed. Nothing to launch." >&2
+  exit 0
+fi
+
+if [ "$row_count" -lt "$total_rows" ]; then
+  echo "Phase $phase — $phase_title ($row_count of $total_rows rows pending; skipping completed)"
+else
+  echo "Phase $phase — $phase_title ($row_count rows)"
+fi
 echo ""
 
 # --- process each row ---
 # Support both the current schema (.work_units with .branch_name) and the
 # legacy schema (.rows with .branch).
-printf '%s' "$phase_data" | jq -c '(.work_units // .rows)[]' | while IFS= read -r row; do
+printf '%s' "$pending_rows" | jq -c '.[]' | while IFS= read -r row; do
   branch=$(printf '%s' "$row" | jq -r '.branch_name // .branch')
   description=$(printf '%s' "$row" | jq -r '.description')
   row_name=$(printf '%s' "$branch" | sed 's|^work/||')
