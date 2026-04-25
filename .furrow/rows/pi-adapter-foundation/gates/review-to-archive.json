@@ -1,0 +1,395 @@
+{
+  "boundary": "review-\u003earchive",
+  "notes": "backend-canonical archive checkpoint evidence for the narrow /work loop",
+  "overall": "pass",
+  "phase_a": {
+    "archive_ceremony": {
+      "follow_ups": {
+        "by_severity": {
+          "critical": 0,
+          "high": 0,
+          "low": 0,
+          "medium": 0,
+          "unknown": 0
+        },
+        "by_source": {
+          "conditional_dimensions": 0,
+          "failed_dimensions": 0,
+          "real_findings": 0
+        },
+        "total": 0
+      },
+      "learnings": {
+        "count": 0,
+        "path": "/home/jonco/src/furrow/.furrow/rows/pi-adapter-foundation/learnings.jsonl",
+        "present": false
+      },
+      "review": {
+        "by_status": {
+          "fail": 0,
+          "missing": 0,
+          "pass": 2,
+          "warn": 1
+        },
+        "findings_by_severity": {
+          "critical": 0,
+          "high": 0,
+          "low": 0,
+          "medium": 0,
+          "unknown": 0
+        },
+        "follow_ups": {
+          "by_severity": {
+            "critical": 0,
+            "high": 0,
+            "low": 0,
+            "medium": 0,
+            "unknown": 0
+          },
+          "by_source": {
+            "conditional_dimensions": 0,
+            "failed_dimensions": 0,
+            "real_findings": 0
+          },
+          "total": 0
+        },
+        "items": [
+          {
+            "deliverable": "row-model-continuation",
+            "findings": {
+              "by_severity": {
+                "critical": 0,
+                "high": 0,
+                "low": 0,
+                "medium": 0,
+                "unknown": 0
+              },
+              "total": 0
+            },
+            "follow_ups": {
+              "by_severity": {
+                "critical": 0,
+                "high": 0,
+                "low": 0,
+                "medium": 0,
+                "unknown": 0
+              },
+              "by_source": {
+                "conditional_dimensions": 0,
+                "failed_dimensions": 0,
+                "real_findings": 0
+              },
+              "items": [],
+              "phase_b": {
+                "available": true,
+                "cross_model": false,
+                "dimensions": {
+                  "conditional": 0,
+                  "fail": 0,
+                  "missing_evidence": 0,
+                  "pass": 1,
+                  "total": 1
+                },
+                "verdict": "pass"
+              },
+              "total": 0
+            },
+            "label": "reviews/row-model-continuation.json",
+            "overall": "pass",
+            "path": "/home/jonco/src/furrow/.furrow/rows/pi-adapter-foundation/reviews/row-model-continuation.json",
+            "phase_a": {
+              "acceptance_criteria": {
+                "met": 3,
+                "missing_evidence": 1,
+                "total": 3,
+                "unmet": 0
+              },
+              "artifacts_present": true,
+              "available": true,
+              "verdict": "pass"
+            },
+            "phase_b": {
+              "available": true,
+              "cross_model": false,
+              "dimensions": {
+                "conditional": 0,
+                "fail": 0,
+                "missing_evidence": 0,
+                "pass": 1,
+                "total": 1
+              },
+              "verdict": "pass"
+            },
+            "status": "warn",
+            "synthesized": {
+              "override": false,
+              "reason_present": false,
+              "verdict": null
+            },
+            "timestamp": "2026-04-25T04:10:00Z"
+          },
+          {
+            "deliverable": "evaluator-grade-review-semantics",
+            "findings": {
+              "by_severity": {
+                "critical": 0,
+                "high": 0,
+                "low": 0,
+                "medium": 0,
+                "unknown": 0
+              },
+              "total": 0
+            },
+            "follow_ups": {
+              "by_severity": {
+                "critical": 0,
+                "high": 0,
+                "low": 0,
+                "medium": 0,
+                "unknown": 0
+              },
+              "by_source": {
+                "conditional_dimensions": 0,
+                "failed_dimensions": 0,
+                "real_findings": 0
+              },
+              "items": [],
+              "phase_b": {
+                "available": true,
+                "cross_model": false,
+                "dimensions": {
+                  "conditional": 0,
+                  "fail": 0,
+                  "missing_evidence": 0,
+                  "pass": 1,
+                  "total": 1
+                },
+                "verdict": "pass"
+              },
+              "total": 0
+            },
+            "label": "reviews/evaluator-grade-review-semantics.json",
+            "overall": "pass",
+            "path": "/home/jonco/src/furrow/.furrow/rows/pi-adapter-foundation/reviews/evaluator-grade-review-semantics.json",
+            "phase_a": {
+              "acceptance_criteria": {
+                "met": 3,
+                "missing_evidence": 0,
+                "total": 3,
+                "unmet": 0
+              },
+              "artifacts_present": true,
+              "available": true,
+              "verdict": "pass"
+            },
+            "phase_b": {
+              "available": true,
+              "cross_model": false,
+              "dimensions": {
+                "conditional": 0,
+                "fail": 0,
+                "missing_evidence": 0,
+                "pass": 1,
+                "total": 1
+              },
+              "verdict": "pass"
+            },
+            "status": "pass",
+            "synthesized": {
+              "override": false,
+              "reason_present": false,
+              "verdict": null
+            },
+            "timestamp": "2026-04-25T04:10:00Z"
+          },
+          {
+            "deliverable": "archive-disposition-signals",
+            "findings": {
+              "by_severity": {
+                "critical": 0,
+                "high": 0,
+                "low": 0,
+                "medium": 0,
+                "unknown": 0
+              },
+              "total": 0
+            },
+            "follow_ups": {
+              "by_severity": {
+                "critical": 0,
+                "high": 0,
+                "low": 0,
+                "medium": 0,
+                "unknown": 0
+              },
+              "by_source": {
+                "conditional_dimensions": 0,
+                "failed_dimensions": 0,
+                "real_findings": 0
+              },
+              "items": [],
+              "phase_b": {
+                "available": true,
+                "cross_model": false,
+                "dimensions": {
+                  "conditional": 0,
+                  "fail": 0,
+                  "missing_evidence": 0,
+                  "pass": 1,
+                  "total": 1
+                },
+                "verdict": "pass"
+              },
+              "total": 0
+            },
+            "label": "reviews/archive-disposition-signals.json",
+            "overall": "pass",
+            "path": "/home/jonco/src/furrow/.furrow/rows/pi-adapter-foundation/reviews/archive-disposition-signals.json",
+            "phase_a": {
+              "acceptance_criteria": {
+                "met": 3,
+                "missing_evidence": 0,
+                "total": 3,
+                "unmet": 0
+              },
+              "artifacts_present": true,
+              "available": true,
+              "verdict": "pass"
+            },
+            "phase_b": {
+              "available": true,
+              "cross_model": false,
+              "dimensions": {
+                "conditional": 0,
+                "fail": 0,
+                "missing_evidence": 0,
+                "pass": 1,
+                "total": 1
+              },
+              "verdict": "pass"
+            },
+            "status": "pass",
+            "synthesized": {
+              "override": false,
+              "reason_present": false,
+              "verdict": null
+            },
+            "timestamp": "2026-04-25T04:10:00Z"
+          }
+        ],
+        "overall_verdicts": {
+          "conditional": 0,
+          "fail": 0,
+          "pass": 3,
+          "unknown": 0
+        },
+        "phase_a_verdicts": {
+          "conditional": 0,
+          "fail": 0,
+          "pass": 3,
+          "unknown": 0
+        },
+        "phase_b_verdicts": {
+          "conditional": 0,
+          "fail": 0,
+          "pass": 3,
+          "unknown": 0
+        },
+        "required": 3,
+        "synthesized_overrides": 0
+      },
+      "source_todo": {
+        "id": null,
+        "present": false
+      }
+    },
+    "artifact_validation": {
+      "by_status": {
+        "fail": 0,
+        "missing": 0,
+        "pass": 2,
+        "warn": 1
+      },
+      "total": 3
+    },
+    "artifacts": [
+      {
+        "exists": true,
+        "id": "review:row-model-continuation",
+        "incomplete": false,
+        "label": "reviews/row-model-continuation.json",
+        "path": "/home/jonco/src/furrow/.furrow/rows/pi-adapter-foundation/reviews/row-model-continuation.json",
+        "required": true,
+        "scaffold_supported": false,
+        "validation": {
+          "blocking_count": 0,
+          "finding_count": 1,
+          "findings": [
+            {
+              "code": "review_phase_a_evidence_thin",
+              "message": "review artifact has 1 Phase A criteria without substantive evidence",
+              "severity": "warning"
+            }
+          ],
+          "status": "warn",
+          "summary": "validation has warnings",
+          "warning_count": 1
+        }
+      },
+      {
+        "exists": true,
+        "id": "review:evaluator-grade-review-semantics",
+        "incomplete": false,
+        "label": "reviews/evaluator-grade-review-semantics.json",
+        "path": "/home/jonco/src/furrow/.furrow/rows/pi-adapter-foundation/reviews/evaluator-grade-review-semantics.json",
+        "required": true,
+        "scaffold_supported": false,
+        "validation": {
+          "blocking_count": 0,
+          "finding_count": 0,
+          "findings": [],
+          "status": "pass",
+          "summary": "validation passed",
+          "warning_count": 0
+        }
+      },
+      {
+        "exists": true,
+        "id": "review:archive-disposition-signals",
+        "incomplete": false,
+        "label": "reviews/archive-disposition-signals.json",
+        "path": "/home/jonco/src/furrow/.furrow/rows/pi-adapter-foundation/reviews/archive-disposition-signals.json",
+        "required": true,
+        "scaffold_supported": false,
+        "validation": {
+          "blocking_count": 0,
+          "finding_count": 0,
+          "findings": [],
+          "status": "pass",
+          "summary": "validation passed",
+          "warning_count": 0
+        }
+      }
+    ],
+    "blockers": [],
+    "notes": "supersedence confirmed: e4adef5:pi-step-ceremony-and-artifact-enforcement",
+    "review_gate": {
+      "boundary": "implement-\u003ereview",
+      "decided_by": "manual",
+      "evidence": "no implement work — phantom row, scope satisfied by sibling row pi-step-ceremony-and-artifact-enforcement (commit e4adef5); supersedence acknowledged",
+      "evidence_path": null,
+      "outcome": "pass",
+      "timestamp": "2026-04-25T03:59:12Z"
+    },
+    "seed": {
+      "consistent": true,
+      "expected_status": "reviewing",
+      "id": "furrow-6d44",
+      "state": "linked",
+      "status": "reviewing",
+      "title": "Pi adapter foundation"
+    }
+  },
+  "reviewer": "furrow row archive",
+  "timestamp": "2026-04-25T04:01:09Z"
+}
