@@ -2909,11 +2909,12 @@ phases:
     completed_at: null
   - index: 3
     branch: work/state-and-correction-guards
-    description: Pi tool_call extends to bash rm/cp/mv + correction-budget footer + session-resume reground.
+    description: Pi tool_call extends to bash rm/cp/mv + correction-budget footer + session-resume reground + canonical schema for all tool_call handlers (consolidates accreted handler shapes into one contract).
     todos:
     - state-guard-rm-coverage
     - pi-correction-limit-visibility
     - pi-session-resume-reground
+    - pi-tool-call-canonical-schema-and-surface-audit
     depends_on:
     - work/pre-write-validation-go-first
     key_files:
@@ -3046,11 +3047,12 @@ phases:
   rows:
   - index: 1
     branch: work/cli-introspection-and-history
-    description: Tier 1+2+3 introspection commands as Go-first first-class citizens. Foundational for the rest of Phase 7.
+    description: Tier 1+2+3 introspection commands as Go-first first-class citizens. Foundational for the rest of Phase 7. Also closes the dispatch-enforcement observation now that 3+ multi-deliverable rows have archived.
     todos:
     - cli-introspection-suite
     - cli-architecture-overhaul-slice-2
     - harness-parallel-dispatch-race
+    - close-re-evaluate-dispatch-enforcement-observation
     depends_on:
     - work/blocker-taxonomy-foundation
     key_files:
@@ -3117,9 +3119,10 @@ phases:
   rows:
   - index: 1
     branch: work/dual-runtime-parity-validation
-    description: Adapters audit + Claude wrapper compat + Pi adapter package umbrella + parity validation gate + workflow-power-preservation umbrella close.
+    description: Adapters audit (with new pass/fail rubric) + Claude wrapper compat + Pi adapter package umbrella + parity validation gate + workflow-power-preservation umbrella close. The rubric todo is a hard precondition — adapters-audit cannot complete without measurable thresholds.
     todos:
     - adapters-audit
+    - define-adapters-audit-pass-fail-rubric
     - claude-wrapper-compatibility
     - pi-adapter-package
     - dual-runtime-parity-validation
@@ -3152,7 +3155,7 @@ phases:
   - index: 3
     branch: work/docs-and-research
     description: 'Background row: docs cleanup + authority enforcement + residue archival + research streams (mine claude code, mine v1 harness, memetic algorithms, research methodology,
-      nate-jones skill).'
+      nate-jones skill) + terminal land-or-kill decisions on each research stream + transitional doc graduation. No research stream may stay open at row close — every output either lands as a follow-up TODO or is killed and archived.'
     todos:
     - docs-cleanup-pass
     - doc-authority-class-enforcement
@@ -3163,6 +3166,8 @@ phases:
     - research-documentation-detection
     - research-methodology-design
     - apply-nate-jones-skill
+    - land-or-kill-decision-for-phase-8-research-streams
+    - finalize-transitional-architecture-docs-authority
     depends_on: []
     key_files:
     - docs/
@@ -3171,7 +3176,7 @@ phases:
     completed_at: null
   - index: 4
     branch: work/legacy-shell-cutoff-and-removal
-    description: 'Hard cutoff for the shell-era artifacts: remove bin/rws, bin/alm, bin/sds entrypoints; retire todos.yaml as canonical (seeds.jsonl wins); delete legacy shell hooks under bin/frw.d/hooks/; archive bin/frw.d/scripts/ tree. Single milestone gated on dual-runtime-parity-validation — clean swap, no indefinite hybrid.'
+    description: 'Hard cutoff for the shell-era artifacts: remove bin/rws, bin/alm, bin/sds entrypoints; retire todos.yaml as canonical (seeds.jsonl wins, with one-sprint monitoring window for split-brain detection); remove Claude shell wrappers no longer protecting a real boundary; delete legacy shell hooks under bin/frw.d/hooks/; archive bin/frw.d/scripts/ tree. Single milestone gated on dual-runtime-parity-validation — clean swap, no indefinite hybrid.'
     todos:
     - remove-bin-rws-shell-entrypoint
     - remove-bin-alm-shell-entrypoint
@@ -3179,6 +3184,7 @@ phases:
     - retire-todos-yaml-as-canonical-planning-primitive
     - remove-legacy-shell-hooks-under-bin-frw-d-hooks
     - archive-legacy-shell-scripts-tree
+    - remove-claude-shell-wrappers-after-dual-runtime-pa
     depends_on:
     - work/dual-runtime-parity-validation
     key_files:
