@@ -1,0 +1,54 @@
+{
+  "deliverable": "canonical-blocker-taxonomy",
+  "phase": "B",
+  "reviewer": "fresh-claude-subagent",
+  "dimensions": [
+    {
+      "name": "ac-coverage",
+      "verdict": "PASS",
+      "evidence": "All 6 ACs in definition.yaml:15-20 are addressed: (1) taxonomy extended to 40 codes spanning all required categories (schemas/blocker-taxonomy.yaml); (2) every entry has the 6 required fields with applicable_steps optional (yq inspection of unique keys returns exactly the expected set); (3) schema validates extended shape (schemas/blocker-taxonomy.schema.json:18-50) and TestBlockerTaxonomyLoadsAndValidates passes; (4) backward-compat lock enforced via TestBlockerTaxonomyBackwardCompat11 in blocker_envelope_test.go:183-207; (5) row status emits canonical envelope via blocker() constructor at row_semantics.go:63-77 routed through tx.EmitBlocker; (6) doc citation at pi-step-ceremony-and-artifact-enforcement.md:267-285 cites the YAML as canonical and removes the prose registry duplication."
+    },
+    {
+      "name": "adapter-agnostic",
+      "verdict": "PASS",
+      "evidence": "yq -r '.blockers[] | keys[]' returns exactly: applicable_steps, category, code, confirmation_path, message_template, remediation_hint, severity. No claude/pi/host/adapter fields anywhere in schemas/blocker-taxonomy.yaml. The schema enforces additionalProperties:false at both top level and per-entry (schema.json:7,19)."
+    },
+    {
+      "name": "backward-compat",
+      "verdict": "PASS",
+      "evidence": "All 11 pre-D1 codes appear unchanged at schemas/blocker-taxonomy.yaml:21-96 with original code strings, severities (10x block + ownership_outside_scope warn), and message_template placeholder sets. TestBlockerTaxonomyBackwardCompat11 (blocker_envelope_test.go:183-207) locks them via the explicit backwardCompatCodes table at lines 16-32 with exact placeholder sets per-code. Test passes."
+    },
+    {
+      "name": "envelope-shape",
+      "verdict": "PASS",
+      "evidence": "BlockerEnvelope struct at internal/cli/blocker_envelope.go:36-43 has exactly 6 fields: Code, Category, Severity, Message, RemediationHint, ConfirmationPath — no Details. Severity enum validated against {block,warn,info} at line 46. ConfirmationPath enum validated against {block,warn-with-confirm,silent} at line 47. RemediationHint is required: LoadTaxonomy returns error for empty remediation_hint at line 173. Spec C3 contract is fully matched."
+    },
+    {
+      "name": "producer-migration",
+      "verdict": "PASS",
+      "evidence": "blocker() constructor at row_semantics.go:63-77 now resolves via tx.EmitBlocker (line 64) — no hardcoded severity:\"error\", no prose confirmation_path. Returns canonical 6-field envelope with optional sibling 'details' map (lines 73-75). The legacy blockerConfirmationPath function is gone. All 11 rowBlockers emit-sites (row_workflow.go:1020-1113) pass interp + sibling details correctly. grep for '\"severity\"\\s*:\\s*\"error\"' across internal/cli/*.go (excluding blocker_envelope.go) returns zero hits."
+    },
+    {
+      "name": "pi-render",
+      "verdict": "PASS",
+      "evidence": "adapters/pi/furrow.ts:406-420 formatBlockers now sources :: fix: prose from blocker.remediation_hint (line 417), with explicit comment (lines 411-416) that Pi MUST NOT maintain its own enum→prose dictionary. confirmation_path is no longer interpolated as prose. RowStatusData type at lines 187-198 declares remediation_hint and an optional sibling details record."
+    },
+    {
+      "name": "code-inventory",
+      "verdict": "PASS",
+      "evidence": "Registry contains 40 codes (yq count), well above AC-D1.1 ≥15 and spec target ≥21. Coverage spans all required categories: state-mutation (state_json_direct_write, correction_limit_reached, step_order_invalid, state_validation_failed_warn), gate (verdict_direct_write, decided_by_invalid_for_policy, nonce_stale, verdict_linkage_missing, supervised_boundary_unconfirmed), archive (archived_row_mutation, supersedence_evidence_missing, archive_requires_review_gate), scaffold (script_guard_internal_invocation, precommit_install_artifact_staged, precommit_script_mode_invalid, precommit_typechange_to_symlink), summary (summary_section_missing/empty + _warn variants), ideation (ideation_incomplete_definition_fields), seed (seed_store_unavailable, missing_seed_record, closed_seed, seed_status_mismatch). All 40 covered by expectedInitialCodes in blocker_envelope_test.go:41-86."
+    },
+    {
+      "name": "doc-citation",
+      "verdict": "PASS",
+      "evidence": "docs/architecture/pi-step-ceremony-and-artifact-enforcement.md:267-285 'Blocker baseline' section cites schemas/blocker-taxonomy.yaml as canonical (line 269) with explicit 'does not duplicate the registry contents' statement (line 277) and a runnable yq pointer (lines 282-284). The 'never sufficient by themselves' completion-semantics list is preserved per spec §1.10. No prose hard-blocker bullet list duplicating registry rows remains."
+    },
+    {
+      "name": "tests",
+      "verdict": "PASS",
+      "evidence": "`go test ./internal/cli/...` produced: ok github.com/jonathoneco/furrow/internal/cli 0.035s — all tests pass including TestBlockerTaxonomyLoadsAndValidates, TestBlockerEnvelopeAllInitialCodesResolve (40 subtests), TestBlockerTaxonomyBackwardCompat11 (11 subtests), TestBlockerApplicableStepsFilter (11 subtests), TestBlockerEnvelopeUnknownCodePanics, TestBlockerEnvelopeInterpolation, TestBlockerEnvelopeMissingInterpolationKeyPanics."
+    }
+  ],
+  "overall": "PASS",
+  "notes": "Implementation is clean and matches both definition.yaml and shared-contracts.md C3. Minor observations not flagged as failures: (1) Existing test surface for furrow row status JSON output (AC-D1.6/AC-D1.7 in spec) does not include an end-to-end TestRowStatusEmitsCanonicalBlockers — the migration is verified indirectly via the constructor unit tests. The spec §3.3 Scenario named such a test but the implementation chose a tighter unit-level lock; given the constructor is the single emit funnel and is fully covered, this is defensible. (2) The Pi-side bun test referenced in spec AC-D1.8 (formatBlockers uses remediation_hint) was not in scope of this review — only the static contract was verified. (3) AC-D1.4 mentions ajv validation in the spec but no CI hook runs it; the hand-coded LoadTaxonomy validator is the operative gate, which matches blocker_envelope.go:4 comment. (4) Note A in spec §6.4 (archive_requires_review_gate vs archive_before_review_pass) was resolved by keeping BOTH codes in the registry — both names appear, only archive_requires_review_gate is emitted from row_workflow.go:1113. This is the spec's 'fallback' option, slightly less clean than the preferred rename but explicitly permitted."
+}

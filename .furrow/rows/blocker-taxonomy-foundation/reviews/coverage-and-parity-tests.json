@@ -1,0 +1,54 @@
+{
+  "deliverable": "coverage-and-parity-tests",
+  "phase": "B",
+  "reviewer": "fresh-claude-subagent",
+  "dimensions": [
+    {
+      "name": "coverage-walk-shape-c7",
+      "verdict": "PASS",
+      "evidence": "tests/integration/test-blocker-coverage.sh:224 enumerates codes via `yq -r '.blockers[].code' \"$TAXONOMY\"` — exactly the shape mandated by shared-contracts.md §C7 (Taxonomy struct top-level is {version, blockers: [...]}). Not the legacy `.[].code`. The single other yq invocation at line 80-83 walks `.event_types[]` over schemas/blocker-event.yaml, also correct. `diff <(yq -r '.blockers[].code' schemas/blocker-taxonomy.yaml | sort) <(ls tests/integration/fixtures/blocker-events/ | sort)` produces empty output — every taxonomy code has a fixture directory."
+    },
+    {
+      "name": "fixture-set-per-code",
+      "verdict": "PASS",
+      "evidence": "All 40 codes (matching `yq -r '.blockers[].code' schemas/blocker-taxonomy.yaml`) have a fixture directory under tests/integration/fixtures/blocker-events/<code>/ with the four canonical files {normalized.json, claude.json, pi.json, expected-envelope.json}. 28 of 40 directories carry an additional SKIP_REASON file marking codes whose emit-site is Go-side only (not reachable through `furrow guard <event-type>`) — these include all 11 D1 backward-compat codes plus the 17 row_workflow.go-emitted codes. The 12 non-skip codes correspond exactly to the 12 codes the 10 migrated D3 shims emit (correction_limit_reached, precommit_*×3, script_guard_internal_invocation, state_json_direct_write, state_validation_failed_warn, summary_section_*×4, verdict_direct_write, ideation_incomplete_definition_fields). Four directories (summary_*×2, ideation_*) carry an extra fixture-state file (definition.yaml/summary.md) that the test resolves via __FIXTURE_DIR__ substitution."
+    },
+    {
+      "name": "anti-cheat-subprocess-invocation",
+      "verdict": "PASS",
+      "evidence": "test-blocker-parity.sh:139-161 walks every entry in MIGRATED_SHIMS (10 hooks per shared-contracts §C1) and runs two assertions per shim: (a) `assert_file_contains` for the regex `furrow_guard\\|emit_canonical_blocker`, (b) `assert_file_not_contains` for the regex `\"code\"[[:space:]]*:[[:space:]]*\"`. Test run produced 20 PASS lines (10 shims × 2 assertions). The first regex is a slight broadening of the spec's exact `furrow_guard|emit_canonical_blocker` (matches the spirit of the spec — every shim must route through a canonical helper, not hard-code an envelope). The second regex catches any hand-rolled envelope literal."
+    },
+    {
+      "name": "anti-cheat-emit-site-inventory",
+      "verdict": "PASS",
+      "evidence": "test-blocker-parity.sh:168-213 walks every shim under bin/frw.d/hooks/<MIGRATED_SHIMS>, extracts each `furrow_guard <event_type>` invocation via grep, looks up emitted codes via schemas/blocker-event.yaml, and asserts every (claude.json, pi.json, expected-envelope.json) fixture file exists. work-check.sh routes through the helper `run_stop_work_check` rather than calling `furrow_guard` directly; the test detects this branch (line 177-179) and maps the helper to event_type `stop_work_check`. Test run produced 39 PASS lines covering the 13 (shim, code) pairs (one event_type can emit ≥1 code; e.g. validate-summary emits 2, work-check emits 3). Adding a new shim without fixtures would fail the corresponding assert_file_exists call."
+    },
+    {
+      "name": "pi-handler-absent-skip-rule-c7",
+      "verdict": "PASS",
+      "evidence": "test-blocker-parity.sh:218-243 implements the exact contract from shared-contracts §C7: `pi_handler_for_code_present` checks the code against PI_HANDLER_PRESENT_CODES (the 11 codes covered by validate-actions.ts native handlers), and codes outside that set log `SKIP: <code> parity (Pi handler not yet implemented for <code> — see follow-up TODO pi-tool-call-canonical-schema-and-surface-audit)`. Test run produced 13 such SKIP lines covering every (shim, code) pair, since none of the 12 shim-emitted codes overlap with the 11 native-handler codes (the native handlers cover validate-definition.sh and ownership-warn.sh, both already-canonical and out of D3 migration scope). The skip is not a trivial pass: the inventory gate and anti-cheat assertions still execute and account for 59 PASS / 0 FAIL. Minor: PI_HANDLER_PRESENT_CODES is a hardcoded constant rather than introspection of validate-actions.ts. The inline comment at lines 92-99 explicitly documents this and notes that adding a Pi handler will not auto-activate parity until the constant is updated; this is acceptable within the documented design."
+    },
+    {
+      "name": "cli-invocation",
+      "verdict": "PASS",
+      "evidence": "Both tests invoke `go run ./cmd/furrow guard <event-type>` with no `--json` flag (test-blocker-coverage.sh:179-183, adapters/pi/test-driver-blocker-parity.ts:83 and 146). This matches shared-contracts §C2 (`furrow guard <event-type>` reads stdin, no flags). Note: the spec specs/coverage-and-parity-tests.md and definition.yaml AC line 39 still reference the historical `--json` flag — but per shared-contracts §C9 the shared-contracts spec wins, and the implementation correctly follows the canonical contract. Both tests honor the FURROW_BIN environment override (test-suite speedup). Both `cd \"$PROJECT_ROOT\"` before invoking `go run` so the module resolves."
+    },
+    {
+      "name": "auto-discovery-c8",
+      "verdict": "PASS",
+      "evidence": "Tests live at tests/integration/test-blocker-coverage.sh and tests/integration/test-blocker-parity.sh (matching the `test-*.sh` glob at tests/integration/run-all.sh:32). Both files are executable (`-rwxr-xr-x` per `ls -la`). Commit 4c76d90's stat list (`git show --stat`) confirms no edits to run-all.sh, no Makefile changes, no .github/workflows/ changes. C8 satisfied; CI wiring of run-all.sh remains the documented row-out-of-scope follow-up."
+    },
+    {
+      "name": "preexisting-test-repair",
+      "verdict": "PASS",
+      "evidence": "Commit 4c76d90 modifies test-precommit-block.sh and test-precommit-bypass.sh by replacing the legacy assertion substring `pre-commit: refusing type-change` with `refusing type-change to symlink` (4 occurrences in -block.sh, 1 in -bypass.sh per the diff). `grep -n 'pre-commit:' tests/integration/test-precommit-{block,bypass}.sh` returns no matches. The new substring `refusing type-change to symlink` is the canonical message_template from schemas/blocker-taxonomy.yaml's precommit_typechange_to_symlink entry, emitted via D2's emit_canonical_blocker."
+    },
+    {
+      "name": "live-test-runs",
+      "verdict": "PASS",
+      "evidence": "Live invocations from /home/jonco/src/furrow-blocker-taxonomy-foundation: (1) `bash tests/integration/test-blocker-coverage.sh` → exit 0, results 244 passed / 0 failed / 244 total. (2) `bash tests/integration/test-blocker-parity.sh` → exit 0, results 59 passed / 0 failed / 59 total, with 13 logged Pi-handler-absent SKIP lines naming follow-up TODO pi-tool-call-canonical-schema-and-surface-audit. (3) `bash tests/integration/test-precommit-block.sh` → exit 0, 14 passed / 0 failed. (4) `bash tests/integration/test-precommit-bypass.sh` → exit 0, 6 passed / 0 failed. All four scripts pass cleanly."
+    }
+  ],
+  "overall": "PASS",
+  "notes": "Implementation cleanly satisfies all 9 review dimensions. Observations not flagged as failures: (1) The parity-replay loop (test-blocker-parity.sh:284-299) is currently 100% skipped because none of the 12 shim-emitted codes have native Pi handlers — the row's actual byte-equal envelope diff between Claude shim and Pi driver does not execute today. The shared-contracts §C7 skip rule explicitly authorizes this, and the test infrastructure (driver, fixtures, dispatch) is fully wired so the parity assertions activate the moment a Pi handler is added or PI_HANDLER_PRESENT_CODES is broadened (closed by follow-up TODO pi-tool-call-canonical-schema-and-surface-audit). (2) PI_HANDLER_PRESENT_CODES is a hardcoded list rather than introspection of validate-actions.ts — adding a Pi handler will not auto-flip parity from skip to active until the constant is updated. The inline comment at parity.sh:92-99 documents this trade-off. (3) The test-blocker-coverage.sh comment at lines 153-158 mentions a SKIP_REASON branch and a defensive secondary skip at line 161-167 (`no guard event-type`); both are reachable in principle but in practice every guard-non-reachable code carries a SKIP_REASON file, so the secondary branch is dead defensive code (acceptable). (4) The first anti-cheat regex `furrow_guard\\|emit_canonical_blocker` slightly broadens the prompt's literal `furrow_guard|emit_canonical_blocker` request — correct interpretation is that work-check.sh dispatches via run_stop_work_check (a wrapper around furrow_guard) and the broader pattern still confirms canonical-helper routing. (5) Definition AC line 39 references `furrow guard <event-type> --json`; shared-contracts §C9 establishes the shared-contracts spec wins, and the implementation correctly uses the no-flag form."
+}
