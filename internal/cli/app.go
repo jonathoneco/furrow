@@ -93,6 +93,8 @@ func (a *App) runRow(args []string) int {
 		return a.runRowComplete(args[1:])
 	case "archive":
 		return a.runRowArchive(args[1:])
+	case "repair-deliverables":
+		return a.runRowRepairDeliverables(args[1:])
 	case "init":
 		return a.runRowInit(args[1:])
 	case "focus":

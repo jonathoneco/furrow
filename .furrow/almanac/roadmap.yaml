@@ -3031,7 +3031,7 @@ phases:
     - post-merge-watch-list
     - ambient-context-promotion
     depends_on:
-    - work/handoff-and-context-routing
+    - work/orchestration-delegation-contract
     key_files:
     - commands/
     - skills/
@@ -3126,7 +3126,7 @@ phases:
     - workflow-power-preservation
     depends_on:
     - work/state-and-correction-guards
-    - work/handoff-and-context-routing
+    - work/orchestration-delegation-contract
     - work/seeds-graph-cutover-and-pi-surfaces
     - work/cli-introspection-and-history
     key_files:
