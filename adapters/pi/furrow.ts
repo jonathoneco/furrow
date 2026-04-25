@@ -277,6 +277,28 @@ type ArchiveData = {
 		: never;
 };
 
+type ValidationErrorEnvelope = {
+	code: string;
+	category: string;
+	severity: string;
+	message: string;
+	remediation_hint: string;
+	confirmation_path: string;
+};
+
+type ValidateDefinitionData = {
+	verdict: "valid" | "invalid";
+	errors?: ValidationErrorEnvelope[];
+};
+
+type ValidateOwnershipData = {
+	verdict: "in_scope" | "out_of_scope" | "not_applicable";
+	matched_deliverable?: string;
+	matched_glob?: string;
+	reason?: string;
+	envelope?: ValidationErrorEnvelope;
+};
+
 type CliResult<T = any> = {
 	exitCode: number;
 	stdout: string;
@@ -896,6 +918,33 @@ export default function furrowExtension(pi: ExtensionAPI) {
 			reason:
 				"Canonical Furrow state is backend-mediated. Use /furrow-transition, /furrow-complete, or the Furrow CLI instead of editing .furrow/.focused or row state.json directly.",
 		};
+	});
+
+	// Pre-write validation handler — D4 of pre-write-validation-go-first.
+	// Intercepts Write/Edit on `*/definition.yaml` and validates against the
+	// canonical schema before the write proceeds.
+	pi.on("tool_call", async (event, ctx) => {
+		if (event.toolName !== "edit" && event.toolName !== "write") return undefined;
+		const root = findFurrowRoot(ctx.cwd);
+		if (!root) return undefined;
+		const absolutePath = normalizePathArg((event.input as any)?.path, ctx.cwd);
+		if (!absolutePath) return undefined;
+		if (!absolutePath.endsWith("/definition.yaml")) return undefined;
+
+		const result = await runFurrowJson<ValidateDefinitionData>(
+			root,
+			["validate", "definition", "--path", absolutePath],
+			ctx.signal,
+		);
+		const data = result.envelope?.data;
+		if (!data || data.verdict === "valid") return undefined;
+
+		const errors = data.errors ?? [];
+		const message = errors.map((e) => e.message).join("; ") || "definition.yaml validation failed";
+		if (ctx.hasUI) {
+			ctx.ui.notify(message, "error");
+		}
+		return { block: true, reason: message };
 	});
 
 	pi.registerCommand("work", {
