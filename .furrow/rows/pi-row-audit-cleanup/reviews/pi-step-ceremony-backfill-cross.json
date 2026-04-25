@@ -1,0 +1,59 @@
+{
+  "deliverable": "pi-step-ceremony-backfill",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "fail",
+        "evidence": "ACs 2-5 pass on a live rerun (`git cat-file -e e4adef5`, `go run ./cmd/furrow row repair-deliverables ... --replace --json`, `row status`, `bin/rws status`), but AC1's required fail-fast precheck before manifest construction is not verifiable from the shipped deliverable artifacts and is not enforced by any executable path here."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "pass",
+        "evidence": "This deliverable adds data/docs rather than new branching code, and the supporting repair path is covered by `go test ./internal/cli -run TestRowRepairDeliverables`."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "fail",
+        "evidence": "The manifest path, content, repaired state, audit entry, and `rws status` output match the spec, but the spec's interface contract also requires a pre-manifest `git cat-file -e e4adef5` fail-fast step and no durable implementation or audit evidence proves that contract was actually implemented."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "pass",
+        "evidence": "Files outside the deliverable's `file_ownership` were changed (`repair-audit.jsonl`, `.furrow/rows/pi-row-audit-cleanup/specs/pi-step-ceremony-backfill.md`), and both are justified in the commit messages as CLI-generated audit side effects and spec synchronization for the manifest fix-up."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "pass",
+        "evidence": "Observed artifacts are well-formed, the repair flow executes cleanly, `rws status` reports `Deliverables: 3/3`, and the focused Go test suite for the repair CLI passes."
+      }
+    ],
+    "verdict": "fail"
+  },
+  "overall": "fail",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "diff_scope": {
+    "base": "22679d593037d352ad90c520ce8cc808182fc8c7",
+    "commits": [
+      "af79e1bbc41681e4acabeac872035a9f2e5374f0",
+      "a88c9fcfd2cc6c96ce2895f6e98ae3368820317b"
+    ],
+    "files_matched": [
+      ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/repair-manifest.yaml",
+      ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/state.json"
+    ]
+  },
+  "unplanned_changes": "absent",
+  "timestamp": "2026-04-25T04:15:24Z"
+}
