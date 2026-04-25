@@ -348,6 +348,29 @@ func validateDefinition(path string, tx *Taxonomy) []BlockerEnvelope {
 		}))
 	}
 
+	// source_todos (optional array): if present must have uniqueItems
+	if rawST, ok := raw["source_todos"].([]any); ok {
+		seen := make(map[string]struct{})
+		var dupes []string
+		for _, item := range rawST {
+			s, isStr := item.(string)
+			if !isStr {
+				continue
+			}
+			if _, exists := seen[s]; exists {
+				dupes = append(dupes, s)
+			}
+			seen[s] = struct{}{}
+		}
+		if len(dupes) > 0 {
+			sort.Strings(dupes)
+			envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+				"path": displayPath,
+				"keys": fmt.Sprintf("source_todos: duplicate entries violate uniqueItems: %s", strings.Join(dupes, ", ")),
+			}))
+		}
+	}
+
 	// supersedes (optional block; if present, requires commit AND row)
 	if rawSup, ok := raw["supersedes"].(map[string]any); ok {
 		if !nonEmptyString(rawSup["commit"]) {
