@@ -65,6 +65,8 @@ func (a *App) Run(args []string) int {
 		return a.runAlmanac(args[1:])
 	case "seeds":
 		return a.runStubGroup("furrow seeds", args[1:], []string{"create", "update", "show", "list", "close"})
+	case "validate":
+		return a.runValidate(args[1:])
 	case "merge":
 		return a.runStubGroup("furrow merge", args[1:], []string{"plan", "run", "validate"})
 	case "doctor":
