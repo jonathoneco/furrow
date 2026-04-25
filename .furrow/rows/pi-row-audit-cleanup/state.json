@@ -1,0 +1,29 @@
+{
+  "name": "pi-row-audit-cleanup",
+  "title": "Audit cleanup: backfill pi-step-ceremony deliverables, archive superseded pi-adapter-foundation, preserve curated row clusters in alm triage",
+  "description": "Audit cleanup: backfill pi-step-ceremony deliverables, archive superseded pi-adapter-foundation, preserve curated row clusters in alm triage",
+  "step": "ideate",
+  "step_status": "in_progress",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {},
+  "gates": [],
+  "force_stop_at": null,
+  "branch": "work/migration-state-of-the-union",
+  "mode": "code",
+  "base_commit": "22679d593037d352ad90c520ce8cc808182fc8c7",
+  "seed_id": "furrow-b792",
+  "epic_seed_id": null,
+  "created_at": "2026-04-25T02:35:04Z",
+  "updated_at": "2026-04-25T02:38:23Z",
+  "archived_at": null,
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}
