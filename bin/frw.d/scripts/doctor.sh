@@ -299,6 +299,38 @@ frw_doctor() {
     check_pass "all renamed scripts cleaned up"
   fi
 
+  # Phasing invariant: roadmap.yaml phases must be parallel-batches.
+  # No row's depends_on may reference another row in the same phase, otherwise
+  # `frw launch-phase` will spin up rows whose prerequisites are not yet merged.
+  section "Roadmap phasing (parallel-batch invariant)"
+  _roadmap="$ROOT/.furrow/almanac/roadmap.yaml"
+  if [ ! -f "$_roadmap" ]; then
+    check_pass "no roadmap.yaml — skipping phasing check"
+  elif ! command -v yq >/dev/null 2>&1 || ! command -v jq >/dev/null 2>&1; then
+    check_warn "yq/jq missing — skipping phasing check"
+  else
+    _violations=$(yq -o=json '.phases' "$_roadmap" 2>/dev/null | jq -r '
+      .[] | select(.status != "done") | . as $ph | (.rows // []) as $rows
+      | ($rows | map(.branch)) as $branches
+      | $rows[]
+      | select((.depends_on // []) | length > 0)
+      | . as $r
+      | (($r.depends_on // []) | map(select(IN($branches[])))) as $intra
+      | select($intra | length > 0)
+      | [ "Phase", ($ph.number|tostring), "row", ($r.index|tostring),
+          ($r.branch + " intra-phase deps:"), ($intra | join(",")) ]
+      | join(" ")
+    ' 2>/dev/null)
+    if [ -z "$_violations" ]; then
+      check_pass "no intra-phase depends_on references"
+    else
+      echo "$_violations" | while IFS= read -r _v; do
+        [ -z "$_v" ] && continue
+        check_fail "intra-phase dep — $_v"
+      done
+    fi
+  fi
+
   # Placeholder sections in step skills (should be filled by their owning work items)
   section "Unfilled placeholder sections"
   _placeholders=0
