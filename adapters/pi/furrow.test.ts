@@ -376,6 +376,74 @@ gate_policy: supervised
 	});
 });
 
+describe("D4 handler against fixture-row definition.yaml (end-to-end)", () => {
+	let fixDir: string;
+	let validPath: string;
+	let invalidPath: string;
+	let nonDefPath: string;
+
+	beforeAll(async () => {
+		fixDir = await mkdtemp(join(tmpdir(), "pi-d4-fixture-"));
+		// File names must end with `/definition.yaml` exactly so the D4 gate matches.
+		const validRowDir = join(fixDir, "valid-row");
+		const invalidRowDir = join(fixDir, "invalid-row");
+		await mkdir(validRowDir);
+		await mkdir(invalidRowDir);
+		validPath = join(validRowDir, "definition.yaml");
+		invalidPath = join(invalidRowDir, "definition.yaml");
+		nonDefPath = join(fixDir, "not-a-definition.txt");
+		await writeFile(validPath, validDefinitionFixture);
+		await writeFile(invalidPath, invalidDefinitionFixture);
+		await writeFile(nonDefPath, "this is not a definition");
+	});
+
+	test("write to a fixture-row valid definition.yaml → handler returns silent allow", async () => {
+		const action = await runDefinitionValidationHandler(
+			"write",
+			validPath,
+			async (args) => {
+				const { exitCode, stdout } = await runFurrow(args);
+				expect(exitCode).toBe(0);
+				const env = JSON.parse(stdout);
+				return { data: env.data };
+			},
+		);
+		expect(action).toBeUndefined();
+	});
+
+	test("write to a fixture-row invalid definition.yaml → handler returns block with surfaced reason", async () => {
+		const notifyCalls: Array<[string, string]> = [];
+		const action = await runDefinitionValidationHandler(
+			"edit",
+			invalidPath,
+			async (args) => {
+				const { stdout } = await runFurrow(args);
+				const env = JSON.parse(stdout);
+				return { data: env.data };
+			},
+			(msg, level) => notifyCalls.push([msg, level]),
+		) as any;
+		expect(action.block).toBe(true);
+		expect(action.reason.length).toBeGreaterThan(0);
+		expect(notifyCalls.length).toBe(1);
+		expect(notifyCalls[0][1]).toBe("error");
+	});
+
+	test("non-definition.yaml path → no runJson call, undefined", async () => {
+		let runCalls = 0;
+		const action = await runDefinitionValidationHandler(
+			"write",
+			nonDefPath,
+			async () => {
+				runCalls += 1;
+				return { data: undefined };
+			},
+		);
+		expect(action).toBeUndefined();
+		expect(runCalls).toBe(0);
+	});
+});
+
 describe("furrow validate definition (D1 contract — consumed by D4 Pi handler)", () => {
 	let workDir: string;
 	let validPath: string;

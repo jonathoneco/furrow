@@ -334,12 +334,34 @@ func validateDefinition(path string, tx *Taxonomy) []BlockerEnvelope {
 		}
 	}
 
-	// constraints required (top-level)
-	if _, hasConstraints := raw["constraints"]; !hasConstraints {
+	// constraints: required + must be an array
+	rawConstraints, hasConstraints := raw["constraints"]
+	if !hasConstraints {
 		envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
 			"path": displayPath,
 			"keys": "(missing required field) constraints",
 		}))
+	} else if _, ok := rawConstraints.([]any); !ok {
+		envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+			"path": displayPath,
+			"keys": fmt.Sprintf("constraints: type is %T, must be an array", rawConstraints),
+		}))
+	}
+
+	// supersedes (optional block; if present, requires commit AND row)
+	if rawSup, ok := raw["supersedes"].(map[string]any); ok {
+		if !nonEmptyString(rawSup["commit"]) {
+			envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+				"path": displayPath,
+				"keys": "supersedes: missing required field 'commit'",
+			}))
+		}
+		if !nonEmptyString(rawSup["row"]) {
+			envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+				"path": displayPath,
+				"keys": "supersedes: missing required field 'row'",
+			}))
+		}
 	}
 
 	// supersedes additionalProperties:false (optional block)
