@@ -214,6 +214,106 @@ func TestValidateDefinitionMalformedYAML(t *testing.T) {
 	assertHasCode(t, envs, "definition_yaml_invalid")
 }
 
+func TestRunValidateDefinitionCLIExitCodes(t *testing.T) {
+	resetTaxonomyCacheForTest()
+	t.Cleanup(resetTaxonomyCacheForTest)
+
+	dir := t.TempDir()
+	validPath := writeDefinitionFixture(t, dir, validDefinitionFixture)
+	invalidBody := strings.Replace(validDefinitionFixture, "gate_policy: supervised", "gate_policy: bogus", 1)
+	invalidPath := writeDefinitionFixture(t, t.TempDir(), invalidBody)
+
+	cases := []struct {
+		name               string
+		args               []string
+		wantExit           int
+		wantStdoutContains string
+	}{
+		{"valid path text", []string{"--path", validPath}, 0, "definition.yaml is valid"},
+		{"valid path json", []string{"--path", validPath, "--json"}, 0, "\"verdict\": \"valid\""},
+		{"invalid path json", []string{"--path", invalidPath, "--json"}, 3, "\"verdict\": \"invalid\""},
+		{"missing path arg", []string{}, 1, ""},
+		{"file not found", []string{"--path", filepath.Join(dir, "nonexistent.yaml")}, 1, ""},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			var stdout, stderr strings.Builder
+			app := New(&stdout, &stderr)
+			exit := app.runValidateDefinition(c.args)
+			if exit != c.wantExit {
+				t.Fatalf("exit: got %d want %d (stderr=%q)", exit, c.wantExit, stderr.String())
+			}
+			if c.wantStdoutContains != "" && !strings.Contains(stdout.String(), c.wantStdoutContains) {
+				t.Fatalf("stdout missing %q; got %q", c.wantStdoutContains, stdout.String())
+			}
+		})
+	}
+}
+
+func TestValidateDefinitionNestedAdditionalProperties(t *testing.T) {
+	resetTaxonomyCacheForTest()
+	t.Cleanup(resetTaxonomyCacheForTest)
+	tx, _ := LoadTaxonomy()
+
+	body := `objective: "x"
+deliverables:
+  - name: thing
+    acceptance_criteria:
+      - "do thing"
+    bogus_field: yes
+context_pointers:
+  - path: "/tmp"
+    note: "n"
+constraints: []
+gate_policy: supervised
+`
+	path := writeDefinitionFixture(t, t.TempDir(), body)
+	envs := validateDefinition(path, tx)
+	env := assertHasCode(t, envs, "definition_unknown_keys")
+	if !strings.Contains(env.Message, "bogus_field") {
+		t.Fatalf("nested unknown key not surfaced: %q", env.Message)
+	}
+}
+
+func TestValidateDefinitionMissingAcceptanceCriteria(t *testing.T) {
+	resetTaxonomyCacheForTest()
+	t.Cleanup(resetTaxonomyCacheForTest)
+	tx, _ := LoadTaxonomy()
+
+	body := `objective: "x"
+deliverables:
+  - name: thing
+context_pointers:
+  - path: "/tmp"
+    note: "n"
+constraints: []
+gate_policy: supervised
+`
+	path := writeDefinitionFixture(t, t.TempDir(), body)
+	envs := validateDefinition(path, tx)
+	assertHasCode(t, envs, "definition_acceptance_criteria_placeholder")
+}
+
+func TestValidateDefinitionEmptyAcceptanceCriteria(t *testing.T) {
+	resetTaxonomyCacheForTest()
+	t.Cleanup(resetTaxonomyCacheForTest)
+	tx, _ := LoadTaxonomy()
+
+	body := `objective: "x"
+deliverables:
+  - name: thing
+    acceptance_criteria: []
+context_pointers:
+  - path: "/tmp"
+    note: "n"
+constraints: []
+gate_policy: supervised
+`
+	path := writeDefinitionFixture(t, t.TempDir(), body)
+	envs := validateDefinition(path, tx)
+	assertHasCode(t, envs, "definition_acceptance_criteria_placeholder")
+}
+
 // assertHasCode finds the first envelope with code; fails the test if absent.
 // Returns the matching envelope so callers can make further assertions on it.
 func assertHasCode(t *testing.T, envs []BlockerEnvelope, code string) BlockerEnvelope {

@@ -11,28 +11,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// runValidate dispatches `furrow validate <subcommand>`.
-func (a *App) runValidate(args []string) int {
-	if len(args) == 0 {
-		_, _ = fmt.Fprintln(a.stdout, "furrow validate\n\nAvailable subcommands: definition, ownership")
-		return 0
-	}
-	switch args[0] {
-	case "definition":
-		return a.runValidateDefinition(args[1:])
-	case "ownership":
-		return a.runValidateOwnership(args[1:])
-	case "help", "-h", "--help":
-		_, _ = fmt.Fprintln(a.stdout, "furrow validate\n\nAvailable subcommands: definition, ownership")
-		return 0
-	default:
-		return a.fail("furrow validate", &cliError{
-			exit: 1, code: "usage",
-			message: fmt.Sprintf("unknown validate subcommand %q", args[0]),
-		}, false)
-	}
-}
-
 // runValidateDefinition implements `furrow validate definition`.
 //
 // Usage: furrow validate definition --path <file> [--json]
@@ -131,6 +109,16 @@ var (
 		"source_todos":     {},
 		"supersedes":       {},
 	}
+	// allowedDeliverableKeys mirrors deliverables[].properties +
+	// additionalProperties:false in schemas/definition.schema.json.
+	allowedDeliverableKeys = map[string]struct{}{
+		"name":                {},
+		"acceptance_criteria": {},
+		"specialist":          {},
+		"depends_on":          {},
+		"file_ownership":      {},
+		"gate":                {},
+	}
 )
 
 // validateDefinition runs all D1 checks and returns the list of envelopes for
@@ -225,8 +213,23 @@ func validateDefinition(path string, tx *Taxonomy) []BlockerEnvelope {
 					"name": name,
 				}))
 			}
-			// acceptance_criteria placeholder check
-			if criteria, ok := d["acceptance_criteria"].([]any); ok {
+
+			// acceptance_criteria: required + minItems:1 + per-item placeholder check
+			rawCriteria, hasCriteria := d["acceptance_criteria"]
+			if !hasCriteria {
+				envs = append(envs, tx.EmitBlocker("definition_acceptance_criteria_placeholder", map[string]string{
+					"path":  displayPath,
+					"name":  name,
+					"value": "(missing)",
+				}))
+			} else if criteria, ok := rawCriteria.([]any); ok {
+				if len(criteria) == 0 {
+					envs = append(envs, tx.EmitBlocker("definition_acceptance_criteria_placeholder", map[string]string{
+						"path":  displayPath,
+						"name":  name,
+						"value": "(empty)",
+					}))
+				}
 				for _, c := range criteria {
 					cs, ok := c.(string)
 					if !ok {
@@ -240,6 +243,21 @@ func validateDefinition(path string, tx *Taxonomy) []BlockerEnvelope {
 						}))
 					}
 				}
+			}
+
+			// nested additionalProperties:false — flag any keys not in the schema
+			var unknownNested []string
+			for k := range d {
+				if _, ok := allowedDeliverableKeys[k]; !ok {
+					unknownNested = append(unknownNested, k)
+				}
+			}
+			if len(unknownNested) > 0 {
+				sort.Strings(unknownNested)
+				envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+					"path": displayPath,
+					"keys": fmt.Sprintf("deliverables[%d]: %s", i, strings.Join(unknownNested, ", ")),
+				}))
 			}
 		}
 	}

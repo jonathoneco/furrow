@@ -54,12 +54,12 @@ func TestBlockerEnvelopeAllInitialCodesResolve(t *testing.T) {
 	for _, code := range expectedInitialCodes {
 		t.Run(code, func(t *testing.T) {
 			env := tx.EmitBlocker(code, map[string]string{
-				"path":  "/tmp/foo.yaml",
-				"name":  "deliverable",
-				"value": "fixture",
-				"keys":  "extra",
-				"index": "0",
-				"row":   "fixture-row",
+				"path":   "/tmp/foo.yaml",
+				"name":   "deliverable",
+				"value":  "fixture",
+				"keys":   "extra",
+				"index":  "0",
+				"row":    "fixture-row",
 				"detail": "fixture detail",
 			})
 			if env.Code != code {
