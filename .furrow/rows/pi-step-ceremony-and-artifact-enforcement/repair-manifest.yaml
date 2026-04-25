@@ -1,6 +1,10 @@
 # Repair manifest for pi-step-ceremony-and-artifact-enforcement
 # Backfills deliverables map from commit e4adef5.
-# Generated: 2026-04-24  decided_by: manual
+# Generated: 2026-04-24
+
+version: "1"
+decided_by: manual
+commit: e4adef5
 
 deliverables:
   - name: backend-work-loop-support
