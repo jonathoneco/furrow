@@ -3284,8 +3284,11 @@
   source_work_unit: migration-state-of-the-union
 - id: furrow-context-isolation-layer
   title: Furrow context isolation layer
-  context: Non-Furrow projects are getting polluted with Furrow context (e.g., wrangle project listed Furrow fixes as deferred TODOs). Furrow should drive workflow but fade into background when not directly relevant. Suggests need for a furrow-aware vs furrow-unaware layer split with delegation between them.
-  work_needed: 'Design a layered architecture: furrow-aware skills/agents own Furrow-specific work; furrow-unaware skills/agents handle the underlying domain work without Furrow leakage. Define delegation contract; investigate via prototype on a non-Furrow project.'
+  context: |-
+    Non-Furrow projects are getting polluted with Furrow context (e.g., wrangle project listed Furrow fixes as deferred TODOs). Furrow should drive workflow but fade into background when not directly relevant. Suggests need for a furrow-aware vs furrow-unaware layer split with delegation between them.
+
+    THIS IS ONE FACE OF THE ORCHESTRATION/DELEGATION CONTRACT. Sibling todos: handoff-prompt-artifact-template defines the artifact schema that crosses the layer boundary; delegation-boundary-enforcement defines what is allowed to cross and what is not. The three together form one contract; they ship in the same row (work/orchestration-delegation-contract).
+  work_needed: 'Design a layered architecture: furrow-aware skills/agents own Furrow-specific work; furrow-unaware skills/agents handle the underlying domain work without Furrow leakage. The delegation contract IS the handoff-prompt-artifact-template schema (the 7 fields are the layer interface). Boundary enforcement (delegation-boundary-enforcement) prevents leakage. Investigate via prototype on a non-Furrow project.'
   source_type: manual
   status: active
   created_at: "2026-04-24T21:14:27-04:00"
@@ -3351,8 +3354,11 @@
   source_work_unit: migration-state-of-the-union
 - id: handoff-prompt-artifact-template
   title: Handoff prompt artifact template
-  context: 'Handoff prompts between phases / specialists are inconsistent. Brain-dump ideal structure: grounding info / resources, direction / persona / specialist / reasoning, goals, constraints, enforcement, deliverables, end-of-session report. Should be derived from row artifacts, not hand-composed.'
-  work_needed: Define handoff.md schema covering all 7 fields. Generate from definition.yaml + state.json + plan.json + previous-step artifacts. /furrow:next consumes it. Stops being ad-hoc prose; becomes a contract.
+  context: |-
+    Handoff prompts between phases / specialists are inconsistent. Brain-dump ideal structure: grounding info / resources, direction / persona / specialist / reasoning, goals, constraints, enforcement, deliverables, end-of-session report. Should be derived from row artifacts, not hand-composed.
+
+    THIS IS THE LAYER INTERFACE OF THE ORCHESTRATION/DELEGATION CONTRACT. The 7 fields are exactly what crosses from the furrow-aware layer (orchestrator) to the furrow-unaware layer (specialist) and back. Sibling todos: furrow-context-isolation-layer defines the layer split; delegation-boundary-enforcement constrains what flows across. The three together form one contract; they ship in the same row (work/orchestration-delegation-contract).
+  work_needed: Define handoff.md schema covering all 7 fields. Generate from definition.yaml + state.json + plan.json + previous-step artifacts. /furrow:next consumes it. Stops being ad-hoc prose; becomes a contract. Schema doubles as the layer-interface-API for furrow-context-isolation-layer.
   source_type: manual
   status: active
   created_at: "2026-04-24T21:14:39-04:00"
@@ -3406,36 +3412,8 @@
   effort: medium
   updated_at: "2026-04-24T21:15:02-04:00"
   source_work_unit: migration-state-of-the-union
-- id: archive-pi-adapter-foundation-as-superseded
-  title: Archive pi-adapter-foundation as superseded
-  context: pi-adapter-foundation row is at implement / not_started, 0/3 deliverables, currently focused. Spec scope (evaluator-grade-review-semantics, archive-disposition-signals, row-model-continuation) was satisfied by pi-step-ceremony-and-artifact-enforcement (commit e4adef5). Phantom row. Handoff.md:62 in pi-step-ceremony directs continuation to a non-existent successor; pi-adapter-foundation is acting as that phantom successor.
-  work_needed: Archive pi-adapter-foundation via /furrow:archive with explicit supersedence evidence pointing at pi-step-ceremony-and-artifact-enforcement (commit e4adef5). Rewrite or remove pi-step-ceremony-and-artifact-enforcement/handoff.md:62 dangling-successor instruction. Bundled into pi-row-audit-cleanup row D3+D4.
-  source_type: manual
-  status: active
-  created_at: "2026-04-24T21:15:21-04:00"
-  urgency: medium
-  impact: low
-  effort: small
-  updated_at: "2026-04-24T21:15:21-04:00"
-  references:
-    - .furrow/rows/pi-adapter-foundation/spec.md
-    - .furrow/rows/pi-step-ceremony-and-artifact-enforcement/handoff.md
-  source_work_unit: migration-state-of-the-union
-- id: pi-step-ceremony-deliverables-backfill
-  title: Pi-step-ceremony deliverables backfill
-  context: Archived row pi-step-ceremony-and-artifact-enforcement has state.json.deliverables = {} despite handoff/validation evidence proving 5+ deliverables shipped (commit e4adef5, internal/cli/ work-loop boundary hardening). Recording gap, not delivery gap. Causes phantom-row symptoms downstream in pi-adapter-foundation.
-  work_needed: Use furrow-row-repair-deliverables CLI (built as D1 of pi-row-audit-cleanup) to atomically backfill deliverables map from validation.md / handoff.md evidence. Audit-trail entry recorded. Bundled into pi-row-audit-cleanup row.
-  source_type: manual
-  status: active
-  created_at: "2026-04-24T21:15:21-04:00"
-  urgency: medium
-  impact: low
-  effort: small
-  updated_at: "2026-04-24T21:15:21-04:00"
-  references:
-    - .furrow/rows/pi-step-ceremony-and-artifact-enforcement/handoff.md
-    - .furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md
-  source_work_unit: migration-state-of-the-union
+# archive-pi-adapter-foundation-as-superseded — RESOLVED by row pi-row-audit-cleanup D3 (2026-04-25)
+# pi-step-ceremony-deliverables-backfill — RESOLVED by row pi-row-audit-cleanup D2 (2026-04-25)
 - id: state-guard-rm-coverage
   title: State-guard rm coverage
   context: 'Audit of 49 Claude sessions found 8 filesystem mutations that bypassed state-guard: rm -rf .furrow/rows/<name>, cp .furrow/almanac/todos.yaml, etc. Current state-guard intercepts Edit/Write to canonical paths but does not intercept Bash rm/cp/mv. The Pi tool_call interceptor has the same gap (only blocks edit/write tools, not bash). One of the documented incidents was rm -rf of this very research row when re-initializing it for mode change.'
@@ -3982,3 +3960,86 @@
   source_work_unit: migration-state-of-the-union
   depends_on:
     - cli-architecture-overhaul-slice-2
+- id: delegation-boundary-enforcement
+  title: Delegation boundary enforcement
+  context: 'Sibling to handoff-prompt-artifact-template and furrow-context-isolation-layer; together they form the orchestration/delegation contract. Without explicit enforcement, the layer split is a convention not a constraint: the furrow-unaware specialist could read .furrow/ state, the orchestrator could leak internal context downward, and the boundary erodes silently. The handoff schema (7 fields) defines what crosses; this todo enforces that nothing else does.'
+  work_needed: 'Define what crosses the layer boundary in each direction: (a) furrow-aware → furrow-unaware: only the 7 handoff fields; no row state, almanac, .furrow/ details; (b) furrow-unaware → furrow-aware: only EOS-report-shaped output; no leakage of internal reasoning or scratch artifacts; (c) hook/CLI access: only the furrow-aware layer may invoke rws/alm/sds/frw or read .furrow/. Mechanism options: (1) prompt-level scoping (skill files only loaded for the layer that needs them), (2) tool-permission scoping (Pi extension restricts tool access by skill), (3) test-driven boundary check (run a furrow-unaware specialist on a non-Furrow project, assert zero Furrow leakage in artifacts produced). Probably all three, layered.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-24T23:41:44-04:00"
+  urgency: medium
+  impact: high
+  effort: medium
+  updated_at: "2026-04-24T23:41:44-04:00"
+  references:
+    - docs/architecture/workflow-power-preservation.md
+    - skills/shared/specialist-delegation.md
+  source_work_unit: migration-state-of-the-union
+  depends_on:
+    - handoff-prompt-artifact-template
+    - furrow-context-isolation-layer
+- id: route-commands-archive-md-through-go-binary
+  title: Route commands/archive.md through Go binary
+  context: commands/archive.md:59 currently delegates to shell rws_archive (bin/rws:1958), which bypasses rowBlockers() and the new supersedes-confirmed enforcement. Slash-command archive flows therefore skip the Go-side blocker pipeline. Surfaced during pi-row-audit-cleanup D3 review.
+  work_needed: Update commands/archive.md to invoke 'furrow row archive' (Go binary) instead of 'rws archive' (shell). Verify the slash command then enforces rowBlockers including supersedence. Once landed, deprecate bin/rws:1958 rws_archive (separate todo).
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T00:42:33-04:00"
+  updated_at: "2026-04-25T00:42:33-04:00"
+  references:
+    - commands/archive.md
+    - bin/rws
+    - internal/cli/row.go
+  source_work_unit: pi-row-audit-cleanup
+  files_touched:
+    - commands/archive.md
+- id: cli-integration-test-for-furrow-row-archive-supers
+  title: CLI integration test for furrow row archive --supersedes-confirmed
+  context: 'pi-row-audit-cleanup D3 added the --supersedes-confirmed flag with rowBlockers enforcement. Current coverage: TestRowBlockers_Supersedence (unit, 5 cases) + TestDefinitionSupersedes (unit, 5 cases) + a live archive run on pi-adapter-foundation (one-shot). Missing: an automated CLI-level test that exercises ''furrow row archive --supersedes-confirmed'' end-to-end with missing/mismatched/matching values against a tmpdir-based row.'
+  work_needed: 'Add an integration test (likely in internal/cli/ or a new tests/integration/archive_test.go) that: builds a temp row directory with a definition.yaml supersedes block, invokes the archive command via parseArgs/runRowArchive, asserts exit codes and gate evidence for missing/mismatched/matching --supersedes-confirmed values.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T00:42:34-04:00"
+  updated_at: "2026-04-25T00:42:34-04:00"
+  references:
+    - internal/cli/row.go
+    - internal/cli/row_workflow.go
+    - internal/cli/row_workflow_test.go
+  source_work_unit: pi-row-audit-cleanup
+  files_touched:
+    - internal/cli/row_test.go
+    - internal/cli/row.go
+- id: deprecate-bin-rws-1958-rws-archive-shell-implement
+  title: Deprecate bin/rws:1958 rws_archive shell implementation
+  context: bin/rws contains a parallel shell implementation of archive (rws_archive at line 1958-2020) that duplicates the Go path's preconditions but does NOT call rowBlockers(). Once commands/archive.md routes through Go, this shell duplicate is dead code.
+  work_needed: After 'route-commands-archive-md-through-go-binary' lands, remove rws_archive() from bin/rws and replace with a thin shim delegating to 'furrow row archive', or remove the case entirely if the slash command no longer invokes it. Verify no other callers.
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T00:42:46-04:00"
+  updated_at: "2026-04-25T00:42:46-04:00"
+  references:
+    - bin/rws
+    - commands/archive.md
+  source_work_unit: pi-row-audit-cleanup
+  depends_on:
+    - route-commands-archive-md-through-go-binary
+  files_touched:
+    - bin/rws
+- id: skip-per-deliverable-review-artifacts-when-superse
+  title: Skip per-deliverable review artifacts when supersedence is confirmed
+  context: Archiving pi-adapter-foundation (D3 of pi-row-audit-cleanup) required hand-authoring 3 phantom review artifacts in .furrow/rows/pi-adapter-foundation/reviews/ to satisfy review-step artifact enforcement, even though the row had no implementation work and was being archived as superseded. The phantom artifacts make the audit trail noisy and signal a structural gap in the archive ceremony.
+  work_needed: 'Extend the archive precondition logic so that when definition.supersedes is set AND --supersedes-confirmed matches, per-deliverable review artifact requirements are bypassed (or replaced with a single supersedence-acknowledgement evidence shape). Related: rowBlockers + reviewArtifactsForRow() coordination.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T00:42:46-04:00"
+  updated_at: "2026-04-25T00:42:46-04:00"
+  references:
+    - internal/cli/row.go
+    - internal/cli/row_workflow.go
+    - internal/cli/review.go
+  source_work_unit: pi-row-audit-cleanup
+  depends_on:
+    - route-commands-archive-md-through-go-binary
+  files_touched:
+    - internal/cli/row.go
+    - internal/cli/row_workflow.go

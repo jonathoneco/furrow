@@ -55,7 +55,7 @@ func (a *App) runReviewStatus(args []string) int {
 	reviewSummary := reviewArtifactSummary(reviewArtifacts)
 	seed := rowSeedSurface(root, state)
 	currentArtifacts := currentStepArtifacts(root, rowName, state)
-	blockers := rowBlockers(state, seed, currentArtifacts)
+	blockers := rowBlockers(state, seed, currentArtifacts, rowBlockersOpts{})
 	checkpoint := rowCheckpointSurface(root, rowName, state, blockers, seed, currentArtifacts)
 
 	data := map[string]any{
@@ -84,7 +84,7 @@ func (a *App) runReviewStatus(args []string) int {
 	if flags.json {
 		return a.okJSON("furrow review status", data)
 	}
-		_, _ = fmt.Fprintf(a.stdout, "review status for %s\n", rowName)
+	_, _ = fmt.Fprintf(a.stdout, "review status for %s\n", rowName)
 	return 0
 }
 

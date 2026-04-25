@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "repair-deliverables-manifest.schema.json",
+  "title": "Repair Deliverables Manifest",
+  "type": "object",
+  "required": ["deliverables"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string" },
+    "decided_by": { "type": "string", "default": "manual" },
+    "commit": { "type": "string", "description": "Default commit for entries that omit commit" },
+    "deliverables": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "status", "commit", "evidence_paths"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "status": { "type": "string", "enum": ["not_started", "in_progress", "completed", "blocked"] },
+          "commit": { "type": "string", "minLength": 1 },
+          "evidence_paths": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["path"],
+              "additionalProperties": false,
+              "properties": {
+                "path": { "type": "string", "minLength": 1 },
+                "lines": { "type": "string" },
+                "note": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

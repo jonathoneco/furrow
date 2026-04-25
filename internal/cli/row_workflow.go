@@ -991,7 +991,18 @@ func rowSeedSurface(root string, state map[string]any) map[string]any {
 	}
 }
 
-func rowBlockers(state map[string]any, seed map[string]any, artifacts []map[string]any) []map[string]any {
+// rowBlockersOpts carries optional context beyond state/seed/artifacts.
+// The zero value (rowBlockersOpts{}) is safe for all existing callers.
+type rowBlockersOpts struct {
+	// SupersedesConfirmed is the raw "--supersedes-confirmed <commit>:<row>" value.
+	// Empty string means the flag was not passed.
+	SupersedesConfirmed string
+	// DefinitionSupersedes holds the parsed supersedes block from definition.yaml,
+	// or nil if the definition has no supersedes block.
+	DefinitionSupersedes map[string]any
+}
+
+func rowBlockers(state map[string]any, seed map[string]any, artifacts []map[string]any, opts rowBlockersOpts) []map[string]any {
 	if isArchivedState(state) {
 		return []map[string]any{}
 	}
@@ -1010,6 +1021,42 @@ func rowBlockers(state map[string]any, seed map[string]any, artifacts []map[stri
 		blockers = append(blockers, blocker("closed_seed", "seed", fmt.Sprintf("linked seed %v is closed", seed["id"]), map[string]any{"seed_id": seed["id"]}))
 	case "inconsistent":
 		blockers = append(blockers, blocker("seed_status_mismatch", "seed", fmt.Sprintf("linked seed %v status %v does not match expected %v", seed["id"], seed["status"], seed["expected_status"]), map[string]any{"seed_id": seed["id"], "expected_status": seed["expected_status"], "actual_status": seed["status"]}))
+	}
+	// Supersedence confirmation check
+	if opts.DefinitionSupersedes != nil {
+		requiredCommit, _ := opts.DefinitionSupersedes["commit"].(string)
+		requiredRow, _ := opts.DefinitionSupersedes["row"].(string)
+		confirmed := opts.SupersedesConfirmed // may be ""
+		var confirmedCommit, confirmedRow string
+		if confirmed != "" {
+			parts := strings.SplitN(confirmed, ":", 2)
+			if len(parts) == 2 {
+				confirmedCommit, confirmedRow = parts[0], parts[1]
+			}
+		}
+		switch {
+		case confirmed == "":
+			blockers = append(blockers, blocker(
+				"supersedence_evidence_missing",
+				"archive",
+				fmt.Sprintf("row definition declares supersedes (commit=%s, row=%s); pass --supersedes-confirmed %s:%s to acknowledge",
+					requiredCommit, requiredRow, requiredCommit, requiredRow),
+				map[string]any{"required_commit": requiredCommit, "required_row": requiredRow},
+			))
+		case confirmedCommit != requiredCommit || confirmedRow != requiredRow:
+			blockers = append(blockers, blocker(
+				"supersedence_evidence_missing",
+				"archive",
+				fmt.Sprintf("--supersedes-confirmed mismatch: got %s:%s, definition requires %s:%s",
+					confirmedCommit, confirmedRow, requiredCommit, requiredRow),
+				map[string]any{
+					"required_commit":  requiredCommit,
+					"required_row":     requiredRow,
+					"confirmed_commit": confirmedCommit,
+					"confirmed_row":    confirmedRow,
+				},
+			))
+		}
 	}
 	for _, artifact := range artifacts {
 		label, _ := artifact["label"].(string)
@@ -1095,6 +1142,25 @@ func rowCheckpointSurface(root, rowName string, state map[string]any, blockers [
 		"ready_to_advance":  ready,
 		"evidence":          evidence,
 	}
+}
+
+// definitionSupersedes reads the definition.yaml for the named row and returns
+// the parsed "supersedes" map (or nil if the definition has no supersedes block or cannot be read).
+func definitionSupersedes(root, rowName string) map[string]any {
+	definitionPath := filepath.Join(rowDirFor(root, rowName), "definition.yaml")
+	if !fileExists(definitionPath) {
+		return nil
+	}
+	payload, err := os.ReadFile(definitionPath)
+	if err != nil {
+		return nil
+	}
+	var doc map[string]any
+	if err := yaml.Unmarshal(payload, &doc); err != nil {
+		return nil
+	}
+	supersedes, _ := doc["supersedes"].(map[string]any)
+	return supersedes
 }
 
 func rowGatePolicy(root, rowName string, state map[string]any) string {

@@ -3,7 +3,82 @@
   "base_commit": "fc44783a64b5981b69895420adcb7d063fb6a7b6",
   "branch": null,
   "created_at": "2026-04-24T17:30:58Z",
-  "deliverables": {},
+  "deliverables": {
+    "backend-work-loop-support": {
+      "commit": "e4adef5",
+      "decided_by": "manual",
+      "evidence_paths": [
+        {
+          "lines": "3-45",
+          "note": "test coverage for row init/focus, seed visibility, blocker reporting, scaffolding",
+          "path": ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md"
+        },
+        {
+          "lines": "63-72",
+          "note": "post-spec validation pass",
+          "path": ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md"
+        },
+        {
+          "lines": "9-16",
+          "note": "outcome summary — what is now real in the repo",
+          "path": ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/handoff.md"
+        }
+      ],
+      "name": "backend-work-loop-support",
+      "status": "completed"
+    },
+    "pi-work-command": {
+      "commit": "e4adef5",
+      "decided_by": "manual",
+      "evidence_paths": [
+        {
+          "lines": "46-52",
+          "note": "headless /work command validation",
+          "path": ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md"
+        },
+        {
+          "lines": "53-61",
+          "note": "supervised loop with --complete --confirm",
+          "path": ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md"
+        },
+        {
+          "lines": "86-92",
+          "note": "spec-\u003edecompose boundary advancement",
+          "path": ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md"
+        },
+        {
+          "lines": "152-156",
+          "note": "archived-row blocking",
+          "path": ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md"
+        }
+      ],
+      "name": "pi-work-command",
+      "status": "completed"
+    },
+    "validation-and-doc-drift": {
+      "commit": "e4adef5",
+      "decided_by": "manual",
+      "evidence_paths": [
+        {
+          "lines": "1-173",
+          "note": "full test coverage document",
+          "path": ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md"
+        },
+        {
+          "lines": "73-84",
+          "note": "almanac validate + doctor passes",
+          "path": ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md"
+        },
+        {
+          "lines": "25-48",
+          "note": "files changed in this session",
+          "path": ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/handoff.md"
+        }
+      ],
+      "name": "validation-and-doc-drift",
+      "status": "completed"
+    }
+  },
   "description": "Pi step ceremony and artifact enforcement",
   "epic_seed_id": null,
   "force_stop_at": null,

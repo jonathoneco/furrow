@@ -1,0 +1,63 @@
+{
+  "deliverable": "repair-deliverables-cli",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "pass",
+        "evidence": "Verified with fresh `/tmp` runs of `/tmp/furrow-review`: valid manifest exited 0 and updated `.furrow/rows/fresh-row/state.json` plus appended `repair-audit.jsonl`; missing manifest=3, missing row=2, active row without `--force-active`=1, conflict without `--replace`=5, and schema-invalid manifest=4 with `deliverables[0].evidence_paths` named in stderr."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "pass",
+        "evidence": "`go test ./internal/cli -run TestRowRepairDeliverables -count=1` passes, and the table-driven test covers happy path, missing manifest, schema-invalid manifest, conflicting deliverable, non-existent row, active-row gating, replace behavior, partial repair, unknown-key rejection, and help handling."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "pass",
+        "evidence": "The implementation is wired through `internal/cli/app.go`, documents the schema at `schemas/repair-deliverables-manifest.schema.json`, rejects unknown keys at all manifest levels, and `bin/rws` contains a pure `exec \"$FURROW_BIN\" row repair-deliverables \"$@\"` delegation shim with no business logic."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "pass",
+        "evidence": "Wave 1 ownership in `.furrow/rows/pi-row-audit-cleanup/team-plan.md:32` excludes `internal/cli/review.go` and `internal/cli/row_workflow_test.go`, but commit `deae992` explicitly documents those extra edits as `gofmt`-only style cleanup with no behavioral changes."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "pass",
+        "evidence": "`go test ./...` passes, `gofmt -l internal/cli/row_repair.go internal/cli/row_repair_test.go internal/cli/review.go internal/cli/row_workflow_test.go` returns no output, and the Go/shell changes follow project conventions (`fmt.Errorf` wrapping, minimal shim logic, no forceful shell behavior)."
+      }
+    ],
+    "verdict": "pass"
+  },
+  "overall": "pass",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "diff_scope": {
+    "base": "22679d593037d352ad90c520ce8cc808182fc8c7",
+    "commits": [
+      "deae992405cf631b01797805234b257738b4678a",
+      "b6940ec2033ed3976ebb7bf3b7ffc076b5ae3acf",
+      "d8d304119e923efbef6707db3e96c0e8791ef40f"
+    ],
+    "files_matched": [
+      "bin/rws",
+      "internal/cli/app.go",
+      "internal/cli/row_repair.go",
+      "internal/cli/row_repair_test.go",
+      "schemas/repair-deliverables-manifest.schema.json"
+    ]
+  },
+  "unplanned_changes": "absent",
+  "timestamp": "2026-04-25T04:35:44Z"
+}

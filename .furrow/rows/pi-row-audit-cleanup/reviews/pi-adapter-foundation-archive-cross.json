@@ -1,0 +1,70 @@
+{
+  "deliverable": "pi-adapter-foundation-archive",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "pass",
+        "evidence": "Verified end-to-end with a fresh temp Furrow root: `row archive` fails without `--supersedes-confirmed`, fails with wrong commit or row using the specific mismatch message, and succeeds with `e4adef5:pi-step-ceremony-and-artifact-enforcement`; in-repo evidence also shows `.furrow/rows/pi-adapter-foundation/state.json` archived, `gates/review-to-archive.json` has `phase_a.notes` echoing the confirmed pair and an empty blockers array, `bin/frw validate-definition` passed for all existing `definition.yaml` files, `row list --active --json` omits `pi-adapter-foundation`, and `.furrow/.focused` points to `pi-row-audit-cleanup`."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "fail",
+        "evidence": "New helper/blocker logic is unit-tested in `internal/cli/row_workflow_test.go`, but there is no automated CLI/archive test covering the new `--supersedes-confirmed` missing/mismatch/match branches in `runRowArchive` despite those being required acceptance-path behaviors."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "pass",
+        "evidence": "The specified interface contracts are present at the required locations: optional top-level `supersedes` in `schemas/definition.schema.json`, `pi-adapter-foundation/definition.yaml` names commit `e4adef5` and row `pi-step-ceremony-and-artifact-enforcement`, `furrow row archive` parses `--supersedes-confirmed`, `rowBlockers()` emits `supersedence_evidence_missing`, and the dangling-successor section was removed from `pi-step-ceremony-and-artifact-enforcement/handoff.md`."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "fail",
+        "evidence": "The reviewed range includes unrelated files outside the supersedence/archive deliverable scope with no justification in the supplied changes, including `internal/cli/row_repair.go`, `internal/cli/row_repair_test.go`, `internal/cli/review.go`, `.furrow/rows/pi-step-ceremony-and-artifact-enforcement/repair-*`, `.furrow/seeds/seeds.jsonl`, and `.furrow/rows/pi-row-audit-cleanup/specs/pi-step-ceremony-backfill.md`."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "pass",
+        "evidence": "Project-style checks are clean on the touched supersedence codepath: `go test ./internal/cli -run 'Test(RowBlockers_Supersedence|DefinitionSupersedes)$'` passed, `deae992` applied `gofmt`, and `bin/frw validate-definition` succeeded for all row definitions including the new `supersedes` field."
+      }
+    ],
+    "verdict": "fail"
+  },
+  "overall": "fail",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "diff_scope": {
+    "base": "22679d593037d352ad90c520ce8cc808182fc8c7",
+    "commits": [
+      "deae992405cf631b01797805234b257738b4678a",
+      "42914c381289b1d04fdc257fd832c6bf78421ff1",
+      "2f3f4296bbc2adcac3531ece9805175ce558b3a4",
+      "a3547a699bcda059c29ffc696ea99585e69173b4",
+      "d8d304119e923efbef6707db3e96c0e8791ef40f",
+      "aeebae7f35d96cf5669f990e5777ce10514f6ffa"
+    ],
+    "files_matched": [
+      "bin/rws",
+      ".furrow/rows/pi-adapter-foundation/definition.yaml",
+      ".furrow/rows/pi-adapter-foundation/state.json",
+      ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/handoff.md",
+      "internal/cli/app.go",
+      "internal/cli/row.go",
+      "internal/cli/row_workflow.go",
+      "internal/cli/row_workflow_test.go",
+      "schemas/definition.schema.json"
+    ]
+  },
+  "unplanned_changes": "absent",
+  "timestamp": "2026-04-25T04:38:00Z"
+}

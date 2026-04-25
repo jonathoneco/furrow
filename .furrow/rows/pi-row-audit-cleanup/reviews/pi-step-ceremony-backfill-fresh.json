@@ -1,0 +1,37 @@
+{
+  "deliverable": "pi-step-ceremony-backfill",
+  "dimensions": [
+    {
+      "name": "ac-coverage",
+      "verdict": "PASS",
+      "evidence": "All 5 ACs in definition.yaml have evidence. AC1 (git cat-file -e e4adef5): commit is reachable, confirmed via `git cat-file -e e4adef5` → exit 0. AC2: repair-manifest.yaml exists at .furrow/rows/pi-step-ceremony-and-artifact-enforcement/repair-manifest.yaml with 3 deliverables (backend-work-loop-support, pi-work-command, validation-and-doc-drift), all with commit=e4adef5 and evidence_paths arrays referencing validation.md/handoff.md. AC3: state.json.deliverables contains exactly 3 entries matching manifest names (state.json lines 7-80). AC4: repair-audit.jsonl line 2 (last line, timestamp 2026-04-25T03:53:29Z) carries commit=e4adef5, decided_by=manual. AC5: rws status would show deliverable count > 0 since state.json has 3 deliverables (cannot invoke live but state is confirmed populated)."
+    },
+    {
+      "name": "manifest-fidelity",
+      "verdict": "PASS",
+      "evidence": "repair-manifest.yaml content matches the verbatim spec in specs/pi-step-ceremony-backfill.md lines 33-86 exactly. Top-level fields: version='1', decided_by=manual, commit=e4adef5 all present (lines 5-7 of manifest). All three deliverable entries (backend-work-loop-support lines 10-22, pi-work-command lines 24-39, validation-and-doc-drift lines 41-54) match the spec's YAML block character-for-character including evidence_paths, lines references, and notes. The top-level commit/decided_by/version fields were added in a subsequent fix commit (af79e1b) which also updated the spec — the final manifest is fully aligned."
+    },
+    {
+      "name": "cli-invocation",
+      "verdict": "PASS",
+      "evidence": "Commit a88c9fc message explicitly states 'State mutation via D1 CLI (not direct edit).' The commit includes repair-audit.jsonl (audit trail written by CLI) alongside state.json, which is consistent with the CLI atomically updating both. repair-audit.jsonl line 1 (timestamp 2026-04-25T03:51:51Z) records a first run with commit='' (CLI was invoked before top-level commit field was added to manifest). Line 2 (2026-04-25T03:53:29Z) records the corrected re-run with --replace, commit=e4adef5. Deliverables map has exactly 3 entries with names backend-work-loop-support, pi-work-command, validation-and-doc-drift matching the manifest."
+    },
+    {
+      "name": "audit-trail",
+      "verdict": "PASS",
+      "evidence": "repair-audit.jsonl exists at .furrow/rows/pi-step-ceremony-and-artifact-enforcement/repair-audit.jsonl with 2 lines. The LAST line (line 2) contains: commit=e4adef5, decided_by=manual, entries_added=[backend-work-loop-support, pi-work-command, validation-and-doc-drift] (length 3), timestamp=2026-04-25T03:53:29Z (non-null ISO 8601), manifest path recorded. Line 1 is a vestigial first-run entry (commit='') from before the top-level commit field was added to the manifest — it records entries_added of length 3 and entries_skipped=[] but with an empty commit string. The spec (AC4) requires the audit trail entry to carry commit=e4adef5; the last (current-state) entry satisfies this. The first-run entry is a mild noise artifact but does not violate any constraint."
+    },
+    {
+      "name": "state-consistency",
+      "verdict": "PASS",
+      "evidence": "state.json lines 6-80 show deliverables map with exactly 3 keys. Each key matches the manifest: backend-work-loop-support (state.json lines 7-28, commit=e4adef5, decided_by=manual, 3 evidence_paths), pi-work-command (lines 30-54, commit=e4adef5, decided_by=manual, 4 evidence_paths), validation-and-doc-drift (lines 58-79, commit=e4adef5, decided_by=manual, 3 evidence_paths). Evidence path content, lines fields, and notes match the manifest verbatim. archived_at=2026-04-24T22:15:55Z (non-null, row is archived as expected). No drift detected between manifest and state."
+    },
+    {
+      "name": "constraint-compliance",
+      "verdict": "PASS",
+      "evidence": "Git log confirms state.json was not directly edited in isolation — it appears in commit a88c9fc alongside repair-audit.jsonl and repair-manifest.yaml, consistent with CLI-mediated atomic write. Commit message explicitly disclaims direct edit. The only new files added to the target row directory are repair-manifest.yaml and repair-audit.jsonl, plus state.json mutations through CLI — no extraneous files created. The fix commit (af79e1b) adds only repairs to repair-manifest.yaml and repair-audit.jsonl plus the spec update in pi-row-audit-cleanup/specs/. No direct jq/sed mutations observed in commit history. Conventional commit style used (chore:, fix:) per project convention."
+    }
+  ],
+  "overall": "PASS",
+  "notes": "The deliverable is fully compliant. The manifest was written verbatim to the target path, the repair-deliverables CLI was invoked (not direct state.json surgery), state.json.deliverables is populated with exactly 3 entries that mirror the manifest, and the audit trail's last entry carries all required fields (commit=e4adef5, decided_by=manual, non-null ISO 8601 timestamp). The two-commit implementation (a88c9fc + af79e1b) reflects a reasonable correction: the initial manifest omitted top-level commit/decided_by/version fields required by the D1 CLI schema; the fix commit added those fields and re-ran with --replace, leaving the audit trail's last entry correct. The net state is fully consistent with all 5 acceptance criteria.\n\nOne minor observation: repair-audit.jsonl contains two lines rather than one — the first line (timestamp 2026-04-25T03:51:51Z) has commit='' because it was written before the manifest carried a top-level commit field. This is cosmetic; the JSONL is append-only and the last line is authoritative. The spec does not require a single-entry audit file, so this is not a violation. The reviews directory at .furrow/rows/pi-step-ceremony-and-artifact-enforcement/reviews/ was not created, but the spec's file_ownership list does not include it and the definition.yaml does not require it — no gap."
+}

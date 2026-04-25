@@ -2923,13 +2923,16 @@ phases:
     conflict_risk: low
     completed_at: null
   - index: 4
-    branch: work/handoff-and-context-routing
-    description: Handoff template + context-routing infrastructure + design-pattern context construction + presentation standardization.
+    branch: work/orchestration-delegation-contract
+    description: 'Orchestration/delegation contract: layer-separation interface (handoff schema) + furrow-aware/unaware split + boundary enforcement, with supporting context-routing
+      and presentation infrastructure. The three top todos define one contract from three angles: schema, split, enforcement.'
     todos:
     - handoff-prompt-artifact-template
     - context-routing-infrastructure
     - design-pattern-context-construction
     - standardize-artifact-presentation
+    - furrow-context-isolation-layer
+    - delegation-boundary-enforcement
     depends_on: []
     key_files:
     - skills/
@@ -3028,7 +3031,7 @@ phases:
     - post-merge-watch-list
     - ambient-context-promotion
     depends_on:
-    - work/handoff-and-context-routing
+    - work/orchestration-delegation-contract
     key_files:
     - commands/
     - skills/
@@ -3123,7 +3126,7 @@ phases:
     - workflow-power-preservation
     depends_on:
     - work/state-and-correction-guards
-    - work/handoff-and-context-routing
+    - work/orchestration-delegation-contract
     - work/seeds-graph-cutover-and-pi-surfaces
     - work/cli-introspection-and-history
     key_files:
@@ -3136,7 +3139,6 @@ phases:
     branch: work/pi-native-leverage-and-tui
     description: Furrow-context isolation + TUI dashboard + self-update hook + pi-native-capability-leverage umbrella.
     todos:
-    - furrow-context-isolation-layer
     - furrow-tui-dashboard
     - furrow-self-update-hook
     - pi-native-capability-leverage

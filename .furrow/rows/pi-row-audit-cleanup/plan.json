@@ -1,0 +1,60 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": ["repair-deliverables-cli"],
+      "assignments": {
+        "repair-deliverables-cli": {
+          "specialist": "go-specialist",
+          "file_ownership": [
+            "internal/cli/row_repair.go",
+            "internal/cli/row_repair_test.go",
+            "schemas/repair-deliverables-manifest.schema.json",
+            "internal/cli/app.go",
+            "bin/rws"
+          ],
+          "skills": ["test-driven-specialist"]
+        }
+      }
+    },
+    {
+      "wave": 2,
+      "deliverables": ["pi-step-ceremony-backfill"],
+      "assignments": {
+        "pi-step-ceremony-backfill": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/repair-manifest.yaml",
+            ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/state.json"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 3,
+      "deliverables": ["pi-adapter-foundation-archive"],
+      "assignments": {
+        "pi-adapter-foundation-archive": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "internal/cli/row_workflow.go",
+            "internal/cli/row.go",
+            "internal/cli/app.go",
+            "internal/cli/row_workflow_test.go",
+            "schemas/definition.schema.json",
+            ".furrow/rows/pi-adapter-foundation/definition.yaml",
+            ".furrow/rows/pi-adapter-foundation/state.json",
+            ".furrow/rows/pi-adapter-foundation/gates/review-to-archive.json",
+            ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/handoff.md"
+          ],
+          "skills": ["test-driven-specialist"]
+        }
+      }
+    }
+  ],
+  "created_at": "2026-04-25T03:35:00Z",
+  "updated_at": "2026-04-25T04:05:00Z",
+  "created_by": "plan-step",
+  "decompose_notes": "Wave 3 file_ownership corrected per spec input #5: archive.json -> gates/review-to-archive.json (the file actually written by runRowArchive). bin/rws removed from wave 3 — spec confirmed Go-side flag only, no shell change needed."
+}

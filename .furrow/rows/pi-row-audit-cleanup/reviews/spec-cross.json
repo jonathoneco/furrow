@@ -1,0 +1,34 @@
+{
+  "type": "spec",
+  "dimensions": [
+    {
+      "name": "testability",
+      "verdict": "pass",
+      "evidence": "Most acceptance criteria are mechanically checkable with explicit exit codes, file paths, JSON fields, and command outputs."
+    },
+    {
+      "name": "completeness",
+      "verdict": "pass",
+      "evidence": "All three deliverables in `.furrow/rows/pi-row-audit-cleanup/definition.yaml` have dedicated spec sections with interface contracts and refined acceptance criteria."
+    },
+    {
+      "name": "consistency",
+      "verdict": "fail",
+      "evidence": "The specs conflict on core interfaces: `repair-deliverables-cli` requires `deliverables[].evidence_path` and conflict-exit behavior, while `pi-step-ceremony-backfill` emits `evidence_paths` lists and `repair-deliverables-cli` later defines skip-on-conflict partial-repair semantics."
+    },
+    {
+      "name": "test-scenario-coverage",
+      "verdict": "fail",
+      "evidence": "Several non-trivial archive ACs lack explicit WHEN/THEN scenarios with verification commands, notably `.furrow/.focused` clearing and the no-`supersedes` regression guard."
+    },
+    {
+      "name": "implementability",
+      "verdict": "fail",
+      "evidence": "A developer still has to ask which manifest schema to implement and where the audit trail lives, because the spec alternates between `state.json.repair_audit` and a `repair-audit.jsonl` sidecar despite `schemas/state.schema.json` forbidding new top-level fields."
+    }
+  ],
+  "overall": "fail",
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-25T03:34:25Z"
+}
