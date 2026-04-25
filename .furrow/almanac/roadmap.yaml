@@ -2923,14 +2923,16 @@ phases:
     conflict_risk: low
     completed_at: null
   - index: 4
-    branch: work/handoff-and-context-routing
-    description: Handoff template + context-routing infrastructure + design-pattern context construction + presentation standardization.
+    branch: work/orchestration-delegation-contract
+    description: 'Orchestration/delegation contract: layer-separation interface (handoff schema) + furrow-aware/unaware split + boundary enforcement, with supporting context-routing
+      and presentation infrastructure. The three top todos define one contract from three angles: schema, split, enforcement.'
     todos:
     - handoff-prompt-artifact-template
     - context-routing-infrastructure
     - design-pattern-context-construction
     - standardize-artifact-presentation
     - furrow-context-isolation-layer
+    - delegation-boundary-enforcement
     depends_on: []
     key_files:
     - skills/

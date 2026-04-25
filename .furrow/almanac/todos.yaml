@@ -3284,8 +3284,11 @@
   source_work_unit: migration-state-of-the-union
 - id: furrow-context-isolation-layer
   title: Furrow context isolation layer
-  context: Non-Furrow projects are getting polluted with Furrow context (e.g., wrangle project listed Furrow fixes as deferred TODOs). Furrow should drive workflow but fade into background when not directly relevant. Suggests need for a furrow-aware vs furrow-unaware layer split with delegation between them.
-  work_needed: 'Design a layered architecture: furrow-aware skills/agents own Furrow-specific work; furrow-unaware skills/agents handle the underlying domain work without Furrow leakage. Define delegation contract; investigate via prototype on a non-Furrow project.'
+  context: |-
+    Non-Furrow projects are getting polluted with Furrow context (e.g., wrangle project listed Furrow fixes as deferred TODOs). Furrow should drive workflow but fade into background when not directly relevant. Suggests need for a furrow-aware vs furrow-unaware layer split with delegation between them.
+
+    THIS IS ONE FACE OF THE ORCHESTRATION/DELEGATION CONTRACT. Sibling todos: handoff-prompt-artifact-template defines the artifact schema that crosses the layer boundary; delegation-boundary-enforcement defines what is allowed to cross and what is not. The three together form one contract; they ship in the same row (work/orchestration-delegation-contract).
+  work_needed: 'Design a layered architecture: furrow-aware skills/agents own Furrow-specific work; furrow-unaware skills/agents handle the underlying domain work without Furrow leakage. The delegation contract IS the handoff-prompt-artifact-template schema (the 7 fields are the layer interface). Boundary enforcement (delegation-boundary-enforcement) prevents leakage. Investigate via prototype on a non-Furrow project.'
   source_type: manual
   status: active
   created_at: "2026-04-24T21:14:27-04:00"
@@ -3351,8 +3354,11 @@
   source_work_unit: migration-state-of-the-union
 - id: handoff-prompt-artifact-template
   title: Handoff prompt artifact template
-  context: 'Handoff prompts between phases / specialists are inconsistent. Brain-dump ideal structure: grounding info / resources, direction / persona / specialist / reasoning, goals, constraints, enforcement, deliverables, end-of-session report. Should be derived from row artifacts, not hand-composed.'
-  work_needed: Define handoff.md schema covering all 7 fields. Generate from definition.yaml + state.json + plan.json + previous-step artifacts. /furrow:next consumes it. Stops being ad-hoc prose; becomes a contract.
+  context: |-
+    Handoff prompts between phases / specialists are inconsistent. Brain-dump ideal structure: grounding info / resources, direction / persona / specialist / reasoning, goals, constraints, enforcement, deliverables, end-of-session report. Should be derived from row artifacts, not hand-composed.
+
+    THIS IS THE LAYER INTERFACE OF THE ORCHESTRATION/DELEGATION CONTRACT. The 7 fields are exactly what crosses from the furrow-aware layer (orchestrator) to the furrow-unaware layer (specialist) and back. Sibling todos: furrow-context-isolation-layer defines the layer split; delegation-boundary-enforcement constrains what flows across. The three together form one contract; they ship in the same row (work/orchestration-delegation-contract).
+  work_needed: Define handoff.md schema covering all 7 fields. Generate from definition.yaml + state.json + plan.json + previous-step artifacts. /furrow:next consumes it. Stops being ad-hoc prose; becomes a contract. Schema doubles as the layer-interface-API for furrow-context-isolation-layer.
   source_type: manual
   status: active
   created_at: "2026-04-24T21:14:39-04:00"
@@ -3982,3 +3988,21 @@
   source_work_unit: migration-state-of-the-union
   depends_on:
     - cli-architecture-overhaul-slice-2
+- id: delegation-boundary-enforcement
+  title: Delegation boundary enforcement
+  context: 'Sibling to handoff-prompt-artifact-template and furrow-context-isolation-layer; together they form the orchestration/delegation contract. Without explicit enforcement, the layer split is a convention not a constraint: the furrow-unaware specialist could read .furrow/ state, the orchestrator could leak internal context downward, and the boundary erodes silently. The handoff schema (7 fields) defines what crosses; this todo enforces that nothing else does.'
+  work_needed: 'Define what crosses the layer boundary in each direction: (a) furrow-aware → furrow-unaware: only the 7 handoff fields; no row state, almanac, .furrow/ details; (b) furrow-unaware → furrow-aware: only EOS-report-shaped output; no leakage of internal reasoning or scratch artifacts; (c) hook/CLI access: only the furrow-aware layer may invoke rws/alm/sds/frw or read .furrow/. Mechanism options: (1) prompt-level scoping (skill files only loaded for the layer that needs them), (2) tool-permission scoping (Pi extension restricts tool access by skill), (3) test-driven boundary check (run a furrow-unaware specialist on a non-Furrow project, assert zero Furrow leakage in artifacts produced). Probably all three, layered.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-24T23:41:44-04:00"
+  urgency: medium
+  impact: high
+  effort: medium
+  updated_at: "2026-04-24T23:41:44-04:00"
+  references:
+    - docs/architecture/workflow-power-preservation.md
+    - skills/shared/specialist-delegation.md
+  source_work_unit: migration-state-of-the-union
+  depends_on:
+    - handoff-prompt-artifact-template
+    - furrow-context-isolation-layer
