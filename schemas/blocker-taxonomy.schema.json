@@ -20,8 +20,8 @@
         "properties": {
           "code": {
             "type": "string",
-            "pattern": "^[a-z][a-z0-9_]*$",
-            "description": "Snake-case code, unique across the array"
+            "pattern": "^[a-z][a-z0-9]*([_-][a-z0-9]+)*$",
+            "description": "Kebab-case or snake-case code, unique across the array"
           },
           "category": {
             "type": "string",

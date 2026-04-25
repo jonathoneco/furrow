@@ -125,7 +125,7 @@ func TestBlockerEnvelopeInterpolation(t *testing.T) {
 	}
 }
 
-func TestBlockerEnvelopeMissingInterpolationKeyVisible(t *testing.T) {
+func TestBlockerEnvelopeMissingInterpolationKeyPanics(t *testing.T) {
 	resetTaxonomyCacheForTest()
 	t.Cleanup(resetTaxonomyCacheForTest)
 
@@ -134,9 +134,20 @@ func TestBlockerEnvelopeMissingInterpolationKeyVisible(t *testing.T) {
 		t.Fatalf("LoadTaxonomy: %v", err)
 	}
 
-	// Intentionally omit `path` so the placeholder remains in the output.
-	env := tx.EmitBlocker("definition_objective_missing", map[string]string{})
-	if !strings.Contains(env.Message, "{path}") {
-		t.Fatalf("missing interpolation key should leave {path} placeholder visible: got %q", env.Message)
-	}
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Fatal("expected panic for unresolved interpolation key, got none")
+		}
+		msg, ok := r.(string)
+		if !ok {
+			t.Fatalf("panic value is %T, want string", r)
+		}
+		if !strings.Contains(msg, "path") {
+			t.Fatalf("panic message should name the missing key: %q", msg)
+		}
+	}()
+
+	// Intentionally omit `path` so the {path} placeholder triggers a clear error.
+	_ = tx.EmitBlocker("definition_objective_missing", map[string]string{})
 }

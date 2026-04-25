@@ -15,7 +15,12 @@ import { join, resolve } from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
-import { decideValidateDefinitionAction, decideOwnershipAction } from "./validate-actions.ts";
+import {
+	decideValidateDefinitionAction,
+	decideOwnershipAction,
+	shouldInterceptForDefinitionValidation,
+	shouldInterceptForOwnershipWarn,
+} from "./validate-actions.ts";
 
 const execFileAsync = promisify(execFile);
 
@@ -64,6 +69,39 @@ context_pointers:
 constraints: []
 gate_policy: bogus_value
 `;
+
+describe("D4 path-filter gate (shouldInterceptForDefinitionValidation)", () => {
+	test("Write on */definition.yaml → intercept", () => {
+		expect(shouldInterceptForDefinitionValidation("write", "/abs/.furrow/rows/x/definition.yaml")).toBe(true);
+	});
+	test("Edit on */definition.yaml → intercept", () => {
+		expect(shouldInterceptForDefinitionValidation("edit", "/abs/.furrow/rows/x/definition.yaml")).toBe(true);
+	});
+	test("Write on non-definition.yaml → no-op", () => {
+		expect(shouldInterceptForDefinitionValidation("write", "/abs/src/foo.go")).toBe(false);
+	});
+	test("Read tool → no-op", () => {
+		expect(shouldInterceptForDefinitionValidation("read", "/abs/.furrow/rows/x/definition.yaml")).toBe(false);
+	});
+	test("Empty path → no-op", () => {
+		expect(shouldInterceptForDefinitionValidation("write", undefined)).toBe(false);
+	});
+});
+
+describe("D5 path-filter gate (shouldInterceptForOwnershipWarn)", () => {
+	test("Write any path → intercept", () => {
+		expect(shouldInterceptForOwnershipWarn("write", "/abs/random/file.txt")).toBe(true);
+	});
+	test("Edit any path → intercept", () => {
+		expect(shouldInterceptForOwnershipWarn("edit", "/abs/src/foo.go")).toBe(true);
+	});
+	test("Read tool → no-op", () => {
+		expect(shouldInterceptForOwnershipWarn("read", "/abs/random/file.txt")).toBe(false);
+	});
+	test("Empty path → no-op", () => {
+		expect(shouldInterceptForOwnershipWarn("write", undefined)).toBe(false);
+	});
+});
 
 describe("decideValidateDefinitionAction (D4 handler unit)", () => {
 	test("verdict=valid → undefined (silent allow)", () => {

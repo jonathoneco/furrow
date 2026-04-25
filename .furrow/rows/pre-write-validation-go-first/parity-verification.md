@@ -25,8 +25,8 @@ All four pass with the D2 Go validator (`furrow validate ownership`) as the upst
 
 The handler at `adapters/pi/furrow.ts` (D5 block) reads `data.verdict` from the envelope and:
 - `in_scope` / `not_applicable` → return undefined (silent allow)
-- `out_of_scope` with UI → `ctx.ui.confirm` prompt; user "yes" → undefined; user "no" → `{block: true, reason}`
-- `out_of_scope` without UI → return undefined (degraded silent allow; the Claude shell hook is the non-interactive equivalent)
+- `out_of_scope` with UI → `ctx.ui.confirm("This file is outside the deliverable file_ownership. Proceed anyway?", message)` prompt; user "yes" → `{ block: false }`; user "no" → `{ block: true, reason }`
+- `out_of_scope` without UI → return `{ block: false }` (degraded silent allow; the Claude shell hook is the non-interactive equivalent)
 
 ### Claude-side (D6) — manual verification
 

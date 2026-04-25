@@ -53,6 +53,31 @@ export function decideValidateDefinitionAction(
 	return { block: true, reason: message };
 }
 
+// shouldInterceptForDefinitionValidation reports whether D4's handler should
+// fire on a given tool event. Mirrors the real handler's path-filter gate
+// (toolName ∈ {edit, write} AND target path ends with /definition.yaml) so
+// tests can verify the gating behavior independently of the runtime.
+export function shouldInterceptForDefinitionValidation(
+	toolName: string,
+	absolutePath: string | undefined,
+): boolean {
+	if (toolName !== "edit" && toolName !== "write") return false;
+	if (!absolutePath) return false;
+	return absolutePath.endsWith("/definition.yaml");
+}
+
+// shouldInterceptForOwnershipWarn reports whether D5's handler should fire on
+// a given tool event. Mirrors the real handler's path-filter gate (any
+// edit/write with a non-empty target path).
+export function shouldInterceptForOwnershipWarn(
+	toolName: string,
+	absolutePath: string | undefined,
+): boolean {
+	if (toolName !== "edit" && toolName !== "write") return false;
+	if (!absolutePath) return false;
+	return true;
+}
+
 // decideOwnershipAction is the pure verdict→action mapping for D5's
 // ownership-warn handler. Pure async function: maps the Go validator's envelope
 // data + an optional confirm sink to a Pi handler action. When confirm is
