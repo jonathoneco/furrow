@@ -157,11 +157,12 @@ Phase 8 — dual-runtime parity + Pi-native + research [PLANNED, after Phases 3-
 - `pi-session-resume-reground` (compaction handler + session-start handler)
 
 #### `work/handoff-and-context-routing`
-**Branch:** `work/handoff-and-context-routing` | **Sessions:** ~3 | **Conflict risk:** none (independent)
+**Branch:** `work/handoff-and-context-routing` | **Sessions:** ~4 | **Conflict risk:** none (independent)
 - `handoff-prompt-artifact-template`
 - `context-routing-infrastructure`
 - `design-pattern-context-construction`
 - `standardize-artifact-presentation`
+- `furrow-context-isolation-layer` (**promoted from Phase 8** — pain felt today on non-Furrow projects (e.g., wrangle); fits the context-routing theme since both `context-routing-infrastructure` and this answer "what context should load when?")
 
 ---
 
@@ -283,11 +284,11 @@ Phase 8 — dual-runtime parity + Pi-native + research [PLANNED, after Phases 3-
 - `workflow-power-preservation` umbrella (closes when decomposed children all ship)
 
 #### `work/pi-native-leverage-and-tui`
-**Branch:** `work/pi-native-leverage-and-tui` | **Sessions:** ~6 | **Conflict risk:** low (Pi extension territory)
-- `furrow-context-isolation-layer` (the wrangle/non-Furrow pollution fix; medium urgency)
+**Branch:** `work/pi-native-leverage-and-tui` | **Sessions:** ~5 | **Conflict risk:** low (Pi extension territory)
 - `furrow-tui-dashboard`
 - `furrow-self-update-hook`
 - `pi-native-capability-leverage` umbrella
+- (note: `furrow-context-isolation-layer` was promoted to Phase 4's `work/handoff-and-context-routing` to reach pain-felt-now sooner)
 
 #### `work/docs-and-research`
 **Branch:** `work/docs-and-research` | **Sessions:** background | **Conflict risk:** none (docs/, references/)

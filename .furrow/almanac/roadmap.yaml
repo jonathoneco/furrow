@@ -2930,6 +2930,7 @@ phases:
     - context-routing-infrastructure
     - design-pattern-context-construction
     - standardize-artifact-presentation
+    - furrow-context-isolation-layer
     depends_on: []
     key_files:
     - skills/
@@ -3136,7 +3137,6 @@ phases:
     branch: work/pi-native-leverage-and-tui
     description: Furrow-context isolation + TUI dashboard + self-update hook + pi-native-capability-leverage umbrella.
     todos:
-    - furrow-context-isolation-layer
     - furrow-tui-dashboard
     - furrow-self-update-hook
     - pi-native-capability-leverage
