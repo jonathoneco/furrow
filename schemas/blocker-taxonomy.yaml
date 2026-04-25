@@ -1,13 +1,19 @@
 # Blocker taxonomy — canonical registry of error codes emitted by Furrow validators.
 #
-# Initial population covers validation-at-write-time codes only; future rows extend with
-# state-mutation, gate, archive, scaffold, summary, ideation codes per shared-blocker-taxonomy-spec.
+# Population spans the full Blocker baseline from
+# docs/architecture/pi-step-ceremony-and-artifact-enforcement.md plus hook-emit
+# codes catalogued in research/hook-audit.md (state-mutation, gate, archive,
+# scaffold, summary, ideation, seed-state, ownership categories).
 #
 # Conformance contract for emitters (see internal/cli/blocker_envelope.go):
 # - Every emitted code must appear in this file's blockers[] array.
 # - message_template uses {placeholder} substitution; emitters must supply matching keys.
 # - severity ∈ {block, warn, info}; confirmation_path ∈ {block, warn-with-confirm, silent}.
 # - applicable_steps absent (or empty array) means the code applies in every step.
+#
+# Backward-compat lock: the first 11 entries (definition_* + ownership_outside_scope)
+# carry frozen code strings, severities, and message_template placeholder sets.
+# See internal/cli/blocker_envelope_test.go TestBlockerTaxonomyBackwardCompat11.
 
 version: "1"
 
@@ -88,3 +94,221 @@ blockers:
     message_template: "{path} is outside file_ownership for any deliverable in {row}"
     remediation_hint: "Add the path to the appropriate deliverable's file_ownership in definition.yaml, or write to a different file"
     confirmation_path: warn-with-confirm
+
+  # --- Hook-emit codes (research/hook-audit.md §3) ---
+
+  - code: state_json_direct_write
+    category: state-mutation
+    severity: block
+    message_template: "state.json is Furrow-exclusive — use frw update-state (path: {path})"
+    remediation_hint: "Route the mutation through the canonical CLI (frw update-state, rws transition, rws complete-deliverable). Direct edits to state.json are blocked by the state-guard hook."
+    confirmation_path: block
+
+  - code: verdict_direct_write
+    category: gate
+    severity: block
+    message_template: "gate-verdicts/ is write-protected — verdicts written by evaluator subagent only (path: {path})"
+    remediation_hint: "Verdict files are written exclusively by the gate-evaluator subagent via the canonical evaluation flow. Do not hand-edit gate-verdicts/."
+    confirmation_path: block
+
+  - code: correction_limit_reached
+    category: state-mutation
+    severity: block
+    message_template: "Correction limit ({limit}) reached for deliverable '{deliverable}' (path: {path}). Escalate to human for guidance."
+    remediation_hint: "The deliverable has reached its correction limit. Stop attempting fixes and escalate to a human reviewer; no CLI override exists."
+    confirmation_path: block
+    applicable_steps: ["implement"]
+
+  - code: script_guard_internal_invocation
+    category: scaffold
+    severity: block
+    message_template: "bin/frw.d/ scripts are internal — use frw, rws, alm, or sds (command: {command})"
+    remediation_hint: "Invoke the public CLI entry points (frw, rws, alm, sds). Direct invocation of bin/frw.d/ scripts is blocked."
+    confirmation_path: block
+
+  - code: precommit_install_artifact_staged
+    category: scaffold
+    severity: block
+    message_template: "refusing to stage install-artifact {path}; move to $XDG_STATE_HOME/furrow/"
+    remediation_hint: "Install artifacts (bin/*.bak, .claude/rules/*.bak) belong in $XDG_STATE_HOME/furrow/, not in the repository. Unstage and relocate."
+    confirmation_path: block
+
+  - code: precommit_script_mode_invalid
+    category: scaffold
+    severity: block
+    message_template: "{path} must be 100755 (got {mode})"
+    remediation_hint: "Run `chmod +x {path}` and re-stage so the file's git index mode is 100755."
+    confirmation_path: block
+
+  - code: precommit_typechange_to_symlink
+    category: scaffold
+    severity: block
+    message_template: "refusing type-change to symlink on {path} (see docs/architecture/self-hosting.md)"
+    remediation_hint: "Protected paths (bin/alm, bin/rws, bin/sds, .claude/rules/*) must remain regular files; do not stage a symlink type-change."
+    confirmation_path: block
+
+  - code: ideation_incomplete_definition_fields
+    category: ideation
+    severity: block
+    message_template: "Ideation incomplete — definition.yaml missing required fields: {missing}"
+    remediation_hint: "Populate the missing definition.yaml fields (objective, gate_policy, deliverables, context_pointers, constraints) before completing the ideate step."
+    confirmation_path: block
+    applicable_steps: ["ideate"]
+
+  - code: summary_section_missing
+    category: summary
+    severity: block
+    message_template: "summary.md is missing required section '{section}' (path: {path})"
+    remediation_hint: "Use `rws update-summary <section>` to add the missing section. summary.md must contain Task, Current State, Artifact Paths, Settled Decisions, Key Findings, Open Questions, and Recommendations."
+    confirmation_path: block
+    applicable_steps: ["research", "plan", "spec", "decompose", "implement", "review"]
+
+  - code: summary_section_empty
+    category: summary
+    severity: block
+    message_template: "summary.md section '{section}' has {actual_count} non-empty content lines (need at least {required_count}) at {path}"
+    remediation_hint: "Use `rws update-summary <section>` to populate the section with substantive content; placeholders are not sufficient."
+    confirmation_path: block
+    applicable_steps: ["research", "plan", "spec", "decompose", "implement", "review"]
+
+  - code: state_validation_failed_warn
+    category: state-mutation
+    severity: warn
+    message_template: "state.json validation failed for {row}"
+    remediation_hint: "Run `rws status {row}` and inspect the reported issues; the state may have drifted from schema."
+    confirmation_path: silent
+
+  - code: summary_section_missing_warn
+    category: summary
+    severity: warn
+    message_template: "summary.md missing required sections for {row}: {missing}"
+    remediation_hint: "Use `rws update-summary` to populate the missing sections. This is a session-boundary warning, not a hard block."
+    confirmation_path: silent
+
+  - code: summary_section_empty_warn
+    category: summary
+    severity: warn
+    message_template: "summary.md section '{section}' has fewer than {required_count} lines of content for {row}"
+    remediation_hint: "Use `rws update-summary {section}` to add substantive content. This is a session-boundary warning, not a hard block."
+    confirmation_path: silent
+
+  # --- Go-side enforcement codes (baseline from
+  #     docs/architecture/pi-step-ceremony-and-artifact-enforcement.md) ---
+
+  - code: step_order_invalid
+    category: state-mutation
+    severity: block
+    message_template: "row {row}: invalid step order — cannot transition from '{current_step}' to '{target_step}'"
+    remediation_hint: "Only adjacent forward transitions in the step sequence are supported. Complete the current step or reground via `rws status`."
+    confirmation_path: block
+
+  - code: decided_by_invalid_for_policy
+    category: gate
+    severity: block
+    message_template: "row {row}: decided_by '{decided_by}' is not valid for gate policy '{policy}'"
+    remediation_hint: "Match decided_by to the row's gate_policy: supervised → human, delegated → evaluator, autonomous → automated."
+    confirmation_path: block
+
+  - code: nonce_stale
+    category: gate
+    severity: block
+    message_template: "evaluator result nonce '{nonce}' is stale or does not match the expected '{expected_nonce}' for row {row}"
+    remediation_hint: "Re-run the evaluator with a fresh nonce; stale evaluator results cannot satisfy the gate."
+    confirmation_path: block
+
+  - code: verdict_linkage_missing
+    category: gate
+    severity: block
+    message_template: "row {row}: gate '{boundary}' has no linked verdict file"
+    remediation_hint: "Evaluated gates require a verdict file under gate-verdicts/. Run the evaluator subagent to produce one before recording the gate."
+    confirmation_path: block
+
+  - code: archived_row_mutation
+    category: archive
+    severity: block
+    message_template: "row {row} is archived and cannot be mutated"
+    remediation_hint: "Archived rows are read-only. Open a new row instead of editing an archived one."
+    confirmation_path: block
+
+  - code: supervised_boundary_unconfirmed
+    category: gate
+    severity: block
+    message_template: "row {row}: supervised gate boundary '{boundary}' requires explicit human approval"
+    remediation_hint: "Provide explicit human approval (decided_by=human with evidence) before crossing a supervised boundary."
+    confirmation_path: block
+
+  # --- Existing Go-side codes already emitted via the constructor ---
+  # These names match the literal codes used in internal/cli/row_workflow.go's
+  # rowBlockers emit-sites; renaming would churn the only programmatic consumer
+  # (Pi). See spec §6.4 reconciliation.
+
+  - code: pending_user_actions
+    category: user_action
+    severity: block
+    message_template: "row has {count} pending user action(s)"
+    remediation_hint: "Resolve or clear the pending user actions through the canonical workflow before advancing."
+    confirmation_path: block
+
+  - code: seed_store_unavailable
+    category: seed
+    severity: block
+    message_template: "seed store could not be read"
+    remediation_hint: "Repair the linked seed state so it matches the row step, then retry the checkpoint through the backend."
+    confirmation_path: block
+
+  - code: missing_seed_record
+    category: seed
+    severity: block
+    message_template: "linked seed {seed_id} was not found"
+    remediation_hint: "Repair the linked seed state so it matches the row step, then retry the checkpoint through the backend."
+    confirmation_path: block
+
+  - code: closed_seed
+    category: seed
+    severity: block
+    message_template: "linked seed {seed_id} is closed"
+    remediation_hint: "Repair the linked seed state so it matches the row step, then retry the checkpoint through the backend."
+    confirmation_path: block
+
+  - code: seed_status_mismatch
+    category: seed
+    severity: block
+    message_template: "linked seed {seed_id} status {actual_status} does not match expected {expected_status}"
+    remediation_hint: "Repair the linked seed state so it matches the row step, then retry the checkpoint through the backend."
+    confirmation_path: block
+
+  - code: supersedence_evidence_missing
+    category: archive
+    severity: block
+    message_template: "supersedence evidence missing or mismatched for row (required commit={required_commit}, row={required_row}; confirmed commit={confirmed_commit}, row={confirmed_row})"
+    remediation_hint: "Pass --supersedes-confirmed <commit>:<row> matching the supersedes block in definition.yaml so the archive ceremony has durable evidence."
+    confirmation_path: block
+
+  - code: missing_required_artifact
+    category: artifact
+    severity: block
+    message_template: "required current-step artifact {artifact_id} is missing at {path}"
+    remediation_hint: "Create or scaffold the required current-step artifact, then rerun /work or furrow row status."
+    confirmation_path: block
+
+  - code: artifact_scaffold_incomplete
+    category: artifact
+    severity: block
+    message_template: "current-step artifact {artifact_id} at {path} is still an incomplete scaffold"
+    remediation_hint: "Replace the incomplete scaffold with real step content, then rerun furrow row complete or /work --complete."
+    confirmation_path: block
+
+  - code: artifact_validation_failed
+    category: artifact
+    severity: block
+    message_template: "current-step artifact {artifact_id} at {path} failed validation"
+    remediation_hint: "Address the reported validation findings in the artifact, then rerun furrow row status or /work."
+    confirmation_path: block
+
+  - code: archive_requires_review_gate
+    category: archive
+    severity: block
+    message_template: "row cannot archive until a passing ->review gate exists"
+    remediation_hint: "Record a passing implement->review gate before archiving so the review boundary has durable evidence."
+    confirmation_path: block
+    applicable_steps: ["review"]

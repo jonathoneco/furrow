@@ -184,7 +184,18 @@ type RowStatusData = {
 			};
 		};
 	};
-	blockers?: Array<{ code?: string; category?: string; severity?: string; message?: string; path?: string; confirmation_path?: string }>;
+	blockers?: Array<{
+		code?: string;
+		category?: string;
+		severity?: string;
+		message?: string;
+		remediation_hint?: string;
+		confirmation_path?: string;
+		// Sibling detail map carried alongside the canonical envelope (not part
+		// of the six-field envelope contract). May contain caller-specific
+		// context (path, seed_id, artifact_id, count, ...). Optional consumers.
+		details?: Record<string, unknown>;
+	}>;
 	warnings?: Array<{ code?: string; message?: string; path?: string }>;
 };
 
@@ -392,13 +403,19 @@ function formatStatusWarnings(data?: RowStatusData): string[] {
 	return warnings.map((warning) => `- ${warning.code ?? "warning"}: ${warning.message ?? "unspecified warning"}`);
 }
 
-function formatBlockers(data?: RowStatusData): string[] {
+export function formatBlockers(data?: RowStatusData): string[] {
 	const blockers = data?.blockers ?? [];
 	if (blockers.length === 0) return ["- none"];
 	return blockers.map((blocker) => {
 		const prefix = [blocker.category, blocker.severity].filter(Boolean).join("/");
-		const confirmation = blocker.confirmation_path ? ` :: fix: ${blocker.confirmation_path}` : "";
-		return `- ${prefix ? `[${prefix}] ` : ""}${blocker.code ?? "blocked"}: ${blocker.message ?? "unspecified blocker"}${confirmation}`;
+		// User-facing remediation prose is sourced verbatim from the canonical
+		// taxonomy's `remediation_hint` field (see schemas/blocker-taxonomy.yaml).
+		// Pi MUST NOT maintain its own enum→prose dictionary; the registry is
+		// the single source of truth. `confirmation_path` is the enum token
+		// (block/warn-with-confirm/silent) — useful for UX decoration but
+		// NOT a sentence to interpolate as prose.
+		const fix = blocker.remediation_hint ? ` :: fix: ${blocker.remediation_hint}` : "";
+		return `- ${prefix ? `[${prefix}] ` : ""}${blocker.code ?? "blocked"}: ${blocker.message ?? "unspecified blocker"}${fix}`;
 	});
 }
 

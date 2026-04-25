@@ -43,37 +43,37 @@ func artifactValidationMap(status, summary string, findings []artifactValidation
 	}
 }
 
-func blocker(code, category, message string, details map[string]any) map[string]any {
+// blocker resolves code against the loaded taxonomy and returns a map shaped
+// as the canonical six-field BlockerEnvelope plus an optional sibling
+// "details" map for non-interpolated context. The taxonomy is the single
+// source of truth for severity, remediation_hint, and confirmation_path —
+// callers no longer pass severity/category/prose; those are sourced from
+// schemas/blocker-taxonomy.yaml via tx.EmitBlocker.
+//
+// Migration discipline (expand-contract single-point migration target per
+// research/status-callers-and-pi-shim.md §A and spec §1.3): every emit-site
+// in rowBlockers passes its placeholder values via interp and any additional
+// adapter-side detail context via details. Detail keys are NOT merged into
+// the envelope — they live on a sibling "details" field so the canonical
+// envelope stays at exactly six fields.
+//
+// If tx is nil (taxonomy failed to load) or code is unregistered, we fall
+// through to tx.EmitBlocker's unregistered-code fallback (production) or
+// panic (test mode) so callers see the misuse immediately.
+func blocker(tx *Taxonomy, code string, interp map[string]string, details map[string]any) map[string]any {
+	env := tx.EmitBlocker(code, interp)
 	entry := map[string]any{
-		"code":              code,
-		"category":          category,
-		"severity":          "error",
-		"message":           message,
-		"confirmation_path": blockerConfirmationPath(code),
+		"code":              env.Code,
+		"category":          env.Category,
+		"severity":          env.Severity,
+		"message":           env.Message,
+		"remediation_hint":  env.RemediationHint,
+		"confirmation_path": env.ConfirmationPath,
 	}
-	for key, value := range details {
-		entry[key] = value
+	if len(details) > 0 {
+		entry["details"] = details
 	}
 	return entry
-}
-
-func blockerConfirmationPath(code string) string {
-	switch code {
-	case "pending_user_actions":
-		return "Resolve or clear the pending user actions through the canonical workflow before advancing."
-	case "seed_store_unavailable", "missing_seed_record", "closed_seed", "seed_status_mismatch":
-		return "Repair the linked seed state so it matches the row step, then retry the checkpoint through the backend."
-	case "missing_required_artifact":
-		return "Create or scaffold the required current-step artifact, then rerun /work or furrow row status."
-	case "artifact_scaffold_incomplete":
-		return "Replace the incomplete scaffold with real step content, then rerun furrow row complete or /work --complete."
-	case "artifact_validation_failed":
-		return "Address the reported validation findings in the artifact, then rerun furrow row status or /work."
-	case "archive_requires_review_gate":
-		return "Record a passing implement->review gate before archiving so the review boundary has durable evidence."
-	default:
-		return "Resolve the blocker through the backend-mediated workflow, then retry the checkpoint."
-	}
 }
 
 func validateArtifact(state map[string]any, artifact map[string]any) map[string]any {

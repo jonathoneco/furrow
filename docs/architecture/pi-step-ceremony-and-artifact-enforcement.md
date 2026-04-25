@@ -266,27 +266,28 @@ Additional decision points to preserve:
 
 ## Blocker baseline
 
-Canonical code registry: `schemas/blocker-taxonomy.yaml`. Initial population covers validation-at-write-time codes (definition_*, ownership_outside_scope); future rows extend with state-mutation, gate, archive, scaffold, summary, ideation codes per the `shared-blocker-taxonomy-spec` todo.
+**Canonical code registry: `schemas/blocker-taxonomy.yaml`.**
 
-The following should be treated as hard blockers unless explicitly revised:
+The taxonomy is the single source of truth for every blocker code, category,
+severity, message template, remediation hint, confirmation path, and (where
+applicable) step scoping. The Go loader (`internal/cli/blocker_envelope.go`
+`LoadTaxonomy`) validates the registry on every binary start; the schema is
+documented in `schemas/blocker-taxonomy.schema.json`.
 
-- direct mutation of canonical workflow state outside CLI/backend
-- invalid step order
-- unsupported advancement past final review
-- incomplete pending user actions
-- required artifact validation failure
-- summary validation failure
-- ideation completeness failure
-- invalid `decided_by` for gate policy
-- missing verdict/prompt linkage where evaluated gates are used
-- nonce mismatch / stale evaluator result
-- missing/closed/invalid seed state where required
-- archive before review passes
-- unsupported mutation of archived rows
-- supervised boundary without explicit human approval
+This document does **not** duplicate the registry contents. To see the
+authoritative list of hard-blocker codes spanning state-mutation, gate,
+archive, scaffold, summary, ideation, seed, artifact, definition, and
+ownership categories, read `schemas/blocker-taxonomy.yaml` directly or run:
 
-Warnings should remain explicitly classified warnings, not silently downgraded
-blockers.
+```sh
+yq -r '.blockers[] | [.severity, .category, .code] | @tsv' schemas/blocker-taxonomy.yaml
+```
+
+Severity is fixed per code in the registry. Codes carry `severity: block`
+for hard blockers (host emits exit 2 + stderr), `severity: warn` for
+non-blocking notices (host emits exit 0 with stderr), and `severity: info`
+for silent informational telemetry. Warnings are explicitly classified, not
+silently downgraded blockers.
 
 Known warning examples that may remain warnings initially:
 - wave conflict detection
