@@ -1,0 +1,21 @@
+{
+  "deliverable": "validate-ownership-go",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [
+  { "criterion": "in_scope verdict with matched_deliverable + matched_glob", "met": true, "evidence": "TestComputeOwnershipInScopeExact passes; smoke test confirms" },
+  { "criterion": "out_of_scope verdict with ownership_outside_scope envelope", "met": true, "evidence": "TestComputeOwnershipOutOfScope passes; smoke shows envelope.code=ownership_outside_scope" },
+  { "criterion": "not_applicable for missing/empty/canonical-artifact paths", "met": true, "evidence": "TestComputeOwnershipMissingRow, RowHasNoDeliverables, CanonicalArtifactCarveOut all pass" },
+  { "criterion": "Step-agnostic", "met": true, "evidence": "Pi adapter test step-agnostic: verdict identical regardless of state.step value passes; computeOwnership signature does not accept state.step" },
+  { "criterion": "--row defaults to focused row", "met": true, "evidence": "runValidateOwnership reads .furrow/.focused when --row empty; smoke test confirmed" },
+  { "criterion": "Unit tests cover variants including ** glob, focused fallback, multi-deliverable, canonical carve-out", "met": true, "evidence": "8 ownership tests + TestGlobMatchVariants pass" },
+  { "criterion": "go test passes", "met": true, "evidence": "ok" },
+  { "criterion": "app.go ownership subcommand registered", "met": true, "evidence": "case ownership added in runValidate" }
+],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  }
+}

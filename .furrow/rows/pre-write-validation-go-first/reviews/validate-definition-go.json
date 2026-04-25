@@ -1,0 +1,22 @@
+{
+  "deliverable": "validate-definition-go",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [
+  { "criterion": "furrow validate definition --path <valid> exits 0", "met": true, "evidence": "smoke test confirmed exit=0 on .furrow/rows/pre-write-validation-go-first/definition.yaml" },
+  { "criterion": "Exit non-zero with structured envelope on invalid", "met": true, "evidence": "smoke test on bogus_value gate_policy returned envelope with errors[]" },
+  { "criterion": "Replicates schema semantics for objective/gate_policy/mode/deliverables/name/AC-placeholder/unknown-keys", "met": true, "evidence": "12 unit tests cover all paths in TestValidateDefinition*" },
+  { "criterion": "Codes resolve in taxonomy", "met": true, "evidence": "validateDefinition uses tx.EmitBlocker for every error path" },
+  { "criterion": "internal/cli/app.go registers validate group", "met": true, "evidence": "case validate added at app.go:69" },
+  { "criterion": "Unit tests cover happy and unhappy paths", "met": true, "evidence": "TestValidateDefinitionHappyPath, MissingObjective, MissingGatePolicy, InvalidGatePolicy, InvalidMode, EmptyDeliverables, NameMissing, BadNamePattern, PlaceholderAC, NotFalsePositive, UnknownKey, MalformedYAML — 12 pass" },
+  { "criterion": "go test passes", "met": true, "evidence": "go test ./... — ok" },
+  { "criterion": "Shell shim exec-delegates to Go binary, no business logic", "met": true, "evidence": "bin/frw.d/scripts/validate-definition.sh:21 — single exec line" },
+  { "criterion": "Shim continuity test passes", "met": true, "evidence": "bash tests/integration/test-validate-definition-shim.sh — 3 passed, 0 failed" }
+],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  }
+}

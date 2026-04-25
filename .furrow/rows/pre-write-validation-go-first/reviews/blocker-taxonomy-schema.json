@@ -1,0 +1,20 @@
+{
+  "deliverable": "blocker-taxonomy-schema",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [
+  { "criterion": "schemas/blocker-taxonomy.yaml exists with 11 codes", "met": true, "evidence": "11 unique codes verified by go test TestBlockerEnvelopeAllInitialCodesResolve" },
+  { "criterion": "JSON Schema documents the YAML structure", "met": true, "evidence": "schemas/blocker-taxonomy.schema.json present; hand-coded validation in LoadTaxonomy()" },
+  { "criterion": "Go envelope helper provides struct+LoadTaxonomy+EmitBlocker", "met": true, "evidence": "internal/cli/blocker_envelope.go:1-180" },
+  { "criterion": "All D1/D2 codes resolve; unknown panics in test mode", "met": true, "evidence": "go test ./internal/cli/ -run BlockerEnvelope passes (5 tests)" },
+  { "criterion": "docs/architecture/pi-step-ceremony cites schema", "met": true, "evidence": "grep -q schemas/blocker-taxonomy.yaml docs/architecture/pi-step-ceremony-and-artifact-enforcement.md → match" },
+  { "criterion": "D3 boundary respected: row_workflow.go, row_semantics.go untouched", "met": true, "evidence": "git diff shows no modifications to these files in commit e041a51" },
+  { "criterion": "go test passes", "met": true, "evidence": "go test ./internal/cli/ — ok" }
+],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  }
+}

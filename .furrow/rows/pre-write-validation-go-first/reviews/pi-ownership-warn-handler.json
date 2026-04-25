@@ -1,0 +1,20 @@
+{
+  "deliverable": "pi-ownership-warn-handler",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [
+  { "criterion": "Handler intercepts all Write/Edit", "met": true, "evidence": "adapters/pi/furrow.ts D5 block; no path-pattern gating before runFurrowJson call" },
+  { "criterion": "runFurrowJson<ValidateOwnershipData>", "met": true, "evidence": "Type at adapters/pi/furrow.ts:295" },
+  { "criterion": "out_of_scope: ctx.ui.confirm fires; yes proceeds, no blocks", "met": true, "evidence": "handler reads data.verdict === out_of_scope and gates on ctx.ui.confirm result" },
+  { "criterion": "in_scope or not_applicable: silent allow", "met": true, "evidence": "early return undefined when verdict !== out_of_scope" },
+  { "criterion": "Step-agnostic", "met": true, "evidence": "bun test ownership step-agnostic asserts verdict identity across state.step values" },
+  { "criterion": "Pi adapter test runner extended (4 new tests)", "met": true, "evidence": "describe ownership block adds in_scope, out_of_scope, not_applicable, step-agnostic — all pass" },
+  { "criterion": "Parity-verification.md authored with Pi rows", "met": true, "evidence": ".furrow/rows/pre-write-validation-go-first/parity-verification.md table has 3 paired scenarios with Pi columns filled" }
+],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  }
+}

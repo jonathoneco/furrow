@@ -1,0 +1,64 @@
+{
+  "deliverable": "claude-ownership-warn-parity",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "pass",
+        "evidence": "Verified on HEAD `d653755`: `bash tests/integration/test-ownership-warn-hook.sh` passed 6/6, direct hook run in current `review` step emitted `[furrow:warning] ... outside file_ownership`, direct no-`.focused` run returned `rc=0` with empty output, and an isolated temp-root validator run returned `{\"verdict\":\"not_applicable\",\"reason\":\"row_has_no_deliverables\"}`."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "pass",
+        "evidence": "The new branching in `bin/frw.d/hooks/ownership-warn.sh` is covered by `tests/integration/test-ownership-warn-hook.sh`, including in-scope silence, out-of-scope warning, canonical-artifact silence, always-0 behavior, and the added no-row-context regression case at lines 95-101."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "pass",
+        "evidence": "`bin/frw.d/hooks/ownership-warn.sh:56-75` delegates to `go run ./cmd/furrow validate ownership --path \"$target_path\" --row \"$row_name\" --json`, contains no `state.json.step` gate, returns 0 on every path, and `parity-verification.md:7-43` records the required Claude-side parity scenarios and methodology."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "pass",
+        "evidence": "D6-owned files changed are `bin/frw.d/hooks/ownership-warn.sh`, `tests/integration/test-ownership-warn-hook.sh`, and `.furrow/rows/pre-write-validation-go-first/parity-verification.md`; the only outside-ownership edits shown in the supplied history are explicitly justified in commit `5510f4e` as D2/D3/D4/D5 follow-up fixes plus a documented D6 spec amendment."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "pass",
+        "evidence": "`shellcheck -e SC1091 bin/frw.d/hooks/ownership-warn.sh tests/integration/test-ownership-warn-hook.sh` exited 0, the shell stays warn-not-block with quoted variables and wrapped command failures, and the focused-row fix avoids the incorrect `find_active_row` heuristic called out in the acceptance criteria."
+      }
+    ],
+    "verdict": "pass"
+  },
+  "overall": "pass",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "diff_scope": {
+    "base": "b2f477d3ca7020f356bbde9b6c5f0893c4f86fdf",
+    "commits": [
+      "d653755f5328cc57c020afd4efc94b5647d7461b",
+      "5510f4ee3ed91e23eab49df38b535ce876a020f0",
+      "a29990c0ee08f428866efbde61a62e0b30065912",
+      "d4f83692da84c38bd4f3f48a7d38ee6d038d631d",
+      "92cd532856de4a5d3803e52b4aad7380c06bf4e3",
+      "707acfa2bbd39631e33bf6ad2e8b8f2ba7925ab3"
+    ],
+    "files_matched": [
+      "bin/frw.d/hooks/ownership-warn.sh",
+      ".furrow/rows/pre-write-validation-go-first/parity-verification.md",
+      "tests/integration/test-ownership-warn-hook.sh"
+    ]
+  },
+  "unplanned_changes": "absent",
+  "timestamp": "2026-04-25T16:23:11Z"
+}
