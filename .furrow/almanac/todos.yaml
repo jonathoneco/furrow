@@ -4124,7 +4124,7 @@
 - id: retire-todos-yaml-as-canonical-planning-primitive
   title: Retire todos.yaml as canonical planning primitive
   context: Per docs/architecture/pi-almanac-operating-model.md:148-159 seeds.jsonl replaces todos.yaml as the canonical work primitive. Phase 5 row 2 (seeds-graph-cutover-and-pi-surfaces) delivers the cutover migration, but the *retirement* of todos.yaml itself — making it read-only, then deleting it — is implicit, not gated. Without an explicit retirement milestone the project risks indefinite dual-source-of-truth drift between todos.yaml and seeds.jsonl, violating clean-swap discipline.
-  work_needed: 'Two-stage retirement: (1) After todo-to-seed-cutover-migration ships AND pi-seed-surfaces-in-work-loop validates: mark todos.yaml read-only in alm tooling (writes go to seeds.jsonl only); update all docs/skills that reference todos.yaml to point at seeds. (2) After dual-runtime-parity-validation passes (Phase 8): move todos.yaml to docs/archive/todos-frozen.yaml as historical record and delete the canonical path. Audit all references in skills/, commands/, references/, docs/architecture/.'
+  work_needed: 'Three-stage retirement with split-brain detection: (1) After todo-to-seed-cutover-migration ships AND pi-seed-surfaces-in-work-loop validates: mark todos.yaml read-only in alm tooling (writes go to seeds.jsonl only); update all docs/skills that reference todos.yaml to point at seeds. (2) MONITORING WINDOW (one full sprint, ~2 weeks minimum, ≥3 archived rows post-cutover): keep todos.yaml present-but-frozen and add a CI check that fails if any Go/shell code path still reads todos.yaml as a write target or canonical source. Any divergence between todos.yaml snapshot and seeds.jsonl during this window is a hard bug — fix forward in seeds.jsonl, do NOT re-open todos.yaml writes. (3) After dual-runtime-parity-validation passes (Phase 8) AND monitoring window completes clean: move todos.yaml to docs/archive/todos-frozen.yaml as historical record and delete the canonical path. Audit all references in skills/, commands/, references/, docs/architecture/.'
   source_type: manual
   status: active
   created_at: "2026-04-25T12:30:34-04:00"
@@ -4165,3 +4165,121 @@
     - bin/frw
     - bin/frw.d/scripts/
     - install.sh
+- id: define-adapters-audit-pass-fail-rubric
+  title: Define adapters-audit pass/fail rubric
+  context: 'adapters-audit (todos.yaml:914) is marked active with work_needed: ''check for atrophy, modularization decay, internal consistency''. There is no scoring rubric, no threshold, no defined block-on-failure. The audit is therefore not a gate — it cannot meaningfully block Phase 8 parity validation if it surfaces drift. Without measurable criteria, an open audit becomes performative.'
+  work_needed: 'Author a rubric in docs/architecture/adapters-audit-rubric.md with: (1) modularization density score (file-to-responsibility ratio, cyclic dependency count); (2) API surface consistency score (cross-adapter call shape parity); (3) test coverage parity score (per-adapter integration test count and behavior overlap); (4) per-axis pass thresholds with a single-axis veto. Update adapters-audit work_needed to reference the rubric and require thresholds met before Phase 8 row 1 (dual-runtime-parity-validation) can complete.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T12:55:44-04:00"
+  updated_at: "2026-04-25T12:55:44-04:00"
+  references:
+    - adapters-audit
+    - adapters/
+    - docs/architecture/core-adapter-boundary.md
+  source_work_unit: migration-state-of-the-union
+  depends_on:
+    - adapters-audit
+  files_touched:
+    - docs/architecture/adapters-audit-rubric.md
+    - adapters/
+- id: remove-claude-shell-wrappers-after-dual-runtime-pa
+  title: Remove Claude shell wrappers after dual-runtime parity validates
+  context: claude-wrapper-compatibility (todos.yaml:2809) preserves Claude Code UX via thin shell wrappers over the Go backend. Its work_needed says 'Remove or freeze wrappers quickly once they stop protecting a real compatibility boundary' — but no trigger gates the removal. Per clean-swap discipline, 'quickly' must become a hard date tied to parity, otherwise wrappers calcify into permanent debt.
+  work_needed: 'After dual-runtime-parity-validation passes (Phase 8 row 1): (1) for each shell wrapper still in bin/, run regression suite covering wrapper→Go delegation; (2) any wrapper whose Go path is at full parity has 2-week grace then is deleted; (3) wrappers protecting a real Claude-only UX gap remain only if a tracked observation justifies them. Coordinates with remove-bin-rws-shell-entrypoint / remove-bin-alm-shell-entrypoint / remove-bin-sds-shell-entrypoint to ensure removal is single-pass not piecemeal.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T12:55:44-04:00"
+  updated_at: "2026-04-25T12:55:44-04:00"
+  references:
+    - claude-wrapper-compatibility
+    - dual-runtime-parity-validation
+    - docs/architecture/migration-stance.md
+    - docs/architecture/go-cli-contract.md
+  source_work_unit: migration-state-of-the-union
+  depends_on:
+    - claude-wrapper-compatibility
+    - dual-runtime-parity-validation
+  files_touched:
+    - bin/
+    - tests/integration/
+- id: land-or-kill-decision-for-phase-8-research-streams
+  title: Land-or-kill decision for Phase 8 research streams
+  context: 'Phase 8 row 3 (work/docs-and-research) bundles 5 research todos: mine-claude-code, mine-v1-harness, memetic-algorithms-research, research-methodology-design, apply-nate-jones-skill. All are status: active, urgency: low, with no decision frame for whether their outputs become roadmap items, get archived as learnings, or get killed. Without a forcing decision, research expands indefinitely and never converts to action.'
+  work_needed: 'After each research todo produces its primary artifact (research.md or equivalent), evaluate against one criterion: ''actionable in next phase OR converts to a concrete follow-up TODO with an owner''. Outcomes per stream: LAND (file a concrete follow-up TODO with depends_on, urgency, files_touched) or KILL (move artifact to docs/archive/research/ as historical, mark research todo done with rationale ''no follow-up justified''). No ''continue researching'' as an outcome. Document decisions in observations.yaml as a single closure entry.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T12:55:45-04:00"
+  updated_at: "2026-04-25T12:55:45-04:00"
+  references:
+    - mine-claude-code
+    - mine-v1-harness
+    - memetic-algorithms-research
+    - research-methodology-design
+    - apply-nate-jones-skill
+  source_work_unit: migration-state-of-the-union
+  depends_on:
+    - mine-claude-code
+    - mine-v1-harness
+    - memetic-algorithms-research
+    - research-methodology-design
+    - apply-nate-jones-skill
+  files_touched:
+    - docs/archive/research/
+    - .furrow/almanac/observations.yaml
+    - .furrow/almanac/todos.yaml
+- id: close-re-evaluate-dispatch-enforcement-observation
+  title: Close re-evaluate-dispatch-enforcement observation
+  context: 'Active observation re-evaluate-dispatch-enforcement (.furrow/almanac/observations.yaml) opened 2026-04-09. Activation criterion: ''rows_since: 10/3 rows archived since parallel-agent-wiring'' — already met. No row owns the closure decision. Without a gating row, the observation drifts as zombie state and the underlying decision (whether structural enforcement of multi-agent dispatch is needed) never gets made.'
+  work_needed: 'Pull the 3+ multi-deliverable rows archived since parallel-agent-wiring; for each, count Agent tool calls (parallel vs sequential), single-agent-only deliverables, dispatch errors. Decide one of: (1) instruction-sufficient → close observation with evidence summary, file no follow-up; (2) escalate-to-enforcement → file new TODO for hook/lint/check, close observation with pointer. Use rws/alm to close the observation with the chosen rationale recorded.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T12:56:11-04:00"
+  updated_at: "2026-04-25T12:56:11-04:00"
+  references:
+    - .furrow/almanac/observations.yaml
+    - re-evaluate-dispatch-enforcement
+    - parallel-agent-orchestration-adoption
+  source_work_unit: migration-state-of-the-union
+  depends_on:
+    - parallel-agent-orchestration-adoption
+  files_touched:
+    - .furrow/almanac/observations.yaml
+- id: finalize-transitional-architecture-docs-authority
+  title: Finalize transitional architecture docs (Authority graduation)
+  context: 'docs/architecture/dual-runtime-migration-plan.md and docs/architecture/migration-stance.md are both marked Authority: Transitional / migration. There is no todo or row that gates their graduation to Canonical (post-migration normative reference) or demotion to Historical (post-migration archive record). Transitional docs without a graduation trigger become stale references that no one owns updating.'
+  work_needed: 'After dual-runtime-parity-validation passes: audit every doc in docs/architecture/ with Authority: Transitional. For each, decide: (a) graduate to Canonical (rewrite as post-migration normative doc), (b) demote to Historical (move to docs/archive/migration/, update Authority field), or (c) split (canonical bits stay, historical bits move). Update Authority field, Time horizon, and Status. Audit any inbound references (skills, commands, other docs) and update them.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T12:56:11-04:00"
+  updated_at: "2026-04-25T12:56:11-04:00"
+  references:
+    - docs/architecture/dual-runtime-migration-plan.md
+    - docs/architecture/migration-stance.md
+    - docs/architecture/documentation-authority-taxonomy.md
+  source_work_unit: migration-state-of-the-union
+  depends_on:
+    - dual-runtime-parity-validation
+  files_touched:
+    - docs/architecture/
+    - docs/archive/migration/
+- id: pi-tool-call-canonical-schema-and-surface-audit
+  title: Pi tool_call canonical schema and surface audit
+  context: 'Pi tool_call interception accreted across phases: Phase 2 added base state mutation interception; Phase 4 row 3 (state-and-correction-guards) extends to bash rm/cp/mv. Without consolidation, each new mutation path requires bespoke handler code and the enforcement schema fragments. No row currently owns ''all tool_call handlers conform to a single contract''.'
+  work_needed: 'After state-and-correction-guards ships: (1) inventory all Pi tool_call handlers in adapters/pi/furrow.ts; (2) author docs/architecture/pi-tool-call-schema.md describing the canonical handler shape (input contract, blocker emission, evidence shape, audit log format); (3) refactor existing handlers to conform; (4) add a coverage matrix (which mutations are intercepted vs intentionally allowed); (5) add a CI check that new handlers conform to the schema.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T12:56:11-04:00"
+  updated_at: "2026-04-25T12:56:11-04:00"
+  references:
+    - adapters/pi/furrow.ts
+    - state-and-correction-guards
+    - pi-correction-limit-visibility
+    - shared-blocker-taxonomy-spec
+  source_work_unit: migration-state-of-the-union
+  depends_on:
+    - state-guard-rm-coverage
+    - shared-blocker-taxonomy-spec
+  files_touched:
+    - adapters/pi/furrow.ts
+    - docs/architecture/pi-tool-call-schema.md
