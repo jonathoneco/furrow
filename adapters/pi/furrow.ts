@@ -947,6 +947,39 @@ export default function furrowExtension(pi: ExtensionAPI) {
 		return { block: true, reason: message };
 	});
 
+	// Ownership warn handler — D5 of pre-write-validation-go-first.
+	// Intercepts every Write/Edit and surfaces an interactive confirm prompt
+	// when the target path is outside the active row's deliverables[].file_ownership.
+	// Step-agnostic by design (verdict comes from the Go validator which never
+	// reads state.json.step).
+	pi.on("tool_call", async (event, ctx) => {
+		if (event.toolName !== "edit" && event.toolName !== "write") return undefined;
+		const root = findFurrowRoot(ctx.cwd);
+		if (!root) return undefined;
+		const absolutePath = normalizePathArg((event.input as any)?.path, ctx.cwd);
+		if (!absolutePath) return undefined;
+
+		const result = await runFurrowJson<ValidateOwnershipData>(
+			root,
+			["validate", "ownership", "--path", absolutePath],
+			ctx.signal,
+		);
+		const data = result.envelope?.data;
+		if (!data || data.verdict !== "out_of_scope") return undefined;
+
+		const message = data.envelope?.message ?? "file is outside file_ownership for any deliverable in the active row";
+		if (!ctx.hasUI) {
+			// Without an interactive surface, fall back to non-blocking notify-equivalent.
+			return undefined;
+		}
+		const confirmed = await ctx.ui.confirm(
+			"Furrow ownership check",
+			`${message}\n\nProceed with writing this file anyway?`,
+		);
+		if (confirmed) return undefined;
+		return { block: true, reason: message };
+	});
+
 	pi.registerCommand("work", {
 		description: "Primary Furrow work loop: resolve or create a row, scaffold the active step artifact, and pause at supervised checkpoints",
 		handler: async (args, ctx) => {
