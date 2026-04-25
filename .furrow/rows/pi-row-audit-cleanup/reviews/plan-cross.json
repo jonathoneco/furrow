@@ -1,0 +1,29 @@
+{
+  "type": "plan",
+  "dimensions": [
+    {
+      "name": "coverage",
+      "verdict": "pass",
+      "evidence": "`.furrow/rows/pi-row-audit-cleanup/definition.yaml` defines exactly 3 deliverables, and `.furrow/rows/pi-row-audit-cleanup/plan.json` places each one exactly once across Waves 1-3."
+    },
+    {
+      "name": "feasibility",
+      "verdict": "pass",
+      "evidence": "`plan.json` preserves dependency order (`repair-deliverables-cli` -> `pi-step-ceremony-backfill` -> `pi-adapter-foundation-archive`), and each wave contains only one deliverable so there is no same-wave file ownership overlap."
+    },
+    {
+      "name": "specificity",
+      "verdict": "pass",
+      "evidence": "Every `plan.json` assignment names a concrete specialist (`go-specialist` or `harness-engineer`) and includes explicit `file_ownership` paths."
+    },
+    {
+      "name": "research-grounding",
+      "verdict": "fail",
+      "evidence": "The decisions are consistent with `.furrow/rows/pi-row-audit-cleanup/research.md` Topics 2-3, but the plan artifacts themselves do not cite specific research findings by file path plus section as required by the rubric."
+    }
+  ],
+  "overall": "fail",
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-25T03:23:49Z"
+}

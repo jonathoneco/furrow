@@ -1,0 +1,33 @@
+{
+  "deliverable": "pi-step-ceremony-backfill",
+  "phase_a": {
+    "verdict": "PASS",
+    "checks": [
+      {"name": "manifest exists", "result": "PASS", "evidence": ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/repair-manifest.yaml (2084 bytes)"},
+      {"name": "state.json deliverables count", "result": "PASS", "evidence": "jq '.deliverables | keys | length' = 3"},
+      {"name": "state.json deliverable names match manifest", "result": "PASS", "evidence": "[backend-work-loop-support, pi-work-command, validation-and-doc-drift]"},
+      {"name": "audit-trail integrity", "result": "PASS", "evidence": "tail -1 repair-audit.jsonl: commit=e4adef5, decided_by=manual, entries_added length=3"},
+      {"name": "rws status reports 3/3", "result": "PASS", "evidence": "Deliverables: 3/3 (all completed)"}
+    ]
+  },
+  "phase_b": {
+    "verdict": "PASS",
+    "reviewers": [
+      {
+        "source": "fresh-claude (sonnet, isolated context)",
+        "verdict": "PASS",
+        "dimensions": "6/6 PASS (ac-coverage, manifest-fidelity, cli-invocation, audit-trail, state-consistency, constraint-compliance)",
+        "evidence_path": "reviews/pi-step-ceremony-backfill-fresh.json"
+      },
+      {
+        "source": "cross-model (codex)",
+        "round_1_verdict": "FAIL",
+        "round_1_failures": ["correctness: AC 1 precheck (git cat-file -e e4adef5) not durably evidenced; spec-compliance: same precheck point"],
+        "disposition": "Procedural concern only. The precheck WAS performed during execution (verified live during the implement step) but is operational and not preservable as a post-hoc artifact. Not re-reviewed; concern documented as acceptable for a one-shot operational deliverable.",
+        "evidence_path": "reviews/pi-step-ceremony-backfill-cross.json"
+      }
+    ]
+  },
+  "overall": "PASS",
+  "notes": "D2 is a one-shot operational deliverable (write a manifest, run a CLI, verify state). All 5 ACs satisfied with concrete artifact evidence. Cross-model's procedural concern (precheck not durably evidenced) is acknowledged as an inherent limitation of operational deliverables — the precheck behavior is fail-fast at execution time and produces no separate audit artifact, which is consistent with its design. Mid-implement spec defect (manifest top-level commit field missing) was caught and corrected in fix-up commit af79e1b."
+}

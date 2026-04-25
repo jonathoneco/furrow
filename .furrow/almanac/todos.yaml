@@ -3412,36 +3412,8 @@
   effort: medium
   updated_at: "2026-04-24T21:15:02-04:00"
   source_work_unit: migration-state-of-the-union
-- id: archive-pi-adapter-foundation-as-superseded
-  title: Archive pi-adapter-foundation as superseded
-  context: pi-adapter-foundation row is at implement / not_started, 0/3 deliverables, currently focused. Spec scope (evaluator-grade-review-semantics, archive-disposition-signals, row-model-continuation) was satisfied by pi-step-ceremony-and-artifact-enforcement (commit e4adef5). Phantom row. Handoff.md:62 in pi-step-ceremony directs continuation to a non-existent successor; pi-adapter-foundation is acting as that phantom successor.
-  work_needed: Archive pi-adapter-foundation via /furrow:archive with explicit supersedence evidence pointing at pi-step-ceremony-and-artifact-enforcement (commit e4adef5). Rewrite or remove pi-step-ceremony-and-artifact-enforcement/handoff.md:62 dangling-successor instruction. Bundled into pi-row-audit-cleanup row D3+D4.
-  source_type: manual
-  status: active
-  created_at: "2026-04-24T21:15:21-04:00"
-  urgency: medium
-  impact: low
-  effort: small
-  updated_at: "2026-04-24T21:15:21-04:00"
-  references:
-    - .furrow/rows/pi-adapter-foundation/spec.md
-    - .furrow/rows/pi-step-ceremony-and-artifact-enforcement/handoff.md
-  source_work_unit: migration-state-of-the-union
-- id: pi-step-ceremony-deliverables-backfill
-  title: Pi-step-ceremony deliverables backfill
-  context: Archived row pi-step-ceremony-and-artifact-enforcement has state.json.deliverables = {} despite handoff/validation evidence proving 5+ deliverables shipped (commit e4adef5, internal/cli/ work-loop boundary hardening). Recording gap, not delivery gap. Causes phantom-row symptoms downstream in pi-adapter-foundation.
-  work_needed: Use furrow-row-repair-deliverables CLI (built as D1 of pi-row-audit-cleanup) to atomically backfill deliverables map from validation.md / handoff.md evidence. Audit-trail entry recorded. Bundled into pi-row-audit-cleanup row.
-  source_type: manual
-  status: active
-  created_at: "2026-04-24T21:15:21-04:00"
-  urgency: medium
-  impact: low
-  effort: small
-  updated_at: "2026-04-24T21:15:21-04:00"
-  references:
-    - .furrow/rows/pi-step-ceremony-and-artifact-enforcement/handoff.md
-    - .furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md
-  source_work_unit: migration-state-of-the-union
+# archive-pi-adapter-foundation-as-superseded — RESOLVED by row pi-row-audit-cleanup D3 (2026-04-25)
+# pi-step-ceremony-deliverables-backfill — RESOLVED by row pi-row-audit-cleanup D2 (2026-04-25)
 - id: state-guard-rm-coverage
   title: State-guard rm coverage
   context: 'Audit of 49 Claude sessions found 8 filesystem mutations that bypassed state-guard: rm -rf .furrow/rows/<name>, cp .furrow/almanac/todos.yaml, etc. Current state-guard intercepts Edit/Write to canonical paths but does not intercept Bash rm/cp/mv. The Pi tool_call interceptor has the same gap (only blocks edit/write tools, not bash). One of the documented incidents was rm -rf of this very research row when re-initializing it for mode change.'
@@ -4006,3 +3978,68 @@
   depends_on:
     - handoff-prompt-artifact-template
     - furrow-context-isolation-layer
+- id: route-commands-archive-md-through-go-binary
+  title: Route commands/archive.md through Go binary
+  context: commands/archive.md:59 currently delegates to shell rws_archive (bin/rws:1958), which bypasses rowBlockers() and the new supersedes-confirmed enforcement. Slash-command archive flows therefore skip the Go-side blocker pipeline. Surfaced during pi-row-audit-cleanup D3 review.
+  work_needed: Update commands/archive.md to invoke 'furrow row archive' (Go binary) instead of 'rws archive' (shell). Verify the slash command then enforces rowBlockers including supersedence. Once landed, deprecate bin/rws:1958 rws_archive (separate todo).
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T00:42:33-04:00"
+  updated_at: "2026-04-25T00:42:33-04:00"
+  references:
+    - commands/archive.md
+    - bin/rws
+    - internal/cli/row.go
+  source_work_unit: pi-row-audit-cleanup
+  files_touched:
+    - commands/archive.md
+- id: cli-integration-test-for-furrow-row-archive-supers
+  title: CLI integration test for furrow row archive --supersedes-confirmed
+  context: 'pi-row-audit-cleanup D3 added the --supersedes-confirmed flag with rowBlockers enforcement. Current coverage: TestRowBlockers_Supersedence (unit, 5 cases) + TestDefinitionSupersedes (unit, 5 cases) + a live archive run on pi-adapter-foundation (one-shot). Missing: an automated CLI-level test that exercises ''furrow row archive --supersedes-confirmed'' end-to-end with missing/mismatched/matching values against a tmpdir-based row.'
+  work_needed: 'Add an integration test (likely in internal/cli/ or a new tests/integration/archive_test.go) that: builds a temp row directory with a definition.yaml supersedes block, invokes the archive command via parseArgs/runRowArchive, asserts exit codes and gate evidence for missing/mismatched/matching --supersedes-confirmed values.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T00:42:34-04:00"
+  updated_at: "2026-04-25T00:42:34-04:00"
+  references:
+    - internal/cli/row.go
+    - internal/cli/row_workflow.go
+    - internal/cli/row_workflow_test.go
+  source_work_unit: pi-row-audit-cleanup
+  files_touched:
+    - internal/cli/row_test.go
+    - internal/cli/row.go
+- id: deprecate-bin-rws-1958-rws-archive-shell-implement
+  title: Deprecate bin/rws:1958 rws_archive shell implementation
+  context: bin/rws contains a parallel shell implementation of archive (rws_archive at line 1958-2020) that duplicates the Go path's preconditions but does NOT call rowBlockers(). Once commands/archive.md routes through Go, this shell duplicate is dead code.
+  work_needed: After 'route-commands-archive-md-through-go-binary' lands, remove rws_archive() from bin/rws and replace with a thin shim delegating to 'furrow row archive', or remove the case entirely if the slash command no longer invokes it. Verify no other callers.
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T00:42:46-04:00"
+  updated_at: "2026-04-25T00:42:46-04:00"
+  references:
+    - bin/rws
+    - commands/archive.md
+  source_work_unit: pi-row-audit-cleanup
+  depends_on:
+    - route-commands-archive-md-through-go-binary
+  files_touched:
+    - bin/rws
+- id: skip-per-deliverable-review-artifacts-when-superse
+  title: Skip per-deliverable review artifacts when supersedence is confirmed
+  context: Archiving pi-adapter-foundation (D3 of pi-row-audit-cleanup) required hand-authoring 3 phantom review artifacts in .furrow/rows/pi-adapter-foundation/reviews/ to satisfy review-step artifact enforcement, even though the row had no implementation work and was being archived as superseded. The phantom artifacts make the audit trail noisy and signal a structural gap in the archive ceremony.
+  work_needed: 'Extend the archive precondition logic so that when definition.supersedes is set AND --supersedes-confirmed matches, per-deliverable review artifact requirements are bypassed (or replaced with a single supersedence-acknowledgement evidence shape). Related: rowBlockers + reviewArtifactsForRow() coordination.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T00:42:46-04:00"
+  updated_at: "2026-04-25T00:42:46-04:00"
+  references:
+    - internal/cli/row.go
+    - internal/cli/row_workflow.go
+    - internal/cli/review.go
+  source_work_unit: pi-row-audit-cleanup
+  depends_on:
+    - route-commands-archive-md-through-go-binary
+  files_touched:
+    - internal/cli/row.go
+    - internal/cli/row_workflow.go
