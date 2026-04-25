@@ -147,3 +147,80 @@ func containsString(s, substr string) bool {
 		return false
 	}())
 }
+
+// TestDefinitionSupersedes verifies the definitionSupersedes() helper directly,
+// independent of rowBlockers. Covers: missing definition.yaml, malformed YAML,
+// definition without supersedes, definition with valid supersedes, and supersedes
+// of unexpected shape.
+func TestDefinitionSupersedes(t *testing.T) {
+	cases := []struct {
+		name             string
+		writeDefinition  bool
+		definitionBody   string
+		wantNil          bool
+		wantCommit       string
+		wantRow          string
+	}{
+		{
+			name:            "missing definition file returns nil",
+			writeDefinition: false,
+			wantNil:         true,
+		},
+		{
+			name:            "malformed yaml returns nil",
+			writeDefinition: true,
+			definitionBody:  "not: : valid: yaml:::",
+			wantNil:         true,
+		},
+		{
+			name:            "definition without supersedes returns nil",
+			writeDefinition: true,
+			definitionBody:  "objective: \"x\"\nmode: code\n",
+			wantNil:         true,
+		},
+		{
+			name:            "supersedes of wrong type (string) returns nil",
+			writeDefinition: true,
+			definitionBody:  "supersedes: \"e4adef5:some-row\"\n",
+			wantNil:         true,
+		},
+		{
+			name:            "supersedes valid map returns parsed values",
+			writeDefinition: true,
+			definitionBody: "supersedes:\n  commit: e4adef5\n  row: pi-step-ceremony-and-artifact-enforcement\n",
+			wantCommit:      "e4adef5",
+			wantRow:         "pi-step-ceremony-and-artifact-enforcement",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			root := t.TempDir()
+			rowName := "test-row"
+			mustMkdirAll(t, filepath.Join(root, ".furrow", "rows", rowName))
+			if tc.writeDefinition {
+				writeDefinitionYAML(t, root, rowName, tc.definitionBody)
+			}
+
+			got := definitionSupersedes(root, rowName)
+
+			if tc.wantNil {
+				if got != nil {
+					t.Fatalf("expected nil, got %v", got)
+				}
+				return
+			}
+			if got == nil {
+				t.Fatalf("expected non-nil supersedes map, got nil")
+			}
+			gotCommit, _ := got["commit"].(string)
+			gotRow, _ := got["row"].(string)
+			if gotCommit != tc.wantCommit {
+				t.Errorf("commit: got %q, want %q", gotCommit, tc.wantCommit)
+			}
+			if gotRow != tc.wantRow {
+				t.Errorf("row: got %q, want %q", gotRow, tc.wantRow)
+			}
+		})
+	}
+}
