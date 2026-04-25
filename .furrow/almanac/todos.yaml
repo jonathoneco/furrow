@@ -3962,3 +3962,23 @@
     - Establish an explicit blocker taxonomy shared across Pi and Claude-compatible flows
     - Keep seeds-contract work attached to `seeds-concept` and fuller planning/almanac work attached to `pi-almanac-operating-model`
     - Keep lifecycle/domain semantics backend-owned rather than TS-owned
+- id: json-encoder-consistency-state-json-writers
+  title: JSON encoder consistency state.json writers
+  context: 'state.json gets rewritten by two encoding policies: Go-side internal/cli/util.go:81 uses json.NewEncoder with default EscapeHTML=true (produces \u003e for >), while shell-side bin/frw.d/scripts/update-state.sh:59 uses jq which does not HTML-escape (produces literal >). When state.json is alternately rewritten by Go and shell paths, the > / < / & characters flip encoding form, creating spurious diff noise (observed in commit b48668e on pi-adapter-foundation/state.json gate boundaries). This is a real CLI bug, not cosmetic — risks confusing downstream parsers and pollutes git diffs.'
+  work_needed: 'Standardize on no-HTML-escape (matches jq, cleaner human-readable JSON, no functional change). Edit Go writers to add enc.SetEscapeHTML(false) before SetIndent. Sites: internal/cli/util.go:81, internal/cli/row.go:822, internal/cli/row_workflow.go:562, row_workflow.go:919, internal/cli/row_semantics.go:716. Add a regression test that round-trips a state with <, >, & characters and asserts no encoding flip after alternating Go and shell writes. Bundle into pi-row-audit-cleanup D1 since that row touches util.go anyway.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-24T22:32:45-04:00"
+  urgency: high
+  impact: medium
+  effort: small
+  updated_at: "2026-04-24T22:32:45-04:00"
+  references:
+    - internal/cli/util.go
+    - internal/cli/row.go
+    - internal/cli/row_workflow.go
+    - internal/cli/row_semantics.go
+    - bin/frw.d/scripts/update-state.sh
+  source_work_unit: migration-state-of-the-union
+  depends_on:
+    - cli-architecture-overhaul-slice-2
