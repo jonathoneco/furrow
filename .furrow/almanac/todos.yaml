@@ -4043,3 +4043,28 @@
   files_touched:
     - internal/cli/row.go
     - internal/cli/row_workflow.go
+- id: pi-adapter-binary-caching
+  title: Pi adapter binary caching
+  context: adapters/pi/furrow.ts:322 invokes 'go run ./cmd/furrow' on every runFurrowJson call. After pre-write-validation-go-first ships, two of those fire on every Write/Edit (D4 validate-definition + D5 ownership-warn). Cold-start latency compounds and is a real UX regression risk per cross-model review of the ideation.
+  work_needed: 'Pre-build the Go binary at Pi adapter init (or first invocation, cached for the session) and exec the binary path instead of go run. Update runFurrowJson at adapters/pi/furrow.ts:313-346 to resolve the binary path once and reuse. Acceptance: latency benchmark on a Write/Edit hot path shows <50ms median per validate call (down from go-run cold start ~hundreds of ms); cache invalidation handled when binary is rebuilt during dev.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T02:19:29-04:00"
+  updated_at: "2026-04-25T02:19:29-04:00"
+  references:
+    - adapters/pi/furrow.ts
+    - docs/architecture/pi-native-capability-leverage.md
+  source_work_unit: pre-write-validation-go-first
+- id: sweeping-schema-audit-and-shrink
+  title: Sweeping schema audit and shrink
+  context: 'Review-step on pre-write-validation-go-first surfaced that schemas/definition.schema.json carries optional/edge-case rules that the hand-coded validator (D1) chased across 7 review rounds. Empirical usage audit (44 rows): per-deliverable gate=0 used, supersedes=1 used, source_todo singular=10 (redundant with source_todos plural), context_pointers symbols=5 used. Each unused/under-used optional field expands D1''s validator surface and gives reviewers more rules to cite. The pain isn''t a validator bug — it''s a schema-breadth signal. Generalize beyond definition.schema.json: state.schema.json, plan.schema.json, learning.schema.json, repair-deliverables-manifest.schema.json, reintegration.schema.json, review-result.schema.json, merge-policy.schema.json, promotion-targets.schema.yaml all likely have similar accumulated breadth.'
+  work_needed: 'Run a sweeping schema audit across schemas/. For each schema: (1) measure actual usage of each optional field across .furrow/rows/*/, (2) identify dead fields (zero use), under-used fields (<10% use), and redundant forms (singular+plural pairs); (3) propose a shrink plan with migration cost; (4) ship the shrink with the necessary row migrations. Concrete D1-validator-pain candidates already evidenced: per-deliverable gate (drop), supersedes (move to archive.json), source_todo singular (drop, fold into source_todos), context_pointers.symbols (drop). Acceptance: validators drop measurable LOC; schemas tighter; row migrations applied with checksum verification.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T12:53:55-04:00"
+  updated_at: "2026-04-25T12:53:55-04:00"
+  references:
+    - schemas/definition.schema.json
+    - internal/cli/validate_definition.go
+    - .furrow/rows/pre-write-validation-go-first/reviews/
+  source_work_unit: pre-write-validation-go-first

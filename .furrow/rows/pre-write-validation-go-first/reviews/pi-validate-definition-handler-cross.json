@@ -1,0 +1,69 @@
+{
+  "deliverable": "pi-validate-definition-handler",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "pass",
+        "evidence": "`adapters/pi/furrow.ts:916-928` wires the D4 `tool_call` handler through `runDefinitionValidationHandler`, and `adapters/pi/validate-actions.ts:45-68` enforces silent allow on `valid` and `{ block: true, reason }` + `notify(..., 'error')` with `remediation_hint`; fresh `bun test` passed `37/37`, including fixture-row D4 tests at `adapters/pi/furrow.test.ts:379-444`."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "pass",
+        "evidence": "All new D4 branching paths are exercised: gate/no-op, valid allow, invalid block+notify, exact arg shape, and fixture-row valid/invalid/non-definition cases in `adapters/pi/furrow.test.ts:75-125`, `207-249`, and `379-444`."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "pass",
+        "evidence": "The handler intercepts only `edit`/`write` on `*/definition.yaml` via `shouldInterceptForDefinitionValidation` (`adapters/pi/validate-actions.ts:83-94`), invokes `['validate','definition','--path',filePath,'--json']` (`adapters/pi/validate-actions.ts:66-68`), and the pre-existing state guard still runs first and unchanged at `adapters/pi/furrow.ts:895-910` before the D4 handler at `:916-928`; required scaffolding exists in `adapters/pi/package.json`, `adapters/pi/tsconfig.json`, and `adapters/pi/furrow.test.ts`."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "pass",
+        "evidence": "The D4 deliverable’s declared `file_ownership` in `.furrow/rows/pre-write-validation-go-first/definition.yaml:64-82` covers the changed adapter files (`furrow.ts`, `furrow.test.ts`, `validate-actions.ts`, `package.json`, `tsconfig.json`, `README.md`), and the D4-scoped adapter changes are confined to those owned paths."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "pass",
+        "evidence": "The implementation follows the existing adapter pattern (`runFurrowJson` wrapper + pure helper extraction), uses explicit types in `adapters/pi/validate-actions.ts`, and the adapter suite passes cleanly with `bun test` (`37 pass, 0 fail`); no separate lint/typecheck runner is configured in `adapters/pi/`."
+      }
+    ],
+    "verdict": "pass"
+  },
+  "overall": "pass",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "diff_scope": {
+    "base": "b2f477d3ca7020f356bbde9b6c5f0893c4f86fdf",
+    "commits": [
+      "5fb5544a6010d5ed4de2fe739260e741c3097395",
+      "696d3c2f4749b2face916dd5e5777ed74febf0f5",
+      "5510f4ee3ed91e23eab49df38b535ce876a020f0",
+      "a29990c0ee08f428866efbde61a62e0b30065912",
+      "d4f83692da84c38bd4f3f48a7d38ee6d038d631d",
+      "9b585f34d16e3131cfa8fdb3b0d0b3538af448b8",
+      "707acfa2bbd39631e33bf6ad2e8b8f2ba7925ab3",
+      "5b768b3df4a42210f28bccdcca37af567f36e49e"
+    ],
+    "files_matched": [
+      "adapters/pi/furrow.test.ts",
+      "adapters/pi/furrow.ts",
+      "adapters/pi/package.json",
+      "adapters/pi/README.md",
+      "adapters/pi/tsconfig.json",
+      "adapters/pi/validate-actions.ts"
+    ]
+  },
+  "unplanned_changes": "absent",
+  "timestamp": "2026-04-25T16:26:32Z"
+}

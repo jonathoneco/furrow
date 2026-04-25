@@ -1,0 +1,41 @@
+{
+  "type": "ideation",
+  "dimensions": [
+    {
+      "name": "Feasibility",
+      "verdict": "conditional",
+      "evidence": "The objective is technically achievable in this repo: `internal/cli/app.go` already has a central root-command switch where a new top-level `validate` group can be registered once, the Pi adapter already uses `runFurrowJson` (`adapters/pi/furrow.ts`), and the current shell surfaces are narrow enough to replace incrementally (`bin/frw.d/scripts/validate-definition.sh`, `bin/frw.d/hooks/ownership-warn.sh`). The main caveat is that the repo already has backend-owned blocker semantics hardcoded in Go (`internal/cli/row_semantics.go`), so making `schemas/blocker-taxonomy.yaml` truly canonical is not just additive; it implies at least some shared-loading or normalization path, otherwise D3 would only be canonical for the new validators and not for the backend envelope more broadly."
+    },
+    {
+      "name": "Alignment",
+      "verdict": "pass",
+      "evidence": "The deliverables map cleanly to the stated objective. D1 and D2 create the Go-first validator backend, D3 defines the shared schema/envelope and code registry, D4 and D5 wire Pi to the new backend, and D6 preserves the existing Claude shell-hook path while updating it to the same warn-with-confirm semantics. That matches the goal of closing the two research pain points while keeping validation logic canonical in Go and adapters thin."
+    },
+    {
+      "name": "Dependency validity",
+      "verdict": "conditional",
+      "evidence": "The stated wave ordering is directionally correct: D3 must precede D1/D2 because both validators are constrained to emit only registered taxonomy codes, and D4/D5/D6 should follow once backend semantics exist. However, the dependency framing is underspecified in two places: first, D5 and D6 do not just depend on D2, they also depend on the final D3 warning/blocker envelope semantics; second, the parity invariant for D5/D6 effectively depends on a shared golden input/output pattern or explicit manual-verification protocol, and that dependency is not called out as its own prerequisite even though the repo currently documents later dual-host validation as still pending."
+    },
+    {
+      "name": "Risk assessment",
+      "verdict": "conditional",
+      "evidence": "The constraints are strong and do a good job limiting obvious scope creep: no new deps, no state mutation, no duplicated adapter logic, partial shell->Go migration only, and explicit deferral of broader shared-blocker-taxonomy closure. The remaining risk is that D3's wording ('canonical schemas/blocker-taxonomy.yaml envelope') can accidentally pull in broader backend refactors because existing blocker codes and confirmation paths already live in `internal/cli/row_semantics.go`. Without an explicit bound saying D3 only governs codes used by D1/D2 plus the adapter-facing validation envelope in this row, the work could expand into migrating unrelated row/review/archive blocker emission sites."
+    },
+    {
+      "name": "Completeness",
+      "verdict": "conditional",
+      "evidence": "The deliverable set is close, but there is one notable gap: there is no explicit deliverable for shared test/parity fixtures or evidence production even though cross-adapter identical-input/identical-output behavior is a hard invariant for D5/D6. That may be covered inside ACs, but at framing level it is the most obvious missing piece. A secondary gap is that the preserved `frw validate-definition` thin shim is only mentioned as a constraint, not surfaced as an explicit acceptance concern under D1, even though preserving that command without shell business logic is part of the migration contract."
+    }
+  ],
+  "framing_quality": "sound",
+  "suggested_revisions": [
+    "Make D3's scope explicit: it defines the taxonomy file, schema, and initial codes needed by D1/D2 and their adapter-facing envelopes only; migrating unrelated existing blocker emitters remains out of scope.",
+    "State the dependency chain explicitly as `D3 -> D1,D2 -> D4,D5,D6`, and note that D5/D6 consume both D2 backend behavior and the D3 taxonomy/envelope contract.",
+    "Add an explicit acceptance item or mini-deliverable for parity verification artifacts: shared golden cases if feasible, otherwise a required manual-verification record proving identical inputs produce identical warn/confirm outputs in Pi and Claude shell.",
+    "Fold the thin-shim requirement into D1 acceptance language directly: `frw validate-definition` remains available as an exec-only wrapper with zero validation logic in shell.",
+    "Clarify whether D3 is expected to provide a reusable Go loader/helper for taxonomy lookups; if yes, say so now, because that is the cleanest way to avoid duplicated code-to-message mapping across D1/D2 and future parity rows."
+  ],
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-25T06:15:57Z"
+}

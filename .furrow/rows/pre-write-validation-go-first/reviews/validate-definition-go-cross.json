@@ -1,0 +1,70 @@
+{
+  "deliverable": "validate-definition-go",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "fail",
+        "evidence": "Built CLI checks passed for the main happy/unhappy path (`go build ./cmd/furrow`; valid `--json` => exit 0, invalid => exit 3), but schema-invalid fixtures such as `deliverables[].file_ownership: wrong`, `context_pointers[].symbols: wrong`, `constraints: [1]`, and `source_todos: [Bad_Pattern]` were accepted as valid, so the implementation does not satisfy the full-schema-validation acceptance criterion."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "pass",
+        "evidence": "`internal/cli/validate_definition_test.go` covers the branching entrypoints and helpers (`runValidateDefinition`, `validateDefinition`, `runValidate`, `nonEmptyString`, `validModeMissing`, `hasPlaceholderText`) and includes the required happy-path and core invalid-path cases; `go test ./...` passes."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "fail",
+        "evidence": "The interface shape is mostly correct (`internal/cli/app.go` routes `validate`, shared dispatcher lives in `internal/cli/validate.go`, JSON envelope uses `BlockerEnvelope`, taxonomy panic is enforced in `internal/cli/blocker_envelope.go`), but the validator does not implement the schema contract in `schemas/definition.schema.json` fully, so AC 3 is not met."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "pass",
+        "evidence": "For D1 itself, the modified files match the row’s declared `file_ownership` in `.furrow/rows/pre-write-validation-go-first/definition.yaml`, including the explicitly justified shared-surface files `internal/cli/validate.go` and `internal/cli/app.go`."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "pass",
+        "evidence": "The Go code is formatted and test-clean (`go test ./...` passes), the shell shim is thin with no business logic, and emitted codes are taxonomy-backed with test-time panic protection for unregistered codes."
+      }
+    ],
+    "verdict": "fail"
+  },
+  "overall": "fail",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "diff_scope": {
+    "base": "b2f477d3ca7020f356bbde9b6c5f0893c4f86fdf",
+    "commits": [
+      "5c038801c5a698cb40266056cd1f2fb315836ff5",
+      "b132ad817e8e65ba206f05770f09463b104803bb",
+      "5fb5544a6010d5ed4de2fe739260e741c3097395",
+      "696d3c2f4749b2face916dd5e5777ed74febf0f5",
+      "a29990c0ee08f428866efbde61a62e0b30065912",
+      "d4f83692da84c38bd4f3f48a7d38ee6d038d631d",
+      "9b585f34d16e3131cfa8fdb3b0d0b3538af448b8",
+      "642fef01f1d316292fc363f15bfd0fdc13a02ac7",
+      "3dde4ddef30dbea24f08291e885ffcc009a51f32"
+    ],
+    "files_matched": [
+      "bin/frw.d/scripts/validate-definition.sh",
+      "internal/cli/app.go",
+      "internal/cli/validate_definition.go",
+      "internal/cli/validate_definition_test.go",
+      "internal/cli/validate.go",
+      "tests/integration/test-validate-definition-shim.sh"
+    ]
+  },
+  "unplanned_changes": "absent",
+  "timestamp": "2026-04-25T16:32:49Z"
+}

@@ -1,0 +1,21 @@
+{
+  "deliverable": "pi-validate-definition-handler",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [
+  { "criterion": "tool_call handler intercepts Write/Edit on */definition.yaml", "met": true, "evidence": "adapters/pi/furrow.ts:903-925 (D4 block); endsWith /definition.yaml gate" },
+  { "criterion": "runFurrowJson<ValidateDefinitionData> invocation", "met": true, "evidence": "Type defined at adapters/pi/furrow.ts:286; handler invokes with verdict-checking" },
+  { "criterion": "block: true on invalid + ctx.ui.notify(error)", "met": true, "evidence": "handler return path; bun test invalid-definition-yaml-blocks asserts block=true and notify called" },
+  { "criterion": "valid: silent allow", "met": true, "evidence": "bun test valid-definition-yaml-passes asserts handler returns void with no notify" },
+  { "criterion": "state-guard runs first, untouched", "met": true, "evidence": "diff of adapters/pi/furrow.ts in commit 5b768b3 shows state-guard block 883-899 unchanged; D4 added after" },
+  { "criterion": "Pi test scaffolding bootstrapped", "met": true, "evidence": "package.json + tsconfig.json + furrow.test.ts created in commit 5b768b3" },
+  { "criterion": "bun test passes", "met": true, "evidence": "7 pass, 0 fail across furrow.test.ts" },
+  { "criterion": "README footnote on pi-adapter-binary-caching", "met": true, "evidence": "grep -q pi-adapter-binary-caching adapters/pi/README.md → match" }
+],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  }
+}

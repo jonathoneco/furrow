@@ -1,0 +1,66 @@
+{
+  "deliverable": "pi-ownership-warn-handler",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "pass",
+        "evidence": "`adapters/pi/furrow.ts` registers a step-agnostic `tool_call` Write/Edit ownership handler that calls `runFurrowJson<ValidateOwnershipData>(root, ['validate','ownership','--path', filePath, '--json'], ctx.signal)`, and `decideOwnershipAction()` returns silent allow for `in_scope`/`not_applicable`, `{ block: false }` on confirm-yes/no-UI, and `{ block: true, reason }` on confirm-no; `bun test` passed with `26 pass, 0 fail`."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "pass",
+        "evidence": "`adapters/pi/furrow.test.ts` covers D5 gate interception plus all required verdict branches: `in_scope`, `not_applicable`, `out_of_scope` with confirm-yes, confirm-no, and no-UI fallback, and the new branching helpers in `adapters/pi/validate-actions.ts` all have direct tests."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "pass",
+        "evidence": "The implementation matches the D5 interface contract in `.furrow/rows/pre-write-validation-go-first/definition.yaml`: owned files include `adapters/pi/furrow.ts`, `adapters/pi/furrow.test.ts`, `adapters/pi/validate-actions.ts`, and `.furrow/rows/pre-write-validation-go-first/parity-verification.md`, and the parity file records the required 3 paired scenarios with step-agnostic Pi/Claude behavior."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "pass",
+        "evidence": "The deliverable’s touched files are within D5 ownership (`adapters/pi/furrow.ts`, `adapters/pi/furrow.test.ts`, `adapters/pi/validate-actions.ts`, `.furrow/rows/pre-write-validation-go-first/parity-verification.md`); no D5 changes outside those globs were required."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "pass",
+        "evidence": "The Pi-side logic is factored into small pure helpers with focused tests, follows the repo’s TypeScript/Bun setup, preserves handler ordering (`state-guard` before D4 before D5), and the Pi adapter test runner passes cleanly (`bun test` -> `26 pass, 0 fail`)."
+      }
+    ],
+    "verdict": "pass"
+  },
+  "overall": "pass",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "diff_scope": {
+    "base": "b2f477d3ca7020f356bbde9b6c5f0893c4f86fdf",
+    "commits": [
+      "5510f4ee3ed91e23eab49df38b535ce876a020f0",
+      "a29990c0ee08f428866efbde61a62e0b30065912",
+      "d4f83692da84c38bd4f3f48a7d38ee6d038d631d",
+      "9b585f34d16e3131cfa8fdb3b0d0b3538af448b8",
+      "92cd532856de4a5d3803e52b4aad7380c06bf4e3",
+      "707acfa2bbd39631e33bf6ad2e8b8f2ba7925ab3",
+      "5b768b3df4a42210f28bccdcca37af567f36e49e"
+    ],
+    "files_matched": [
+      "adapters/pi/furrow.test.ts",
+      "adapters/pi/furrow.ts",
+      "adapters/pi/validate-actions.ts",
+      ".furrow/rows/pre-write-validation-go-first/parity-verification.md"
+    ]
+  },
+  "unplanned_changes": "absent",
+  "timestamp": "2026-04-25T16:17:01Z"
+}
