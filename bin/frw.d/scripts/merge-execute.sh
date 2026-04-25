@@ -16,9 +16,15 @@
 
 set -eu
 
-SCRIPT_PATH="$(readlink -f "$0")"
-SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
-FURROW_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+# Resolve script directory: prefer FURROW_ROOT when set (sourced via bin/frw);
+# fall back to $0-based resolution for standalone execution.
+if [ -n "${FURROW_ROOT:-}" ] && [ -d "${FURROW_ROOT}/bin/frw.d/scripts" ]; then
+    SCRIPT_DIR="${FURROW_ROOT}/bin/frw.d/scripts"
+else
+    SCRIPT_PATH="$(readlink -f "$0")"
+    SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
+    FURROW_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+fi
 
 # Source shared merge library (policy validation + shared helpers)
 . "${SCRIPT_DIR}/merge-lib.sh"
