@@ -11,6 +11,7 @@ import (
 const contractVersion = "v1alpha1"
 
 type App struct {
+	stdin  io.Reader
 	stdout io.Writer
 	stderr io.Writer
 }
@@ -38,8 +39,17 @@ type cliError struct {
 
 func (e *cliError) Error() string { return e.message }
 
+// New constructs an App with the given stdout/stderr writers and no stdin
+// reader. Stdin-reading subcommands (currently `furrow guard`) report a
+// clear "no stdin reader configured" error in this configuration.
 func New(stdout, stderr io.Writer) *App {
 	return &App{stdout: stdout, stderr: stderr}
+}
+
+// NewWithStdin constructs an App with an explicit stdin reader. Used by
+// cmd/furrow/main.go (production: os.Stdin) and by guard tests.
+func NewWithStdin(stdin io.Reader, stdout, stderr io.Writer) *App {
+	return &App{stdin: stdin, stdout: stdout, stderr: stderr}
 }
 
 func (a *App) Run(args []string) int {
@@ -67,6 +77,8 @@ func (a *App) Run(args []string) int {
 		return a.runStubGroup("furrow seeds", args[1:], []string{"create", "update", "show", "list", "close"})
 	case "validate":
 		return a.runValidate(args[1:])
+	case "guard":
+		return a.runGuard(args[1:])
 	case "merge":
 		return a.runStubGroup("furrow merge", args[1:], []string{"plan", "run", "validate"})
 	case "doctor":
@@ -210,6 +222,7 @@ Commands:
   seeds     Seed/task primitive contract surface
   merge     Merge pipeline contract surface
   doctor    Environment and adapter readiness checks
+  guard     Translate normalized blocker events into canonical envelopes
   init      Repo bootstrap and migration entrypoint
   version   Print CLI contract version
   help      Show this help

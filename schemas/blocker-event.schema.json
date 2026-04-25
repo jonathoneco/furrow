@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Blocker Event",
+  "description": "Schema for normalized blocker events consumed by `furrow guard <event-type>` on stdin. Per-event-type payload validation is performed in Go (handler-specific required-key checks); this schema is structural only. The closed event_type enum mirrors schemas/blocker-event.yaml event_types[].name verbatim.",
+  "type": "object",
+  "required": ["version", "event_type", "payload"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version of the event envelope; must match schemas/blocker-event.yaml top-level version."
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "pre_write_state_json",
+        "pre_write_verdict",
+        "pre_write_correction_limit",
+        "pre_bash_internal_script",
+        "pre_commit_bakfiles",
+        "pre_commit_typechange",
+        "pre_commit_script_modes",
+        "stop_ideation_completeness",
+        "stop_summary_validation",
+        "stop_work_check"
+      ],
+      "description": "Closed catalog of event types — one per emit-bearing hook (specs/shared-contracts.md §C1)."
+    },
+    "target_path": {
+      "type": "string",
+      "description": "Optional convenience field hoisted out of payload — the path the host event references. Pre-write hooks always populate this."
+    },
+    "step": {
+      "type": "string",
+      "enum": ["ideate", "research", "plan", "spec", "decompose", "implement", "review"],
+      "description": "Optional convenience field — the row step the event was raised under."
+    },
+    "row": {
+      "type": "string",
+      "description": "Optional convenience field — the row name the event was raised under."
+    },
+    "payload": {
+      "type": "object",
+      "description": "Per-event-type payload. Legal keys and required subset are documented in schemas/blocker-event.yaml event_types[].payload_keys[] and event_types[].required[]."
+    }
+  }
+}
