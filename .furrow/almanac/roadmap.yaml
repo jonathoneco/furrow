@@ -2,7 +2,7 @@ schema_version: '1.0'
 metadata:
   project: furrow
   generated_at: '2026-04-25T02:30:00Z'
-  total_phases: 12
+  total_phases: 13
   completed_phases: 3
   curated: true
   curation_source: .furrow/rows/migration-state-of-the-union/research.md §11
@@ -2871,9 +2871,9 @@ phases:
     conflict_risk: low
     completed_at: '2026-04-25T16:56:20Z'
 - number: 4
-  title: Enforcement deepening + delegation contract (parallel wave)
+  title: Blocker taxonomy + delegation contract (parallel wave)
   status: planned
-  rationale: 'Three parallel rows: shared blocker taxonomy + Claude parity, Pi tool_call extension to bash mutations + canonical handler schema, and the orchestration/delegation contract. No intra-phase deps — all unblocked by Phase 3 or unconditional.'
+  rationale: 'Two parallel rows: shared blocker taxonomy + Claude parity, and the orchestration/delegation contract. Both reshape hook + backend + skills surfaces that downstream rows build on; running them first prevents rework. State-and-correction-guards (formerly Phase 4 row 2) was moved to Phase 5 because it builds directly on the hook contract this phase establishes.'
   rows:
   - index: 1
     branch: work/blocker-taxonomy-foundation
@@ -2891,22 +2891,6 @@ phases:
     conflict_risk: low
     completed_at: null
   - index: 2
-    branch: work/state-and-correction-guards
-    description: Pi tool_call extends to bash rm/cp/mv + correction-budget footer + session-resume reground + canonical schema for all tool_call handlers (consolidates accreted handler shapes into one contract).
-    todos:
-    - state-guard-rm-coverage
-    - pi-correction-limit-visibility
-    - pi-session-resume-reground
-    - pi-tool-call-canonical-schema-and-surface-audit
-    depends_on:
-    - work/pre-write-validation-go-first
-    key_files:
-    - adapters/pi/furrow.ts
-    - bin/frw.d/hooks/state-guard.sh
-    - bin/frw.d/hooks/script-guard.sh
-    conflict_risk: low
-    completed_at: null
-  - index: 3
     branch: work/orchestration-delegation-contract
     description: 'Orchestration/delegation contract: layer-separation interface (handoff schema) + furrow-aware/unaware split + boundary enforcement, with supporting context-routing
       and presentation infrastructure. The three top todos define one contract from three angles: schema, split, enforcement.'
@@ -2925,9 +2909,31 @@ phases:
     conflict_risk: none
     completed_at: null
 - number: 5
+  title: State + correction guards (single row)
+  status: planned
+  rationale: 'Was Phase 4 row 2 in the prior layout. Moved here because Phase 4''s blocker-taxonomy and orchestration-delegation rows reshape the hook + backend surfaces this row builds on — running them first prevents rework. Pi tool_call extends to bash rm/cp/mv + correction-budget footer + session-resume reground + canonical schema for all tool_call handlers.'
+  rows:
+  - index: 1
+    branch: work/state-and-correction-guards
+    description: Pi tool_call extends to bash rm/cp/mv + correction-budget footer + session-resume reground + canonical schema for all tool_call handlers (consolidates accreted handler shapes into one contract).
+    todos:
+    - state-guard-rm-coverage
+    - pi-correction-limit-visibility
+    - pi-session-resume-reground
+    - pi-tool-call-canonical-schema-and-surface-audit
+    depends_on:
+    - work/blocker-taxonomy-foundation
+    - work/orchestration-delegation-contract
+    key_files:
+    - adapters/pi/furrow.ts
+    - bin/frw.d/hooks/state-guard.sh
+    - bin/frw.d/hooks/script-guard.sh
+    conflict_risk: low
+    completed_at: null
+- number: 6
   title: Artifact validation and continuation
   status: planned
-  rationale: 'Was Phase 4 row 2 in the prior layout — depends on work/blocker-taxonomy-foundation so it cannot run in the same parallel wave. Single-row phase: per-step validation schema + artifacts-as-inputs + stage-aware enforcement + writing defaults + handoff/gate informing.'
+  rationale: 'Single-row phase — depends on work/blocker-taxonomy-foundation so it cannot share a phase with it. Per-step validation schema + artifacts-as-inputs + stage-aware enforcement + writing defaults + handoff/gate informing.'
   rows:
   - index: 1
     branch: work/artifact-validation-and-continuation
@@ -2946,7 +2952,7 @@ phases:
     - skills/
     conflict_risk: medium
     completed_at: null
-- number: 6
+- number: 7
   title: Seeds foundation
   status: planned
   rationale: 'Was Phase 5 row 1 in the prior layout. Single-row phase: typed nodes + Go furrow seeds command group + row-binding contract + umbrellas. Replaces todos.yaml as canonical planning primitive per pi-almanac-operating-model.md:148-159.'
@@ -2968,7 +2974,7 @@ phases:
     - docs/architecture/pi-almanac-operating-model.md
     conflict_risk: medium
     completed_at: null
-- number: 7
+- number: 8
   title: Seeds graph cutover + Pi surfaces
   status: planned
   rationale: 'Was Phase 5 row 2 in the prior layout — depends on work/seeds-foundation so it cannot share a phase with it. Graph queries + follow-up promotion + roadmap-from-seeds + cutover migration + Pi seed surfaces + post-retirement alm scope.'
@@ -2993,7 +2999,7 @@ phases:
     - .furrow/almanac/
     conflict_risk: high
     completed_at: null
-- number: 8
+- number: 9
   title: Review / specialists / row-variants (parallel wave)
   status: planned
   rationale: 'Was Phase 6 in the prior layout — three rows already had no intra-phase deps, so the phase carries over unchanged. Deepen review execution; formalize specialist registration; introduce lightweight row variants; strengthen planning UX.'
@@ -3050,7 +3056,7 @@ phases:
     - bin/alm
     conflict_risk: medium
     completed_at: null
-- number: 9
+- number: 10
   title: CLI introspection + meta/archive (parallel wave)
   status: planned
   rationale: 'Was Phase 7 wave 1 in the prior layout (rows 1 and 4). Both depend on work/blocker-taxonomy-foundation and not on each other — true parallel-batch. CLI introspection foundational for the rest of Migration A; meta/archive flow improvements decouple from CLI rewrite.'
@@ -3088,7 +3094,7 @@ phases:
     - bin/rws
     conflict_risk: low
     completed_at: null
-- number: 10
+- number: 11
   title: Worktree + install pipelines (parallel wave)
   status: planned
   rationale: 'Was Phase 7 wave 2 in the prior layout (rows 2 and 3). Both depend on work/cli-introspection-and-history and not on each other — true parallel-batch.'
@@ -3127,7 +3133,7 @@ phases:
     - docs/architecture/self-hosting.md
     conflict_risk: medium
     completed_at: null
-- number: 11
+- number: 12
   title: Dual-runtime parity + docs/research (parallel wave)
   status: planned
   rationale: 'Was Phase 8 wave 1 in the prior layout (rows 1 and 3). Parity validation has many cross-phase deps; docs-and-research has none — both run in parallel as the integration milestone.'
@@ -3175,7 +3181,7 @@ phases:
     - references/
     conflict_risk: none
     completed_at: null
-- number: 12
+- number: 13
   title: Pi-native leverage + legacy shell cutoff (parallel wave)
   status: planned
   rationale: 'Was Phase 8 wave 2 in the prior layout (rows 2 and 4). Both depend on work/dual-runtime-parity-validation and not on each other — true parallel-batch. The shell cutoff is the clean-swap milestone: every shell entrypoint, hook, script, and todos.yaml itself is removed here.'
