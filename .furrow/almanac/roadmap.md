@@ -1,347 +1,348 @@
+<!-- section:header -->
 # Roadmap
 
-> Last updated: 2026-04-23 · 8 phases · 47 active TODOs in plan
+> Updated: 2026-04-25 | 8 phases | 2 complete | 1 in-progress | 5 planned
+>
+> Generated via `/furrow:triage` (interactive cluster-and-approve flow during `migration-state-of-the-union` research row, 2026-04-24/25). Source: `.furrow/almanac/todos.yaml` (83 active, 46 done, 129 total). Companion machine-readable artifact: `.furrow/almanac/roadmap.yaml`.
+>
+> **Active observation:** `re-evaluate-dispatch-enforcement` — open since rows-since: parallel-agent-wiring (3+). Resolve via `alm observe resolve` after Phase 3 ships.
 
-## Dependency DAG (active items only)
-
-```
-Phase 1 — Post-install hygiene — test isolation, review pipeline, install asymmetry
-  work/post-install-hygiene                (8 TODOs)
-     ··· audit-test-install-sh-and-test-upgrade-sh-for-live
-     ··· codex-cross-model-reviewer-flags-other-deliverable
-     ··· audit-xdg-config-fields-for-runtime-consumers-pref
-     ··· generate-reintegration-sh-should-use-canonical-sch
-     ··· bin-frw-d-scripts-rescue-sh-committed-as-100644-di
-     ··· commands-lib-promote-learnings-sh-reads-null-for-e
-     ··· unify-tracked-14-vs-gitignored-8-specialist-symlin
-     ··· ac-10-e2e-fixture-split-across-contaminated-stop-a
-
-Phase 2 — CLI Go rewrite — foundational language migration
-  work/cli-go-rewrite                      (1 TODO)
-     ··· cli-architecture-overhaul
-
-Phase 3 — Dispatch + ambient contract — foundational for downstream skills
-  work/sub-agent-normalization             (4 TODOs)
-     ··· sub-agent-normalization
-     ── parallel-agent-orchestration-adoption
-     ··· specialist-quality-validation
-     ··· specialist-template-warning-escalation
-  work/ambient-context                     (1 TODO)
-     ··· ambient-context-promotion
-  work/effort-and-model-routing            (1 TODO)
-     ··· effort-selection-alongside-model
-
-Phase 4 — Worktree + merge pipeline — /furrow:work and /furrow:next overhaul
-  work/worktree-integration                (2 TODOs)
-     ··· furrow-work-worktree-integration
-     ··· install-user-bin-worktree-pinning
-  work/next-merge-pipeline                 (3 TODOs)
-     ··· furrow-next-semantic-merge
-     ··· furrow-next-phase-lifecycle
-     ··· merge-process-skill
-
-Phase 5 — Seeds primitive — deterministic work graph replacing LLM-reasoned dependencies
-  work/seeds                               (1 TODO)
-     ── seeds-concept
-
-Phase 6 — Artifacts, reviews, row variants — UX patterns for collaboration
-  work/artifacts-and-row-variants          (4 TODOs)
-     ··· artifact-writing-defaults
-     ··· patch-row-concept
-     ··· spike-row-mode
-     ── low-finding-disposition-policy
-  work/review-surfaces                     (2 TODOs)
-     ··· collaborative-surfaces
-     ··· unified-isolated-review
-  work/triage-ux                           (2 TODOs)
-     ── brain-dump-triage-command
-     ── tmux-sessionizer-integration
-
-Phase 7 — Post-seeds re-triage + dashboards + lifecycle
-  work/post-seeds-retriage                 (6 TODOs)
-     ··· sprint-inspired-planning
-     ··· post-merge-watch-list
-     ··· support-sharded-todos-d-directory-to-reduce-merge
-     ··· gate-dimension-deduplication
-     ··· todo-context-references
-     ··· user-action-integration
-  work/dashboards-and-lifecycle            (4 TODOs)
-     ··· furrow-tui-dashboard
-     ── harness-lifecycle-ux
-     ··· adapters-audit
-     ··· furrow-self-update-hook
-
-Phase 8 — Research, long-tail, workflow cleanup
-  work/research-mining                     (6 TODOs)
-     ··· mine-claude-code
-     ··· mine-v1-harness
-     ··· apply-nate-jones-skill
-     ··· research-documentation-detection
-     ··· research-methodology-design
-     ··· design-pattern-context-construction
-  work/memetic-research                    (1 TODO)
-     ··· memetic-algorithms-research
-  work/work-folder-cleanup                 (1 TODO)
-     ── work-folder-structure-and-cleanup
+<!-- section:dependency-dag -->
+## Dependency DAG
 
 ```
+Phase 1 — post-install-hygiene                    [DONE]
+Phase 2 — backend contract foundations            [DONE]
+        │
+        ├─→ Phase 3 — Pi enforcement parity       [IN-PROGRESS]
+        │     ├── work/pi-row-audit-cleanup
+        │     └── work/pre-write-validation-go-first
+        │
+        └─→ Phase 4 — enforcement deepening       [PLANNED]
+              ├── work/blocker-taxonomy-foundation
+              ├── work/artifact-validation-and-continuation     ── depends on blocker-taxonomy
+              ├── work/state-and-correction-guards              || parallel
+              └── work/handoff-and-context-routing              || parallel (independent)
+
+              ↓ (Phase 4 must stabilize before deeper work)
+
+Phase 5 — seeds                                   [PLANNED]
+  work/seeds-foundation                           ── then ──→  work/seeds-graph-cutover-and-pi-surfaces
+
+Phase 6 — review / specialists / row-variants     [PLANNED, Phase 5 parallel-able]
+  work/review-and-evaluator-orchestration   ┐
+  work/specialists-and-agents               ┤  (parallel)
+  work/row-variants-and-planning-ux         ┘
 
-Legend: `──` has dependencies · `···` independent
+Phase 7 — Migration A outer ring                  [PLANNED, after Phase 4]
+  work/cli-introspection-and-history        ── unblocks ──┐
+                                                          ├── work/worktree-and-merge-pipeline
+                                                          ├── work/install-and-symlink-hygiene
+                                                          └── work/meta-and-archive-flow-improvements
 
-## File Conflict Zones
+Phase 8 — dual-runtime parity + Pi-native + research [PLANNED, after Phases 3-7]
+  work/dual-runtime-parity-validation       ── gates ──→  work/pi-native-leverage-and-tui
+  work/docs-and-research                    (background; pluck deliverables ad-hoc)
+```
+
+<!-- section:legend -->
+## Legend
 
-| Phase | File | Rows | Severity |
-|-------|------|------|----------|
-| 3 | `specialists/` | effort-and-model-routing, sub-agent-normalization | medium |
-| 3 | `bin/frw.d/scripts/` | effort-and-model-routing, sub-agent-normalization | medium |
-| 3 | `references/specialist-template.md` | effort-and-model-routing, sub-agent-normalization | medium |
-| 4 | `bin/rws` | next-merge-pipeline, worktree-integration | medium |
-| 6 | `skills/` | artifacts-and-row-variants, review-surfaces | medium |
-| 6 | `.furrow/almanac/rationale.yaml` | artifacts-and-row-variants, triage-ux | medium |
-| 6 | `skills/review.md` | artifacts-and-row-variants, review-surfaces | medium |
-| 7 | `skills/` | dashboards-and-lifecycle, post-seeds-retriage | medium |
+| Symbol | Meaning |
+|--------|---------|
+| `[DONE]` | Phase complete, all member rows archived |
+| `[IN-PROGRESS]` | At least one row of the phase is actively being worked |
+| `[PLANNED]` | Phase scoped, no row started |
+| `──→` | Hard dependency (must complete first) |
+| `└──` | Row inside a phase |
+| `\|\|` | Can run in parallel within a phase |
+
+<!-- section:conflict-zones -->
+## Conflict Zones
+
+`alm triage` reports 313 file-overlap conflicts in the active todo set. Most resolve at the row-cluster level since clusters consolidate related files. Notable file regions where rows must serialize:
+
+| Region | Phase rows touching | Resolution |
+|--------|---------------------|------------|
+| `internal/cli/row.go`, `row_workflow.go`, `row_semantics.go` | Phase 4 (artifact-validation, state-and-correction-guards), Phase 5 (seeds-foundation), Phase 7 (cli-introspection-and-history) | Phase 7 lands first; Phase 4 + Phase 5 build on stable backend |
+| `adapters/pi/furrow.ts` | Phase 3 (pre-write-validation), Phase 4 (state-and-correction-guards), Phase 5 (pi-seed-surfaces), Phase 8 (pi-native-leverage) | Sequential by phase; within-phase, single row owns Pi extension at a time |
+| `bin/frw.d/hooks/`, `bin/frw.d/scripts/` | Phase 4 (blocker-taxonomy-foundation), Phase 7 (cli-introspection-and-history, install-and-symlink-hygiene) | Phase 7 supersedes shell with Go ports; Phase 4 ships against current shell |
+| `commands/`, `skills/` | Phase 4 (handoff-and-context-routing), Phase 6 (row-variants), Phase 7 (meta-and-archive-flow) | Disjoint enough at file level; serialize per-file when needed |
+| `.furrow/almanac/todos.yaml`, `roadmap.yaml`, `seeds.jsonl` | Phase 5 (seeds-graph-cutover), Phase 7 (cli-introspection touching alm/sds) | Phase 5 cutover is breaking; Phase 7 backend ports must complete before cutover |
 
-## Phase 1 — Post-install hygiene — test isolation, review pipeline, install asymmetry — PLANNED
+<!-- section:phase -->
+## Phase 1 — Post-install hygiene
 
-Post-merge cleanup from install-and-merge (shipped 2026-04-22). Test-isolation fix leads — tests corrupted live-repo symlinks, a safety issue. Bundled so 8 small fixes amortize one branch instead of 8 tiny ones.
+**Status:** `[DONE]` (archived 2026-04-23, baseline for migration work)
 
-### `work/post-install-hygiene` (8 TODOs)
+**Rationale:** Test isolation, cross-model review scoping, schema validation, install asymmetry fixes. Forms the trustworthy baseline for Migration A and B work.
+
+### Tracks
+- `post-install-hygiene` (archived) — 8 deliverables, 9 commits
+- 8 todos previously marked `active` in this phase have been flipped to `done` as bookkeeping (recording drift).
+
+---
+
+## Phase 2 — Backend contract foundations
+
+**Status:** `[DONE]`
+
+**Rationale:** Architecture frozen, Go CLI contract written, migration stance documented, Slice 1 of the Go backend implemented (5+ commands), work-loop boundary hardened. The contract is canonical; outer-ring Go rewrite tracked separately as `cli-architecture-overhaul-slice-2`.
+
+### Tracks
+- `dual-runtime-target-architecture` (done) — `host-strategy-matrix.md`
+- `go-cli-contract-v1` (done) — `go-cli-contract.md` + row `go-backend-slice` archived
+- `migration-operating-mode` (done) — `migration-stance.md:170-182`
+- `cli-architecture-overhaul` (done, split) — Slice 1 satisfied original ambition; outer ring → Phase 7
+- `work-loop-boundary-hardening` (done) — row `review-archive-boundary-hardening` archived
+- `parallel-agent-orchestration-adoption` (done, closed-by-design) — superseded by Pi-only direction
 
-- `audit-test-install-sh-and-test-upgrade-sh-for-live` — Audit test-install-*.sh and test-upgrade-*.sh for live-worktree mutation *[high/medium/small]*
-- `codex-cross-model-reviewer-flags-other-deliverable` — Codex cross-model reviewer flags other deliverables' commits as unplanned *[medium/high/small]*
-- `audit-xdg-config-fields-for-runtime-consumers-pref` — Audit XDG config fields for runtime consumers (preferred_specialists, cross_model.provider) *[medium/medium/small]*
-- `generate-reintegration-sh-should-use-canonical-sch` — generate-reintegration.sh should use canonical schema, not inline jq-subset *[medium/medium/small]*
-- `bin-frw-d-scripts-rescue-sh-committed-as-100644-di` — bin/frw.d/scripts/rescue.sh committed as 100644; dispatcher exec fails *[medium/low/small]*
-- `commands-lib-promote-learnings-sh-reads-null-for-e` — commands/lib/promote-learnings.sh reads null for every learning *[low/low/small]*
-- `unify-tracked-14-vs-gitignored-8-specialist-symlin` — Unify tracked (14) vs .gitignored (8) specialist symlinks *[low/low/small]*
-- `ac-10-e2e-fixture-split-across-contaminated-stop-a` — AC-10 e2e fixture split across contaminated-stop and safe-happy-path *[low/low/small]*
+---
 
-- **Conflict risk**: low
-- **Why together**: Same source review; same subsystem (install/test/review pipeline); bundling avoids 8 tiny branches.
+## Phase 3 — Pi enforcement parity (current)
 
-## Phase 2 — CLI Go rewrite — foundational language migration — PLANNED
+**Status:** `[IN-PROGRESS]` (rows scoped, archive of `migration-state-of-the-union` and `pi-adapter-foundation` pending)
 
-Go rewrite of frw/rws/alm/sds. Decision 2026-04-23: Go (over TypeScript), all-in (no bash quick-wins phase). Rewrites the exact infrastructure Phase 3+ builds on, so it must land first. Absorbs cli-ergonomics-pass, cli-breakup-script-guard, register-deliverable-command, and log-disposition-discipline — their implementations live in the new Go CLI rather than transitional bash.
+**Rationale:** Close the operator-experience gap surfaced by `migration-state-of-the-union` research: Pi `tool_call` interceptor exists for state mutations, but adjacent guards (validate-definition, ownership-warn, post-compact recovery) are missing. Two narrow rows ship Go-first validators + Pi event wiring.
+
+### Tracks
 
-### `work/cli-go-rewrite` (1 TODO)
+#### `work/pi-row-audit-cleanup`
+**Branch:** `work/pi-row-audit-cleanup` | **Sessions:** ~2 | **Conflict risk:** low
+- D1: `furrow row repair-deliverables` Go CLI command (atomic backfill)
+- D2: Apply D1 to `pi-step-ceremony-and-artifact-enforcement.state.json.deliverables` ({} → populated)
+- D3: Archive `pi-adapter-foundation` with supersedence evidence
+- D4: Edit `pi-step-ceremony.../handoff.md:62` (remove dangling-successor)
+- **Why together:** all are accounting/cleanup actions that must complete before validation work, and D1 is the new Go CLI that does D2.
+
+#### `work/pre-write-validation-go-first`
+**Branch:** `work/pre-write-validation-go-first` | **Sessions:** ~3 | **Conflict risk:** low
+- D1: `furrow validate definition --json` Go command
+- D2: `furrow validate ownership --json` Go command
+- D3: Pi `tool_call` handler for `definition.yaml` writes (calls D1, surfaces in `ctx.ui.notify`)
+- D4: Pi `tool_call` handler for `Write`/`Edit` (calls D2, `ctx.ui.confirm` override)
+- **Why together:** ports two enforcement hooks Go-first per user stance; Pi event wiring consumes the Go validators directly (no shell-out).
+
+---
+
+## Phase 4 — Enforcement deepening + Migration A foundations
+
+**Status:** `[PLANNED]` (after Phase 3)
+
+**Rationale:** Establish shared blocker taxonomy, formalize per-step artifact rules, extend Pi tool_call interception to bash mutations, and decompose handoff/context contracts. Foundational for review-orchestration (Phase 6) and dual-runtime parity (Phase 8).
+
+### Tracks
+
+#### `work/blocker-taxonomy-foundation`
+**Branch:** `work/blocker-taxonomy-foundation` | **Sessions:** ~3 | **Conflict risk:** low
+- `shared-blocker-taxonomy-spec` (canonical schema; Pi + Claude both validate against)
+- `claude-blocker-enforcement-parity` (audit each Claude hook against schema)
+- `doc-contradiction-reconciliation` (resolve blocker scope-creep contradiction in same row)
+
+#### `work/artifact-validation-and-continuation`
+**Branch:** `work/artifact-validation-and-continuation` | **Sessions:** ~3 | **Conflict risk:** medium (with blocker-taxonomy)
+- `artifact-validation-per-step-schema` (depends on blocker-taxonomy)
+- `artifact-continuation-model` (artifacts-as-inputs)
+- `stage-aware-ceremony-enforcement` (prevent step-skipping)
+- `artifact-writing-defaults`
+- `artifact-informed-handoffs-and-gate-prompts`
+
+#### `work/state-and-correction-guards`
+**Branch:** `work/state-and-correction-guards` | **Sessions:** ~2 | **Conflict risk:** low (parallel with above)
+- `state-guard-rm-coverage` (extend tool_call to bash rm/cp/mv)
+- `pi-correction-limit-visibility` (footer widget)
+- `pi-session-resume-reground` (compaction handler + session-start handler)
+
+#### `work/handoff-and-context-routing`
+**Branch:** `work/handoff-and-context-routing` | **Sessions:** ~3 | **Conflict risk:** none (independent)
+- `handoff-prompt-artifact-template`
+- `context-routing-infrastructure`
+- `design-pattern-context-construction`
+- `standardize-artifact-presentation`
+
+---
+
+## Phase 5 — Seeds (canonical work primitive)
+
+**Status:** `[PLANNED]` (after Phase 4 stabilizes; can run partly parallel with Phase 6)
+
+**Rationale:** Replace `todos.yaml` with `seeds.jsonl` as canonical planning primitive per `pi-almanac-operating-model.md:148-159`. Ships in two rows: the typed-graph foundation, then the cutover + Pi rendering.
+
+### Tracks
+
+#### `work/seeds-foundation`
+**Branch:** `work/seeds-foundation` | **Sessions:** ~5 | **Conflict risk:** medium (touches `internal/cli/`)
+- `seeds-typed-graph-nodes` (task / decision / observation / ...)
+- `seeds-backend-surface-layer` (`furrow seeds` Go CLI group)
+- `seed-row-binding-contract` (1 primary + N related)
+- `seeds-concept` umbrella (closes when sub-todos ship)
+- `pi-almanac-operating-model` umbrella
+
+#### `work/seeds-graph-cutover-and-pi-surfaces`
+**Branch:** `work/seeds-graph-cutover-and-pi-surfaces` | **Sessions:** ~5 | **Conflict risk:** high (cutover is breaking)
+- `seeds-graph-queries` (ready-set, blocks, cycle detect)
+- `seeds-follow-up-promotion` (review→archive seed creation)
+- `roadmap-generation-from-seeds` (replace `alm triage` source)
+- `todo-to-seed-cutover-migration` (the breaking change)
+- `pi-seed-surfaces-in-work-loop` (Pi UX)
+- `almanac-scope-after-todo-retirement`
+- `todo-context-references` (folds into seeds metadata; closes here)
+
+---
+
+## Phase 6 — Review / specialists / row-variants
+
+**Status:** `[PLANNED]` (Phase 5 parallel-able where independent)
+
+**Rationale:** Deepen review execution beyond artifact-backed checks; formalize specialist registration; introduce lightweight row variants (patch/spike); strengthen planning UX.
+
+### Tracks
+
+#### `work/review-and-evaluator-orchestration`
+**Branch:** `work/review-and-evaluator-orchestration` | **Sessions:** ~3 | **Conflict risk:** low
+- `review-evaluator-isolation-spec` (defines architecture)
+- `unified-isolated-review`
+- `gate-dimension-deduplication`
+- `collaborative-surfaces`
+
+#### `work/specialists-and-agents`
+**Branch:** `work/specialists-and-agents` | **Sessions:** ~3 | **Conflict risk:** low
+- `sub-agent-normalization` (foundation)
+- `specialist-quality-validation`
+- `specialist-template-warning-escalation`
+- `effort-selection-alongside-model`
+
+#### `work/row-variants-and-planning-ux`
+**Branch:** `work/row-variants-and-planning-ux` | **Sessions:** ~4 | **Conflict risk:** medium (commands/, skills/)
+- `patch-row-concept`
+- `spike-row-mode`
+- `brain-dump-triage-command`
+- `sprint-inspired-planning`
+- `support-todos-sharding` (post-seeds-cutover may be moot — re-evaluate)
+- `user-action-integration`
+- `post-merge-watch-list`
+- `ambient-context-promotion`
+
+---
+
+## Phase 7 — Migration A outer ring (CLI rewrite + worktree + install)
+
+**Status:** `[PLANNED]` (after Phase 4 — `cli-introspection-and-history` is the foundational row that unblocks the rest)
+
+**Rationale:** Port remaining shell CLIs (`rws`, `alm`, `sds`, `bin/frw.d/`) to Go. First row delivers Tier-1 introspection commands that empirical audits demanded; subsequent rows port worktree, merge, and install logic.
+
+### Tracks
+
+#### `work/cli-introspection-and-history`
+**Branch:** `work/cli-introspection-and-history` | **Sessions:** ~6 | **Conflict risk:** high (foundational)
+- `cli-introspection-suite` (umbrella; first slice = Tier 1: history, validate, delete --force, repair-deliverables already in Phase 3)
+- `cli-architecture-overhaul-slice-2` (umbrella; this row's first slice)
+- `harness-parallel-dispatch-race` (`furrow row delete` + worktree-per-deliverable address this)
+
+#### `work/worktree-and-merge-pipeline`
+**Branch:** `work/worktree-and-merge-pipeline` | **Sessions:** ~4 | **Conflict risk:** medium (depends on cli-introspection)
+- `furrow-work-worktree-integration`
+- `furrow-next-semantic-merge`
+- `furrow-next-phase-lifecycle`
+- `merge-process-skill`
+
+#### `work/install-and-symlink-hygiene`
+**Branch:** `work/install-and-symlink-hygiene` | **Sessions:** ~3 | **Conflict risk:** medium (parallel with worktree-and-merge)
+- `install-user-bin-worktree-pinning` (high urgency)
+- `consumer-install-symlink-validation`
+- `xdg-state-isolation-audit-and-doc`
+- `post-install-hygiene-followup` (absorbs 6 review-finding atoms)
+- `harness-lifecycle-ux` (depends on cli-introspection)
+
+#### `work/meta-and-archive-flow-improvements`
+**Branch:** `work/meta-and-archive-flow-improvements` | **Sessions:** ~3 | **Conflict risk:** low (independent)
+- `supervised-decision-surface-spec` (defines surfaces)
+- `archive-implications-propagation` (consumes surfaces at archive time)
+- `furrow-meta-folds-into-roadmap` (refactor; uses surface model)
+
+---
+
+## Phase 8 — Dual-runtime parity + Pi-native leverage + research
+
+**Status:** `[PLANNED]` (after Phases 3-7 stabilize)
+
+**Rationale:** Validate Pi + Claude hit identical semantics; exploit Pi-native capabilities post-parity per `pi-native-capability-leverage.md`; close docs/research streams as background work.
+
+### Tracks
+
+#### `work/dual-runtime-parity-validation`
+**Branch:** `work/dual-runtime-parity-validation` | **Sessions:** ~4 | **Conflict risk:** low (validation/test layer)
+- `adapters-audit` (recon)
+- `claude-wrapper-compatibility`
+- `pi-adapter-package` (closes when validation passes)
+- `dual-runtime-parity-validation` (the gate)
+- `workflow-power-preservation` umbrella (closes when decomposed children all ship)
+
+#### `work/pi-native-leverage-and-tui`
+**Branch:** `work/pi-native-leverage-and-tui` | **Sessions:** ~6 | **Conflict risk:** low (Pi extension territory)
+- `furrow-context-isolation-layer` (the wrangle/non-Furrow pollution fix; medium urgency)
+- `furrow-tui-dashboard`
+- `furrow-self-update-hook`
+- `pi-native-capability-leverage` umbrella
+
+#### `work/docs-and-research`
+**Branch:** `work/docs-and-research` | **Sessions:** background | **Conflict risk:** none (docs/, references/)
+- Docs cluster: `docs-cleanup-pass`, `doc-authority-class-enforcement`, `migration-residue-archival`
+- Research cluster: `mine-claude-code`, `mine-v1-harness`, `memetic-algorithms-research`, `research-documentation-detection`, `research-methodology-design`, `apply-nate-jones-skill`
+
+---
+
+<!-- section:worktree-commands -->
+## Worktree Commands
+
+Worktree convention: `../furrow-{branch-name}` outside the source repo, branch named `work/{cluster-name}`. Run from `/home/jonco/src/furrow`.
 
-- `cli-architecture-overhaul` — CLI architecture overhaul — Go rewrite of frw/rws/alm/sds with modularization, structured logging, introspection *[high/high/large]*
-
-- **Key files**: `.furrow/almanac/rationale.yaml`, `bin/`, `cmd/`, `install.sh`, `internal/`, `schemas/`, `tests/integration/`
-- **Conflict risk**: low
-- **Why together**: Single large migration — every downstream row builds on the new binaries.
-
-## Phase 3 — Dispatch + ambient contract — foundational for downstream skills — PLANNED
-
-Sub-agent dispatch shape, ambient-layer contract, and specialist quality signal. These reshape contracts that Phase 4-6 skills/commands write against. Landing them after the Go rewrite means generators and ambient-layer tooling are built in Go from the start.
-
-### `work/sub-agent-normalization` (4 TODOs)
-
-- `sub-agent-normalization` — Sub-agent normalization — register specialists as Claude Code agent types with single-source generation *[medium/high/medium]*
-- `parallel-agent-orchestration-adoption` — Built-in team orchestration isn't being used — diagnose and fix *[high/high/medium]*
-- `specialist-quality-validation` — Establish a validation mechanism for specialist template quality *[low/high/medium]*
-- `specialist-template-warning-escalation` — Escalate specialist template warnings to structured observability *[low/medium/small]*
-
-- **Key files**: `.claude/agents/`, `.claude/commands/specialist:*.md`, `.furrow/almanac/rationale.yaml`, `bin/frw.d/scripts/`, `evals/`, `install.sh`, `references/specialist-template.md`, `skills/implement.md` (+more)
-- **Conflict risk**: medium
-- **Why together**: All four touch specialist dispatch shape, registration, and quality gating — same module.
-- **Depends on**: per-step-model-routing, specialist-expansion
-
-### `work/ambient-context` (1 TODO)
-
-- `ambient-context-promotion` — Ambient context promotion system — row→project→global knowledge graduation *[medium/high/large]*
-
-- **Key files**: `.furrow/almanac/`, `bin/alm`, `commands/lib/`
-- **Conflict risk**: low
-- **Why together**: Standalone — reshapes ambient contract before Phase 4 writes against it.
-
-### `work/effort-and-model-routing` (1 TODO)
-
-- `effort-selection-alongside-model` — Add effort_hint to specialists and step skills — decouple reasoning depth from model identity *[low/high/medium]*
-
-- **Key files**: `bin/frw.d/scripts/`, `references/specialist-template.md`, `skills/`, `specialists/`
-- **Conflict risk**: medium
-- **Why together**: Touches specialists/ frontmatter — sequence with sub-agent-normalization (same files).
-
-## Phase 4 — Worktree + merge pipeline — /furrow:work and /furrow:next overhaul — PLANNED
-
-Row-to-branch coupling (worktree) and branch-to-main coupling (semantic merge). Every future row uses these. Depends on Phase 2 CLI stabilization since merge logic lives in bin/frw.d/scripts/ (now Go).
-
-### `work/worktree-integration` (2 TODOs)
-
-- `furrow-work-worktree-integration` — furrow:work auto-creates a git worktree when not already on one *[medium/high/medium]*
-- `install-user-bin-worktree-pinning` — frw install writes ~/.local/bin symlinks pointing at the invocation path, not the canonical source repo *[high/high/small]*
-
-- **Key files**: `.claude/commands/furrow:archive.md`, `.claude/commands/furrow:work.md`, `.furrow/almanac/rationale.yaml`, `bin/frw.d/hooks/auto-install.sh`, `bin/frw.d/install.sh`, `bin/frw.d/scripts/rescue.sh`, `bin/rws`, `skills/ideate.md` (+more)
-- **Conflict risk**: medium
-- **Why together**: Worktree lifecycle owned by one branch.
-
-### `work/next-merge-pipeline` (3 TODOs)
-
-- `furrow-next-semantic-merge` — furrow:next semantic merge — read row artifacts for intelligent merge + per-deliverable squash *[medium/high/large]*
-- `furrow-next-phase-lifecycle` — furrow:next as full phase lifecycle — merge, update roadmap, handoff, launch *[medium/high/medium]*
-- `merge-process-skill` — Design a /furrow:merge skill — reconcile worktree branches back into main *[medium/high/medium]*
-
-- **Key files**: `.claude/commands/furrow:next.md`, `.furrow/furrow.yaml`, `bin/frw.d/hooks/`, `bin/frw.d/scripts/`, `bin/frw.d/scripts/launch-phase.sh`, `bin/frw.d/scripts/merge-to-main.sh`, `bin/rws`, `commands/` (+more)
-- **Conflict risk**: medium
-- **Why together**: All modify /furrow:next flow; shared commit-msg and squash code path.
-
-## Phase 5 — Seeds primitive — deterministic work graph replacing LLM-reasoned dependencies — PLANNED
-
-Foundational task-management primitive. Cross-row work graph + in-row task tracking in one unified graph, owned by sds. alm delegates to sds for triage/roadmap queries. Absorbs almanac-graph-primitives. Must land after Go rewrite (graph engine belongs in Go).
-
-### `work/seeds` (1 TODO)
-
-- `seeds-concept` — Seeds as the task management primitive — unified work graph, in-row tracking, gating, and alm delegation *[medium/high/large]*
-
-- **Key files**: `.furrow/almanac/`, `bin/alm`, `bin/rws`, `bin/sds`, `references/`, `skills/`, `templates/`
-- **Conflict risk**: low
-- **Why together**: Single large primitive — alm-side wiring and sds core ship together.
-- **Depends on**: cli-architecture-overhaul
-
-## Phase 6 — Artifacts, reviews, row variants — UX patterns for collaboration — PLANNED
-
-Artifact-first content discipline, patch/spike row variants, review surfaces, and the triage/brain-dump commands that drive them. All depend on seeds for task tracking and on Phase 3 ambient contract.
-
-### `work/artifacts-and-row-variants` (4 TODOs)
-
-- `artifact-writing-defaults` — Artifact-writing defaults — long-form outputs go to files as first-class citizens *[medium/high/medium]*
-- `patch-row-concept` — patch-row variant — lightweight harness mode for small fixes, bug fixes, accessibility issues *[medium/high/medium]*
-- `spike-row-mode` — Spike row mode — implementation-flavored research with throwaway prototypes *[low/high/medium]*
-- `low-finding-disposition-policy` — LOW finding disposition policy — auto-TODO with audit trail *[medium/medium/small]*
-
-- **Key files**: `.claude/rules/step-sequence.md`, `.furrow/almanac/rationale.yaml`, `bin/alm`, `bin/rws`, `evals/dimensions/`, `references/definition-shape.md`, `references/review-methodology.md`, `references/row-layout.md` (+more)
-- **Conflict risk**: high
-- **Why together**: Artifact conventions + lightweight row shapes are the same design conversation.
-- **Depends on**: patch-row-concept
-
-### `work/review-surfaces` (2 TODOs)
-
-- `collaborative-surfaces` — Document-based collaboration — markdown + comment threading, Notion integration *[low/medium/large]*
-- `unified-isolated-review` — Unify Phase B and cross-model review into a single isolated-review script *[medium/high/medium]*
-
-- **Key files**: `adapters/`, `bin/frw.d/scripts/cross-model-review.sh`, `commands/review.md`, `skills/`, `skills/ideate.md`, `skills/review.md`, `skills/shared/eval-protocol.md`
-- **Conflict risk**: medium
-- **Why together**: Review/ambient-context loop; same skill files.
-
-### `work/triage-ux` (2 TODOs)
-
-- `brain-dump-triage-command` — Brain dump + triage command — collaborative ideation, TODO extraction, roadmap bootstrap fields *[medium/high/medium]*
-- `tmux-sessionizer-integration` — tmux sessionizer integration — ship a Furrow-aware layout tied to the focused row *[low/medium/small]*
-
-- **Key files**: `.furrow/almanac/rationale.yaml`, `.tmux-sessionizer`, `bin/frw.d/scripts/`, `commands/`, `commands/next.md`, `commands/triage.md`, `commands/work-todos.md`, `templates/roadmap.md.tmpl`
-- **Conflict risk**: medium
-- **Why together**: Triage/brain-dump UX and the panes that watch those artifacts in real time.
-- **Depends on**: artifact-writing-defaults, furrow-work-worktree-integration, parallel-agent-orchestration-adoption
-
-## Phase 7 — Post-seeds re-triage + dashboards + lifecycle — PLANNED
-
-Several TODOs may be subsumed, simplified, or re-shaped once seeds lands — re-triage them here rather than designing against pre-seeds assumptions. Plus dashboards, self-update, and harness lifecycle UX which build on stable foundations.
-
-### `work/post-seeds-retriage` (6 TODOs)
-
-- `sprint-inspired-planning` — Sprint-inspired work planning — retros, velocity, multi-row coordination, observability *[low/high/large]*
-- `post-merge-watch-list` — Post-merge watch-list — track behavioral signals to validate after rows merge *[low/high/medium]*
-- `support-sharded-todos-d-directory-to-reduce-merge` — Support sharded todos.d/ directory to reduce merge-conflict surface *[low/medium/large]*
-- `gate-dimension-deduplication` — Extract shared gate dimensions (seed-sync, dual-review) into reusable definitions *[low/medium/small]*
-- `todo-context-references` — TODOs with context references from dump and active sessions *[low/medium/medium]*
-- `user-action-integration` — Integration points for actions the user must take *[low/medium/medium]*
-
-- **Key files**: `.furrow/almanac/`, `bin/alm`, `bin/rws`, `commands/triage.md`, `commands/work-todos.md`, `evals/dimensions/`, `evals/gates/`, `skills/` (+more)
-- **Conflict risk**: medium
-- **Why together**: Each one has an overlap with seeds semantics. Re-triage instead of pre-planning.
-
-### `work/dashboards-and-lifecycle` (4 TODOs)
-
-- `furrow-tui-dashboard` — Furrow TUI / agent-dashboard integration *[low/medium/large]*
-- `harness-lifecycle-ux` — Harness UX — sow/reap verbs, status line, installation/exploration skill *[low/medium/large]*
-- `adapters-audit` — Adapters pass — check for atrophy, modularization decay, internal consistency *[low/medium/medium]*
-- `furrow-self-update-hook` — furrow-self-update-hook — session-start check for upstream Furrow changes *[low/medium/small]*
-
-- **Key files**: `.claude/settings.json`, `.furrow/_meta.yaml`, `.furrow/almanac/rationale.yaml`, `adapters/`, `bin/frw.d/hooks/`, `bin/frw.d/scripts/`, `commands/`, `install.sh` (+more)
-- **Conflict risk**: medium
-- **Why together**: User-facing polish on stabilized foundations; independent internally but shares rationale/install surface.
-- **Depends on**: cli-architecture-overhaul
-
-## Phase 8 — Research, long-tail, workflow cleanup — PLANNED
-
-Lowest-urgency work: research spikes (mining prior harnesses, methodology), speculative research, and .furrow/rows/ structure cleanup. Run as capacity allows.
-
-### `work/research-mining` (6 TODOs)
-
-- `mine-claude-code` — Mine Claude Code for reusable patterns and capabilities *[low/medium/small]*
-- `mine-v1-harness` — Mine v1 harness for learnings, insights, and research *[low/medium/small]*
-- `apply-nate-jones-skill` — Apply Nate Jones harness skill patterns to Furrow *[low/medium/small]*
-- `research-documentation-detection` — Detect when research output should be documentation instead *[low/medium/small]*
-- `research-methodology-design` — Research methodology for systems design — beyond naive web search *[low/medium/small]*
-- `design-pattern-context-construction` — Context construction driven by design pattern thinking *[low/medium/medium]*
-
-- **Key files**: `commands/lib/promote-components.sh`, `docs/`, `references/`, `skills/research.md`, `skills/review.md`
-- **Conflict risk**: low
-- **Why together**: Research spikes informing future harness design; same research artifact pattern.
-
-### `work/memetic-research` (1 TODO)
-
-- `memetic-algorithms-research` — Research memetic algorithms for LLM orchestration *[low/low/large]*
-
-- **Conflict risk**: low
-- **Why together**: Standalone research spike; large effort but low urgency.
-
-### `work/work-folder-cleanup` (1 TODO)
-
-- `work-folder-structure-and-cleanup` — Structure .furrow/rows/ to prevent unbounded growth *[medium/medium/medium]*
-
-- **Key files**: `bin/rws`, `commands/archive.md`, `references/row-layout.md`
-- **Conflict risk**: low
-- **Why together**: Standalone housekeeping; depends on brain-dump-triage-command landing first.
-- **Depends on**: brain-dump-triage-command
-
-## Worktree Quick Reference
-
-### Phase 1 — Post-install hygiene — test isolation, review pipeline, install asymmetry
 ```sh
-git worktree add ../furrow-post-install-hygiene -b work/post-install-hygiene
+# Phase 3 — Pi enforcement parity (already approved as next 2 rows)
+git worktree add ../furrow-pi-row-audit-cleanup -b work/pi-row-audit-cleanup
+git worktree add ../furrow-pre-write-validation-go-first -b work/pre-write-validation-go-first
 ```
 
-### Phase 2 — CLI Go rewrite — foundational language migration
 ```sh
-git worktree add ../furrow-cli-go-rewrite -b work/cli-go-rewrite
+# Phase 4 — enforcement deepening (after Phase 3)
+git worktree add ../furrow-blocker-taxonomy-foundation -b work/blocker-taxonomy-foundation
+git worktree add ../furrow-artifact-validation-and-continuation -b work/artifact-validation-and-continuation
+git worktree add ../furrow-state-and-correction-guards -b work/state-and-correction-guards
+git worktree add ../furrow-handoff-and-context-routing -b work/handoff-and-context-routing
 ```
 
-### Phase 3 — Dispatch + ambient contract — foundational for downstream skills
 ```sh
-git worktree add ../furrow-sub-agent-normalization -b work/sub-agent-normalization
-git worktree add ../furrow-ambient-context -b work/ambient-context
-git worktree add ../furrow-effort-and-model-routing -b work/effort-and-model-routing
+# Phase 5 — seeds (after Phase 4)
+git worktree add ../furrow-seeds-foundation -b work/seeds-foundation
+git worktree add ../furrow-seeds-graph-cutover-and-pi-surfaces -b work/seeds-graph-cutover-and-pi-surfaces
 ```
 
-### Phase 4 — Worktree + merge pipeline — /furrow:work and /furrow:next overhaul
 ```sh
-git worktree add ../furrow-worktree-integration -b work/worktree-integration
-git worktree add ../furrow-next-merge-pipeline -b work/next-merge-pipeline
+# Phase 6 — review / specialists / row-variants
+git worktree add ../furrow-review-and-evaluator-orchestration -b work/review-and-evaluator-orchestration
+git worktree add ../furrow-specialists-and-agents -b work/specialists-and-agents
+git worktree add ../furrow-row-variants-and-planning-ux -b work/row-variants-and-planning-ux
 ```
 
-### Phase 5 — Seeds primitive — deterministic work graph replacing LLM-reasoned dependencies
 ```sh
-git worktree add ../furrow-seeds -b work/seeds
+# Phase 7 — Migration A outer ring (after Phase 4)
+git worktree add ../furrow-cli-introspection-and-history -b work/cli-introspection-and-history
+git worktree add ../furrow-worktree-and-merge-pipeline -b work/worktree-and-merge-pipeline
+git worktree add ../furrow-install-and-symlink-hygiene -b work/install-and-symlink-hygiene
+git worktree add ../furrow-meta-and-archive-flow-improvements -b work/meta-and-archive-flow-improvements
 ```
 
-### Phase 6 — Artifacts, reviews, row variants — UX patterns for collaboration
 ```sh
-git worktree add ../furrow-artifacts-and-row-variants -b work/artifacts-and-row-variants
-git worktree add ../furrow-review-surfaces -b work/review-surfaces
-git worktree add ../furrow-triage-ux -b work/triage-ux
+# Phase 8 — dual-runtime + pi-native + research
+git worktree add ../furrow-dual-runtime-parity-validation -b work/dual-runtime-parity-validation
+git worktree add ../furrow-pi-native-leverage-and-tui -b work/pi-native-leverage-and-tui
+git worktree add ../furrow-docs-and-research -b work/docs-and-research
 ```
 
-### Phase 7 — Post-seeds re-triage + dashboards + lifecycle
-```sh
-git worktree add ../furrow-post-seeds-retriage -b work/post-seeds-retriage
-git worktree add ../furrow-dashboards-and-lifecycle -b work/dashboards-and-lifecycle
-```
+---
 
-### Phase 8 — Research, long-tail, workflow cleanup
-```sh
-git worktree add ../furrow-research-mining -b work/research-mining
-git worktree add ../furrow-memetic-research -b work/memetic-research
-git worktree add ../furrow-work-folder-cleanup -b work/work-folder-cleanup
-```
+## Active Observations
+
+- `re-evaluate-dispatch-enforcement` (`decision-review`) — Re-evaluate whether structural enforcement is needed for multi-agent dispatch
+  - _Activation_: rows-since: parallel-agent-wiring (3 archived)
+  - Resolve: `alm observe resolve re-evaluate-dispatch-enforcement ...` after Phase 3 ships (since `parallel-agent-orchestration-adoption` was closed-by-design, this observation should be reconciled or dismissed).

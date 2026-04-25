@@ -467,7 +467,7 @@ func TestRowCompleteJSON(t *testing.T) {
 		writeRowState(t, root, "complete-row", map[string]any{
 			"name":        "complete-row",
 			"title":       "Complete Row",
-			"step":        "review",
+			"step":        "plan",
 			"step_status": "not_started",
 			"updated_at":  "2026-04-24T15:00:00Z",
 			"archived_at": nil,
@@ -477,6 +477,8 @@ func TestRowCompleteJSON(t *testing.T) {
 			},
 			"unknown_field": "keep-me",
 		})
+
+		writeImplementationPlan(t, root, "complete-row", "# Implementation Plan\n\n## Objective\n- Ship the change\n\n## Planned work\n1. Complete the deliverables\n")
 
 		code, payload, stderr := runJSONCommand(t, root, []string{"row", "complete", "complete-row", "--json"})
 		if code != 0 {
@@ -514,7 +516,7 @@ func TestRowCompleteJSON(t *testing.T) {
 		writeRowState(t, root, "already-complete", map[string]any{
 			"name":        "already-complete",
 			"title":       "Already Complete",
-			"step":        "review",
+			"step":        "plan",
 			"step_status": "completed",
 			"updated_at":  "2026-04-24T15:00:00Z",
 			"archived_at": nil,
@@ -522,6 +524,8 @@ func TestRowCompleteJSON(t *testing.T) {
 				"one": map[string]any{"status": "completed", "wave": 1},
 			},
 		})
+
+		writeImplementationPlan(t, root, "already-complete", "# Implementation Plan\n\n## Objective\n- Already complete\n\n## Planned work\n1. No changes needed\n")
 
 		code, payload, stderr := runJSONCommand(t, root, []string{"row", "complete", "already-complete", "--json"})
 		if code != 0 {
@@ -546,11 +550,12 @@ func TestRowCompleteJSON(t *testing.T) {
 		writeRowState(t, root, "step-only", map[string]any{
 			"name":        "step-only",
 			"title":       "Step Only",
-			"step":        "review",
+			"step":        "plan",
 			"step_status": "in_progress",
 			"updated_at":  "2026-04-24T15:00:00Z",
 			"archived_at": nil,
 		})
+		writeImplementationPlan(t, root, "step-only", "# Implementation Plan\n\n## Objective\n- Step-only bookkeeping\n\n## Planned work\n1. Mark the step complete\n")
 		statePath := filepath.Join(root, ".furrow", "rows", "step-only", "state.json")
 		state := readJSONFile(t, statePath)
 		delete(state, "deliverables")
@@ -580,12 +585,13 @@ func TestRowCompleteJSON(t *testing.T) {
 		writeRowState(t, root, "bad-deliverables", map[string]any{
 			"name":         "bad-deliverables",
 			"title":        "Bad Deliverables",
-			"step":         "review",
+			"step":         "plan",
 			"step_status":  "in_progress",
 			"updated_at":   "2026-04-24T15:00:00Z",
 			"archived_at":  nil,
 			"deliverables": []any{"bad"},
 		})
+		writeImplementationPlan(t, root, "bad-deliverables", "# Implementation Plan\n\n## Objective\n- Validate bad deliverables handling\n\n## Planned work\n1. Trigger invalid state\n")
 		code, _, _ := runJSONCommand(t, root, []string{"row", "complete", "bad-deliverables", "--json"})
 		if code != 3 {
 			t.Fatalf("expected exit 3, got %d", code)
@@ -798,15 +804,26 @@ func TestRowInitFocusAndScaffoldJSON(t *testing.T) {
 			"gates": []any{
 				map[string]any{"boundary": "implement->review", "outcome": "pass", "decided_by": "manual", "timestamp": "2026-04-24T17:59:00Z"},
 			},
+			"source_todo": "go-cli-contract",
 		})
+		writeReviewArtifact(t, root, "archive-row", "one", `{"deliverable":"one","phase_a":{"verdict":"pass"},"phase_b":{"verdict":"pass"},"overall":"pass","timestamp":"2026-04-24T18:01:00Z"}`)
 
 		code, payload, stderr := runJSONCommand(t, root, []string{"row", "archive", "archive-row", "--json"})
 		if code != 0 {
 			t.Fatalf("expected exit 0, got %d stderr=%s payload=%s", code, stderr, mustJSONPayload(t, payload))
 		}
-		row := payload["data"].(map[string]any)["row"].(map[string]any)
+		data := payload["data"].(map[string]any)
+		row := data["row"].(map[string]any)
 		if row["archived"] != true {
 			t.Fatalf("expected archived=true, got %#v", row)
+		}
+		archiveCeremony, ok := data["archive_ceremony"].(map[string]any)
+		if !ok {
+			t.Fatalf("expected archive_ceremony in response, got %s", mustJSONPayload(t, payload))
+		}
+		review := archiveCeremony["review"].(map[string]any)
+		if required, _ := review["required"].(float64); required != 1 {
+			t.Fatalf("expected one review artifact, got %#v", review)
 		}
 		state := readJSONFile(t, filepath.Join(root, ".furrow", "rows", "archive-row", "state.json"))
 		if archivedAt, _ := state["archived_at"].(string); archivedAt == "" {
@@ -842,6 +859,155 @@ func TestRowInitFocusAndScaffoldJSON(t *testing.T) {
 		code, _, _ = runJSONCommand(t, root, []string{"row", "archive", "archive-blocked", "--json"})
 		if code != 2 {
 			t.Fatalf("expected archive blocked with exit 2, got %d", code)
+		}
+	})
+
+	t.Run("row init tolerates historical duplicate todo keys", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		mustWrite(t, filepath.Join(root, ".furrow", "almanac", "todos.yaml"), `
+- id: work-loop-boundary-hardening
+  title: Work loop boundary hardening
+  context: active todo
+  work_needed: keep hardening boundaries
+  created_at: "2026-04-24T00:00:00Z"
+  updated_at: "2026-04-24T00:00:00Z"
+  status: active
+  updated_at: "2026-04-24T01:00:00Z"
+`)
+		mustWrite(t, filepath.Join(root, ".furrow", "almanac", "observations.yaml"), "[]\n")
+		mustWrite(t, filepath.Join(root, ".furrow", "almanac", "roadmap.yaml"), "schema_version: \"1.0\"\nmetadata:\n  project: furrow\n")
+
+		code, payload, stderr := runJSONCommand(t, root, []string{"row", "init", "review-archive-boundary-hardening", "--title", "Review archive boundary hardening", "--source-todo", "work-loop-boundary-hardening", "--json"})
+		if code != 0 {
+			t.Fatalf("expected exit 0, got %d stderr=%s payload=%s", code, stderr, mustJSONPayload(t, payload))
+		}
+		state := readJSONFile(t, filepath.Join(root, ".furrow", "rows", "review-archive-boundary-hardening", "state.json"))
+		if state["source_todo"] != "work-loop-boundary-hardening" {
+			t.Fatalf("expected persisted source_todo, got %#v", state["source_todo"])
+		}
+	})
+
+	t.Run("implement status validates carried decompose artifacts", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "implement-validation", map[string]any{
+			"name":        "implement-validation",
+			"title":       "Implement Validation",
+			"step":        "implement",
+			"step_status": "in_progress",
+			"updated_at":  "2026-04-24T18:00:00Z",
+			"archived_at": nil,
+			"deliverables": map[string]any{
+				"backend": map[string]any{"status": "in_progress"},
+				"adapter": map[string]any{"status": "not_started"},
+			},
+			"gates": []any{},
+		})
+		mustWrite(t, filepath.Join(root, ".furrow", "rows", "implement-validation", "plan.json"), `{"waves":[],"assignments":{}}`)
+
+		code, payload, stderr := runJSONCommand(t, root, []string{"row", "status", "implement-validation", "--json"})
+		if code != 0 {
+			t.Fatalf("expected exit 0, got %d stderr=%s payload=%s", code, stderr, mustJSONPayload(t, payload))
+		}
+		if !jsonContains(payload, "missing_required_artifact") || !jsonContains(payload, "artifact_validation_failed") {
+			t.Fatalf("expected carried decompose artifact blockers, got %s", mustJSONPayload(t, payload))
+		}
+	})
+
+	t.Run("review status blocks archive on failing review artifact", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "review-validation", map[string]any{
+			"name":        "review-validation",
+			"title":       "Review Validation",
+			"step":        "review",
+			"step_status": "completed",
+			"updated_at":  "2026-04-24T18:00:00Z",
+			"archived_at": nil,
+			"deliverables": map[string]any{
+				"backend": map[string]any{"status": "completed"},
+			},
+			"gates": []any{
+				map[string]any{"boundary": "implement->review", "outcome": "pass", "decided_by": "manual", "timestamp": "2026-04-24T17:59:00Z"},
+			},
+		})
+		writeReviewArtifact(t, root, "review-validation", "backend", `{"deliverable":"backend","phase_a":{"verdict":"pass"},"phase_b":{"verdict":"fail"},"overall":"fail","timestamp":"2026-04-24T18:01:00Z"}`)
+
+		code, payload, stderr := runJSONCommand(t, root, []string{"row", "status", "review-validation", "--json"})
+		if code != 0 {
+			t.Fatalf("expected exit 0, got %d stderr=%s payload=%s", code, stderr, mustJSONPayload(t, payload))
+		}
+		if !jsonContains(payload, "review_verdict_not_passing") || !jsonContains(payload, "archive_ceremony") {
+			t.Fatalf("expected review validation surfaced in checkpoint, got %s", mustJSONPayload(t, payload))
+		}
+
+		code, _, _ = runJSONCommand(t, root, []string{"row", "archive", "review-validation", "--json"})
+		if code != 2 {
+			t.Fatalf("expected archive blocked with exit 2, got %d", code)
+		}
+	})
+
+	t.Run("review status summarizes synthesized overrides and follow ups", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "review-summary", map[string]any{
+			"name":        "review-summary",
+			"title":       "Review Summary",
+			"step":        "review",
+			"step_status": "completed",
+			"updated_at":  "2026-04-24T18:00:00Z",
+			"archived_at": nil,
+			"deliverables": map[string]any{
+				"backend": map[string]any{"status": "completed"},
+			},
+			"gates": []any{
+				map[string]any{"boundary": "implement->review", "outcome": "pass", "decided_by": "manual", "timestamp": "2026-04-24T17:59:00Z"},
+			},
+		})
+		writeReviewArtifact(t, root, "review-summary", "backend", `{"deliverable":"backend","phase_a_verdict":"pass","phase_b_cross_verdict":"fail","synthesized_verdict":"pass","synthesized_reason":"Fresh reviewer pass outweighs a known cross-model false positive.","real_findings":[{"severity":"low","dim":"code-quality","note":"Polish a response label."}],"timestamp":"2026-04-24T18:01:00Z"}`)
+
+		code, payload, stderr := runJSONCommand(t, root, []string{"review", "status", "review-summary", "--json"})
+		if code != 0 {
+			t.Fatalf("expected exit 0, got %d stderr=%s payload=%s", code, stderr, mustJSONPayload(t, payload))
+		}
+		if !jsonContains(payload, "synthesized_overrides") || !jsonContains(payload, "follow_ups") || !jsonContains(payload, "overall_verdicts") {
+			t.Fatalf("expected normalized review summary, got %s", mustJSONPayload(t, payload))
+		}
+
+		code, payload, stderr = runJSONCommand(t, root, []string{"row", "status", "review-summary", "--json"})
+		if code != 0 {
+			t.Fatalf("expected exit 0, got %d stderr=%s payload=%s", code, stderr, mustJSONPayload(t, payload))
+		}
+		if !jsonContains(payload, "follow_ups") || !jsonContains(payload, "real_finding") {
+			t.Fatalf("expected archive follow-up signals in row status, got %s", mustJSONPayload(t, payload))
+		}
+	})
+
+	t.Run("review validate rejects inconsistent passing semantics", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "review-inconsistent", map[string]any{
+			"name":        "review-inconsistent",
+			"title":       "Review Inconsistent",
+			"step":        "review",
+			"step_status": "completed",
+			"updated_at":  "2026-04-24T18:00:00Z",
+			"archived_at": nil,
+			"deliverables": map[string]any{
+				"backend": map[string]any{"status": "completed"},
+			},
+			"gates": []any{
+				map[string]any{"boundary": "implement->review", "outcome": "pass", "decided_by": "manual", "timestamp": "2026-04-24T17:59:00Z"},
+			},
+		})
+		writeReviewArtifact(t, root, "review-inconsistent", "backend", `{"deliverable":"backend","phase_a":{"verdict":"pass"},"phase_b":{"verdict":"pass","dimensions":[{"name":"correctness","verdict":"fail","evidence":"Critical path still broken."}]},"overall":"pass","timestamp":"2026-04-24T18:01:00Z"}`)
+
+		code, payload, _ := runJSONCommand(t, root, []string{"review", "validate", "review-inconsistent", "--json"})
+		if code != 3 {
+			t.Fatalf("expected exit 3, got %d payload=%s", code, mustJSONPayload(t, payload))
+		}
+		if !jsonContains(payload, "review_phase_b_verdict_inconsistent") {
+			t.Fatalf("expected semantic review inconsistency, got %s", mustJSONPayload(t, payload))
 		}
 	})
 }
@@ -1046,6 +1212,12 @@ func writeRowState(t *testing.T, root, name string, state map[string]any) {
 func writeImplementationPlan(t *testing.T, root, rowName, content string) {
 	t.Helper()
 	mustWrite(t, filepath.Join(root, ".furrow", "rows", rowName, "implementation-plan.md"), content)
+}
+
+func writeReviewArtifact(t *testing.T, root, rowName, deliverable, content string) {
+	t.Helper()
+	mustMkdirAll(t, filepath.Join(root, ".furrow", "rows", rowName, "reviews"))
+	mustWrite(t, filepath.Join(root, ".furrow", "rows", rowName, "reviews", deliverable+".json"), content)
 }
 
 func readJSONFile(t *testing.T, path string) map[string]any {

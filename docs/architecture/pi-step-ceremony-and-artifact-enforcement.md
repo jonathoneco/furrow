@@ -360,7 +360,7 @@ Adapter promotion should remain subordinate to workflow-power preservation.
 > enduring operating model described above.
 
 The current repository implementation now lands the minimum usable slice this
-document called for, plus a first boundary-hardening pass:
+document called for, plus a deeper boundary-hardening pass:
 
 - Pi exposes a primary `/work` command over backend-canonical row state
 - the Go backend now supports row init, focus, seed visibility, blocker
@@ -374,26 +374,36 @@ document called for, plus a first boundary-hardening pass:
   only missing files or incomplete scaffold sentinels
 - the plan step now has a scaffoldable/validatable `implementation-plan.md`
   artifact in the same backend contract surface
-- `furrow row status` now exposes checkpoint action/evidence and gate history,
-  and backend transitions/archive write narrow evidence files under `gates/`
-- `/work` can now consume the backend `review->archive` checkpoint through the
-  existing adapter rather than requiring a parallel lifecycle path
+- coordinated `implement` rows now validate carried decompose artifacts such as
+  `plan.json` and `team-plan.md` before allowing the boundary to review
+- `review` rows now treat durable review artifacts under `reviews/` as
+  first-class current-step artifacts and require recognizable passing review
+  evidence before archive can proceed
+- the backend now also exposes `furrow review status --json` and
+  `furrow review validate --json` read surfaces that normalize review artifacts
+  into Phase A / Phase B / overall verdict summaries, synthesized-override
+  detection, severity summaries, and follow-up/disposition signals
+- `furrow row status` now exposes checkpoint action/evidence, latest gate
+  evidence, archive-readiness ceremony summary, and gate history
+- backend transitions/archive write durable evidence files under `gates/`
+- `/work` can now consume the richer backend `review->archive` checkpoint
+  through the existing adapter rather than requiring a parallel lifecycle path
 
 What is still intentionally narrow:
 
-- artifact validation is structural/template-aware, not full semantic or
-  evaluator-grade content validation
+- review artifact validation is semantically richer now, but review execution is
+  still artifact-backed rather than a full isolated evaluator-orchestration path
 - review execution itself still does not have mature per-deliverable evaluator
   orchestration or full gate-engine parity
-- archive semantics inside `/work` are still the narrow backend checkpoint path,
-  not the full learnings/component/TODO promotion ceremony
+- archive semantics inside `/work` now surface follow-up/disposition signals,
+  but they still do not perform the full learnings/component/TODO promotion ceremony
 
 ## Fast follow after this slice
 
 After this slice, next preserved-power targets include:
-- deeper per-step artifact validation for implement/review and richer semantic checks
-- fuller review execution/evidence surfaces beyond the narrow checkpoint evidence now emitted by backend transitions/archive
-- archive ceremony expansion beyond narrow archival preconditions into promotion/disposition flows
+- fuller semantic review-quality validation beyond the now-landed implement/review artifact checks
+- fuller review execution/evidence surfaces beyond the current pass-backed checkpoint and review-artifact evidence
+- archive ceremony expansion from richer readiness evidence into actual promotion/disposition flows
 - continued blocker/enforcement taxonomy alignment across Pi and Claude-compatible flows
 - seeds parity expansion
 - tmux/worktree/session launch surfaces

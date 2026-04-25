@@ -348,6 +348,8 @@ Current returned data includes:
 - seed state surface
 - blocker list with a backend-owned taxonomy shape
 - checkpoint / next-boundary surface, including action and evidence summary
+- latest gate evidence summary when a durable evidence file exists
+- archive-readiness ceremony summary when the current boundary is `review->archive`
 - next valid transitions
 - warnings
 
@@ -448,13 +450,15 @@ Current behavior is narrow but real:
   - `step_status=completed`
   - no current blockers from the shared blocker taxonomy
   - an existing passing `->review` gate record
+  - passing current-step review artifacts under `reviews/`
 - writes `archived_at` and `updated_at`
 - appends a narrow `review->archive` gate record to `gates[]`
 - writes a durable archive checkpoint evidence file under `gates/`
+- returns archive-readiness evidence summarizing review artifacts, source-link context, and learnings presence
 
 What it does **not** imply:
 
-- full learnings/component/TODO promotion ceremony
+- full learnings/component/TODO promotion mutations
 - broader review orchestration or disposition tracking
 - summary regeneration
 - seed-graph archival follow-up semantics
@@ -502,6 +506,7 @@ Current behavior is intentionally narrow but real:
 - resolves defaults from `.claude/furrow.yaml` when available
 - creates or links a seed and aligns it to the current ideation step
 - can link/backfill a `source_todo` seed reference when needed
+- reads the live canonical almanac planning file through the same tolerant YAML path used by almanac validation, so supported row init stays aligned with repo truth
 - does **not** precreate downstream step artifacts
 
 #### `furrow row focus --json`
@@ -534,24 +539,27 @@ Current behavior:
 > Transitional implementation note: this subsection describes the current repo's
 > migration progress inside the broader contract trajectory.
 
-This slice is now **partially landed** in the current repo:
+This slice is now **more fully landed, but still intentionally partial** in the current repo:
 
 - richer per-step artifact validation beyond incomplete-scaffold detection
+- `row init` source-link handling aligned with the live canonical almanac document shape
 - stronger checkpoint / gate evidence surfaces in `furrow row status`
 - shared blocker taxonomy suitable for both Pi and future Claude-compatible flows
-- narrow review/archive precondition surfaces folded back into the same operating loop
-- `furrow row archive --json` as the first real backend archive boundary surface
+- coordinated `implement` rows now validate carried decompose artifacts (`plan.json`, `team-plan.md`) at the boundary to review
+- `review` rows now validate durable review artifacts under `reviews/` rather than relying only on a prior `->review` gate record
+- review artifacts are now normalized semantically enough for backend-owned `furrow review status --json` and `furrow review validate --json` surfaces, including Phase A / Phase B verdict summaries, synthesized-override detection, severity summaries, and follow-up/disposition signals
+- archive-readiness evidence now includes latest gate evidence plus review-summary / follow-up / source-link / learnings surfaces inside the same operating loop
+- `furrow row archive --json` as a real backend archive boundary surface with richer evidence payloads
 
 Representative follow-on commands still likely include:
 
 - `furrow gate status --json`
-- `furrow review status --json`
+- fuller `furrow review run --json` / review-execution orchestration
 
 Remaining work in this slice:
 
-- deeper review execution/evidence semantics beyond the narrow archive checkpoint
-- richer implement/review artifact validation
-- fuller archive ceremony and disposition flows
+- deeper review execution/evaluator orchestration beyond the now-landed artifact-backed semantic review normalization and status/validate surfaces
+- fuller archive ceremony and disposition mutations (learnings/components/follow-up extraction), not just backend-derived follow-up signals in archive evidence
 - dual-host validation once the boundary contract settles further
 
 ### Slice 3 — Claude compatibility delegation

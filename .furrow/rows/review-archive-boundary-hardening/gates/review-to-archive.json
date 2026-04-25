@@ -1,0 +1,129 @@
+{
+  "boundary": "review-\u003earchive",
+  "notes": "backend-canonical archive checkpoint evidence for the narrow /work loop",
+  "overall": "pass",
+  "phase_a": {
+    "archive_ceremony": {
+      "learnings": {
+        "count": 0,
+        "path": "/home/jonco/src/furrow/.furrow/rows/review-archive-boundary-hardening/learnings.jsonl",
+        "present": false
+      },
+      "review": {
+        "by_status": {
+          "fail": 0,
+          "missing": 0,
+          "pass": 3,
+          "warn": 0
+        },
+        "items": [
+          {
+            "label": "reviews/source-link-init-compatibility.json",
+            "path": "/home/jonco/src/furrow/.furrow/rows/review-archive-boundary-hardening/reviews/source-link-init-compatibility.json",
+            "status": "pass"
+          },
+          {
+            "label": "reviews/implement-review-boundary-validation.json",
+            "path": "/home/jonco/src/furrow/.furrow/rows/review-archive-boundary-hardening/reviews/implement-review-boundary-validation.json",
+            "status": "pass"
+          },
+          {
+            "label": "reviews/archive-evidence-and-pi-surfacing.json",
+            "path": "/home/jonco/src/furrow/.furrow/rows/review-archive-boundary-hardening/reviews/archive-evidence-and-pi-surfacing.json",
+            "status": "pass"
+          }
+        ],
+        "required": 3
+      },
+      "source_todo": {
+        "id": "work-loop-boundary-hardening",
+        "present": true,
+        "seed_id": "furrow-3254",
+        "status": "active",
+        "title": "Harden backend-canonical /work boundaries — richer artifact validation, checkpoint evidence, review/archive semantics, blocker taxonomy",
+        "updated_at": "2026-04-24T22:46:14Z"
+      }
+    },
+    "artifact_validation": {
+      "by_status": {
+        "fail": 0,
+        "missing": 0,
+        "pass": 3,
+        "warn": 0
+      },
+      "total": 3
+    },
+    "artifacts": [
+      {
+        "exists": true,
+        "id": "review:source-link-init-compatibility",
+        "incomplete": false,
+        "label": "reviews/source-link-init-compatibility.json",
+        "path": "/home/jonco/src/furrow/.furrow/rows/review-archive-boundary-hardening/reviews/source-link-init-compatibility.json",
+        "required": true,
+        "scaffold_supported": false,
+        "validation": {
+          "blocking_count": 0,
+          "finding_count": 0,
+          "findings": [],
+          "status": "pass",
+          "summary": "validation passed",
+          "warning_count": 0
+        }
+      },
+      {
+        "exists": true,
+        "id": "review:implement-review-boundary-validation",
+        "incomplete": false,
+        "label": "reviews/implement-review-boundary-validation.json",
+        "path": "/home/jonco/src/furrow/.furrow/rows/review-archive-boundary-hardening/reviews/implement-review-boundary-validation.json",
+        "required": true,
+        "scaffold_supported": false,
+        "validation": {
+          "blocking_count": 0,
+          "finding_count": 0,
+          "findings": [],
+          "status": "pass",
+          "summary": "validation passed",
+          "warning_count": 0
+        }
+      },
+      {
+        "exists": true,
+        "id": "review:archive-evidence-and-pi-surfacing",
+        "incomplete": false,
+        "label": "reviews/archive-evidence-and-pi-surfacing.json",
+        "path": "/home/jonco/src/furrow/.furrow/rows/review-archive-boundary-hardening/reviews/archive-evidence-and-pi-surfacing.json",
+        "required": true,
+        "scaffold_supported": false,
+        "validation": {
+          "blocking_count": 0,
+          "finding_count": 0,
+          "findings": [],
+          "status": "pass",
+          "summary": "validation passed",
+          "warning_count": 0
+        }
+      }
+    ],
+    "blockers": [],
+    "review_gate": {
+      "boundary": "implement-\u003ereview",
+      "decided_by": "manual",
+      "evidence": "furrow row transition enforced adjacent ordering, completed-step requirement, blocker taxonomy checks, seed sync, and per-artifact validation; summary regeneration and evaluator phases were not performed",
+      "evidence_path": "/home/jonco/src/furrow/.furrow/rows/review-archive-boundary-hardening/gates/implement-to-review.json",
+      "outcome": "pass",
+      "timestamp": "2026-04-24T22:50:33Z"
+    },
+    "seed": {
+      "consistent": true,
+      "expected_status": "reviewing",
+      "id": "furrow-3254",
+      "state": "linked",
+      "status": "reviewing",
+      "title": "Review/archive boundary hardening"
+    }
+  },
+  "reviewer": "furrow row archive",
+  "timestamp": "2026-04-24T22:58:47Z"
+}

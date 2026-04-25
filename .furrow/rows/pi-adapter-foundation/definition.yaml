@@ -1,0 +1,45 @@
+objective: >-
+  Continue the canonical Furrow row for roadmap row work/pi-adapter-foundation by
+  keeping work-loop-boundary-hardening inside this row, deepening backend-owned
+  evaluator-grade review semantics and archive disposition signals, and
+  preserving the existing Pi adapter as a thin consumer of backend truth.
+deliverables:
+  - name: row-model-continuation
+    acceptance_criteria:
+      - "The row continues inside pi-adapter-foundation without creating another todo-specific Furrow row."
+      - "Row-local artifacts record the current emphasis as work-loop-boundary-hardening inside the roadmap-row work unit."
+      - "Supported backend or adapter ceremony remains ahead of implementation in this session."
+  - name: evaluator-grade-review-semantics
+    acceptance_criteria:
+      - "Review artifacts are evaluated for richer semantic consistency than mere recognizable pass-backed shape."
+      - "Backend review or row-status surfaces expose normalized review verdicts, phase details, and meaningful finding summaries without moving lifecycle semantics into TypeScript."
+      - "Backend validation and tests cover failing and passing review-semantics cases against live review-artifact shapes already present in the repo."
+  - name: archive-disposition-signals
+    acceptance_criteria:
+      - "Archive-readiness surfaces include actionable follow-up or disposition signals derived from review evidence, not only artifact-presence summaries."
+      - "Any new archive or review evidence surfaced to Pi is rendered by the existing adapter without re-deriving backend semantics."
+      - "Validation covers backend commands and at least one headless Pi /work flow against pi-adapter-foundation in this session."
+context_pointers:
+  - path: .furrow/almanac/roadmap.yaml
+    note: "Roadmap row work/pi-adapter-foundation remains the scope authority."
+  - path: .furrow/almanac/todos.yaml
+    note: "Current emphasis remains work-loop-boundary-hardening inside this row."
+  - path: docs/architecture/go-cli-contract.md
+    note: "Slice 2 remaining work still calls for deeper review semantics and fuller archive ceremony."
+  - path: docs/architecture/pi-parity-ladder.md
+    note: "Current remaining gaps center on evaluator-grade review and archive disposition."
+  - path: docs/architecture/pi-step-ceremony-and-artifact-enforcement.md
+    note: "The current /work loop is real; the next task is stronger backend-owned semantics inside it."
+  - path: docs/architecture/workflow-power-preservation.md
+    note: "Artifact-driven continuation and human-in-the-loop review surfaces remain core workflow power."
+  - path: .furrow/rows/review-archive-boundary-hardening/
+    note: "Historical sub-slice whose landed backend hardening is input, not the canonical work unit."
+constraints:
+  - ".furrow is canonical state."
+  - "Use supported backend or CLI authority for lifecycle mutations; do not hand-edit canonical row state to force progress."
+  - "Stay inside Phase 3 roadmap row work/pi-adapter-foundation."
+  - "Do not create another todo-specific Furrow row."
+  - "Use the existing adapter only: adapters/pi/furrow.ts."
+  - "Keep TypeScript thin and backend-driven."
+  - "Do not drift into footer or dashboard polish unless directly required for current row semantics."
+gate_policy: supervised

@@ -147,9 +147,40 @@ type RowStatusData = {
 		evidence?: {
 			blocker_count?: number;
 			latest_gate?: Record<string, any> | null;
+			latest_gate_evidence?: {
+				path?: string;
+				available?: boolean;
+				overall?: string | null;
+				reviewer?: string | null;
+				timestamp?: string | null;
+				phase_a?: Record<string, any>;
+				error?: string;
+			} | null;
 			artifact_validation?: {
 				by_status?: Record<string, number>;
 				total?: number;
+			};
+			archive_ceremony?: {
+				review?: {
+					required?: number;
+					by_status?: Record<string, number>;
+				};
+				follow_ups?: {
+					total?: number;
+					by_source?: Record<string, number>;
+					by_severity?: Record<string, number>;
+				};
+				source_todo?: {
+					id?: string | null;
+					present?: boolean;
+					title?: string | null;
+					status?: string | null;
+				};
+				learnings?: {
+					present?: boolean;
+					count?: number;
+					path?: string;
+				};
 			};
 		};
 	};
@@ -239,6 +270,11 @@ type ArchiveData = {
 		checkpoint_evidence?: string;
 	};
 	review_gate?: Record<string, any> | null;
+	archive_ceremony?: RowStatusData["checkpoint"] extends { evidence?: infer E }
+		? E extends { archive_ceremony?: infer C }
+			? C
+			: never
+		: never;
 };
 
 type CliResult<T = any> = {
@@ -398,6 +434,32 @@ function formatCheckpoint(checkpoint?: RowStatusData["checkpoint"]): string[] {
 	}
 	if (checkpoint.evidence?.latest_gate?.boundary) {
 		lines.push(`- latest gate: ${checkpoint.evidence.latest_gate.boundary} (${checkpoint.evidence.latest_gate.outcome ?? "unknown"})`);
+	}
+	if (checkpoint.evidence?.latest_gate_evidence?.path) {
+		const gateEvidence = checkpoint.evidence.latest_gate_evidence;
+		lines.push(`- latest gate evidence: ${gateEvidence.path}`);
+		if (gateEvidence.available) {
+			lines.push(`- latest gate evidence summary: overall=${gateEvidence.overall ?? "unknown"} reviewer=${gateEvidence.reviewer ?? "unknown"}`);
+		}
+	}
+	if (checkpoint.evidence?.archive_ceremony?.review?.by_status) {
+		const review = checkpoint.evidence.archive_ceremony.review;
+		const byStatus = review.by_status ?? {};
+		lines.push(`- archive review evidence: required=${review.required ?? 0} pass=${byStatus.pass ?? 0} warn=${byStatus.warn ?? 0} fail=${byStatus.fail ?? 0} missing=${byStatus.missing ?? 0}`);
+	}
+	if (checkpoint.evidence?.archive_ceremony?.follow_ups) {
+		const followUps = checkpoint.evidence.archive_ceremony.follow_ups;
+		const bySource = followUps.by_source ?? {};
+		lines.push(`- archive follow-ups: total=${followUps.total ?? 0} real_findings=${bySource.real_findings ?? 0} failed_dimensions=${bySource.failed_dimensions ?? 0} conditional_dimensions=${bySource.conditional_dimensions ?? 0}`);
+	}
+	if (checkpoint.evidence?.archive_ceremony?.source_todo?.id) {
+		const sourceTodo = checkpoint.evidence.archive_ceremony.source_todo;
+		lines.push(`- source todo: ${sourceTodo.id} (${sourceTodo.present ? sourceTodo.status ?? "present" : "missing"})`);
+		if (sourceTodo.title) lines.push(`- source todo title: ${sourceTodo.title}`);
+	}
+	if (checkpoint.evidence?.archive_ceremony?.learnings) {
+		const learnings = checkpoint.evidence.archive_ceremony.learnings;
+		lines.push(`- learnings ready for archive review: present=${learnings.present ? "yes" : "no"} count=${learnings.count ?? 0}`);
 	}
 	return lines;
 }

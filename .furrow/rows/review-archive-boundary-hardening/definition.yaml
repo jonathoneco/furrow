@@ -1,0 +1,48 @@
+objective: >-
+  Deepen backend-canonical /work boundary hardening within the existing
+  Phase 3 work/pi-adapter-foundation / work-loop-boundary-hardening scope by
+  aligning row init with live almanac truth, validating implement and review
+  artifacts more richly, and expanding archive/readiness evidence while keeping
+  lifecycle semantics in the Go backend and the existing Pi adapter thin.
+deliverables:
+  - name: source-link-init-compatibility
+    acceptance_criteria:
+      - "Furrow row init can create a new row linked to work-loop-boundary-hardening through supported backend commands even when the canonical planning file contains the historically duplicated updated_at keys present in the live repo."
+      - "The repo no longer exhibits the mismatch where furrow almanac validate --json passes but furrow row init with a source link fails on the same canonical planning file."
+  - name: implement-review-boundary-validation
+    acceptance_criteria:
+      - "The backend treats carried decompose artifacts as required implementation inputs when the row shape implies coordinated implementation work, and blocks completion or advancement when those artifacts are missing or invalid."
+      - "The backend treats review artifacts under reviews/ as first-class current-step artifacts during review, validates their structure and pass or fail surfaces, and blocks archive when review evidence is missing or non-passing."
+      - "furrow row status --json surfaces the richer implement and review artifact validation data without requiring TypeScript lifecycle logic."
+  - name: archive-evidence-and-pi-surfacing
+    acceptance_criteria:
+      - "furrow row status --json and furrow row archive --json expose fuller archive-readiness evidence, including latest gate evidence, review-artifact summary, source planning-item context, and learnings presence or count."
+      - "The existing adapter in adapters/pi/furrow.ts renders the new backend checkpoint and archive evidence surfaces without re-deriving lifecycle semantics."
+      - "Validation covers backend tests, live backend commands, and headless Pi /work flows against this row."
+context_pointers:
+  - path: README.md
+    note: Current dual-host operating frame and adapter boundary.
+  - path: docs/architecture/go-cli-contract.md
+    note: Canonical backend contract and current Slice 2 reality.
+  - path: docs/architecture/pi-parity-ladder.md
+    note: Remaining parity gaps after the archived ceremony row.
+  - path: docs/architecture/pi-step-ceremony-and-artifact-enforcement.md
+    note: Prior landed slice and follow-on targets.
+  - path: docs/handoffs/post-review-pi-step-ceremony-and-artifact-enforcement.md
+    note: Historical handoff identifying the next in-scope slice.
+  - path: adapters/pi/furrow.ts
+    note: Existing adapter that must remain thin.
+  - path: internal/cli/row.go
+    note: Backend row status and archive surfaces.
+  - path: internal/cli/row_workflow.go
+    note: Row init, scaffold, current-step artifact, and checkpoint logic.
+  - path: internal/cli/row_semantics.go
+    note: Artifact validation and blocker or evidence helpers.
+constraints:
+  - ".furrow is canonical state."
+  - "Use supported backend or CLI authority for workflow mutations; do not hand-edit canonical row state to force lifecycle progress."
+  - "Stay inside Phase 3, roadmap row work/pi-adapter-foundation, todo work-loop-boundary-hardening."
+  - "Use the existing adapter only: adapters/pi/furrow.ts."
+  - "Keep TypeScript thin; backend owns lifecycle semantics, blockers, evidence, and archive rules."
+  - "Preserve durable Furrow artifacts and reconcile docs only to landed repo truth."
+gate_policy: supervised

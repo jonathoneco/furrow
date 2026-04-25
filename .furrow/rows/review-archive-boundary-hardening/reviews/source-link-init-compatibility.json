@@ -1,0 +1,13 @@
+{
+  "deliverable": "source-link-init-compatibility",
+  "phase_a": {
+    "verdict": "pass",
+    "evidence": "row init now reads the canonical planning file through the tolerant YAML loader and the regression test covers the duplicate-key live shape."
+  },
+  "phase_b": {
+    "verdict": "pass",
+    "evidence": "The change removes a real supported-flow mismatch without moving semantics into the adapter."
+  },
+  "overall": "pass",
+  "reviewed_at": "2026-04-24T23:05:00Z"
+}

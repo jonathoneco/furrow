@@ -60,7 +60,7 @@ func (a *App) Run(args []string) int {
 	case "gate":
 		return a.runStubGroup("furrow gate", args[1:], []string{"run", "evaluate", "status", "list"})
 	case "review":
-		return a.runStubGroup("furrow review", args[1:], []string{"run", "cross-model", "status", "validate"})
+		return a.runReview(args[1:])
 	case "almanac":
 		return a.runAlmanac(args[1:])
 	case "seeds":
@@ -228,6 +228,16 @@ Usage:
   furrow row checkpoint ...
   furrow row summary ...
   furrow row validate ...`)
+}
+
+func (a *App) printReviewHelp() {
+	_, _ = fmt.Fprintln(a.stdout, `furrow review
+
+Usage:
+  furrow review status [row-name] [--json]
+  furrow review validate [row-name] [--json]
+  furrow review run ...
+  furrow review cross-model ...`)
 }
 
 type parsedFlags struct {
