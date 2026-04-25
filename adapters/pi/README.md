@@ -53,6 +53,26 @@ this repo also keeps a tiny compatibility shim at:
 That shim only re-exports `adapters/pi/furrow.ts` so the repo-owned adapter is
 canonical while existing project-local discovery still works.
 
+## Pre-write validation handlers
+
+The adapter registers `tool_call` handlers that intercept Write/Edit and shell
+out to the Go backend before allowing the write to proceed:
+
+- `validate-definition` — fires on writes to `*/definition.yaml`; calls
+  `furrow validate definition --path <file> --json` and blocks on `verdict: invalid`.
+- `ownership-warn` — fires on every Write/Edit; calls
+  `furrow validate ownership --path <file> --json` and surfaces a
+  `ctx.ui.confirm` prompt on `verdict: out_of_scope`.
+
+Each call invokes `go run ./cmd/furrow ...` per write, with ~45 ms cold start
+per call. On a write to a `definition.yaml` that triggers both handlers, the
+double-fire compounds (~90 ms wall clock). Optimization is tracked under the
+almanac todo `pi-adapter-binary-caching` (build the binary once at adapter init,
+exec the binary path).
+
+Tests for these handlers live in `adapters/pi/furrow.test.ts`. Run with
+`bun test` from `adapters/pi/`.
+
 ## Promotion intent
 
 This promotion is a stabilization step, not a semantic expansion step.
