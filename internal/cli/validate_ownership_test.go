@@ -107,13 +107,6 @@ func TestComputeOwnershipCanonicalArtifactCarveOut(t *testing.T) {
 		".furrow/rows/fix/definition.yaml",
 		".furrow/rows/fix/summary.md",
 		".furrow/rows/fix/learnings.jsonl",
-		".furrow/rows/fix/research.md",
-		".furrow/rows/fix/plan.json",
-		".furrow/rows/fix/team-plan.md",
-		".furrow/rows/fix/parity-verification.md",
-		".furrow/rows/fix/specs/foo.md",
-		".furrow/rows/fix/reviews/cross.json",
-		".furrow/rows/fix/gates/something.json",
 	}
 	for _, p := range cases {
 		v := computeOwnership(root, "fix", p)

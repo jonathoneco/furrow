@@ -933,7 +933,7 @@ export default function furrowExtension(pi: ExtensionAPI) {
 
 		const result = await runFurrowJson<ValidateDefinitionData>(
 			root,
-			["validate", "definition", "--path", absolutePath],
+			["validate", "definition", "--path", absolutePath, "--json"],
 			ctx.signal,
 		);
 		const data = result.envelope?.data;
@@ -965,7 +965,7 @@ export default function furrowExtension(pi: ExtensionAPI) {
 
 		const result = await runFurrowJson<ValidateOwnershipData>(
 			root,
-			["validate", "ownership", "--path", absolutePath],
+			["validate", "ownership", "--path", absolutePath, "--json"],
 			ctx.signal,
 		);
 		const data = result.envelope?.data;

@@ -294,6 +294,84 @@ gate_policy: supervised
 	assertHasCode(t, envs, "definition_acceptance_criteria_placeholder")
 }
 
+func TestValidateDefinitionContextPointerExtraKey(t *testing.T) {
+	resetTaxonomyCacheForTest()
+	t.Cleanup(resetTaxonomyCacheForTest)
+	tx, _ := LoadTaxonomy()
+
+	body := `objective: "x"
+deliverables:
+  - name: thing
+    acceptance_criteria:
+      - "do thing"
+context_pointers:
+  - path: "/tmp"
+    note: "n"
+    bogus_key: yes
+constraints: []
+gate_policy: supervised
+`
+	path := writeDefinitionFixture(t, t.TempDir(), body)
+	envs := validateDefinition(path, tx)
+	env := assertHasCode(t, envs, "definition_unknown_keys")
+	if !strings.Contains(env.Message, "context_pointers") || !strings.Contains(env.Message, "bogus_key") {
+		t.Fatalf("expected context_pointers/bogus_key in message: %q", env.Message)
+	}
+}
+
+func TestValidateDefinitionSupersedesExtraKey(t *testing.T) {
+	resetTaxonomyCacheForTest()
+	t.Cleanup(resetTaxonomyCacheForTest)
+	tx, _ := LoadTaxonomy()
+
+	body := `objective: "x"
+deliverables:
+  - name: thing
+    acceptance_criteria:
+      - "do thing"
+context_pointers:
+  - path: "/tmp"
+    note: "n"
+constraints: []
+gate_policy: supervised
+supersedes:
+  commit: abc123
+  row: foo-bar
+  extra: nope
+`
+	path := writeDefinitionFixture(t, t.TempDir(), body)
+	envs := validateDefinition(path, tx)
+	env := assertHasCode(t, envs, "definition_unknown_keys")
+	if !strings.Contains(env.Message, "supersedes") || !strings.Contains(env.Message, "extra") {
+		t.Fatalf("expected supersedes/extra in message: %q", env.Message)
+	}
+}
+
+func TestValidateDefinitionDeliverableGateInvalid(t *testing.T) {
+	resetTaxonomyCacheForTest()
+	t.Cleanup(resetTaxonomyCacheForTest)
+	tx, _ := LoadTaxonomy()
+
+	body := `objective: "x"
+deliverables:
+  - name: thing
+    acceptance_criteria:
+      - "do thing"
+    gate: robot
+context_pointers:
+  - path: "/tmp"
+    note: "n"
+constraints: []
+gate_policy: supervised
+`
+	path := writeDefinitionFixture(t, t.TempDir(), body)
+	envs := validateDefinition(path, tx)
+	env := assertHasCode(t, envs, "definition_unknown_keys")
+	if !strings.Contains(env.Message, "gate") || !strings.Contains(env.Message, "robot") {
+		t.Fatalf("expected gate/robot in message: %q", env.Message)
+	}
+}
+
 func TestValidateDefinitionEmptyAcceptanceCriteria(t *testing.T) {
 	resetTaxonomyCacheForTest()
 	t.Cleanup(resetTaxonomyCacheForTest)
