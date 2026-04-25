@@ -8,12 +8,14 @@
 // (D5) extend this file with their own contract tests; do not delete this file
 // or the scaffolding around it.
 
-import { describe, expect, test, beforeAll } from "bun:test";
+import { describe, expect, test, beforeAll, mock } from "bun:test";
 import { mkdtemp, mkdir, writeFile, rm, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+
+import { decideValidateDefinitionAction, decideOwnershipAction } from "./validate-actions.ts";
 
 const execFileAsync = promisify(execFile);
 
@@ -62,6 +64,94 @@ context_pointers:
 constraints: []
 gate_policy: bogus_value
 `;
+
+describe("decideValidateDefinitionAction (D4 handler unit)", () => {
+	test("verdict=valid → undefined (silent allow)", () => {
+		const action = decideValidateDefinitionAction({ verdict: "valid" });
+		expect(action).toBeUndefined();
+	});
+
+	test("undefined data → undefined (silent allow)", () => {
+		const action = decideValidateDefinitionAction(undefined);
+		expect(action).toBeUndefined();
+	});
+
+	test("verdict=invalid → block with concatenated messages", () => {
+		const action = decideValidateDefinitionAction({
+			verdict: "invalid",
+			errors: [
+				{ code: "definition_objective_missing", category: "definition", severity: "block", message: "missing objective", remediation_hint: "add it", confirmation_path: "block" },
+			],
+		}) as any;
+		expect(action.block).toBe(true);
+		expect(action.reason).toContain("missing objective");
+		expect(action.reason).toContain("(hint: add it)");
+	});
+
+	test("verdict=invalid with notify → notify is called with concatenated message", () => {
+		const calls: Array<[string, string]> = [];
+		const notify = (msg: string, level: any) => { calls.push([msg, level]); };
+		decideValidateDefinitionAction({
+			verdict: "invalid",
+			errors: [
+				{ code: "x", category: "y", severity: "block", message: "msg1", remediation_hint: "", confirmation_path: "block" },
+				{ code: "x", category: "y", severity: "block", message: "msg2", remediation_hint: "", confirmation_path: "block" },
+			],
+		}, notify);
+		expect(calls.length).toBe(1);
+		expect(calls[0][1]).toBe("error");
+		expect(calls[0][0]).toContain("msg1");
+		expect(calls[0][0]).toContain("msg2");
+	});
+
+	test("verdict=invalid with empty errors → fallback message + block", () => {
+		const action = decideValidateDefinitionAction({ verdict: "invalid", errors: [] }) as any;
+		expect(action.block).toBe(true);
+		expect(action.reason).toBe("definition.yaml validation failed");
+	});
+});
+
+describe("decideOwnershipAction (D5 handler unit)", () => {
+	test("verdict=in_scope → undefined (silent allow)", async () => {
+		const action = await decideOwnershipAction({ verdict: "in_scope", matched_deliverable: "x", matched_glob: "y" });
+		expect(action).toBeUndefined();
+	});
+
+	test("verdict=not_applicable → undefined (silent allow)", async () => {
+		const action = await decideOwnershipAction({ verdict: "not_applicable", reason: "no_active_row" });
+		expect(action).toBeUndefined();
+	});
+
+	test("verdict=out_of_scope without confirm → { block: false } (degraded silent allow)", async () => {
+		const action = await decideOwnershipAction({
+			verdict: "out_of_scope",
+			envelope: { code: "ownership_outside_scope", category: "ownership", severity: "warn", message: "outside", remediation_hint: "", confirmation_path: "warn-with-confirm" },
+		}) as any;
+		expect(action.block).toBe(false);
+	});
+
+	test("verdict=out_of_scope + confirm-yes → { block: false }", async () => {
+		const confirm = mock(async (_title: string, _body: string) => true);
+		const action = await decideOwnershipAction({
+			verdict: "out_of_scope",
+			envelope: { code: "ownership_outside_scope", category: "ownership", severity: "warn", message: "outside", remediation_hint: "", confirmation_path: "warn-with-confirm" },
+		}, confirm) as any;
+		expect(action.block).toBe(false);
+		expect(confirm).toHaveBeenCalledTimes(1);
+		expect(confirm.mock.calls[0][0]).toBe("This file is outside the deliverable file_ownership. Proceed anyway?");
+		expect(confirm.mock.calls[0][1]).toBe("outside");
+	});
+
+	test("verdict=out_of_scope + confirm-no → { block: true, reason }", async () => {
+		const confirm = mock(async (_title: string, _body: string) => false);
+		const action = await decideOwnershipAction({
+			verdict: "out_of_scope",
+			envelope: { code: "ownership_outside_scope", category: "ownership", severity: "warn", message: "outside", remediation_hint: "", confirmation_path: "warn-with-confirm" },
+		}, confirm) as any;
+		expect(action.block).toBe(true);
+		expect(action.reason).toBe("outside");
+	});
+});
 
 describe("furrow validate ownership (D2 contract — consumed by D5 Pi handler)", () => {
 	let workDir: string;

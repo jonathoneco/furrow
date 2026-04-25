@@ -277,27 +277,12 @@ type ArchiveData = {
 		: never;
 };
 
-type ValidationErrorEnvelope = {
-	code: string;
-	category: string;
-	severity: string;
-	message: string;
-	remediation_hint: string;
-	confirmation_path: string;
-};
-
-type ValidateDefinitionData = {
-	verdict: "valid" | "invalid";
-	errors?: ValidationErrorEnvelope[];
-};
-
-type ValidateOwnershipData = {
-	verdict: "in_scope" | "out_of_scope" | "not_applicable";
-	matched_deliverable?: string;
-	matched_glob?: string;
-	reason?: string;
-	envelope?: ValidationErrorEnvelope;
-};
+import {
+	decideValidateDefinitionAction,
+	decideOwnershipAction,
+	type ValidateDefinitionData,
+	type ValidateOwnershipData,
+} from "./validate-actions.ts";
 
 type CliResult<T = any> = {
 	exitCode: number;
@@ -936,19 +921,7 @@ export default function furrowExtension(pi: ExtensionAPI) {
 			["validate", "definition", "--path", absolutePath, "--json"],
 			ctx.signal,
 		);
-		const data = result.envelope?.data;
-		if (!data || data.verdict === "valid") return undefined;
-
-		const errors = data.errors ?? [];
-		const lines = errors.map((e) => {
-			const hint = e.remediation_hint ? ` (hint: ${e.remediation_hint})` : "";
-			return `${e.message}${hint}`;
-		});
-		const message = lines.join("; ") || "definition.yaml validation failed";
-		if (ctx.hasUI) {
-			ctx.ui.notify(message, "error");
-		}
-		return { block: true, reason: message };
+		return decideValidateDefinitionAction(result.envelope?.data, ctx.hasUI ? ctx.ui.notify.bind(ctx.ui) : undefined);
 	});
 
 	// Ownership warn handler — D5 of pre-write-validation-go-first.
@@ -968,20 +941,7 @@ export default function furrowExtension(pi: ExtensionAPI) {
 			["validate", "ownership", "--path", absolutePath, "--json"],
 			ctx.signal,
 		);
-		const data = result.envelope?.data;
-		if (!data || data.verdict !== "out_of_scope") return undefined;
-
-		const message = data.envelope?.message ?? "file is outside file_ownership for any deliverable in the active row";
-		if (!ctx.hasUI) {
-			// Without an interactive surface, fall back to non-blocking allow.
-			return { block: false };
-		}
-		const confirmed = await ctx.ui.confirm(
-			"This file is outside the deliverable file_ownership. Proceed anyway?",
-			message,
-		);
-		if (confirmed) return { block: false };
-		return { block: true, reason: message };
+		return decideOwnershipAction(result.envelope?.data, ctx.hasUI ? ctx.ui.confirm.bind(ctx.ui) : undefined);
 	});
 
 	pi.registerCommand("work", {

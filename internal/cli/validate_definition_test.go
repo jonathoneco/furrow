@@ -392,6 +392,95 @@ gate_policy: supervised
 	assertHasCode(t, envs, "definition_acceptance_criteria_placeholder")
 }
 
+func TestNonEmptyString(t *testing.T) {
+	cases := []struct {
+		in   any
+		want bool
+	}{
+		{"hello", true},
+		{"", false},
+		{"  ", false},
+		{"\t\n", false},
+		{nil, false},
+		{42, false},
+		{[]string{"x"}, false},
+	}
+	for _, c := range cases {
+		if got := nonEmptyString(c.in); got != c.want {
+			t.Errorf("nonEmptyString(%#v) = %v, want %v", c.in, got, c.want)
+		}
+	}
+}
+
+func TestValidModeMissing(t *testing.T) {
+	if validModeMissing("code") {
+		t.Error("'code' should be a valid mode")
+	}
+	if validModeMissing("research") {
+		t.Error("'research' should be a valid mode")
+	}
+	if !validModeMissing("bogus") {
+		t.Error("'bogus' should be flagged as missing/invalid")
+	}
+	if !validModeMissing("") {
+		t.Error("empty mode should be flagged")
+	}
+}
+
+func TestHasPlaceholderText(t *testing.T) {
+	cases := []struct {
+		in   string
+		want bool
+	}{
+		{"TODO write me", true},
+		{"  TODO leading whitespace", true},
+		{"TBD", true},
+		{"tbd: needs design", true},
+		{"XXX revisit", true},
+		{"placeholder", true},
+		{"PlAcEhOlDeR mixed case", true},
+		{"the outbound queue is processed", false}, // 'tbd' substring inside 'outbound'
+		{"Replicates frw validate-definition behavior including TODO/TBD detection", false}, // descriptive prose
+		{"the system has todos in the queue", false}, // 'todo' is part of 'todos' — not first token
+		{"", false},
+		{"   ", false},
+	}
+	for _, c := range cases {
+		if got := hasPlaceholderText(c.in); got != c.want {
+			t.Errorf("hasPlaceholderText(%q) = %v, want %v", c.in, got, c.want)
+		}
+	}
+}
+
+func TestRunValidateDispatcher(t *testing.T) {
+	resetTaxonomyCacheForTest()
+	t.Cleanup(resetTaxonomyCacheForTest)
+
+	cases := []struct {
+		name        string
+		args        []string
+		wantExit    int
+		wantContain string
+	}{
+		{"no args lists subcommands", []string{}, 0, "Available subcommands: definition, ownership"},
+		{"help flag", []string{"--help"}, 0, "Available subcommands"},
+		{"unknown subcommand", []string{"bogus"}, 1, ""},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			var stdout, stderr strings.Builder
+			app := New(&stdout, &stderr)
+			exit := app.runValidate(c.args)
+			if exit != c.wantExit {
+				t.Fatalf("exit: got %d, want %d (stderr=%q)", exit, c.wantExit, stderr.String())
+			}
+			if c.wantContain != "" && !strings.Contains(stdout.String()+stderr.String(), c.wantContain) {
+				t.Fatalf("output missing %q: stdout=%q stderr=%q", c.wantContain, stdout.String(), stderr.String())
+			}
+		})
+	}
+}
+
 // assertHasCode finds the first envelope with code; fails the test if absent.
 // Returns the matching envelope so callers can make further assertions on it.
 func assertHasCode(t *testing.T, envs []BlockerEnvelope, code string) BlockerEnvelope {
