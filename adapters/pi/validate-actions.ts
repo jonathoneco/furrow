@@ -53,6 +53,33 @@ export function decideValidateDefinitionAction(
 	return { block: true, reason: message };
 }
 
+// runDefinitionValidationHandler is the full D4 handler logic, factored to
+// take the gate inputs + an injected runFurrowJson sink. The Pi runtime wires
+// this from inside pi.on("tool_call", ...). Direct unit tests exercise this
+// end-to-end against fixture verdict envelopes.
+export async function runDefinitionValidationHandler(
+	toolName: string,
+	absolutePath: string | undefined,
+	runJson: (args: string[]) => Promise<{ data: ValidateDefinitionData | undefined }>,
+	notify?: Notify,
+): Promise<HandlerAction> {
+	if (!shouldInterceptForDefinitionValidation(toolName, absolutePath)) return undefined;
+	const result = await runJson(["validate", "definition", "--path", absolutePath!, "--json"]);
+	return decideValidateDefinitionAction(result.data, notify);
+}
+
+// runOwnershipWarnHandler is the full D5 handler logic, factored similarly.
+export async function runOwnershipWarnHandler(
+	toolName: string,
+	absolutePath: string | undefined,
+	runJson: (args: string[]) => Promise<{ data: ValidateOwnershipData | undefined }>,
+	confirm?: Confirm,
+): Promise<HandlerAction> {
+	if (!shouldInterceptForOwnershipWarn(toolName, absolutePath)) return undefined;
+	const result = await runJson(["validate", "ownership", "--path", absolutePath!, "--json"]);
+	return decideOwnershipAction(result.data, confirm);
+}
+
 // shouldInterceptForDefinitionValidation reports whether D4's handler should
 // fire on a given tool event. Mirrors the real handler's path-filter gate
 // (toolName ∈ {edit, write} AND target path ends with /definition.yaml) so

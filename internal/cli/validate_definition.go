@@ -287,12 +287,36 @@ func validateDefinition(path string, tx *Taxonomy) []BlockerEnvelope {
 		}
 	}
 
-	// context_pointers[] additionalProperties:false
-	if rawCP, ok := raw["context_pointers"].([]any); ok {
-		for j, item := range rawCP {
+	// context_pointers: required + minItems:1 + per-item required path/note + additionalProperties:false
+	rawCP, hasCP := raw["context_pointers"]
+	if !hasCP {
+		envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+			"path": displayPath,
+			"keys": "(missing required field) context_pointers",
+		}))
+	} else if cpArr, ok := rawCP.([]any); ok {
+		if len(cpArr) == 0 {
+			envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+				"path": displayPath,
+				"keys": "context_pointers: minItems:1 violated (array is empty)",
+			}))
+		}
+		for j, item := range cpArr {
 			cp, ok := item.(map[string]any)
 			if !ok {
 				continue
+			}
+			if !nonEmptyString(cp["path"]) {
+				envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+					"path": displayPath,
+					"keys": fmt.Sprintf("context_pointers[%d]: missing required field 'path'", j),
+				}))
+			}
+			if !nonEmptyString(cp["note"]) {
+				envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+					"path": displayPath,
+					"keys": fmt.Sprintf("context_pointers[%d]: missing required field 'note'", j),
+				}))
 			}
 			var unknown []string
 			for k := range cp {
@@ -308,6 +332,14 @@ func validateDefinition(path string, tx *Taxonomy) []BlockerEnvelope {
 				}))
 			}
 		}
+	}
+
+	// constraints required (top-level)
+	if _, hasConstraints := raw["constraints"]; !hasConstraints {
+		envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+			"path": displayPath,
+			"keys": "(missing required field) constraints",
+		}))
 	}
 
 	// supersedes additionalProperties:false (optional block)
