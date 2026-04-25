@@ -110,12 +110,13 @@ Phase 8 — dual-runtime parity + Pi-native + research [PLANNED, after Phases 3-
 ### Tracks
 
 #### `work/pi-row-audit-cleanup`
-**Branch:** `work/pi-row-audit-cleanup` | **Sessions:** ~2 | **Conflict risk:** low
+**Branch:** `work/pi-row-audit-cleanup` | **Sessions:** ~3 | **Conflict risk:** low
 - D1: `furrow row repair-deliverables` Go CLI command (atomic backfill)
 - D2: Apply D1 to `pi-step-ceremony-and-artifact-enforcement.state.json.deliverables` ({} → populated)
 - D3: Archive `pi-adapter-foundation` with supersedence evidence
 - D4: Edit `pi-step-ceremony.../handoff.md:62` (remove dangling-successor)
-- **Why together:** all are accounting/cleanup actions that must complete before validation work, and D1 is the new Go CLI that does D2.
+- D5: Add `roadmap-row-cluster-machine-readable-representation` work — extend `alm triage` to read existing curated `phases[].rows[]` and preserve them on regen (with `--regenerate-from-todos` for explicit override). Closes the yaml↔md sync gap surfaced post-archive of `migration-state-of-the-union`. **Promoted from Phase 7 to Phase 3** so the conformed `roadmap.yaml` survives future regenerations.
+- **Why together:** all are accounting/cleanup actions; D1 is the new Go CLI that does D2; D5 protects the curated roadmap.yaml that surfaces this very row in `alm next`. Without D5, `alm triage` would blow away the curation.
 
 #### `work/pre-write-validation-go-first`
 **Branch:** `work/pre-write-validation-go-first` | **Sessions:** ~3 | **Conflict risk:** low
@@ -240,7 +241,7 @@ Phase 8 — dual-runtime parity + Pi-native + research [PLANNED, after Phases 3-
 - `cli-introspection-suite` (umbrella; first slice = Tier 1: history, validate, delete --force, repair-deliverables already in Phase 3)
 - `cli-architecture-overhaul-slice-2` (umbrella; this row's first slice)
 - `harness-parallel-dispatch-race` (`furrow row delete` + worktree-per-deliverable address this)
-- `roadmap-row-cluster-machine-readable-representation` (extend `alm triage` to consolidate todos into row clusters per /furrow:triage step 6a; closes the yaml↔md sync gap)
+- (note: `roadmap-row-cluster-machine-readable-representation` was promoted to Phase 3's `pi-row-audit-cleanup` D5 to ship before regen could overwrite the conformed roadmap.yaml)
 
 #### `work/worktree-and-merge-pipeline`
 **Branch:** `work/worktree-and-merge-pipeline` | **Sessions:** ~4 | **Conflict risk:** medium (depends on cli-introspection)
