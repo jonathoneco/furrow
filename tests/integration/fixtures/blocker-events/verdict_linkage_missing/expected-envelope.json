@@ -1,0 +1,8 @@
+{
+  "code": "verdict_linkage_missing",
+  "category": "gate",
+  "severity": "block",
+  "message": "row {row}: gate '{boundary}' has no linked verdict file",
+  "remediation_hint": "Evaluated gates require a verdict file under gate-verdicts/. Run the evaluator subagent to produce one before recording the gate.",
+  "confirmation_path": "block"
+}

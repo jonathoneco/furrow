@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "event_type": "pre_commit_bakfiles",
+  "payload": {
+    "staged_paths": [
+      "bin/foo.bak"
+    ]
+  }
+}

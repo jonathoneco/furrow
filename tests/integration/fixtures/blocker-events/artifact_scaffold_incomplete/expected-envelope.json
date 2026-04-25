@@ -1,0 +1,8 @@
+{
+  "code": "artifact_scaffold_incomplete",
+  "category": "artifact",
+  "severity": "block",
+  "message": "current-step artifact {artifact_id} at {path} is still an incomplete scaffold",
+  "remediation_hint": "Replace the incomplete scaffold with real step content, then rerun furrow row complete or /work --complete.",
+  "confirmation_path": "block"
+}

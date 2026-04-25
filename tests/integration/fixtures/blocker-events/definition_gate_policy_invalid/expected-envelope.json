@@ -1,0 +1,8 @@
+{
+  "code": "definition_gate_policy_invalid",
+  "category": "definition",
+  "severity": "block",
+  "message": "{path}: gate_policy '{value}' is not one of: supervised, delegated, autonomous",
+  "remediation_hint": "Set gate_policy to one of the valid values",
+  "confirmation_path": "block"
+}

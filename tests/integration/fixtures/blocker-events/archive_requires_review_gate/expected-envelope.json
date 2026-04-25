@@ -1,0 +1,8 @@
+{
+  "code": "archive_requires_review_gate",
+  "category": "archive",
+  "severity": "block",
+  "message": "row cannot archive until a passing ->review gate exists",
+  "remediation_hint": "Record a passing implement->review gate before archiving so the review boundary has durable evidence.",
+  "confirmation_path": "block"
+}

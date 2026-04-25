@@ -1,0 +1,8 @@
+{
+  "code": "script_guard_internal_invocation",
+  "category": "scaffold",
+  "severity": "block",
+  "message": "bin/frw.d/ scripts are internal — use frw, rws, alm, or sds (command: bash bin/frw.d/hooks/foo.sh)",
+  "remediation_hint": "Invoke the public CLI entry points (frw, rws, alm, sds). Direct invocation of bin/frw.d/ scripts is blocked.",
+  "confirmation_path": "block"
+}

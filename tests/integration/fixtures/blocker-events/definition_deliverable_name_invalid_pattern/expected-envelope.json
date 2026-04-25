@@ -1,0 +1,8 @@
+{
+  "code": "definition_deliverable_name_invalid_pattern",
+  "category": "definition",
+  "severity": "block",
+  "message": "{path}: deliverable name '{name}' does not match kebab-case pattern ^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+  "remediation_hint": "Rename the deliverable to lowercase with hyphen separators only",
+  "confirmation_path": "block"
+}

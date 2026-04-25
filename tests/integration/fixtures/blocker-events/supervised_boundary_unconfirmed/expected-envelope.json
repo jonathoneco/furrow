@@ -1,0 +1,8 @@
+{
+  "code": "supervised_boundary_unconfirmed",
+  "category": "gate",
+  "severity": "block",
+  "message": "row {row}: supervised gate boundary '{boundary}' requires explicit human approval",
+  "remediation_hint": "Provide explicit human approval (decided_by=human with evidence) before crossing a supervised boundary.",
+  "confirmation_path": "block"
+}

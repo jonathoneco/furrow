@@ -1,0 +1,8 @@
+{
+  "code": "definition_acceptance_criteria_placeholder",
+  "category": "definition",
+  "severity": "block",
+  "message": "{path}: deliverable '{name}' has placeholder text in acceptance_criteria: {value}",
+  "remediation_hint": "Replace placeholder strings (TODO, TBD, XXX, placeholder) with concrete acceptance criteria",
+  "confirmation_path": "block"
+}

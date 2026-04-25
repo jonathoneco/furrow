@@ -1,0 +1,13 @@
+{
+  "version": "1",
+  "event_type": "pre_commit_typechange",
+  "payload": {
+    "typechange_entries": [
+      {
+        "path": "bin/alm",
+        "new_mode": "120000",
+        "status": "T"
+      }
+    ]
+  }
+}

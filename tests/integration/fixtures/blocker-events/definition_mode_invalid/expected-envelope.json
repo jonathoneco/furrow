@@ -1,0 +1,8 @@
+{
+  "code": "definition_mode_invalid",
+  "category": "definition",
+  "severity": "block",
+  "message": "{path}: mode '{value}' is not one of: code, research",
+  "remediation_hint": "Set mode to either code (default) or research",
+  "confirmation_path": "block"
+}

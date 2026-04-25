@@ -1,0 +1,8 @@
+{
+  "code": "definition_yaml_invalid",
+  "category": "definition",
+  "severity": "block",
+  "message": "{path}: definition.yaml failed schema validation: {detail}",
+  "remediation_hint": "Inspect the YAML syntax and structural conformance against schemas/definition.schema.json",
+  "confirmation_path": "block"
+}

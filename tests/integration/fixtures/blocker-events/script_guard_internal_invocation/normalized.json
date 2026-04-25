@@ -1,0 +1,7 @@
+{
+  "version": "1",
+  "event_type": "pre_bash_internal_script",
+  "payload": {
+    "command": "bash bin/frw.d/hooks/foo.sh"
+  }
+}

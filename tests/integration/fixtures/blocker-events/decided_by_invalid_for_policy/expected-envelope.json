@@ -1,0 +1,8 @@
+{
+  "code": "decided_by_invalid_for_policy",
+  "category": "gate",
+  "severity": "block",
+  "message": "row {row}: decided_by '{decided_by}' is not valid for gate policy '{policy}'",
+  "remediation_hint": "Match decided_by to the row's gate_policy: supervised → human, delegated → evaluator, autonomous → automated.",
+  "confirmation_path": "block"
+}

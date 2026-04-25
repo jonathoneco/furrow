@@ -1,0 +1,8 @@
+{
+  "code": "state_json_direct_write",
+  "category": "state-mutation",
+  "severity": "block",
+  "message": "state.json is Furrow-exclusive — use frw update-state (path: /tmp/fakerow/.furrow/rows/r1/state.json)",
+  "remediation_hint": "Route the mutation through the canonical CLI (frw update-state, rws transition, rws complete-deliverable). Direct edits to state.json are blocked by the state-guard hook.",
+  "confirmation_path": "block"
+}

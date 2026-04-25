@@ -1,0 +1,8 @@
+{
+  "code": "artifact_validation_failed",
+  "category": "artifact",
+  "severity": "block",
+  "message": "current-step artifact {artifact_id} at {path} failed validation",
+  "remediation_hint": "Address the reported validation findings in the artifact, then rerun furrow row status or /work.",
+  "confirmation_path": "block"
+}

@@ -1,0 +1,21 @@
+{
+  "toolName": "git_commit",
+  "input": {
+    "path": "bin/alm"
+  },
+  "_driver_branch": "guard",
+  "_driver_event_type": "pre_commit_typechange",
+  "_driver_normalized": {
+    "version": "1",
+    "event_type": "pre_commit_typechange",
+    "payload": {
+      "typechange_entries": [
+        {
+          "path": "bin/alm",
+          "new_mode": "120000",
+          "status": "T"
+        }
+      ]
+    }
+  }
+}

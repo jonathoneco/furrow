@@ -1,0 +1,20 @@
+{
+  "toolName": "stop",
+  "input": {
+    "row": "r1"
+  },
+  "_driver_branch": "guard",
+  "_driver_event_type": "stop_summary_validation",
+  "_driver_normalized": {
+    "version": "1",
+    "event_type": "stop_summary_validation",
+    "row": "r1",
+    "step": "plan",
+    "payload": {
+      "row": "r1",
+      "step": "plan",
+      "summary_path": "__FIXTURE_DIR__/summary.md",
+      "last_decided_by": "human"
+    }
+  }
+}

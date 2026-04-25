@@ -1,0 +1,8 @@
+{
+  "code": "definition_deliverable_name_missing",
+  "category": "definition",
+  "severity": "block",
+  "message": "{path}: deliverable at index {index} is missing required field 'name'",
+  "remediation_hint": "Add a kebab-case 'name:' field to the deliverable",
+  "confirmation_path": "block"
+}

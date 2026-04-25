@@ -1,0 +1,8 @@
+{
+  "code": "seed_store_unavailable",
+  "category": "seed",
+  "severity": "block",
+  "message": "seed store could not be read",
+  "remediation_hint": "Repair the linked seed state so it matches the row step, then retry the checkpoint through the backend.",
+  "confirmation_path": "block"
+}

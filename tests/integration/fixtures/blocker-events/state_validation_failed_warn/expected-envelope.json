@@ -1,0 +1,8 @@
+{
+  "code": "state_validation_failed_warn",
+  "category": "state-mutation",
+  "severity": "warn",
+  "message": "state.json validation failed for r1",
+  "remediation_hint": "Run `rws status {row}` and inspect the reported issues; the state may have drifted from schema.",
+  "confirmation_path": "silent"
+}
