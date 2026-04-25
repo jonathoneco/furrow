@@ -198,7 +198,7 @@ func (a *App) runRowTransition(args []string) int {
 
 	artifacts := currentStepArtifacts(root, rowName, state)
 	seed := rowSeedSurface(root, state)
-	blockers := rowBlockers(state, seed, artifacts)
+	blockers := rowBlockers(state, seed, artifacts, rowBlockersOpts{})
 	if len(blockers) > 0 {
 		return a.fail("furrow row transition", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("row %q is blocked from advancing", rowName), details: map[string]any{"blockers": blockers, "artifact_validation": summarizeArtifactValidation(artifacts)}}, flags.json)
 	}
@@ -398,7 +398,7 @@ func (a *App) runRowComplete(args []string) int {
 }
 
 func (a *App) runRowArchive(args []string) int {
-	positionals, flags, err := parseArgs(args, nil, nil)
+	positionals, flags, err := parseArgs(args, map[string]bool{"supersedes-confirmed": true}, nil)
 	if err != nil {
 		return a.fail("furrow row archive", err, false)
 	}
@@ -432,7 +432,11 @@ func (a *App) runRowArchive(args []string) int {
 
 	artifacts := currentStepArtifacts(root, rowName, state)
 	seed := rowSeedSurface(root, state)
-	blockers := rowBlockers(state, seed, artifacts)
+	archiveOpts := rowBlockersOpts{
+		SupersedesConfirmed:  flags.values["supersedes-confirmed"],
+		DefinitionSupersedes: definitionSupersedes(root, rowName),
+	}
+	blockers := rowBlockers(state, seed, artifacts, archiveOpts)
 	if len(blockers) > 0 {
 		return a.fail("furrow row archive", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("row %q is blocked from archiving", rowName), details: map[string]any{"blockers": blockers}}, flags.json)
 	}
@@ -441,6 +445,12 @@ func (a *App) runRowArchive(args []string) int {
 		return a.fail("furrow row archive", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("row %q cannot archive without a passing ->review gate", rowName)}, flags.json)
 	}
 	archiveCeremony := archiveCeremonySurface(root, rowName, state, artifacts)
+
+	// Build phase_a notes: include supersedence acknowledgement if applicable.
+	phaseANotes := "backend-canonical archive checkpoint evidence for the narrow /work loop"
+	if archiveOpts.DefinitionSupersedes != nil && archiveOpts.SupersedesConfirmed != "" {
+		phaseANotes = fmt.Sprintf("supersedence confirmed: %s", archiveOpts.SupersedesConfirmed)
+	}
 
 	now := nowRFC3339()
 	boundary := "review->archive"
@@ -451,6 +461,7 @@ func (a *App) runRowArchive(args []string) int {
 		"timestamp": now,
 		"notes":     "backend-canonical archive checkpoint evidence for the narrow /work loop",
 		"phase_a": map[string]any{
+			"notes":               phaseANotes,
 			"review_gate":         latestGateSummary(map[string]any{"gates": []any{reviewGate}}),
 			"seed":                seed,
 			"artifacts":           artifacts,
@@ -596,7 +607,7 @@ func buildRowStatusData(root, rowName string, state map[string]any, resolution, 
 	nextTransitions := nextValidTransitions(state, steps)
 	seed := rowSeedSurface(root, state)
 	artifacts := currentStepArtifacts(root, rowName, state)
-	blockers := rowBlockers(state, seed, artifacts)
+	blockers := rowBlockers(state, seed, artifacts, rowBlockersOpts{})
 	checkpoint := rowCheckpointSurface(root, rowName, state, blockers, seed, artifacts)
 	rowWarnings := append([]map[string]any{}, warnings...)
 	if seedState, _ := seed["state"].(string); seedState == "missing" {
