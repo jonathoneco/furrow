@@ -10,6 +10,30 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
+const repairDeliverablesUsage = `furrow row repair-deliverables
+
+Usage:
+  furrow row repair-deliverables <row-name> --manifest <path> [--force-active] [--replace] [--json]
+
+Arguments:
+  <row-name>          Name of the row to repair
+
+Flags:
+  --manifest <path>   Path to the repair-deliverables manifest (YAML or JSON)
+  --force-active      Allow repairing rows that are not archived
+  --replace           Overwrite existing deliverables instead of skipping them
+  --json              Emit JSON envelope output
+  --help, -h          Show this help
+
+Exit codes:
+  0  Success
+  1  Usage / not archived (without --force-active)
+  2  Row not found
+  3  Manifest not found
+  4  Schema validation failed
+  5  Conflict (deliverable already exists, use --replace)
+  6  Write error`
+
 // repairManifest is the in-memory representation of the repair-deliverables manifest.
 type repairManifest struct {
 	Version      string              `yaml:"version"       json:"version"`
@@ -33,6 +57,14 @@ type evidencePaths struct {
 
 // runRowRepairDeliverables implements: furrow row repair-deliverables <row-name> --manifest <path> [--force-active] [--replace] [--json]
 func (a *App) runRowRepairDeliverables(args []string) int {
+	// Handle --help / -h before parseArgs so unknown-flag doesn't fire.
+	for _, arg := range args {
+		if arg == "--help" || arg == "-h" {
+			_, _ = fmt.Fprintln(a.stdout, repairDeliverablesUsage)
+			return 0
+		}
+	}
+
 	positionals, flags, err := parseArgs(args,
 		map[string]bool{"manifest": true},
 		map[string]bool{"force-active": true, "replace": true},
@@ -120,6 +152,63 @@ func (a *App) runRowRepairDeliverables(args []string) int {
 			code:    "manifest_not_found",
 			message: fmt.Sprintf("manifest not found: %s", manifestPath),
 		}, jsonOut)
+	}
+
+	// Parse into a raw map first so we can check for unknown fields (Fix 2).
+	var rawManifest map[string]any
+	if err := yaml.Unmarshal(manifestBytes, &rawManifest); err != nil {
+		return a.fail("furrow row repair-deliverables", &cliError{
+			exit:    4,
+			code:    "schema_validation_failed",
+			message: fmt.Sprintf("manifest parse error: %s", err.Error()),
+		}, jsonOut)
+	}
+
+	// Check for unknown top-level fields.
+	if err := checkUnknownKeys(rawManifest, []string{"version", "decided_by", "commit", "deliverables"}, "top level"); err != nil {
+		return a.fail("furrow row repair-deliverables", &cliError{
+			exit:    4,
+			code:    "schema_validation_failed",
+			message: err.Error(),
+		}, jsonOut)
+	}
+
+	// Check for unknown fields in each deliverable and its evidence_paths entries.
+	if rawDelivs, ok := rawManifest["deliverables"]; ok {
+		if delivsSlice, ok := rawDelivs.([]any); ok {
+			for i, d := range delivsSlice {
+				dm, ok := d.(map[string]any)
+				if !ok {
+					continue
+				}
+				context := fmt.Sprintf("deliverables[%d]", i)
+				if err := checkUnknownKeys(dm, []string{"name", "status", "commit", "evidence_paths"}, context); err != nil {
+					return a.fail("furrow row repair-deliverables", &cliError{
+						exit:    4,
+						code:    "schema_validation_failed",
+						message: err.Error(),
+					}, jsonOut)
+				}
+				if rawEPs, ok := dm["evidence_paths"]; ok {
+					if epsSlice, ok := rawEPs.([]any); ok {
+						for j, ep := range epsSlice {
+							epm, ok := ep.(map[string]any)
+							if !ok {
+								continue
+							}
+							epContext := fmt.Sprintf("deliverables[%d].evidence_paths[%d]", i, j)
+							if err := checkUnknownKeys(epm, []string{"path", "lines", "note"}, epContext); err != nil {
+								return a.fail("furrow row repair-deliverables", &cliError{
+									exit:    4,
+									code:    "schema_validation_failed",
+									message: err.Error(),
+								}, jsonOut)
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
 	var manifest repairManifest
@@ -218,7 +307,7 @@ func (a *App) runRowRepairDeliverables(args []string) int {
 
 	state["deliverables"] = existingDeliverables
 
-	// 11. Append audit entry to sidecar JSONL.
+	// 11. Resolve absolute manifest path for audit entry.
 	absManifestPath := manifestPath
 	if !filepath.IsAbs(manifestPath) {
 		cwd, err := os.Getwd()
@@ -235,21 +324,23 @@ func (a *App) runRowRepairDeliverables(args []string) int {
 		"entries_added":   entriesAdded,
 		"entries_skipped": entriesSkipped,
 	}
-	if err := appendAuditEntry(root, rowName, auditEntry); err != nil {
-		return a.fail("furrow row repair-deliverables", &cliError{
-			exit:    6,
-			code:    "write_error",
-			message: fmt.Sprintf("failed to write audit entry: %s", err.Error()),
-		}, jsonOut)
-	}
 
-	// 12. Atomic write of state.json.
+	// 12. Atomic write of state.json FIRST (Fix 1: atomicity).
+	//     Only if the state write succeeds do we write the audit entry.
+	//     This prevents orphan audit entries for failed state writes.
 	if err := writeJSONMapAtomic(statePath, state); err != nil {
 		return a.fail("furrow row repair-deliverables", &cliError{
 			exit:    6,
 			code:    "write_error",
 			message: fmt.Sprintf("failed to write %s: %s", statePath, err.Error()),
 		}, jsonOut)
+	}
+
+	// 13. Append audit entry AFTER successful state write (Fix 1: atomicity).
+	//     If audit write fails, log warning to stderr but do NOT fail — state is
+	//     already consistent and the audit gap is the lesser evil.
+	if err := appendAuditEntry(root, rowName, auditEntry); err != nil {
+		_, _ = fmt.Fprintf(a.stderr, "warning: failed to write audit entry (state write succeeded): %s\n", err.Error())
 	}
 
 	data := map[string]any{
@@ -303,6 +394,21 @@ func validateRepairManifest(m *repairManifest) error {
 			if strings.TrimSpace(ep.Path) == "" {
 				return fmt.Errorf("%s.evidence_paths[%d].path is required and must be non-empty", prefix, j)
 			}
+		}
+	}
+	return nil
+}
+
+// checkUnknownKeys rejects any key in m that is not in the allowlist.
+// context describes the location in the manifest for error messages.
+func checkUnknownKeys(m map[string]any, allowlist []string, context string) error {
+	known := make(map[string]bool, len(allowlist))
+	for _, k := range allowlist {
+		known[k] = true
+	}
+	for k := range m {
+		if !known[k] {
+			return fmt.Errorf("unknown field %q in %s", k, context)
 		}
 	}
 	return nil
