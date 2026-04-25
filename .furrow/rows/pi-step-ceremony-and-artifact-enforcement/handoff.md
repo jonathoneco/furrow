@@ -57,16 +57,6 @@ Durable row artifacts:
 - Archive checkpoint evidence: `gates/review-to-archive.json`
 - Focus pointer: cleared through supported backend command after archival
 
-## Recommended next slice
-
-Stay inside roadmap row `work/pi-adapter-foundation` and todo `work-loop-boundary-hardening`, but continue in a new in-scope row rather than reopening this archived one.
-
-Next implementation emphasis inside that same roadmap scope:
-1. deepen review/gate evidence surfaces beyond the narrow checkpoint evidence now written by transition/archive
-2. add richer implement/review artifact validation, not just structural markdown/JSON checks
-3. expand archive from narrow preconditions into fuller promotion/disposition ceremony
-4. validate the shared blocker taxonomy against Claude-compatible flows once the backend contract stabilizes a bit more
-
 ## Constraints to preserve
 
 - `.furrow/` remains canonical

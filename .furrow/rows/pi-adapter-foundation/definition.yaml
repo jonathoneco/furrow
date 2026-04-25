@@ -43,3 +43,6 @@ constraints:
   - "Keep TypeScript thin and backend-driven."
   - "Do not drift into footer or dashboard polish unless directly required for current row semantics."
 gate_policy: supervised
+supersedes:
+  commit: e4adef5
+  row: pi-step-ceremony-and-artifact-enforcement
