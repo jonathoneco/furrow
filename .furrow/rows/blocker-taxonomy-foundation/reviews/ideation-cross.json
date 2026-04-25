@@ -1,0 +1,41 @@
+{
+  "type": "ideation",
+  "dimensions": [
+    {
+      "name": "Feasibility",
+      "verdict": "pass",
+      "evidence": "The objective is achievable within the stated constraints. The scope is concrete: define a canonical taxonomy, normalize events, route migrated emissions through Go, add coverage/parity tests, and reconcile three named documentation contradictions. The constraints reduce ambiguity by fixing ownership in Go, preserving the canonical 11 for backward compatibility, and allowing deferred hooks only with explicit rationale."
+    },
+    {
+      "name": "Alignment",
+      "verdict": "pass",
+      "evidence": "The deliverables map cleanly to the objective. `canonical-blocker-taxonomy` establishes the source of truth, `normalized-blocker-event-and-go-emission-path` defines the shared runtime path, `hook-migration-and-quality-audit` covers adoption and migration hygiene, `coverage-and-parity-tests` proves non-divergence and registry/emit-site integrity, and `doc-contradiction-reconciliation` closes the explicitly noted documentation gaps."
+    },
+    {
+      "name": "Dependency validity",
+      "verdict": "conditional",
+      "evidence": "The implied dependency chain is mostly correct: taxonomy before normalized event shape, normalized event shape before Go emission path and hook migration, and migration before full coverage/parity confidence. However, the framing does not explicitly state ordering dependencies between the five deliverables or identify prerequisite artifacts such as the authoritative list of the canonical 11 emit-bearing hooks/codes and the exact docs to reconcile. Those seem necessary to execute without interpretation drift."
+    },
+    {
+      "name": "Risk assessment",
+      "verdict": "pass",
+      "evidence": "The constraints are strong and targeted against scope creep. They prevent adapter-specific taxonomy leakage, keep enforcement centralized in Go, disallow silent registry drift, forbid vague partial migrations by default, limit docs work to named contradictions, and constrain quality audit outcomes to in-scope tightening plus explicit follow-up TODOs for larger refactors. Together these materially reduce the risk of the work expanding sideways."
+    },
+    {
+      "name": "Completeness",
+      "verdict": "conditional",
+      "evidence": "The framing is close to complete, but two practical gaps remain. First, success depends on explicitly naming the three contradictory docs or at least their file paths; without that, the doc-reconciliation scope is underspecified. Second, the framing does not explicitly require a stable normalized event contract/schema artifact, even though both runtimes are expected to invoke Go through normalized events and parity tests depend on a fixed shape. That may already be intended under the emission-path deliverable, but it should be stated more directly."
+    }
+  ],
+  "framing_quality": "sound",
+  "suggested_revisions": [
+    "Add an explicit dependency/order statement: taxonomy -> normalized event contract -> Go emission path -> hook migration -> coverage/parity tests -> doc reconciliation.",
+    "Name the exact three documents to be reconciled, preferably by file path, so the doc scope is fully bounded.",
+    "Explicitly identify the authoritative set of canonical blocker codes and the full list of expected migrated emit-bearing hooks, so coverage and migration acceptance are testable without inference.",
+    "State that the normalized blocker event shape is a versioned or otherwise fixed contract artifact used by both runtimes and by parity fixtures/tests.",
+    "Clarify whether acceptance criteria for `hook-migration-and-quality-audit` require all ~11 hooks to be migrated in this pass unless a written deferral rationale and follow-up TODO are present, to remove any residual ambiguity about N1 scope."
+  ],
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-25T18:05:55Z"
+}

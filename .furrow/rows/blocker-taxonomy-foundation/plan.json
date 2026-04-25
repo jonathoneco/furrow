@@ -1,0 +1,86 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": ["canonical-blocker-taxonomy", "doc-contradiction-reconciliation"],
+      "assignments": {
+        "canonical-blocker-taxonomy": {
+          "specialist": "migration-strategist",
+          "file_ownership": [
+            "schemas/blocker-taxonomy.yaml",
+            "schemas/blocker-taxonomy.schema.json",
+            "internal/cli/blocker_envelope.go",
+            "internal/cli/blocker_envelope_test.go",
+            "internal/cli/row_semantics.go",
+            "internal/cli/row.go",
+            "internal/cli/row_workflow.go",
+            "adapters/pi/furrow.ts",
+            "docs/architecture/pi-step-ceremony-and-artifact-enforcement.md"
+          ],
+          "skills": []
+        },
+        "doc-contradiction-reconciliation": {
+          "specialist": "documentation-generator:technical-writer",
+          "file_ownership": [
+            "docs/architecture/pi-almanac-operating-model.md",
+            "docs/architecture/migration-stance.md",
+            "docs/architecture/go-cli-contract.md",
+            "docs/architecture/documentation-authority-taxonomy.md"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 2,
+      "deliverables": ["normalized-blocker-event-and-go-emission-path"],
+      "assignments": {
+        "normalized-blocker-event-and-go-emission-path": {
+          "specialist": "go-specialist",
+          "file_ownership": [
+            "schemas/blocker-event.yaml",
+            "schemas/blocker-event.schema.json",
+            "cmd/furrow/**",
+            "internal/cli/**",
+            "bin/frw.d/lib/**"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 3,
+      "deliverables": ["hook-migration-and-quality-audit"],
+      "assignments": {
+        "hook-migration-and-quality-audit": {
+          "specialist": "shell-specialist",
+          "file_ownership": [
+            "bin/frw.d/hooks/**",
+            "bin/frw.d/lib/**",
+            "docs/architecture/blocker-emission-audit.md",
+            ".furrow/almanac/todos.yaml"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 4,
+      "deliverables": ["coverage-and-parity-tests"],
+      "assignments": {
+        "coverage-and-parity-tests": {
+          "specialist": "test-engineer",
+          "file_ownership": [
+            "tests/integration/test-blocker-coverage.sh",
+            "tests/integration/test-blocker-parity.sh",
+            "tests/integration/fixtures/blocker-events/**",
+            "adapters/pi/**"
+          ],
+          "skills": []
+        }
+      }
+    }
+  ],
+  "created_at": "2026-04-25T17:30:00Z",
+  "created_by": "blocker-taxonomy-foundation:plan"
+}

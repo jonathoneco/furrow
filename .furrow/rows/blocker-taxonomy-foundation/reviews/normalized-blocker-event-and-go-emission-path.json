@@ -1,0 +1,55 @@
+{
+  "type": "deliverable",
+  "deliverable": "normalized-blocker-event-and-go-emission-path",
+  "dimensions": [
+    {
+      "name": "Event-type catalog (C1)",
+      "verdict": "pass",
+      "evidence": "schemas/blocker-event.yaml lines 35-115 enumerate exactly the 10 event-type names verbatim from specs/shared-contracts.md §C1 lines 22-31: pre_write_state_json, pre_write_verdict, pre_write_correction_limit, pre_bash_internal_script, pre_commit_bakfiles, pre_commit_typechange, pre_commit_script_modes, stop_ideation_completeness, stop_summary_validation, stop_work_check. version: \"1\" set at line 33. Each entry has name, description, emitted_codes[], payload_keys[], required[]. TestGuardEventTypesMatchSharedContractsCatalog (internal/cli/guard_test.go:60-78) asserts the 10 names verbatim, and TestGuardHandlerRegistryParity (line 52-54) hard-codes the count == 10."
+    },
+    {
+      "name": "CLI contract (C2)",
+      "verdict": "pass",
+      "evidence": "internal/cli/guard.go runGuard accepts a single positional arg (no flags) — line 118 `if len(args) != 1`. Stdout is always a JSON array via lines 159-167: nil envelopes are coerced to `[]BlockerEnvelope{}` then encoded with SetIndent. Exit codes are exclusively 0 (clean) or 1 (invocation error: lines 119, 126, 136, 148, 154, 166); no path returns 2. Smoke tests confirmed: `pre_write_state_json` with `/tmp/state.json` returned an array containing one envelope `code=state_json_direct_write` exit 0; empty-payload returned `[]` exit 0; `unknown_event_type` exited 1 with stderr line `guard unknown_event_type: unknown event type`. TestRunGuard_StdoutAlwaysArray (guard_test.go:437-502) asserts exit != 2 in every case via line 487-489."
+    },
+    {
+      "name": "Helper contract (C4)",
+      "verdict": "pass",
+      "evidence": "bin/frw.d/lib/blocker_emit.sh defines all four functions per shared-contracts §C4: claude_tool_input_to_event (line 68), furrow_guard (line 141), emit_canonical_blocker (line 175), precommit_init (line 204). Idempotent source guard at lines 46-49 mirrors validate-json.sh:23-26. Sourcing the file via `sh -c '. bin/frw.d/lib/blocker_emit.sh && command -v ...'` confirms all four functions are exposed. POSIX-sh idioms only — no bashisms (uses `_`-prefixed variables, no `[[ ]]`, no arrays). Signatures match §C4 verbatim (event_type arg, stdin/stdout/exit-code semantics)."
+    },
+    {
+      "name": "Go layout (C6)",
+      "verdict": "pass",
+      "evidence": "internal/cli/guard.go houses the guardHandlers registry (lines 45-56) and the `runGuard` CLI entrypoint (line 108). Non-trivial domain logic is split into dedicated sibling files per §C6: internal/cli/correction_limit.go (handlePreWriteCorrectionLimit + correction-limit logic), shellparse.go (handlePreBashInternalScript + awk port), stop_ideation.go (handleStopIdeationCompleteness + ideationMissingFields), validate_summary.go (handleStopSummaryValidation + section helpers), work_check.go (handleStopWorkCheck warn-path), precommit.go (the three pre-commit handlers). Mechanical handlers (handlePreWriteStateJSON, handlePreWriteVerdict) remain inline in guard.go (lines 261-289), which is consistent with §C6's permission for trivial siblings."
+    },
+    {
+      "name": "Drift-guard test",
+      "verdict": "pass",
+      "evidence": "TestGuardHandlerRegistryParity (internal/cli/guard_test.go:26-55) asserts bidirectional parity. YAML→registry direction at lines 39-43 ensures every event_types[].name has a guardHandlers entry. Registry→YAML at lines 45-49 ensures no orphan handlers exist. The test also asserts the count is exactly 10 (lines 52-54), pinning to shared-contracts §C1. A second test, TestGuardEventTypesMatchSharedContractsCatalog (lines 60-78), asserts the verbatim 10 names from §C1. Both tests pass against the current taxonomy."
+    },
+    {
+      "name": "CLI smoke tests",
+      "verdict": "pass",
+      "evidence": "Live runs: (1) `echo '{\"target_path\":\"/tmp/state.json\"}' | go run ./cmd/furrow guard pre_write_state_json` returned a JSON array of length 1 with code=`state_json_direct_write`, exit 0. (2) `echo '{}' | go run ./cmd/furrow guard pre_write_state_json` returned `[]` exit 0. (3) `go run ./cmd/furrow guard unknown_event_type < /dev/null` exited 1 with stderr `guard unknown_event_type: unknown event type`. All three observed behaviours match shared-contracts §C2."
+    },
+    {
+      "name": "Helpers smoke",
+      "verdict": "pass",
+      "evidence": "`sh -c '. bin/frw.d/lib/blocker_emit.sh && command -v claude_tool_input_to_event furrow_guard emit_canonical_blocker precommit_init'` produced `OK:` for all four function names. Sourcing has no observable side effects beyond setting `_FRW_BLOCKER_EMIT_SOURCED=1` (line 49) — idempotent on re-source (lines 46-48 short-circuit)."
+    },
+    {
+      "name": "Go tests pass",
+      "verdict": "pass",
+      "evidence": "`go test ./internal/cli/... -count=1` reports `ok github.com/jonathoneco/furrow/internal/cli 0.034s`. Tests covered: TestGuardHandlerRegistryParity, TestGuardEventTypesMatchSharedContractsCatalog, TestGuard_PerCategoryCoverage (8 sub-cases spanning state-mutation, gate, scaffold), TestGuard_NoTrigger_ReturnsEmpty, TestGuard_UnknownEventType_ReturnsError (asserts errors.Is(err, ErrUnknownEventType)), TestGuard_PreBashInternalScript_MissingPayload_ReturnsError, TestGuard_StopIdeationCompleteness_MissingFields_Emits (covers ideation category + placeholder interpolation check), TestGuard_StopIdeationCompleteness_AutonomousSkips, TestGuard_StopSummaryValidation_MultiEmit (covers summary category + multi-emit shape), TestGuard_StopSummaryValidation_PrecheckedSkips, TestGuard_StopWorkCheck_StateValidationFailed (covers warn-severity), TestRunGuard_StdoutAlwaysArray (4 sub-cases including event_type/arg mismatch path), TestShellStripDataRegions (4 sub-cases for awk port)."
+    }
+  ],
+  "framing_quality": "sound",
+  "notes": [
+    "Spec drift, minor: spec §3 (lines 195-262) describes a 7-event-type catalog (`pre_write`, `pre_bash`, `precommit_paths`, etc.) that pre-dates the shared-contracts §C1 lock to 10 per-hook event types. Per shared-contracts §C9 spec-revision precedence, shared-contracts wins and the implementation correctly follows the 10-entry catalog. The deliverable spec carries the precedence-note at line 3.",
+    "Spec lists four helpers (emit_canonical_blocker, parse_tool_input_path, parse_tool_input_command, precommit_init) but shared-contracts §C4 locks a different four (claude_tool_input_to_event, furrow_guard, emit_canonical_blocker, precommit_init). The implementation correctly implements §C4. Per §C9, this is the right call.",
+    "All eight evaluation criteria pass on evidence. No regressions or violations detected."
+  ],
+  "reviewer": "claude-opus-4-7",
+  "cross_model": false,
+  "timestamp": "2026-04-25T00:00:00Z"
+}

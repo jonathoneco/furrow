@@ -1,0 +1,134 @@
+objective: Establish a canonical adapter-agnostic blocker taxonomy and a Go-first emission path that both runtimes invoke through normalized events, prove no silent divergence via parity tests, and reconcile the three open doc-vs-doc contradictions in one pass.
+
+source_todos:
+  - shared-blocker-taxonomy-spec
+  - claude-blocker-enforcement-parity
+  - doc-contradiction-reconciliation
+
+mode: code
+
+gate_policy: supervised
+
+deliverables:
+  - name: canonical-blocker-taxonomy
+    acceptance_criteria:
+      - schemas/blocker-taxonomy.yaml is extended to cover every blocker baseline code listed in docs/architecture/pi-step-ceremony-and-artifact-enforcement.md "Blocker baseline" (≥15 codes) spanning state-mutation, gate, archive, scaffold, summary, ideation, and seed-state categories.
+      - Every entry carries code, category, severity, message_template, remediation_hint, confirmation_path; applicable_steps optional. No adapter-specific fields are present in the taxonomy file.
+      - schemas/blocker-taxonomy.schema.json is updated to validate the extended shape; internal/cli/blocker_envelope.go LoadTaxonomy passes against the new file.
+      - The 11 existing codes (definition_*, ownership_outside_scope) keep their code strings, severities, and message_template keys so current emitters do not break.
+      - Existing JSON contracts that surface blockers (in particular furrow row status and any sibling status/transition outputs) emit blockers in the canonical BlockerEnvelope shape (code, category, severity, message, remediation_hint, confirmation_path) — not free-form text. Backward-compatibility shims for older callers, if needed, are explicitly named.
+      - docs/architecture/pi-step-ceremony-and-artifact-enforcement.md "Blocker baseline" section cites schemas/blocker-taxonomy.yaml as canonical and removes prose duplicating registry content.
+    file_ownership:
+      - schemas/blocker-taxonomy.yaml
+      - schemas/blocker-taxonomy.schema.json
+      - internal/cli/blocker_envelope.go
+      - internal/cli/blocker_envelope_test.go
+      - internal/cli/row_semantics.go
+      - internal/cli/row_workflow.go
+      - internal/cli/row.go
+      - adapters/pi/furrow.ts
+      - docs/architecture/pi-step-ceremony-and-artifact-enforcement.md
+    specialist: migration-strategist
+
+  - name: normalized-blocker-event-and-go-emission-path
+    depends_on:
+      - canonical-blocker-taxonomy
+    acceptance_criteria:
+      - schemas/blocker-event.yaml defines a host-agnostic event envelope (event_type, target_path, step, row, payload) that adapters translate host events into before invoking the backend. The schema includes an explicit version field so future shape changes can be tracked.
+      - schemas/blocker-event.schema.json validates the shape; documentation in the file or a sibling reference explains each field and the per-event-type payload contract.
+      - A Go entry point (e.g., furrow guard <event-type> --json reading normalized event JSON on stdin, or an internal emit function exposed via cmd/furrow) accepts a normalized event and emits the canonical BlockerEnvelope JSON for the matched code, or exits 0 with empty output when no condition is triggered.
+      - Unit tests in internal/cli/ cover representative event types end to end (event in → envelope out) for at least one code per blocker category.
+      - Adding a new event type without a corresponding handler fails the typecheck or test suite (compile-time or table-driven coverage check).
+    file_ownership:
+      - schemas/blocker-event.yaml
+      - schemas/blocker-event.schema.json
+      - cmd/furrow/**
+      - internal/cli/**
+      - bin/frw.d/lib/**
+    specialist: go-specialist
+
+  - name: hook-migration-and-quality-audit
+    depends_on:
+      - normalized-blocker-event-and-go-emission-path
+    acceptance_criteria:
+      - The full emit-bearing hook set identified during research is routed through the Go emission path. Confirmed target inventory (research/hook-audit.md): 10 emit-bearing hooks — correction-limit.sh, pre-commit-bakfiles.sh, pre-commit-script-modes.sh, pre-commit-typechange.sh, script-guard.sh, state-guard.sh, stop-ideation.sh, validate-summary.sh, verdict-guard.sh, work-check.sh. gate-check.sh is dead code (body returns 0) and is deleted, not migrated. Non-emitters (append-learning.sh, auto-install.sh, post-compact.sh) and already-canonical hooks (validate-definition.sh, ownership-warn.sh) are out of scope.
+      - Each migrated hook performs only three operations and nothing else, in this order — (1) parse host event JSON from stdin, (2) invoke the Go backend via subprocess passing the normalized event JSON, (3) translate the canonical BlockerEnvelope (or empty output) into the host's exit code and stdout format. No condition-checking, no message construction, no policy decisions remain in the shell.
+      - Each migrated hook shim is at most 30 lines of executable shell (excluding shebang, comments, and sourced library lines). Any helper used by ≥2 hook shims lives in bin/frw.d/lib/ as a single canonical implementation. No hook contains conditional emission of non-canonical free-text strings.
+      - Quality audit findings are recorded row-local at .furrow/rows/blocker-taxonomy-foundation/research/hook-audit-final.md (decision per research/synthesis.md — audit value is row-scoped, not enduring canonical reference). Contents: per-hook complexity classification (mechanical vs non-trivial), pre-migration vs post-migration line counts, helpers extracted, and any hook deferred to a follow-up TODO with explicit complexity-driven rationale (not omission).
+      - Hooks deferred from full migration (if any) are explicitly named in the audit report with TODO entries created in .furrow/almanac/todos.yaml; the deferral is permitted only when research-step audit classifies the hook as non-trivial.
+    file_ownership:
+      - bin/frw.d/hooks/**
+      - bin/frw.d/lib/**
+      - .furrow/almanac/todos.yaml
+    specialist: shell-specialist
+
+  - name: coverage-and-parity-tests
+    depends_on:
+      - hook-migration-and-quality-audit
+    acceptance_criteria:
+      - tests/integration/test-blocker-coverage.sh: for every code in schemas/blocker-taxonomy.yaml, the test feeds a normalized event fixture to the Go emission path and asserts the canonical BlockerEnvelope (code, severity, message keys) is produced. Codes deferred from migration are explicitly skipped with logged reason.
+      - tests/integration/test-blocker-parity.sh: for each migrated code, the test feeds a Claude-shape event fixture through the Claude adapter shim AND a Pi-shape event fixture through the Pi adapter shim, asserts both produce identical canonical BlockerEnvelopes. Pi runtime presence is not required — fixture-driven invocation through the Pi shim suffices. Live Pi-process invocation is an explicit follow-up TODO if not delivered here.
+      - The parity test independently asserts that each migrated hook invokes the Go backend via subprocess (e.g., by intercepting the Go binary call or asserting absence of inline policy logic in the shim) — preventing a regression where a shim hard-codes a canonical envelope string and silently passes parity by mimicking Go output.
+      - Adding a new code to the taxonomy without a corresponding emit-site fails test-blocker-coverage.sh; adding an emit-site for a code without parity coverage fails test-blocker-parity.sh.
+      - Emit-site inventory gate — test-blocker-parity.sh enumerates every migrated hook shim under bin/frw.d/hooks/ and fails when any shim lacks a corresponding {claude.json, pi.json, expected-envelope.json} fixture set. This is an inventory check distinct from per-code coverage; it ensures fixtures track shims, not just registry codes.
+      - Tests are auto-discovered by tests/integration/run-all.sh (POSIX glob over test-*.sh) so they run whenever the integration suite runs. CI wiring of run-all.sh itself is out of scope and captured as a follow-up TODO if not already covered elsewhere.
+    file_ownership:
+      - tests/integration/test-blocker-coverage.sh
+      - tests/integration/test-blocker-parity.sh
+      - tests/integration/fixtures/blocker-events/**
+      - adapters/pi/**
+    specialist: test-engineer
+
+  - name: doc-contradiction-reconciliation
+    acceptance_criteria:
+      - Contradiction (1) seed-timing canonical claim is reconciled in docs/architecture/pi-almanac-operating-model.md with an explicit transitional rule stating that TODOs remain authoritative until the Phase 5 cutover and that rows must read TODOs and may consult seeds, never the inverse.
+      - Contradiction (2) blocker-enforcement split is reconciled in docs/architecture/migration-stance.md with a note that the split is closed by deliverables canonical-blocker-taxonomy + normalized-blocker-event-and-go-emission-path + hook-migration-and-quality-audit + coverage-and-parity-tests in this row, citing the parity test path as the durable anti-drift mechanism.
+      - Contradiction (3) artifact-validation scope creep between go-cli-contract.md and pi-step-ceremony-and-artifact-enforcement.md is reconciled with an explicit deferral note dated 2026-04-25, naming TODO artifact-validation-per-step-schema as the closing work.
+      - docs/architecture/documentation-authority-taxonomy.md is updated only if at least 2 of the 3 reconciliations exhibit the same anti-pattern (e.g., shared misclassification, shared scope-creep mode); single-instance findings are noted in the row's research.md but do not modify the canonical taxonomy doc. Any speculative additions are explicitly out of scope.
+    file_ownership:
+      - docs/architecture/pi-almanac-operating-model.md
+      - docs/architecture/migration-stance.md
+      - docs/architecture/go-cli-contract.md
+      - docs/architecture/documentation-authority-taxonomy.md
+
+context_pointers:
+  - path: schemas/blocker-taxonomy.yaml
+    note: Current partial registry (11 codes — definition_* + ownership_outside_scope). Extension target.
+  - path: schemas/blocker-taxonomy.schema.json
+    note: Validation shape; updates needed for any new top-level fields.
+  - path: internal/cli/blocker_envelope.go
+    symbols:
+      - Blocker
+      - Taxonomy
+      - BlockerEnvelope
+      - LoadTaxonomy
+    note: Go-side types and loader for the taxonomy. Already canonical; emission path will extend from here.
+  - path: docs/architecture/core-adapter-boundary.md
+    note: Defines backend vs adapter responsibility split. Backend owns enforcement; adapters translate host events and present results. Anchors the no-adapter-fields-in-taxonomy constraint.
+  - path: docs/architecture/pi-step-ceremony-and-artifact-enforcement.md
+    note: 'Section "Blocker baseline" (lines 267-300) is source-of-truth for the required code inventory in deliverable 1, and is the reconciliation target for contradiction (3).'
+  - path: docs/architecture/migration-stance.md
+    note: '"Shared semantics across hosts" mandate (lines 86-89) anchors the parity requirement; reconciliation target for contradiction (2).'
+  - path: docs/architecture/pi-almanac-operating-model.md
+    note: Lines 148-159 — seed-timing canonical claim; reconciliation target for contradiction (1).
+  - path: docs/architecture/go-cli-contract.md
+    note: Lines 385-388 — artifact validation scope text; reconciliation target for contradiction (3).
+  - path: bin/frw.d/hooks/
+    note: 16 hook scripts; ~11 emit blockers and need migration to Go emission path. Quality audit during research.
+  - path: bin/frw.d/lib/common-minimal.sh
+    note: Shared shell helpers used by hooks; target home for canonical event-JSON normalizer + exit-code translator.
+  - path: .furrow/almanac/todos.yaml
+    note: Source TODOs (shared-blocker-taxonomy-spec, claude-blocker-enforcement-parity, doc-contradiction-reconciliation). Also where any deferred hooks will be captured as new TODOs.
+  - path: .furrow/almanac/roadmap.yaml
+    note: Phase 4 plan and ordering rationale for this row.
+
+constraints:
+  - Adapter-agnostic taxonomy — schemas/blocker-taxonomy.yaml MUST NOT contain Claude- or Pi-specific fields. Per-host coverage is a backend property proven by tests, not a registry field.
+  - Backend owns enforcement — domain rules (what counts as a blocker, what envelope is emitted) live in Go (cmd/furrow + internal/cli). Hook scripts and Pi adapter shims may translate host events and exit codes, but never re-implement enforcement logic.
+  - Go-first migration — migrated emit-sites route through the Go emission path. Shell-only emission of ad-hoc text is no longer acceptable for migrated hooks.
+  - No silent registry drift — adding a code without a matching emit-site fails coverage; adding an emit-site for a non-canonical code fails coverage. Both checks are wired into CI.
+  - Backward compatibility for canonical 11 — existing definition_* and ownership_outside_scope codes keep their code strings, severities, and message_template keys.
+  - 'No hybrid-state migrations — N1 is the default scope (all 10 emit-bearing hooks migrated; 1 dead hook deleted). Hooks may be deferred only with an explicit complexity-driven rationale and a corresponding follow-up TODO; defaults to deferral are not acceptable. Concrete fallback threshold for the two non-trivial candidates — if script-guard.sh Go port exceeds 4 hours of implement time, or work-check.sh updated_at side-effect split exceeds 2 hours, defer to a named follow-up TODO before W4 starts so D4''s parity test surface is stable.'
+  - Pi runtime not required for tests — parity tests use Pi-shape event fixtures, not a live Pi process. Live-Pi invocation, if needed, is a separate follow-up TODO.
+  - Doc edits scoped — contradiction reconciliation touches only the named docs; no opportunistic cleanup of unrelated drift.
+  - Quality-audit bundled with migration — opportunities for tightening conditionals, extracting helpers, and modularizing hook shims are in scope and recorded in the audit report; substantive refactors that exceed migration scope are deferred to follow-up TODOs with explicit rationale.

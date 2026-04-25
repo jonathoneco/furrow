@@ -4043,6 +4043,18 @@
   files_touched:
     - internal/cli/row.go
     - internal/cli/row_workflow.go
+- id: pi-adapter-binary-caching
+  title: Pi adapter binary caching
+  context: adapters/pi/furrow.ts:322 invokes 'go run ./cmd/furrow' on every runFurrowJson call. After pre-write-validation-go-first ships, two of those fire on every Write/Edit (D4 validate-definition + D5 ownership-warn). Cold-start latency compounds and is a real UX regression risk per cross-model review of the ideation.
+  work_needed: 'Pre-build the Go binary at Pi adapter init (or first invocation, cached for the session) and exec the binary path instead of go run. Update runFurrowJson at adapters/pi/furrow.ts:313-346 to resolve the binary path once and reuse. Acceptance: latency benchmark on a Write/Edit hot path shows <50ms median per validate call (down from go-run cold start ~hundreds of ms); cache invalidation handled when binary is rebuilt during dev.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T02:19:29-04:00"
+  updated_at: "2026-04-25T02:19:29-04:00"
+  references:
+    - adapters/pi/furrow.ts
+    - docs/architecture/pi-native-capability-leverage.md
+  source_work_unit: pre-write-validation-go-first
 - id: remove-bin-rws-shell-entrypoint
   title: Remove bin/rws shell entrypoint
   context: bin/rws is a 2000+ line shell CLI that cli-architecture-overhaul-slice-2 ports to Go (furrow row, furrow seeds, etc.). The slice work leaves bin/rws as a 'thin delegation shim' but never gates its full removal. Per clean-swap discipline (no indefinite hybrid states), the shell entrypoint should be deleted once Go parity is proven, not left lingering. Today bin/rws contains parallel implementations that drift from the Go path (see deprecate-bin-rws-1958-rws-archive-shell-implement for one already-identified case).
@@ -4165,6 +4177,19 @@
     - bin/frw
     - bin/frw.d/scripts/
     - install.sh
+- id: sweeping-schema-audit-and-shrink
+  title: Sweeping schema audit and shrink
+  context: 'Review-step on pre-write-validation-go-first surfaced that schemas/definition.schema.json carries optional/edge-case rules that the hand-coded validator (D1) chased across 7 review rounds. Empirical usage audit (44 rows): per-deliverable gate=0 used, supersedes=1 used, source_todo singular=10 (redundant with source_todos plural), context_pointers symbols=5 used. Each unused/under-used optional field expands D1''s validator surface and gives reviewers more rules to cite. The pain isn''t a validator bug — it''s a schema-breadth signal. Generalize beyond definition.schema.json: state.schema.json, plan.schema.json, learning.schema.json, repair-deliverables-manifest.schema.json, reintegration.schema.json, review-result.schema.json, merge-policy.schema.json, promotion-targets.schema.yaml all likely have similar accumulated breadth.'
+  work_needed: 'Run a sweeping schema audit across schemas/. For each schema: (1) measure actual usage of each optional field across .furrow/rows/*/, (2) identify dead fields (zero use), under-used fields (<10% use), and redundant forms (singular+plural pairs); (3) propose a shrink plan with migration cost; (4) ship the shrink with the necessary row migrations. Concrete D1-validator-pain candidates already evidenced: per-deliverable gate (drop), supersedes (move to archive.json), source_todo singular (drop, fold into source_todos), context_pointers.symbols (drop). Acceptance: validators drop measurable LOC; schemas tighter; row migrations applied with checksum verification.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T12:53:55-04:00"
+  updated_at: "2026-04-25T12:53:55-04:00"
+  references:
+    - schemas/definition.schema.json
+    - internal/cli/validate_definition.go
+    - .furrow/rows/pre-write-validation-go-first/reviews/
+  source_work_unit: pre-write-validation-go-first
 - id: define-adapters-audit-pass-fail-rubric
   title: Define adapters-audit pass/fail rubric
   context: 'adapters-audit (todos.yaml:914) is marked active with work_needed: ''check for atrophy, modularization decay, internal consistency''. There is no scoring rubric, no threshold, no defined block-on-failure. The audit is therefore not a gate — it cannot meaningfully block Phase 8 parity validation if it surfaces drift. Without measurable criteria, an open audit becomes performative.'
@@ -4283,28 +4308,27 @@
   files_touched:
     - adapters/pi/furrow.ts
     - docs/architecture/pi-tool-call-schema.md
-- id: pi-adapter-binary-caching
-  title: Pi adapter binary caching
-  context: adapters/pi/furrow.ts:322 invokes 'go run ./cmd/furrow' on every runFurrowJson call. After pre-write-validation-go-first ships, two of those fire on every Write/Edit (D4 validate-definition + D5 ownership-warn). Cold-start latency compounds and is a real UX regression risk per cross-model review of the ideation.
-  work_needed: 'Pre-build the Go binary at Pi adapter init (or first invocation, cached for the session) and exec the binary path instead of go run. Update runFurrowJson at adapters/pi/furrow.ts:313-346 to resolve the binary path once and reuse. Acceptance: latency benchmark on a Write/Edit hot path shows <50ms median per validate call (down from go-run cold start ~hundreds of ms); cache invalidation handled when binary is rebuilt during dev.'
+- id: ci-wiring-of-integration-test-runner
+  title: CI wiring of integration test runner
+  context: tests/integration/run-all.sh exists and auto-discovers test-*.sh files, but no CI workflow currently invokes it. Means new D4-style tests pass locally but nothing prevents regressions on a branch a contributor forgets to run them on. Surfaced during blocker-taxonomy-foundation D4 acceptance discussion (auto-discovery is in place; CI invocation is the missing piece).
+  work_needed: Add a GitHub Actions (or equivalent) workflow that runs tests/integration/run-all.sh on every PR. Verify it invokes go and bun where needed; ensure FURROW_ROOT and other env are correct in the runner.
   source_type: manual
   status: active
-  created_at: "2026-04-25T02:19:29-04:00"
-  updated_at: "2026-04-25T02:19:29-04:00"
+  created_at: "2026-04-25T16:24:12-04:00"
+  updated_at: "2026-04-25T16:24:12-04:00"
   references:
-    - adapters/pi/furrow.ts
-    - docs/architecture/pi-native-capability-leverage.md
-  source_work_unit: pre-write-validation-go-first
-- id: sweeping-schema-audit-and-shrink
-  title: Sweeping schema audit and shrink
-  context: 'Review-step on pre-write-validation-go-first surfaced that schemas/definition.schema.json carries optional/edge-case rules that the hand-coded validator (D1) chased across 7 review rounds. Empirical usage audit (44 rows): per-deliverable gate=0 used, supersedes=1 used, source_todo singular=10 (redundant with source_todos plural), context_pointers symbols=5 used. Each unused/under-used optional field expands D1''s validator surface and gives reviewers more rules to cite. The pain isn''t a validator bug — it''s a schema-breadth signal. Generalize beyond definition.schema.json: state.schema.json, plan.schema.json, learning.schema.json, repair-deliverables-manifest.schema.json, reintegration.schema.json, review-result.schema.json, merge-policy.schema.json, promotion-targets.schema.yaml all likely have similar accumulated breadth.'
-  work_needed: 'Run a sweeping schema audit across schemas/. For each schema: (1) measure actual usage of each optional field across .furrow/rows/*/, (2) identify dead fields (zero use), under-used fields (<10% use), and redundant forms (singular+plural pairs); (3) propose a shrink plan with migration cost; (4) ship the shrink with the necessary row migrations. Concrete D1-validator-pain candidates already evidenced: per-deliverable gate (drop), supersedes (move to archive.json), source_todo singular (drop, fold into source_todos), context_pointers.symbols (drop). Acceptance: validators drop measurable LOC; schemas tighter; row migrations applied with checksum verification.'
+    - tests/integration/run-all.sh
+  source_work_unit: blocker-taxonomy-foundation
+- id: correction-limit-integration-fixture
+  title: correction-limit integration fixture
+  context: D4 of blocker-taxonomy-foundation row added a SKIP_REASON for the correction_limit_reached fixture because triggering the canonical envelope requires a materialized FURROW_ROOT (plan.json + state.json + furrow.yaml + correction count) that the integration sandbox can't easily produce. The behavior is covered by internal/cli/correction_limit_test.go unit tests today.
+  work_needed: Promote tests/integration/fixtures/blocker-events/correction_limit_reached/ from SKIP to a real fixture once the test sandbox can materialize the required FURROW_ROOT state. Likely involves extending tests/integration/lib/sandbox.sh with a 'materialize correction-limit scenario' helper, or writing the fixture inline in test-blocker-coverage.sh as a one-off setup block.
   source_type: manual
   status: active
-  created_at: "2026-04-25T12:53:55-04:00"
-  updated_at: "2026-04-25T12:53:55-04:00"
+  created_at: "2026-04-25T16:24:12-04:00"
+  updated_at: "2026-04-25T16:24:12-04:00"
   references:
-    - schemas/definition.schema.json
-    - internal/cli/validate_definition.go
-    - .furrow/rows/pre-write-validation-go-first/reviews/
-  source_work_unit: pre-write-validation-go-first
+    - tests/integration/fixtures/blocker-events/correction_limit_reached/SKIP_REASON
+    - internal/cli/correction_limit_test.go
+    - tests/integration/lib/sandbox.sh
+  source_work_unit: blocker-taxonomy-foundation

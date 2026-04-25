@@ -1,0 +1,71 @@
+{
+  "deliverable": "hook-migration-and-quality-audit",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "fail",
+        "evidence": "`tests/integration/test-precommit-block.sh` fails on a fresh run (8 failures); the migrated pre-commit shims exit 1 before emission because they source `\"$FURROW_ROOT/bin/frw.d/lib/blocker_emit.sh\"` from a fixture-derived root where that file does not exist."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "fail",
+        "evidence": "The new shell-helper branches are not directly exercised: `rg` finds no tests for `precommit_event_bakfiles`, `precommit_event_typechange`, `precommit_event_script_modes`, `stop_event_ideation`, or `stop_event_summary`, including the new empty-payload short-circuit added in `d5935e3`."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "fail",
+        "evidence": "The acceptance criteria require each shim to do only three operations with no shell-side condition checks, but `pre-commit-*.sh`, `stop-ideation.sh`, and `validate-summary.sh` now add `_ev=...` plus `[ -n \"$_ev\" ] || exit/return 0` logic in the shim body."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "fail",
+        "evidence": "`definition.yaml` limits this deliverable’s file ownership to `bin/frw.d/hooks/**`, `bin/frw.d/lib/**`, and `.furrow/almanac/todos.yaml`, but commit `781681b` also adds `.furrow/rows/blocker-taxonomy-foundation/research/hook-audit-final.md` without documenting a file-ownership exception in the change."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "pass",
+        "evidence": "`go test ./internal/cli/... -count=1` passes, executable line counts stay within the 30-line budget, and `shellcheck` on the changed shell files reports only non-failing SC2317 info on the idempotent source guards."
+      }
+    ],
+    "verdict": "fail"
+  },
+  "overall": "fail",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "diff_scope": {
+    "base": "08f08f8f28b758917e20347da9d991761c27e189",
+    "commits": [
+      "d5935e3f9a25f64153b25cd24f17b07a276a0ea9",
+      "781681bc9624f83a49ee75ee5f9afa38a6d83ca4",
+      "dc06f7974e13a1850af532dbbddf2f1bb7ed61f2"
+    ],
+    "files_matched": [
+      "bin/frw.d/hooks/correction-limit.sh",
+      "bin/frw.d/hooks/pre-commit-bakfiles.sh",
+      "bin/frw.d/hooks/pre-commit-script-modes.sh",
+      "bin/frw.d/hooks/pre-commit-typechange.sh",
+      "bin/frw.d/hooks/script-guard.sh",
+      "bin/frw.d/hooks/state-guard.sh",
+      "bin/frw.d/hooks/stop-ideation.sh",
+      "bin/frw.d/hooks/validate-summary.sh",
+      "bin/frw.d/hooks/verdict-guard.sh",
+      "bin/frw.d/hooks/work-check.sh",
+      "bin/frw.d/lib/blocker_emit.sh",
+      "bin/frw.d/lib/precommit_payloads.sh",
+      "bin/frw.d/lib/stop_payloads.sh"
+    ]
+  },
+  "unplanned_changes": "absent",
+  "timestamp": "2026-04-25T20:15:42Z"
+}

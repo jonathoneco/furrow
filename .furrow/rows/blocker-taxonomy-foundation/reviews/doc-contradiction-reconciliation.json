@@ -1,0 +1,39 @@
+{
+  "deliverable": "doc-contradiction-reconciliation",
+  "phase": "B",
+  "reviewer": "fresh-claude-subagent",
+  "dimensions": [
+    {
+      "name": "contradiction-1-seed-timing",
+      "verdict": "PASS",
+      "evidence": "docs/architecture/pi-almanac-operating-model.md:158-163 contains the transitional-authority blockquote inserted between the A1 bullet list (ending line 156) and the pre-existing 'todos.yaml may remain temporarily' sentence (now line 165). Wording matches spec AC.1 verbatim: 'Transitional authority rule (authoritative until Phase 5 cutover)' (line 158), 'todos.yaml remains the authoritative planning registry until the Phase 5 seed cutover' (line 159), 'Rows MUST read TODOs and MAY consult seeds; rows MUST NOT operate seeds-only' (line 160), 'post-cutover end state, not the current authority' (line 162). Both directions of the must/may relation are explicit. Authoritative-line precedes compatibility-line ordering check passes (158 < 165)."
+    },
+    {
+      "name": "contradiction-2-blocker-enforcement-split",
+      "verdict": "PASS",
+      "evidence": "docs/architecture/migration-stance.md:91-102 contains the reconciliation blockquote inserted between the section-7 body (ending line 89) and the '## Non-invariants' heading (now line 104). All four deliverable names appear (lines 95-96): canonical-blocker-taxonomy, normalized-blocker-event-and-go-emission-path, hook-migration-and-quality-audit, coverage-and-parity-tests. The durable anti-drift mechanism is explicitly identified as `tests/integration/test-blocker-parity.sh` (line 98) with the CI-fail semantics described (lines 98-99). The forward-citation parenthetical is present (lines 100-102) and explicitly names Wave 4 and the deliverable that authors the file. `grep -c test-blocker-parity.sh` returns 2 (the anti-drift citation and the forward citation), satisfying the spec's two-occurrence expectation."
+    },
+    {
+      "name": "contradiction-3-artifact-validation-scope",
+      "verdict": "PASS",
+      "evidence": "docs/architecture/go-cli-contract.md:401-413 contains the deferral blockquote inserted between the 'does NOT enforce' bullet list (392-399) and the 'Current exit behavior:' heading (now line 415). Reconciliation note dated 2026-04-25 (line 401), names TODO `artifact-validation-per-step-schema` (line 408), references the Pi-step-ceremony doc at lines 374-388 (lines 403, 412), and declares the per-step-artifact validation scope as in-scope for the backend pending TODO closure (lines 410-413). The corrected line range 392-399 (NOT the source TODO's incorrectly cited 385-388) is used in the meta-pattern cross-reference at documentation-authority-taxonomy.md:254. Note position is correct: starts at 401, before the first 'Current exit behavior:' on line 415."
+    },
+    {
+      "name": "meta-pattern-precedence-rule",
+      "verdict": "PASS",
+      "evidence": "docs/architecture/documentation-authority-taxonomy.md:241-262 contains a new `### 5. Contract-doc precedence rule` subsection slotted AFTER existing anti-patterns 1-4 (line 221 '### 1. Architecture docs as migration diaries', 226 '### 2. Row handoffs as de facto architecture', 231 '### 3. Planning docs defining semantics', 236 '### 4. Migration tactics presented as timeless philosophy') and BEFORE '## Documentation policy for the current migration' (now line 264). Existing anti-patterns 1-4 headings and bodies are unchanged (verified against `git show fff5fa4 -- docs/architecture/documentation-authority-taxonomy.md` — only insertion is the new §5 subsection at lines 241-262 plus a blank line). Subsection contains the anti-pattern description (243-247), both concrete examples drawn from contradictions 1 and 3 (250-255), and the precedence rule sentence 'the contract document wins' (259). No renumbering of existing sections."
+    },
+    {
+      "name": "d1-d5-boundary-respect",
+      "verdict": "PASS",
+      "evidence": "`grep -n 'Reconciliation note\\|artifact-validation-per-step-schema' docs/architecture/pi-step-ceremony-and-artifact-enforcement.md` returns zero matches. D5 did not write any reconciliation note into the Pi-step-ceremony doc. That file is owned by D1 (canonical-blocker-taxonomy per definition.yaml:30), and D5's ownership scope (definition.yaml:88-92) is strictly the four reconciled docs. Spec scenario (e) condition met."
+    },
+    {
+      "name": "scoped-edits",
+      "verdict": "PASS",
+      "evidence": "`git diff --name-only fff5fa4^ fff5fa4` returns exactly the four named documents and nothing else: docs/architecture/documentation-authority-taxonomy.md, docs/architecture/go-cli-contract.md, docs/architecture/migration-stance.md, docs/architecture/pi-almanac-operating-model.md. Commit stats show +57 / -0 (purely additive, no deletions or renames). No opportunistic cleanup of unrelated drift; no edits to pi-step-ceremony-and-artifact-enforcement.md, .furrow/almanac/todos.yaml (despite the source TODO containing the off-by-N citation that the spec explicitly forbids 'correcting'), or any other path. Constraint definition.yaml:133 ('Doc edits scoped — contradiction reconciliation touches only the named docs; no opportunistic cleanup of unrelated drift') is honored."
+    }
+  ],
+  "overall": "PASS",
+  "notes": "All four reconciliation amendments land at the spec-mandated insertion sites with verbatim wording (AC.1-AC.4), the D5/D1 ownership boundary is respected (no edits to pi-step-ceremony-and-artifact-enforcement.md), and the commit is strictly additive across only the four named files. The corrected line range 392-399 (vs. the source TODO's incorrect 385-388) is used consistently in both go-cli-contract.md and the cross-reference at documentation-authority-taxonomy.md:254 — the off-by-N error in todos.yaml was correctly NOT corrected (out of D5 ownership). Forward-citation handling for `tests/integration/test-blocker-parity.sh` is exemplary: it explicitly flags Wave 4 authorship so a mid-row reader who finds the note before W4 lands sees why the file is missing. Minor observation, not flagged as a failure: the AC at definition.yaml:87 says the documentation-authority-taxonomy.md update is permitted 'only if at least 2 of the 3 reconciliations exhibit the same anti-pattern.' D5 satisfies this by citing both contradictions (1) and (3) as concrete examples (lines 250-255) of the contract-doc precedence anti-pattern; the threshold is met (2-of-3) and the additive scoping is preserved."
+}
