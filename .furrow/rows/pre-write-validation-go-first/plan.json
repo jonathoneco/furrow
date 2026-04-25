@@ -1,0 +1,101 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": ["blocker-taxonomy-schema"],
+      "assignments": {
+        "blocker-taxonomy-schema": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "schemas/blocker-taxonomy.yaml",
+            "schemas/blocker-taxonomy.schema.json",
+            "internal/cli/blocker_envelope.go",
+            "internal/cli/blocker_envelope_test.go",
+            "docs/architecture/pi-step-ceremony-and-artifact-enforcement.md"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 2,
+      "deliverables": ["validate-definition-go"],
+      "assignments": {
+        "validate-definition-go": {
+          "specialist": "go-specialist",
+          "file_ownership": [
+            "internal/cli/validate_definition.go",
+            "internal/cli/validate_definition_test.go",
+            "internal/cli/app.go",
+            "bin/frw.d/scripts/validate-definition.sh",
+            "tests/integration/test-validate-definition-shim.sh"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 3,
+      "deliverables": ["validate-ownership-go"],
+      "assignments": {
+        "validate-ownership-go": {
+          "specialist": "go-specialist",
+          "file_ownership": [
+            "internal/cli/validate_ownership.go",
+            "internal/cli/validate_ownership_test.go",
+            "internal/cli/app.go"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 4,
+      "deliverables": ["pi-validate-definition-handler"],
+      "assignments": {
+        "pi-validate-definition-handler": {
+          "specialist": "typescript-specialist",
+          "file_ownership": [
+            "adapters/pi/furrow.ts",
+            "adapters/pi/furrow.test.ts",
+            "adapters/pi/package.json",
+            "adapters/pi/tsconfig.json",
+            "adapters/pi/README.md"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 5,
+      "deliverables": ["pi-ownership-warn-handler"],
+      "assignments": {
+        "pi-ownership-warn-handler": {
+          "specialist": "typescript-specialist",
+          "file_ownership": [
+            "adapters/pi/furrow.ts",
+            "adapters/pi/furrow.test.ts",
+            ".furrow/rows/pre-write-validation-go-first/parity-verification.md"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 6,
+      "deliverables": ["claude-ownership-warn-parity"],
+      "assignments": {
+        "claude-ownership-warn-parity": {
+          "specialist": "shell-specialist",
+          "file_ownership": [
+            "bin/frw.d/hooks/ownership-warn.sh",
+            ".furrow/rows/pre-write-validation-go-first/parity-verification.md"
+          ],
+          "skills": []
+        }
+      }
+    }
+  ],
+  "created_at": "2026-04-25T13:43:00Z",
+  "created_by": "claude-opus-4-7"
+}

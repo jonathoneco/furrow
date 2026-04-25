@@ -266,6 +266,8 @@ Additional decision points to preserve:
 
 ## Blocker baseline
 
+Canonical code registry: `schemas/blocker-taxonomy.yaml`. Initial population covers validation-at-write-time codes (definition_*, ownership_outside_scope); future rows extend with state-mutation, gate, archive, scaffold, summary, ideation codes per the `shared-blocker-taxonomy-spec` todo.
+
 The following should be treated as hard blockers unless explicitly revised:
 
 - direct mutation of canonical workflow state outside CLI/backend

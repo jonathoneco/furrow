@@ -277,6 +277,17 @@ type ArchiveData = {
 		: never;
 };
 
+import {
+	decideValidateDefinitionAction,
+	decideOwnershipAction,
+	shouldInterceptForDefinitionValidation,
+	shouldInterceptForOwnershipWarn,
+	runDefinitionValidationHandler,
+	runOwnershipWarnHandler,
+	type ValidateDefinitionData,
+	type ValidateOwnershipData,
+} from "./validate-actions.ts";
+
 type CliResult<T = any> = {
 	exitCode: number;
 	stdout: string;
@@ -896,6 +907,44 @@ export default function furrowExtension(pi: ExtensionAPI) {
 			reason:
 				"Canonical Furrow state is backend-mediated. Use /furrow-transition, /furrow-complete, or the Furrow CLI instead of editing .furrow/.focused or row state.json directly.",
 		};
+	});
+
+	// Pre-write validation handler — D4 of pre-write-validation-go-first.
+	// Intercepts Write/Edit on `*/definition.yaml` and validates against the
+	// canonical schema before the write proceeds. Handler logic lives in
+	// runDefinitionValidationHandler (validate-actions.ts) for direct unit testing.
+	pi.on("tool_call", async (event, ctx) => {
+		const root = findFurrowRoot(ctx.cwd);
+		if (!root) return undefined;
+		const absolutePath = normalizePathArg((event.input as any)?.path, ctx.cwd);
+		return runDefinitionValidationHandler(
+			event.toolName,
+			absolutePath,
+			async (args) => {
+				const result = await runFurrowJson<ValidateDefinitionData>(root, args, ctx.signal);
+				return { data: result.envelope?.data };
+			},
+			ctx.hasUI ? ctx.ui.notify.bind(ctx.ui) : undefined,
+		);
+	});
+
+	// Ownership warn handler — D5 of pre-write-validation-go-first.
+	// Handler logic lives in runOwnershipWarnHandler (validate-actions.ts) for
+	// direct unit testing. Step-agnostic by design (verdict comes from the Go
+	// validator which never reads state.json.step).
+	pi.on("tool_call", async (event, ctx) => {
+		const root = findFurrowRoot(ctx.cwd);
+		if (!root) return undefined;
+		const absolutePath = normalizePathArg((event.input as any)?.path, ctx.cwd);
+		return runOwnershipWarnHandler(
+			event.toolName,
+			absolutePath,
+			async (args) => {
+				const result = await runFurrowJson<ValidateOwnershipData>(root, args, ctx.signal);
+				return { data: result.envelope?.data };
+			},
+			ctx.hasUI ? ctx.ui.confirm.bind(ctx.ui) : undefined,
+		);
 	});
 
 	pi.registerCommand("work", {

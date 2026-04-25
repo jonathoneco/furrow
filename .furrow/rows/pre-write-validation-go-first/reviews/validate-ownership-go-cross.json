@@ -1,0 +1,64 @@
+{
+  "deliverable": "validate-ownership-go",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "pass",
+        "evidence": "Verified live behavior with `go run ./cmd/furrow validate ownership ... --json`: returned `in_scope` with `matched_deliverable`/`matched_glob`, `out_of_scope` with `ownership_outside_scope` envelope (`severity: warn`, `confirmation_path: warn-with-confirm`), `not_applicable` for canonical artifacts, and focused-row fallback worked when `--row` was omitted."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "pass",
+        "evidence": "`internal/cli/validate_ownership_test.go` covers in-scope, out-of-scope, no-focused-row, missing-row, multi-deliverable first-match behavior, nested `**` glob matching, canonical-artifact carve-out, and focused-row fallback; dispatcher coverage exists in `TestRunValidateDispatcher`."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "pass",
+        "evidence": "`internal/cli/validate.go` registers `ownership` alongside `definition`, `internal/cli/app.go` delegates top-level `validate` to `runValidate`, and `internal/cli/validate_ownership.go` is step-agnostic (no `state.json.step` read, only focused-row/default-row resolution plus `definition.yaml` parsing)."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "pass",
+        "evidence": "The final row definition gives D2 ownership of `internal/cli/validate.go` and `internal/cli/app.go`, and the mixed follow-up commits explicitly document non-D2 file touches as D1/D4/D5/D6 review-fix work rather than unexplained spillover."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "pass",
+        "evidence": "`go test ./...` passed, targeted ownership tests passed, `gofmt -l internal/cli/{validate.go,validate_ownership.go,validate_ownership_test.go,app.go}` returned no output, and the implementation follows the repo’s Go CLI conventions."
+      }
+    ],
+    "verdict": "pass"
+  },
+  "overall": "pass",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "diff_scope": {
+    "base": "b2f477d3ca7020f356bbde9b6c5f0893c4f86fdf",
+    "commits": [
+      "5510f4ee3ed91e23eab49df38b535ce876a020f0",
+      "d4f83692da84c38bd4f3f48a7d38ee6d038d631d",
+      "9b585f34d16e3131cfa8fdb3b0d0b3538af448b8",
+      "642fef01f1d316292fc363f15bfd0fdc13a02ac7",
+      "3dde4ddef30dbea24f08291e885ffcc009a51f32"
+    ],
+    "files_matched": [
+      "internal/cli/app.go",
+      "internal/cli/validate.go",
+      "internal/cli/validate_ownership.go",
+      "internal/cli/validate_ownership_test.go"
+    ]
+  },
+  "unplanned_changes": "absent",
+  "timestamp": "2026-04-25T16:17:42Z"
+}
