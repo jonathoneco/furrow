@@ -1,0 +1,115 @@
+# Blocker event catalog — host-agnostic event envelope contract.
+#
+# This file enumerates the closed set of event types that adapters (Claude
+# hooks, git pre-commit, Pi adapter shims, etc.) translate host events into
+# before invoking the Go backend via `furrow guard <event-type>`. Per
+# specs/shared-contracts.md §C1, the catalog is **per-hook 1:1**: ten
+# event types, one for every emit-bearing hook in research/hook-audit.md.
+#
+# Conformance contract:
+#   - Adding a new entry to event_types[] without registering a matching
+#     handler in internal/cli/guard.go fails TestGuardHandlerRegistryParity.
+#   - Removing a handler without removing the entry fails the same drift
+#     guard from the opposite direction.
+#   - emitted_codes[] are the canonical taxonomy codes the handler may
+#     produce; every code appears in schemas/blocker-taxonomy.yaml.
+#
+# Top-level shape:
+#   version (string, required)         schema-version of the event envelope
+#   event_types[] (array, required)    closed catalog
+#     name (string, required)          snake_case event type
+#     description (string, required)   one-line summary of the host trigger
+#     emitted_codes[] (array, required) canonical taxonomy codes the handler may emit
+#     payload_keys[] (array, required) ordered list of legal payload keys
+#       name (string, required)
+#       type (string, required)        string|number|boolean|array|object
+#       description (string, required)
+#     required[] (array, required)     subset of payload_keys[].name; non-empty
+#                                      keys the handler MUST receive
+#
+# version "1" is the landing version. Bump on any breaking shape change to
+# either the envelope or any per-event-type payload contract.
+
+version: "1"
+
+event_types:
+  - name: pre_write_state_json
+    description: "PreToolUse(Write|Edit) — block direct writes to state.json"
+    emitted_codes: [state_json_direct_write]
+    payload_keys:
+      - { name: target_path, type: string, description: "absolute or repo-relative path the tool intends to write" }
+      - { name: tool_name,   type: string, description: "Write or Edit (informational)" }
+    required: [target_path]
+
+  - name: pre_write_verdict
+    description: "PreToolUse(Write|Edit) — block direct writes under gate-verdicts/"
+    emitted_codes: [verdict_direct_write]
+    payload_keys:
+      - { name: target_path, type: string, description: "absolute or repo-relative path the tool intends to write" }
+      - { name: tool_name,   type: string, description: "Write or Edit (informational)" }
+    required: [target_path]
+
+  - name: pre_write_correction_limit
+    description: "PreToolUse(Write|Edit) — block writes to deliverables that hit their correction limit"
+    emitted_codes: [correction_limit_reached]
+    payload_keys:
+      - { name: target_path, type: string, description: "absolute or repo-relative path the tool intends to write" }
+      - { name: tool_name,   type: string, description: "Write or Edit (informational)" }
+    required: [target_path]
+
+  - name: pre_bash_internal_script
+    description: "PreToolUse(Bash) — block direct invocation of bin/frw.d/ scripts"
+    emitted_codes: [script_guard_internal_invocation]
+    payload_keys:
+      - { name: command, type: string, description: "the full bash command string from tool_input.command" }
+    required: [command]
+
+  - name: pre_commit_bakfiles
+    description: "git pre-commit — refuse install-artifact .bak files staged under bin/ or .claude/rules/"
+    emitted_codes: [precommit_install_artifact_staged]
+    payload_keys:
+      - { name: staged_paths, type: array, description: "list of staged file paths to inspect" }
+    required: [staged_paths]
+
+  - name: pre_commit_typechange
+    description: "git pre-commit — refuse type-change to symlink on protected paths"
+    emitted_codes: [precommit_typechange_to_symlink]
+    payload_keys:
+      - { name: typechange_entries, type: array, description: "list of {path, new_mode, status} objects from git diff --cached --raw" }
+    required: [typechange_entries]
+
+  - name: pre_commit_script_modes
+    description: "git pre-commit — refuse staging bin/frw.d/scripts/*.sh at index mode 100644"
+    emitted_codes: [precommit_script_mode_invalid]
+    payload_keys:
+      - { name: script_modes, type: array, description: "list of {path, mode} objects for staged bin/frw.d/scripts/*.sh entries" }
+    required: [script_modes]
+
+  - name: stop_ideation_completeness
+    description: "Stop hook during ideate step — completeness check on definition.yaml"
+    emitted_codes: [ideation_incomplete_definition_fields]
+    payload_keys:
+      - { name: row,             type: string, description: "active row name" }
+      - { name: definition_path, type: string, description: "absolute path to the row's definition.yaml" }
+      - { name: gate_policy,     type: string, description: "resolved gate_policy (autonomous skips check)" }
+    required: [row]
+
+  - name: stop_summary_validation
+    description: "Stop hook — block-severity summary.md validation (verdict-guarded)"
+    emitted_codes: [summary_section_missing, summary_section_empty]
+    payload_keys:
+      - { name: row,           type: string, description: "active row name" }
+      - { name: summary_path,  type: string, description: "absolute path to the row's summary.md" }
+      - { name: step,          type: string, description: "current row step (controls step-aware section requirements)" }
+      - { name: last_decided_by, type: string, description: "decided_by of the most recent gate (prechecked skips check)" }
+    required: [row]
+
+  - name: stop_work_check
+    description: "Stop hook — warn-severity multi-row health check (always exit 0)"
+    emitted_codes: [state_validation_failed_warn, summary_section_missing_warn, summary_section_empty_warn]
+    payload_keys:
+      - { name: row,                  type: string, description: "row name being checked (caller iterates active rows)" }
+      - { name: state_path,           type: string, description: "absolute path to the row's state.json" }
+      - { name: summary_path,         type: string, description: "absolute path to the row's summary.md" }
+      - { name: state_validation_ok,  type: boolean, description: "true if state.json passed schema validation upstream" }
+    required: [row]
