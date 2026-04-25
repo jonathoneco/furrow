@@ -3,6 +3,7 @@ package cli
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -181,6 +182,69 @@ gate_policy: supervised
 	if v.MatchedDeliverable != "first" {
 		t.Fatalf("matched_deliverable: got %q, want first (deterministic order)", v.MatchedDeliverable)
 	}
+}
+
+func TestRunValidateOwnershipCLINoFocusedRow(t *testing.T) {
+	resetTaxonomyCacheForTest()
+	t.Cleanup(resetTaxonomyCacheForTest)
+
+	// Create a temp project root with no .focused file.
+	root := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(root, ".furrow"), 0o755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+	t.Chdir(root)
+
+	var stdout, stderr strings.Builder
+	app := New(&stdout, &stderr)
+	exit := app.runValidateOwnership([]string{"--path", "any/path.txt", "--json"})
+	if exit != 0 {
+		t.Fatalf("exit: got %d, want 0 (no_active_row should be exit 0)", exit)
+	}
+	if !strings.Contains(stdout.String(), "not_applicable") || !strings.Contains(stdout.String(), "no_active_row") {
+		t.Fatalf("stdout missing not_applicable/no_active_row: %q", stdout.String())
+	}
+}
+
+func TestRunValidateOwnershipCLIRowFlagOverride(t *testing.T) {
+	resetTaxonomyCacheForTest()
+	t.Cleanup(resetTaxonomyCacheForTest)
+
+	root := fixtureRoot(t, "explicit-row", ownershipFixtureDef)
+	mustLinkSchemas(t, getRepoRootForTest(t), root)
+	t.Chdir(root)
+
+	var stdout, stderr strings.Builder
+	app := New(&stdout, &stderr)
+	exit := app.runValidateOwnership([]string{"--path", "internal/cli/validate_ownership.go", "--row", "explicit-row", "--json"})
+	if exit != 0 {
+		t.Fatalf("exit: got %d, want 0", exit)
+	}
+	if !strings.Contains(stdout.String(), "in_scope") {
+		t.Fatalf("expected in_scope verdict; got %q", stdout.String())
+	}
+}
+
+func TestRunValidateOwnershipCLIMissingPath(t *testing.T) {
+	resetTaxonomyCacheForTest()
+	t.Cleanup(resetTaxonomyCacheForTest)
+
+	var stdout, stderr strings.Builder
+	app := New(&stdout, &stderr)
+	exit := app.runValidateOwnership([]string{})
+	if exit != 1 {
+		t.Fatalf("exit: got %d, want 1 (missing --path is usage error)", exit)
+	}
+}
+
+func getRepoRootForTest(t *testing.T) string {
+	t.Helper()
+	cwd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Getwd: %v", err)
+	}
+	// Walk up from internal/cli/ to project root.
+	return filepath.Dir(filepath.Dir(cwd))
 }
 
 func TestGlobMatchVariants(t *testing.T) {

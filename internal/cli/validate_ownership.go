@@ -60,10 +60,10 @@ func (a *App) runValidateOwnership(args []string) int {
 
 // OwnershipVerdict is the structured result of a validate-ownership run.
 type OwnershipVerdict struct {
-	Verdict            string          `json:"verdict"`
-	MatchedDeliverable string          `json:"matched_deliverable,omitempty"`
-	MatchedGlob        string          `json:"matched_glob,omitempty"`
-	Reason             string          `json:"reason,omitempty"`
+	Verdict            string           `json:"verdict"`
+	MatchedDeliverable string           `json:"matched_deliverable,omitempty"`
+	MatchedGlob        string           `json:"matched_glob,omitempty"`
+	Reason             string           `json:"reason,omitempty"`
 	Envelope           *BlockerEnvelope `json:"envelope,omitempty"`
 }
 
@@ -108,8 +108,8 @@ func computeOwnership(root, rowName, targetPath string) OwnershipVerdict {
 
 	var raw struct {
 		Deliverables []struct {
-			Name           string   `yaml:"name"`
-			FileOwnership  []string `yaml:"file_ownership"`
+			Name          string   `yaml:"name"`
+			FileOwnership []string `yaml:"file_ownership"`
 		} `yaml:"deliverables"`
 	}
 	if err := yaml.Unmarshal(payload, &raw); err != nil {
