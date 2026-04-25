@@ -4043,3 +4043,125 @@
   files_touched:
     - internal/cli/row.go
     - internal/cli/row_workflow.go
+- id: remove-bin-rws-shell-entrypoint
+  title: Remove bin/rws shell entrypoint
+  context: bin/rws is a 2000+ line shell CLI that cli-architecture-overhaul-slice-2 ports to Go (furrow row, furrow seeds, etc.). The slice work leaves bin/rws as a 'thin delegation shim' but never gates its full removal. Per clean-swap discipline (no indefinite hybrid states), the shell entrypoint should be deleted once Go parity is proven, not left lingering. Today bin/rws contains parallel implementations that drift from the Go path (see deprecate-bin-rws-1958-rws-archive-shell-implement for one already-identified case).
+  work_needed: 'After cli-architecture-overhaul-slice-2 lands AND dual-runtime-parity-validation passes in Phase 8: (1) audit all callers of bin/rws (consumer installs, hooks, scripts, slash commands); (2) replace each call site with the corresponding furrow CLI invocation; (3) delete bin/rws entirely. Symlinks acceptable only as a one-release deprecation grace period — the file itself must be removed. Update install.sh to stop installing bin/rws.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T12:29:59-04:00"
+  updated_at: "2026-04-25T12:29:59-04:00"
+  references:
+    - bin/rws
+    - cli-architecture-overhaul-slice-2
+    - docs/architecture/go-cli-contract.md
+    - docs/architecture/dual-runtime-target.md
+  source_work_unit: migration-state-of-the-union
+  depends_on:
+    - cli-architecture-overhaul-slice-2
+    - dual-runtime-parity-validation
+  files_touched:
+    - bin/rws
+    - install.sh
+- id: remove-bin-alm-shell-entrypoint
+  title: Remove bin/alm shell entrypoint
+  context: bin/alm is a shell CLI for almanac/triage/learn/observe/rationale operations. cli-architecture-overhaul-slice-2 ports its surface to Go (e.g., furrow almanac or equivalent command groups). The shell entrypoint is dead weight once the Go path lands and parity is validated.
+  work_needed: 'After cli-architecture-overhaul-slice-2 lands AND dual-runtime-parity-validation passes: (1) audit all callers of bin/alm (slash commands, scripts, install.sh, hooks); (2) cut over each to the Go CLI; (3) delete bin/alm. Update install.sh accordingly. Symlinks only as a short deprecation grace period.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T12:30:11-04:00"
+  updated_at: "2026-04-25T12:30:11-04:00"
+  references:
+    - bin/alm
+    - cli-architecture-overhaul-slice-2
+    - docs/architecture/go-cli-contract.md
+  source_work_unit: migration-state-of-the-union
+  depends_on:
+    - cli-architecture-overhaul-slice-2
+    - dual-runtime-parity-validation
+  files_touched:
+    - bin/alm
+    - install.sh
+- id: remove-bin-sds-shell-entrypoint
+  title: Remove bin/sds shell entrypoint
+  context: bin/sds is the shell CLI for seeds operations. seeds-backend-surface-layer ports the seeds command group to Go. Once seeds.jsonl is the canonical primitive (post todo-to-seed-cutover-migration) and parity validates, bin/sds is redundant.
+  work_needed: 'After seeds-backend-surface-layer ships AND seeds-graph-cutover-and-pi-surfaces row completes AND dual-runtime-parity-validation passes: (1) audit callers; (2) cut over to furrow seeds; (3) delete bin/sds. Update install.sh.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T12:30:11-04:00"
+  updated_at: "2026-04-25T12:30:11-04:00"
+  references:
+    - bin/sds
+    - seeds-backend-surface-layer
+    - docs/architecture/pi-almanac-operating-model.md
+  source_work_unit: migration-state-of-the-union
+  depends_on:
+    - seeds-backend-surface-layer
+    - dual-runtime-parity-validation
+  files_touched:
+    - bin/sds
+    - install.sh
+- id: remove-legacy-shell-hooks-under-bin-frw-d-hooks
+  title: Remove legacy shell hooks under bin/frw.d/hooks/
+  context: bin/frw.d/hooks/ contains shell implementations of state-guard, validate-definition, validate-ownership, correction-limit, and other enforcement hooks. cli-architecture-overhaul-slice-2 + adapter work ports these to Go-backed equivalents invoked via Pi tool_call interceptors. The shell hooks remain only as fallback during transition.
+  work_needed: 'After each hook ships in Go AND dual-runtime-parity-validation confirms identical enforcement semantics across Pi+Claude adapters: delete shell hook scripts under bin/frw.d/hooks/. Update install.sh to stop installing them. Remove any stale references in .claude/settings.json hook config.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T12:30:34-04:00"
+  updated_at: "2026-04-25T12:30:34-04:00"
+  references:
+    - bin/frw.d/hooks/
+    - adapters/pi/furrow.ts
+    - cli-architecture-overhaul-slice-2
+  source_work_unit: migration-state-of-the-union
+  depends_on:
+    - cli-architecture-overhaul-slice-2
+    - dual-runtime-parity-validation
+  files_touched:
+    - bin/frw.d/hooks/
+    - install.sh
+    - .claude/settings.json
+- id: retire-todos-yaml-as-canonical-planning-primitive
+  title: Retire todos.yaml as canonical planning primitive
+  context: Per docs/architecture/pi-almanac-operating-model.md:148-159 seeds.jsonl replaces todos.yaml as the canonical work primitive. Phase 5 row 2 (seeds-graph-cutover-and-pi-surfaces) delivers the cutover migration, but the *retirement* of todos.yaml itself — making it read-only, then deleting it — is implicit, not gated. Without an explicit retirement milestone the project risks indefinite dual-source-of-truth drift between todos.yaml and seeds.jsonl, violating clean-swap discipline.
+  work_needed: 'Two-stage retirement: (1) After todo-to-seed-cutover-migration ships AND pi-seed-surfaces-in-work-loop validates: mark todos.yaml read-only in alm tooling (writes go to seeds.jsonl only); update all docs/skills that reference todos.yaml to point at seeds. (2) After dual-runtime-parity-validation passes (Phase 8): move todos.yaml to docs/archive/todos-frozen.yaml as historical record and delete the canonical path. Audit all references in skills/, commands/, references/, docs/architecture/.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T12:30:34-04:00"
+  updated_at: "2026-04-25T12:30:34-04:00"
+  references:
+    - .furrow/almanac/todos.yaml
+    - .furrow/almanac/seeds.jsonl
+    - docs/architecture/pi-almanac-operating-model.md
+    - todo-to-seed-cutover-migration
+    - almanac-scope-after-todo-retirement
+  source_work_unit: migration-state-of-the-union
+  depends_on:
+    - todo-to-seed-cutover-migration
+    - pi-seed-surfaces-in-work-loop
+    - dual-runtime-parity-validation
+  files_touched:
+    - .furrow/almanac/todos.yaml
+    - bin/alm
+- id: archive-legacy-shell-scripts-tree
+  title: Archive legacy shell scripts tree
+  context: bin/frw.d/scripts/ contains shell implementations (launch-phase, merge-*, reintegration helpers) that Phase 7 ports to Go. Once worktree/merge/phase-lifecycle/install Go commands ship and parity validates, the shell scripts tree is dead code that adds maintenance surface area.
+  work_needed: 'After Phase 7 (Migration A outer ring) lands AND dual-runtime-parity-validation passes: move bin/frw.d/scripts/ to docs/archive/shell-v1/ as a historical record, delete it from bin/frw.d/. Audit any remaining call sites in bin/frw dispatcher and route them to Go. Update install.sh to stop linking the legacy tree.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T12:30:35-04:00"
+  updated_at: "2026-04-25T12:30:35-04:00"
+  references:
+    - bin/frw.d/scripts/
+    - bin/frw
+    - cli-architecture-overhaul-slice-2
+    - furrow-next-phase-lifecycle
+  source_work_unit: migration-state-of-the-union
+  depends_on:
+    - cli-architecture-overhaul-slice-2
+    - furrow-next-phase-lifecycle
+    - dual-runtime-parity-validation
+  files_touched:
+    - bin/frw
+    - bin/frw.d/scripts/
+    - install.sh

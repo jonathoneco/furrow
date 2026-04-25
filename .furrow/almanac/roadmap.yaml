@@ -2857,7 +2857,7 @@ phases:
     - .furrow/rows/pi-step-ceremony-and-artifact-enforcement/
     - .furrow/rows/pi-adapter-foundation/
     conflict_risk: low
-    completed_at: null
+    completed_at: '2026-04-25T04:44:40Z'
   - index: 2
     branch: work/pre-write-validation-go-first
     description: '4 deliverables: furrow validate definition/ownership Go commands + Pi tool_call handlers. Closes the empirical-pain top-3 from research.md §8.'
@@ -3168,6 +3168,28 @@ phases:
     - docs/
     - references/
     conflict_risk: none
+    completed_at: null
+  - index: 4
+    branch: work/legacy-shell-cutoff-and-removal
+    description: 'Hard cutoff for the shell-era artifacts: remove bin/rws, bin/alm, bin/sds entrypoints; retire todos.yaml as canonical (seeds.jsonl wins); delete legacy shell hooks under bin/frw.d/hooks/; archive bin/frw.d/scripts/ tree. Single milestone gated on dual-runtime-parity-validation — clean swap, no indefinite hybrid.'
+    todos:
+    - remove-bin-rws-shell-entrypoint
+    - remove-bin-alm-shell-entrypoint
+    - remove-bin-sds-shell-entrypoint
+    - retire-todos-yaml-as-canonical-planning-primitive
+    - remove-legacy-shell-hooks-under-bin-frw-d-hooks
+    - archive-legacy-shell-scripts-tree
+    depends_on:
+    - work/dual-runtime-parity-validation
+    key_files:
+    - bin/rws
+    - bin/alm
+    - bin/sds
+    - bin/frw.d/hooks/
+    - bin/frw.d/scripts/
+    - .furrow/almanac/todos.yaml
+    - install.sh
+    conflict_risk: medium
     completed_at: null
 deferred: []
 active_observations:
