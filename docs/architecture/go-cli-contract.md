@@ -398,6 +398,20 @@ It still does **not** enforce:
 - broader review orchestration behavior
 - richer merge/archive ceremony beyond the narrow archive checkpoint path
 
+> **Reconciliation note (2026-04-25, row `blocker-taxonomy-foundation`)**:
+> there is currently scope ambiguity between the not-enforced list above and
+> `pi-step-ceremony-and-artifact-enforcement.md:374-388`, which describes
+> per-step artifact validation, decompose-artifact validation, and
+> review-artifact validation as enforced preconditions. The boundary between
+> "narrow blocker baseline" (this contract) and "per-step artifact
+> validation" (Pi-step-ceremony doc) is deferred to TODO
+> `artifact-validation-per-step-schema` (`.furrow/almanac/todos.yaml`),
+> which will define `schemas/step-artifact-requirements.yaml` and bind both
+> documents to a single authoritative spec. Until that TODO closes, treat
+> per-step artifact validation as in-scope for the backend and
+> `pi-step-ceremony-and-artifact-enforcement.md:374-388` as the operative
+> description.
+
 Current exit behavior:
 
 - `0` success

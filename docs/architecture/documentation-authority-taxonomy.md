@@ -238,6 +238,29 @@ semantic authority.
 A wrapper, shim, or minimum slice may be necessary now without being part of the
 enduring shape of the system.
 
+### 5. Contract-doc precedence rule
+
+**Anti-pattern**: a target-state or implementation-state document states a
+scope that exceeds the scope declared in the contract document covering the
+same surface, with no explicit temporal qualifier or precedence rule
+reconciling them. The contract document appears narrower but the sibling
+document's broader claim is never invalidated.
+
+**Examples in this codebase**:
+- `pi-almanac-operating-model.md` states "seeds replace TODOs as the
+  canonical planning primitive" (forward-leaning target) without temporal
+  qualification, conflicting with the Phase 5 deferral in the same file.
+- `pi-step-ceremony-and-artifact-enforcement.md:374-388` claims per-step
+  artifact validation is enforced; `go-cli-contract.md:392-399` lists those
+  behaviors as not-yet-enforced without a reconciling precedence rule.
+
+**Precedence rule**: when scope language in a target-state or
+implementation-state document conflicts with scope language in a contract
+document, the contract document wins. The broader claim in the sibling
+document must add an explicit temporal qualifier (date, phase, or TODO
+closure condition) before it supersedes the contract. Until that qualifier
+is present, assume the narrower contract scope is operative.
+
 ## Documentation policy for the current migration
 
 - keep canonical system truths in canonical docs

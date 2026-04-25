@@ -155,6 +155,13 @@ Furrow should converge to **A1**:
 - roadmap and triage read from the seed graph
 - almanac stops being the canonical task registry
 
+> **Transitional authority rule (authoritative until Phase 5 cutover)**:
+> `todos.yaml` remains the authoritative planning registry until the Phase 5
+> seed cutover. Rows MUST read TODOs and MAY consult seeds; rows MUST NOT
+> operate seeds-only. The "seeds replace TODOs" target above describes the
+> post-cutover end state, not the current authority. See "Sequencing" below
+> for the cutover gate.
+
 `todos.yaml` may remain temporarily only as migration compatibility, but Pi
 should not be designed around it as the long-term model.
 
