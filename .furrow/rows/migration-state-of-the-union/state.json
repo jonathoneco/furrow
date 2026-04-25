@@ -1,0 +1,43 @@
+{
+  "name": "migration-state-of-the-union",
+  "title": "Diagnose dual-migration friction and recommend next move",
+  "description": "Diagnose dual-migration friction and recommend next move",
+  "step": "research",
+  "step_status": "not_started",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "research-md": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "definition.yaml validated; research-mode row with single deliverable research.md and 7 acceptance criteria; supervised gate policy; user-approved scope",
+      "timestamp": "2026-04-25T00:08:32Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": null,
+  "mode": "research",
+  "base_commit": "c8848db71ad4423680930f20ad13484b2648086e",
+  "seed_id": "furrow-193b",
+  "epic_seed_id": null,
+  "created_at": "2026-04-25T00:06:23Z",
+  "updated_at": "2026-04-25T01:33:24Z",
+  "archived_at": null,
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}

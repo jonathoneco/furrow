@@ -1,0 +1,87 @@
+{
+  "archived_at": "2026-04-24T22:58:47Z",
+  "base_commit": "c8848db71ad4423680930f20ad13484b2648086e",
+  "branch": null,
+  "created_at": "2026-04-24T22:46:14Z",
+  "deliverables": {},
+  "description": "Review/archive boundary hardening",
+  "epic_seed_id": null,
+  "force_stop_at": null,
+  "gate_policy_init": "supervised",
+  "gates": [
+    {
+      "boundary": "ideate-\u003eresearch",
+      "decided_by": "manual",
+      "evidence": "furrow row transition enforced adjacent ordering, completed-step requirement, blocker taxonomy checks, seed sync, and per-artifact validation; summary regeneration and evaluator phases were not performed",
+      "evidence_path": "/home/jonco/src/furrow/.furrow/rows/review-archive-boundary-hardening/gates/ideate-to-research.json",
+      "outcome": "pass",
+      "timestamp": "2026-04-24T22:48:18Z"
+    },
+    {
+      "boundary": "research-\u003eplan",
+      "decided_by": "manual",
+      "evidence": "furrow row transition enforced adjacent ordering, completed-step requirement, blocker taxonomy checks, seed sync, and per-artifact validation; summary regeneration and evaluator phases were not performed",
+      "evidence_path": "/home/jonco/src/furrow/.furrow/rows/review-archive-boundary-hardening/gates/research-to-plan.json",
+      "outcome": "pass",
+      "timestamp": "2026-04-24T22:48:50Z"
+    },
+    {
+      "boundary": "plan-\u003espec",
+      "decided_by": "manual",
+      "evidence": "furrow row transition enforced adjacent ordering, completed-step requirement, blocker taxonomy checks, seed sync, and per-artifact validation; summary regeneration and evaluator phases were not performed",
+      "evidence_path": "/home/jonco/src/furrow/.furrow/rows/review-archive-boundary-hardening/gates/plan-to-spec.json",
+      "outcome": "pass",
+      "timestamp": "2026-04-24T22:49:11Z"
+    },
+    {
+      "boundary": "spec-\u003edecompose",
+      "decided_by": "manual",
+      "evidence": "furrow row transition enforced adjacent ordering, completed-step requirement, blocker taxonomy checks, seed sync, and per-artifact validation; summary regeneration and evaluator phases were not performed",
+      "evidence_path": "/home/jonco/src/furrow/.furrow/rows/review-archive-boundary-hardening/gates/spec-to-decompose.json",
+      "outcome": "pass",
+      "timestamp": "2026-04-24T22:49:36Z"
+    },
+    {
+      "boundary": "decompose-\u003eimplement",
+      "decided_by": "manual",
+      "evidence": "furrow row transition enforced adjacent ordering, completed-step requirement, blocker taxonomy checks, seed sync, and per-artifact validation; summary regeneration and evaluator phases were not performed",
+      "evidence_path": "/home/jonco/src/furrow/.furrow/rows/review-archive-boundary-hardening/gates/decompose-to-implement.json",
+      "outcome": "pass",
+      "timestamp": "2026-04-24T22:50:13Z"
+    },
+    {
+      "boundary": "implement-\u003ereview",
+      "decided_by": "manual",
+      "evidence": "furrow row transition enforced adjacent ordering, completed-step requirement, blocker taxonomy checks, seed sync, and per-artifact validation; summary regeneration and evaluator phases were not performed",
+      "evidence_path": "/home/jonco/src/furrow/.furrow/rows/review-archive-boundary-hardening/gates/implement-to-review.json",
+      "outcome": "pass",
+      "timestamp": "2026-04-24T22:50:33Z"
+    },
+    {
+      "boundary": "review-\u003earchive",
+      "decided_by": "manual",
+      "evidence": "furrow row archive enforced review-complete preconditions, shared blocker taxonomy, and durable archive checkpoint evidence",
+      "evidence_path": "/home/jonco/src/furrow/.furrow/rows/review-archive-boundary-hardening/gates/review-to-archive.json",
+      "outcome": "pass",
+      "timestamp": "2026-04-24T22:58:47Z"
+    }
+  ],
+  "mode": "code",
+  "name": "review-archive-boundary-hardening",
+  "pending_user_actions": [],
+  "seed_id": "furrow-3254",
+  "source_todo": "work-loop-boundary-hardening",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "title": "Review/archive boundary hardening",
+  "updated_at": "2026-04-24T22:58:47Z"
+}

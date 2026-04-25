@@ -153,6 +153,9 @@ func artifactSpecificFindings(state map[string]any, artifact map[string]any, con
 			"Skills":           "skills plan",
 		})
 	default:
+		if strings.HasPrefix(id, "review:") {
+			return validateReviewArtifact(content, strings.TrimPrefix(id, "review:"))
+		}
 		return nil
 	}
 }
@@ -225,6 +228,132 @@ func validatePlanJSONArtifact(content string) []artifactValidationFinding {
 		findings = append(findings, artifactValidationFinding{Code: "plan_structure_too_thin", Severity: "error", Message: "plan.json must describe at least one wave or assignment"})
 	}
 	return findings
+}
+
+func validateReviewArtifact(content string, expectedDeliverable string) []artifactValidationFinding {
+	details, err := reviewArtifactDetailsFromContent(content, expectedDeliverable)
+	if err != nil {
+		return []artifactValidationFinding{{Code: "review_json_invalid", Severity: "error", Message: "review artifact is not valid JSON"}}
+	}
+
+	findings := make([]artifactValidationFinding, 0)
+	expectedDeliverable = strings.TrimSpace(expectedDeliverable)
+	deliverable, _ := details["deliverable"].(string)
+	if expectedDeliverable != "" && expectedDeliverable != "all-deliverables" {
+		deliverable = strings.TrimSpace(deliverable)
+		switch {
+		case deliverable == "":
+			findings = append(findings, artifactValidationFinding{Code: "review_deliverable_missing", Severity: "warning", Message: fmt.Sprintf("review artifact does not record its deliverable name; expected %q", expectedDeliverable)})
+		case deliverable != expectedDeliverable:
+			findings = append(findings, artifactValidationFinding{Code: "review_deliverable_mismatch", Severity: "error", Message: fmt.Sprintf("review artifact deliverable %q does not match expected %q", deliverable, expectedDeliverable)})
+		}
+	}
+
+	phaseA, _ := details["phase_a"].(map[string]any)
+	if available, _ := phaseA["available"].(bool); !available {
+		findings = append(findings, artifactValidationFinding{Code: "review_phase_a_missing", Severity: "error", Message: "review artifact does not include recognizable Phase A evidence"})
+	}
+	phaseAVerdict, _ := phaseA["verdict"].(string)
+	if phaseAVerdict == "" {
+		findings = append(findings, artifactValidationFinding{Code: "review_phase_a_verdict_missing", Severity: "error", Message: "review artifact does not expose a recognizable Phase A verdict"})
+	}
+	if criteria, _ := phaseA["acceptance_criteria"].(map[string]any); criteria != nil {
+		if unmet := numericInt(criteria["unmet"]); unmet > 0 {
+			findings = append(findings, artifactValidationFinding{Code: "review_phase_a_unmet_criteria", Severity: "error", Message: fmt.Sprintf("review artifact records %d unmet Phase A acceptance criteria", unmet)})
+		}
+		if missingEvidence := numericInt(criteria["missing_evidence"]); missingEvidence > 0 {
+			findings = append(findings, artifactValidationFinding{Code: "review_phase_a_evidence_thin", Severity: "warning", Message: fmt.Sprintf("review artifact has %d Phase A criteria without substantive evidence", missingEvidence)})
+		}
+	}
+
+	phaseB, _ := details["phase_b"].(map[string]any)
+	if available, _ := phaseB["available"].(bool); !available {
+		findings = append(findings, artifactValidationFinding{Code: "review_phase_b_missing", Severity: "error", Message: "review artifact does not include recognizable Phase B evidence"})
+	}
+	phaseBVerdict, _ := phaseB["verdict"].(string)
+	if phaseBVerdict == "" {
+		findings = append(findings, artifactValidationFinding{Code: "review_phase_b_verdict_missing", Severity: "error", Message: "review artifact does not expose a recognizable Phase B verdict"})
+	}
+	if dimensions, _ := phaseB["dimensions"].(map[string]any); dimensions != nil {
+		if failCount := numericInt(dimensions["fail"]); failCount > 0 && phaseBVerdict == "pass" {
+			findings = append(findings, artifactValidationFinding{Code: "review_phase_b_verdict_inconsistent", Severity: "error", Message: fmt.Sprintf("review artifact reports %d failing Phase B dimensions but a passing Phase B verdict", failCount)})
+		}
+		if conditionalCount := numericInt(dimensions["conditional"]); conditionalCount > 0 && phaseBVerdict == "pass" {
+			findings = append(findings, artifactValidationFinding{Code: "review_phase_b_verdict_inconsistent", Severity: "error", Message: fmt.Sprintf("review artifact reports %d conditional Phase B dimensions but a passing Phase B verdict", conditionalCount)})
+		}
+		if missingEvidence := numericInt(dimensions["missing_evidence"]); missingEvidence > 0 {
+			findings = append(findings, artifactValidationFinding{Code: "review_phase_b_evidence_thin", Severity: "warning", Message: fmt.Sprintf("review artifact has %d Phase B dimensions without substantive evidence", missingEvidence)})
+		}
+	}
+
+	overall, _ := details["overall"].(string)
+	synthesized, _ := details["synthesized"].(map[string]any)
+	override, _ := synthesized["override"].(bool)
+	reasonPresent, _ := synthesized["reason_present"].(bool)
+	if overall == "" {
+		findings = append(findings, artifactValidationFinding{Code: "review_overall_missing", Severity: "error", Message: "review artifact does not expose an overall verdict"})
+	} else if overall != "pass" {
+		findings = append(findings, artifactValidationFinding{Code: "review_verdict_not_passing", Severity: "error", Message: fmt.Sprintf("review artifact verdict is %q, not pass", overall)})
+	} else {
+		if phaseAVerdict != "pass" {
+			findings = append(findings, artifactValidationFinding{Code: "review_overall_inconsistent", Severity: "error", Message: fmt.Sprintf("review artifact overall verdict is pass even though Phase A verdict is %q", phaseAVerdict)})
+		}
+		if phaseBVerdict != "pass" && !(override && reasonPresent) {
+			findings = append(findings, artifactValidationFinding{Code: "review_overall_inconsistent", Severity: "error", Message: fmt.Sprintf("review artifact overall verdict is pass even though Phase B verdict is %q without a synthesized justification", phaseBVerdict)})
+		}
+	}
+	if override && !reasonPresent {
+		findings = append(findings, artifactValidationFinding{Code: "review_synthesized_reason_missing", Severity: "error", Message: "review artifact overrides the derived overall verdict without a substantive synthesized_reason"})
+	}
+	if totalFailed := numericInt(details["total_failed"]); totalFailed > 0 && overall == "pass" && !(override && reasonPresent) {
+		findings = append(findings, artifactValidationFinding{Code: "review_totals_inconsistent", Severity: "error", Message: fmt.Sprintf("review artifact records total_failed=%d but overall verdict is pass without a synthesized justification", totalFailed)})
+	}
+	if timestamp, _ := details["timestamp"].(string); strings.TrimSpace(timestamp) == "" {
+		findings = append(findings, artifactValidationFinding{Code: "review_timestamp_missing", Severity: "warning", Message: "review artifact does not record a timestamp"})
+	}
+	return findings
+}
+
+func hasReviewTimestamp(doc map[string]any) bool {
+	return strings.TrimSpace(reviewTimestamp(doc)) != ""
+}
+
+func reviewOverallVerdict(doc map[string]any) (string, bool) {
+	phaseA := reviewPhaseASummary(doc)
+	phaseAVerdict, _ := phaseA["verdict"].(string)
+	phaseB := reviewPhaseBSummary(doc)
+	phaseBVerdict, _ := phaseB["verdict"].(string)
+	return reviewOverallVerdictFromDoc(doc, phaseAVerdict, phaseBVerdict)
+}
+
+func normalizedVerdict(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "pass", "passed":
+		return "pass"
+	case "fail", "failed":
+		return "fail"
+	case "conditional":
+		return "conditional"
+	default:
+		return ""
+	}
+}
+
+func numericValue(value any) (float64, bool) {
+	switch v := value.(type) {
+	case float64:
+		return v, true
+	case float32:
+		return float64(v), true
+	case int:
+		return float64(v), true
+	case int64:
+		return float64(v), true
+	case int32:
+		return float64(v), true
+	default:
+		return 0, false
+	}
 }
 
 func validateMarkdownSections(content string, required map[string]string) []artifactValidationFinding {
@@ -364,6 +493,213 @@ func summarizeArtifactValidation(artifacts []map[string]any) map[string]any {
 		"by_status": summary,
 		"total":     len(artifacts),
 	}
+}
+
+func reviewArtifactSummary(artifacts []map[string]any) map[string]any {
+	summary := map[string]int{"pass": 0, "warn": 0, "fail": 0, "missing": 0}
+	verdicts := map[string]int{"pass": 0, "conditional": 0, "fail": 0, "unknown": 0}
+	phaseAVerdicts := map[string]int{"pass": 0, "conditional": 0, "fail": 0, "unknown": 0}
+	phaseBVerdicts := map[string]int{"pass": 0, "conditional": 0, "fail": 0, "unknown": 0}
+	findingsBySeverity := map[string]int{"critical": 0, "high": 0, "medium": 0, "low": 0, "unknown": 0}
+	followUpsBySeverity := map[string]int{"critical": 0, "high": 0, "medium": 0, "low": 0, "unknown": 0}
+	followUpsBySource := map[string]int{"real_findings": 0, "failed_dimensions": 0, "conditional_dimensions": 0}
+	required := 0
+	synthesizedOverrides := 0
+	items := make([]map[string]any, 0)
+	for _, artifact := range artifacts {
+		id, _ := artifact["id"].(string)
+		if !strings.HasPrefix(id, "review:") {
+			continue
+		}
+		required++
+		status := "unknown"
+		if validation, ok := artifact["validation"].(map[string]any); ok {
+			if rawStatus, ok := validation["status"].(string); ok && rawStatus != "" {
+				status = rawStatus
+				if _, exists := summary[status]; exists {
+					summary[status]++
+				}
+			}
+		}
+		item := map[string]any{
+			"label":  artifact["label"],
+			"path":   artifact["path"],
+			"status": status,
+		}
+		expectedDeliverable := strings.TrimSpace(strings.TrimPrefix(id, "review:"))
+		if details, err := reviewArtifactDetailsFromPath(getStringDefault(artifact, "path", ""), expectedDeliverable); err == nil {
+			item["deliverable"] = details["deliverable"]
+			item["overall"] = details["overall"]
+			item["timestamp"] = details["timestamp"]
+			item["phase_a"] = details["phase_a"]
+			item["phase_b"] = details["phase_b"]
+			item["findings"] = details["findings"]
+			item["follow_ups"] = details["follow_ups"]
+			item["synthesized"] = details["synthesized"]
+
+			overall, _ := details["overall"].(string)
+			if overall == "" {
+				verdicts["unknown"]++
+			} else {
+				verdicts[overall]++
+			}
+			if phaseA, ok := details["phase_a"].(map[string]any); ok {
+				if verdict, _ := phaseA["verdict"].(string); verdict == "" {
+					phaseAVerdicts["unknown"]++
+				} else {
+					phaseAVerdicts[verdict]++
+				}
+			}
+			if phaseB, ok := details["phase_b"].(map[string]any); ok {
+				if verdict, _ := phaseB["verdict"].(string); verdict == "" {
+					phaseBVerdicts["unknown"]++
+				} else {
+					phaseBVerdicts[verdict]++
+				}
+			}
+			if synthesized, ok := details["synthesized"].(map[string]any); ok {
+				if override, _ := synthesized["override"].(bool); override {
+					synthesizedOverrides++
+				}
+			}
+			if findings, ok := details["findings"].(map[string]any); ok {
+				if bySeverity, ok := findings["by_severity"].(map[string]int); ok {
+					for severity, count := range bySeverity {
+						findingsBySeverity[severity] += count
+					}
+				} else if generic, ok := findings["by_severity"].(map[string]any); ok {
+					for severity, rawCount := range generic {
+						findingsBySeverity[severity] += numericInt(rawCount)
+					}
+				}
+			}
+			if followUps, ok := details["follow_ups"].(map[string]any); ok {
+				if bySeverity, ok := followUps["by_severity"].(map[string]int); ok {
+					for severity, count := range bySeverity {
+						followUpsBySeverity[severity] += count
+					}
+				} else if generic, ok := followUps["by_severity"].(map[string]any); ok {
+					for severity, rawCount := range generic {
+						followUpsBySeverity[severity] += numericInt(rawCount)
+					}
+				}
+				if bySource, ok := followUps["by_source"].(map[string]int); ok {
+					for source, count := range bySource {
+						followUpsBySource[source] += count
+					}
+				} else if generic, ok := followUps["by_source"].(map[string]any); ok {
+					for source, rawCount := range generic {
+						followUpsBySource[source] += numericInt(rawCount)
+					}
+				}
+			}
+		}
+		items = append(items, item)
+	}
+	followUpsTotal := 0
+	for _, count := range followUpsBySource {
+		followUpsTotal += count
+	}
+	return map[string]any{
+		"required":              required,
+		"by_status":             summary,
+		"overall_verdicts":      verdicts,
+		"phase_a_verdicts":      phaseAVerdicts,
+		"phase_b_verdicts":      phaseBVerdicts,
+		"findings_by_severity":  findingsBySeverity,
+		"synthesized_overrides": synthesizedOverrides,
+		"follow_ups": map[string]any{
+			"total":       followUpsTotal,
+			"by_source":   followUpsBySource,
+			"by_severity": followUpsBySeverity,
+		},
+		"items": items,
+	}
+}
+
+func sourceTodoSurface(root string, state map[string]any) map[string]any {
+	todoID := strings.TrimSpace(getStringDefault(state, "source_todo", ""))
+	if todoID == "" {
+		return map[string]any{"id": nil, "present": false}
+	}
+	todos, err := readTodoList(filepath.Join(root, ".furrow", "almanac", "todos.yaml"))
+	if err != nil {
+		return map[string]any{"id": todoID, "present": false, "error": err.Error()}
+	}
+	todo, ok := findTodoByID(todos, todoID)
+	if !ok {
+		return map[string]any{"id": todoID, "present": false}
+	}
+	return map[string]any{
+		"id":         todoID,
+		"present":    true,
+		"title":      nilIfEmpty(getStringDefault(todo, "title", "")),
+		"status":     nilIfEmpty(getStringDefault(todo, "status", "")),
+		"seed_id":    nilIfEmpty(getStringDefault(todo, "seed_id", "")),
+		"updated_at": nilIfEmpty(getStringDefault(todo, "updated_at", "")),
+	}
+}
+
+func countNonEmptyLines(path string) int {
+	payload, err := os.ReadFile(path)
+	if err != nil {
+		return 0
+	}
+	count := 0
+	for _, line := range strings.Split(string(payload), "\n") {
+		if strings.TrimSpace(line) != "" {
+			count++
+		}
+	}
+	return count
+}
+
+func archiveCeremonySurface(root, rowName string, state map[string]any, artifacts []map[string]any) map[string]any {
+	learningsPath := filepath.Join(rowDirFor(root, rowName), "learnings.jsonl")
+	review := reviewArtifactSummary(artifacts)
+	followUps, _ := review["follow_ups"].(map[string]any)
+	return map[string]any{
+		"review":      review,
+		"follow_ups":  followUps,
+		"source_todo": sourceTodoSurface(root, state),
+		"learnings": map[string]any{
+			"path":    learningsPath,
+			"present": fileExists(learningsPath),
+			"count":   countNonEmptyLines(learningsPath),
+		},
+	}
+}
+
+func latestGateEvidenceSurface(state map[string]any) map[string]any {
+	latestRaw := latestGateSummary(state)
+	if latestRaw == nil {
+		return nil
+	}
+	latest, ok := latestRaw.(map[string]any)
+	if !ok {
+		return nil
+	}
+	evidencePath := strings.TrimSpace(getStringDefault(latest, "evidence_path", ""))
+	if evidencePath == "" {
+		return nil
+	}
+	surface := map[string]any{
+		"path": evidencePath,
+	}
+	payload, err := loadJSONMap(evidencePath)
+	if err != nil {
+		surface["available"] = false
+		surface["error"] = err.Error()
+		return surface
+	}
+	surface["available"] = true
+	surface["overall"] = nilIfEmpty(getStringDefault(payload, "overall", ""))
+	surface["reviewer"] = nilIfEmpty(getStringDefault(payload, "reviewer", ""))
+	surface["timestamp"] = nilIfEmpty(getStringDefault(payload, "timestamp", ""))
+	if phaseA, ok := payload["phase_a"].(map[string]any); ok {
+		surface["phase_a"] = phaseA
+	}
+	return surface
 }
 
 func gateEvidencePath(root, rowName, boundary string) string {

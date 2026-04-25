@@ -193,9 +193,8 @@ Pi can remain the more capable or ergonomic runtime as long as:
 
 ### Current remaining gaps
 
-- fuller review execution and gate semantics beyond the now-landed narrow archive checkpoint/evidence path
-- richer implement/review artifact validation beyond the structural checks now in the backend
-- fuller archive ceremony beyond backend preconditions and archival evidence
+- fuller review execution and evaluator orchestration beyond the now-landed artifact-backed review readiness plus backend review status/validate normalization surfaces
+- fuller archive ceremony beyond backend readiness/evidence surfaces and derived follow-up signals into learnings, component, and follow-up disposition flows
 - Claude thin compatibility and dual-runtime validation
 
 ## Recommended sequencing
@@ -203,9 +202,9 @@ Pi can remain the more capable or ergonomic runtime as long as:
 1. Keep using Pi now for backend-canonical staged Furrow work
 2. Use the landed `/work` loop as the default operating path for supported flows
 3. Continue hardening backend-canonical work-loop boundaries:
-   - deepen per-step artifact validation where the current backend checks are still structural
+   - deepen per-step artifact validation and review normalization where the backend still stops short of full evaluator execution semantics
    - strengthen checkpoint / gate evidence toward fuller review semantics
-   - expand archive ceremony beyond narrow backend preconditions
+   - expand archive ceremony from richer evidence and follow-up signals into actual disposition flows
    - validate and normalize the shared blocker taxonomy across hosts
 4. Validate Claude-compatible flows later, after those backend semantics are more settled
 5. Expand Pi-native leverage and seed-backed planning after the boundary semantics are trustworthy

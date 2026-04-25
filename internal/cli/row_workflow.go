@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	yaml "gopkg.in/yaml.v3"
@@ -569,15 +570,24 @@ func appendSeedRecord(root string, record map[string]any) error {
 }
 
 func readTodoList(path string) ([]map[string]any, error) {
-	payload, err := os.ReadFile(path)
-	if err != nil {
-		return nil, &cliError{exit: 5, code: "not_found", message: fmt.Sprintf("todo file not found: %s", path), details: map[string]any{"path": path}}
+	doc, findings := loadYAMLDocument(path)
+	if len(findings) > 0 {
+		finding := findings[0]
+		return nil, &cliError{exit: 3, code: "validation_failed", message: fmt.Sprintf("invalid YAML in %s", path), details: map[string]any{"path": path, "error": finding.Message}}
 	}
-	var doc []map[string]any
-	if err := yaml.Unmarshal(payload, &doc); err != nil {
-		return nil, &cliError{exit: 3, code: "validation_failed", message: fmt.Sprintf("invalid YAML in %s", path), details: map[string]any{"path": path, "error": err.Error()}}
+	entries, ok := doc.([]any)
+	if !ok {
+		return nil, &cliError{exit: 3, code: "validation_failed", message: fmt.Sprintf("invalid YAML in %s", path), details: map[string]any{"path": path, "error": "todos document must be a YAML sequence"}}
 	}
-	return doc, nil
+	out := make([]map[string]any, 0, len(entries))
+	for index, raw := range entries {
+		entry, ok := raw.(map[string]any)
+		if !ok {
+			return nil, &cliError{exit: 3, code: "validation_failed", message: fmt.Sprintf("invalid YAML in %s", path), details: map[string]any{"path": path, "error": fmt.Sprintf("todo entry %d is not a mapping", index)}}
+		}
+		out = append(out, entry)
+	}
+	return out, nil
 }
 
 func findTodoByID(todos []map[string]any, id string) (map[string]any, bool) {
@@ -623,6 +633,140 @@ func cloneMap(input map[string]any) map[string]any {
 		out[key] = value
 	}
 	return out
+}
+
+func rowDeliverableNames(root, rowName string, state map[string]any) []string {
+	names := make([]string, 0)
+	seen := map[string]struct{}{}
+
+	definitionPath := filepath.Join(rowDirFor(root, rowName), "definition.yaml")
+	if fileExists(definitionPath) {
+		payload, err := os.ReadFile(definitionPath)
+		if err == nil {
+			var doc map[string]any
+			if err := yaml.Unmarshal(payload, &doc); err == nil {
+				if rawDeliverables, ok := doc["deliverables"].([]any); ok {
+					for _, raw := range rawDeliverables {
+						deliverable, ok := raw.(map[string]any)
+						if !ok {
+							continue
+						}
+						name, _ := deliverable["name"].(string)
+						name = strings.TrimSpace(name)
+						if !isSubstantiveText(name) {
+							continue
+						}
+						if _, exists := seen[name]; exists {
+							continue
+						}
+						seen[name] = struct{}{}
+						names = append(names, name)
+					}
+				}
+			}
+		}
+	}
+
+	if deliverables, ok := asMap(state["deliverables"]); ok {
+		stateNames := make([]string, 0, len(deliverables))
+		for name := range deliverables {
+			name = strings.TrimSpace(name)
+			if name == "" {
+				continue
+			}
+			if _, exists := seen[name]; exists {
+				continue
+			}
+			seen[name] = struct{}{}
+			stateNames = append(stateNames, name)
+		}
+		sort.Strings(stateNames)
+		names = append(names, stateNames...)
+	}
+
+	return names
+}
+
+func reviewArtifactFileName(name string) string {
+	trimmed := strings.TrimSpace(strings.ToLower(name))
+	if trimmed == "" {
+		return "all-deliverables.json"
+	}
+	trimmed = strings.ReplaceAll(trimmed, "/", "-")
+	trimmed = strings.ReplaceAll(trimmed, " ", "-")
+	builder := strings.Builder{}
+	lastDash := false
+	for _, r := range trimmed {
+		switch {
+		case (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9'):
+			builder.WriteRune(r)
+			lastDash = false
+		case r == '-' || r == '_':
+			if !lastDash {
+				builder.WriteByte('-')
+				lastDash = true
+			}
+		default:
+			if !lastDash {
+				builder.WriteByte('-')
+				lastDash = true
+			}
+		}
+	}
+	file := strings.Trim(builder.String(), "-")
+	if file == "" {
+		file = "all-deliverables"
+	}
+	return file + ".json"
+}
+
+func reviewArtifactsForRow(root, rowName string, state map[string]any) []map[string]any {
+	rowDir := rowDirFor(root, rowName)
+	deliverableNames := rowDeliverableNames(root, rowName, state)
+	artifacts := []struct {
+		ID                string
+		Label             string
+		Path              string
+		Required          bool
+		ScaffoldSupported bool
+	}{}
+	if len(deliverableNames) == 0 {
+		artifacts = append(artifacts, struct {
+			ID                string
+			Label             string
+			Path              string
+			Required          bool
+			ScaffoldSupported bool
+		}{ID: "review:all-deliverables", Label: "reviews/all-deliverables.json", Path: filepath.Join(rowDir, "reviews", "all-deliverables.json"), Required: true, ScaffoldSupported: false})
+	} else {
+		for _, deliverableName := range deliverableNames {
+			fileName := reviewArtifactFileName(deliverableName)
+			artifacts = append(artifacts, struct {
+				ID                string
+				Label             string
+				Path              string
+				Required          bool
+				ScaffoldSupported bool
+			}{ID: "review:" + deliverableName, Label: filepath.Join("reviews", fileName), Path: filepath.Join(rowDir, "reviews", fileName), Required: true, ScaffoldSupported: false})
+		}
+	}
+
+	result := make([]map[string]any, 0, len(artifacts))
+	for _, artifact := range artifacts {
+		exists := fileExists(artifact.Path)
+		entry := map[string]any{
+			"id":                 artifact.ID,
+			"label":              artifact.Label,
+			"path":               artifact.Path,
+			"required":           artifact.Required,
+			"exists":             exists,
+			"scaffold_supported": artifact.ScaffoldSupported,
+			"incomplete":         exists && fileContains(artifact.Path, scaffoldMarker),
+		}
+		entry["validation"] = validateArtifact(state, entry)
+		result = append(result, entry)
+	}
+	return result
 }
 
 func currentStepArtifacts(root, rowName string, state map[string]any) []map[string]any {
@@ -686,6 +830,29 @@ func currentStepArtifacts(root, rowName string, state map[string]any) []map[stri
 				ScaffoldSupported bool
 			}{ID: "team-plan", Label: "team-plan.md", Path: filepath.Join(rowDir, "team-plan.md"), Required: true, ScaffoldSupported: true},
 		)
+	case "implement":
+		deliverableNames := rowDeliverableNames(root, rowName, state)
+		requireCoordinationArtifacts := len(deliverableNames) > 1 || fileExists(filepath.Join(rowDir, "plan.json")) || fileExists(filepath.Join(rowDir, "team-plan.md"))
+		if requireCoordinationArtifacts {
+			artifacts = append(artifacts,
+				struct {
+					ID                string
+					Label             string
+					Path              string
+					Required          bool
+					ScaffoldSupported bool
+				}{ID: "plan", Label: "plan.json", Path: filepath.Join(rowDir, "plan.json"), Required: true, ScaffoldSupported: false},
+				struct {
+					ID                string
+					Label             string
+					Path              string
+					Required          bool
+					ScaffoldSupported bool
+				}{ID: "team-plan", Label: "team-plan.md", Path: filepath.Join(rowDir, "team-plan.md"), Required: true, ScaffoldSupported: false},
+			)
+		}
+	case "review":
+		return reviewArtifactsForRow(root, rowName, state)
 	}
 
 	result := make([]map[string]any, 0, len(artifacts))
@@ -909,6 +1076,16 @@ func rowCheckpointSurface(root, rowName string, state map[string]any, blockers [
 	gatePolicy := rowGatePolicy(root, rowName, state)
 	approvalRequired := gatePolicy == "supervised" && boundary != ""
 	ready := getStringDefault(state, "step_status", "") == "completed" && boundary != "" && len(blockers) == 0
+	evidence := map[string]any{
+		"latest_gate":          latestGateSummary(state),
+		"latest_gate_evidence": latestGateEvidenceSurface(state),
+		"artifact_validation":  summarizeArtifactValidation(artifacts),
+		"blocker_count":        len(blockers),
+		"seed":                 seed,
+	}
+	if action == "archive" {
+		evidence["archive_ceremony"] = archiveCeremonySurface(root, rowName, state, artifacts)
+	}
 	return map[string]any{
 		"gate_policy":       gatePolicy,
 		"boundary":          nilIfEmpty(boundary),
@@ -916,12 +1093,7 @@ func rowCheckpointSurface(root, rowName string, state map[string]any, blockers [
 		"action":            nilIfEmpty(action),
 		"approval_required": approvalRequired,
 		"ready_to_advance":  ready,
-		"evidence": map[string]any{
-			"latest_gate":         latestGateSummary(state),
-			"artifact_validation": summarizeArtifactValidation(artifacts),
-			"blocker_count":       len(blockers),
-			"seed":                seed,
-		},
+		"evidence":          evidence,
 	}
 }
 

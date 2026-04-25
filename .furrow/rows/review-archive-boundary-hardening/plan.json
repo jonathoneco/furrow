@@ -1,0 +1,51 @@
+{
+  "created_at": "2026-04-24T22:55:00Z",
+  "created_by": "retrospective-decompose",
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": [
+        "source-link-init-compatibility",
+        "implement-review-boundary-validation"
+      ],
+      "assignments": {
+        "source-link-init-compatibility": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "internal/cli/row_workflow.go",
+            "internal/cli/app_test.go"
+          ],
+          "skills": []
+        },
+        "implement-review-boundary-validation": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "internal/cli/row_workflow.go",
+            "internal/cli/row_semantics.go",
+            "internal/cli/row.go",
+            "internal/cli/app_test.go"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 2,
+      "deliverables": [
+        "archive-evidence-and-pi-surfacing"
+      ],
+      "assignments": {
+        "archive-evidence-and-pi-surfacing": {
+          "specialist": "typescript-specialist",
+          "file_ownership": [
+            "adapters/pi/furrow.ts",
+            "docs/architecture/go-cli-contract.md",
+            "docs/architecture/pi-parity-ladder.md",
+            "docs/architecture/pi-step-ceremony-and-artifact-enforcement.md"
+          ],
+          "skills": []
+        }
+      }
+    }
+  ]
+}

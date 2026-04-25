@@ -1,0 +1,13 @@
+{
+  "deliverable": "archive-evidence-and-pi-surfacing",
+  "phase_a": {
+    "verdict": "pass",
+    "evidence": "Checkpoint status and archive responses now expose latest gate evidence, review summary, source-link context, and learnings presence or count; the Pi adapter renders those backend fields."
+  },
+  "phase_b": {
+    "verdict": "pass",
+    "evidence": "The adapter remains thin and the richer archive ceremony data is still backend-owned."
+  },
+  "overall": "pass",
+  "reviewed_at": "2026-04-24T23:06:00Z"
+}

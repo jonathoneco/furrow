@@ -1,0 +1,33 @@
+objective: >
+  Diagnose dual-migration friction (shell→Go CLI substrate, and Claude Code→Pi
+  harness substrate) and produce a single recommended next move. Read-only
+  diagnostic — no code changes, no new architecture proposals.
+
+deliverables:
+  - name: research-md
+    acceptance_criteria:
+      - "Section 1: Intended end-state per migration, with direct quotes from architecture docs (cited as path:line)."
+      - "Section 2: Per-row status row for all 8 listed rows — step, step_status, deliverable progress, last gate outcome, archived?, plus a shipped-vs-promised one-liner."
+      - "Section 3: Dependency graph (rows × architecture docs) — prerequisite edges and orphan flags."
+      - "Section 4: Two gap matrices (shell→Go, CC→Pi) with columns documented_intent / landed / in_flight / not_started / contradicted_or_superseded; every cell cites artifacts."
+      - "Section 5: Friction diagnosis testing the six named hypotheses against evidence — each marked accepted/rejected/partial with citations."
+      - "Section 6: Single recommended next move chosen from {a,b,c,d}, fully specified."
+      - "Every claim cites an artifact path. Doc disagreements are surfaced, not silently resolved. Spec-vs-delivered mismatches are findings."
+
+context_pointers:
+  - path: docs/architecture/
+    note: "Canon for intent — read all 13 listed files (dual-runtime-migration-plan, migration-stance, core-adapter-boundary, cli-architecture, go-cli-contract, host-strategy-matrix, pi-parity-ladder, pi-native-capability-leverage, pi-almanac-operating-model, pi-step-ceremony-and-artifact-enforcement, self-hosting, workflow-power-preservation, documentation-authority-taxonomy)."
+  - path: .furrow/rows/
+    note: "Read each migration row's definition.yaml, state.json, spec.md, implementation-plan.md, and gates/. Rows in scope: pi-adapter-foundation, pi-adapter-promotion, pi-furrow-operating-layer, pi-step-ceremony-and-artifact-enforcement, go-backend-slice, frw-cli-dispatcher, backend-mediated-row-bookkeeping, namespace-rename."
+  - path: .furrow/almanac/
+    note: "roadmap.yaml, todos.yaml, observations.yaml — migration-tagged signal."
+
+constraints:
+  - "Read-only. No file edits outside research.md and standard row artifacts."
+  - "Cite artifact paths for every claim."
+  - "Surface doc disagreements; do not silently pick a winner."
+  - "Spec-vs-delivered mismatches are findings, not asides."
+  - "Use Explore subagents for doc and row sweeps; main thread for synthesis."
+  - "No code-change or new-architecture proposals in this row."
+
+gate_policy: supervised

@@ -1,0 +1,47 @@
+{
+  "boundary": "research-\u003eplan",
+  "notes": "backend-canonical checkpoint evidence for the narrow /work loop transition",
+  "overall": "pass",
+  "phase_a": {
+    "artifact_validation": {
+      "by_status": {
+        "fail": 0,
+        "missing": 0,
+        "pass": 1,
+        "warn": 0
+      },
+      "total": 1
+    },
+    "artifacts": [
+      {
+        "exists": true,
+        "id": "research",
+        "incomplete": false,
+        "label": "research.md",
+        "path": "/home/jonco/src/furrow/.furrow/rows/review-archive-boundary-hardening/research.md",
+        "required": true,
+        "scaffold_supported": true,
+        "validation": {
+          "blocking_count": 0,
+          "finding_count": 0,
+          "findings": [],
+          "status": "pass",
+          "summary": "validation passed",
+          "warning_count": 0
+        }
+      }
+    ],
+    "blockers": [],
+    "seed": {
+      "consistent": true,
+      "expected_status": "researching",
+      "id": "furrow-3254",
+      "state": "linked",
+      "status": "researching",
+      "title": "Review/archive boundary hardening"
+    },
+    "step_status_required": "completed"
+  },
+  "reviewer": "furrow row transition",
+  "timestamp": "2026-04-24T22:48:50Z"
+}

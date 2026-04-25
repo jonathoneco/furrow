@@ -1,0 +1,71 @@
+{
+  "archived_at": null,
+  "base_commit": "c8848db71ad4423680930f20ad13484b2648086e",
+  "branch": null,
+  "created_at": "2026-04-24T23:24:34Z",
+  "deliverables": {},
+  "description": "Pi adapter foundation",
+  "epic_seed_id": null,
+  "force_stop_at": null,
+  "gate_policy_init": "supervised",
+  "gates": [
+    {
+      "boundary": "ideate-\u003eresearch",
+      "decided_by": "manual",
+      "evidence": "furrow row transition enforced adjacent ordering, completed-step requirement, blocker taxonomy checks, seed sync, and per-artifact validation; summary regeneration and evaluator phases were not performed",
+      "evidence_path": "/home/jonco/src/furrow/.furrow/rows/pi-adapter-foundation/gates/ideate-to-research.json",
+      "outcome": "pass",
+      "timestamp": "2026-04-24T23:25:57Z"
+    },
+    {
+      "boundary": "research-\u003eplan",
+      "decided_by": "manual",
+      "evidence": "furrow row transition enforced adjacent ordering, completed-step requirement, blocker taxonomy checks, seed sync, and per-artifact validation; summary regeneration and evaluator phases were not performed",
+      "evidence_path": "/home/jonco/src/furrow/.furrow/rows/pi-adapter-foundation/gates/research-to-plan.json",
+      "outcome": "pass",
+      "timestamp": "2026-04-24T23:26:44Z"
+    },
+    {
+      "boundary": "plan-\u003espec",
+      "decided_by": "manual",
+      "evidence": "furrow row transition enforced adjacent ordering, completed-step requirement, blocker taxonomy checks, seed sync, and per-artifact validation; summary regeneration and evaluator phases were not performed",
+      "evidence_path": "/home/jonco/src/furrow/.furrow/rows/pi-adapter-foundation/gates/plan-to-spec.json",
+      "outcome": "pass",
+      "timestamp": "2026-04-24T23:40:00Z"
+    },
+    {
+      "boundary": "spec-\u003edecompose",
+      "decided_by": "manual",
+      "evidence": "furrow row transition enforced adjacent ordering, completed-step requirement, blocker taxonomy checks, seed sync, and per-artifact validation; summary regeneration and evaluator phases were not performed",
+      "evidence_path": "/home/jonco/src/furrow/.furrow/rows/pi-adapter-foundation/gates/spec-to-decompose.json",
+      "outcome": "pass",
+      "timestamp": "2026-04-24T23:40:35Z"
+    },
+    {
+      "boundary": "decompose-\u003eimplement",
+      "decided_by": "manual",
+      "evidence": "furrow row transition enforced adjacent ordering, completed-step requirement, blocker taxonomy checks, seed sync, and per-artifact validation; summary regeneration and evaluator phases were not performed",
+      "evidence_path": "/home/jonco/src/furrow/.furrow/rows/pi-adapter-foundation/gates/decompose-to-implement.json",
+      "outcome": "pass",
+      "timestamp": "2026-04-24T23:41:09Z"
+    }
+  ],
+  "mode": "code",
+  "name": "pi-adapter-foundation",
+  "pending_user_actions": [],
+  "seed_id": "furrow-6d44",
+  "source_todo": null,
+  "step": "implement",
+  "step_status": "not_started",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "title": "Pi adapter foundation",
+  "updated_at": "2026-04-24T23:41:09Z"
+}

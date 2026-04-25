@@ -1,0 +1,47 @@
+{
+  "boundary": "plan-\u003espec",
+  "notes": "backend-canonical checkpoint evidence for the narrow /work loop transition",
+  "overall": "pass",
+  "phase_a": {
+    "artifact_validation": {
+      "by_status": {
+        "fail": 0,
+        "missing": 0,
+        "pass": 1,
+        "warn": 0
+      },
+      "total": 1
+    },
+    "artifacts": [
+      {
+        "exists": true,
+        "id": "implementation-plan",
+        "incomplete": false,
+        "label": "implementation-plan.md",
+        "path": "/home/jonco/src/furrow/.furrow/rows/pi-adapter-foundation/implementation-plan.md",
+        "required": true,
+        "scaffold_supported": true,
+        "validation": {
+          "blocking_count": 0,
+          "finding_count": 0,
+          "findings": [],
+          "status": "pass",
+          "summary": "validation passed",
+          "warning_count": 0
+        }
+      }
+    ],
+    "blockers": [],
+    "seed": {
+      "consistent": true,
+      "expected_status": "planning",
+      "id": "furrow-6d44",
+      "state": "linked",
+      "status": "planning",
+      "title": "Pi adapter foundation"
+    },
+    "step_status_required": "completed"
+  },
+  "reviewer": "furrow row transition",
+  "timestamp": "2026-04-24T23:40:00Z"
+}

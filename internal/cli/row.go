@@ -440,6 +440,7 @@ func (a *App) runRowArchive(args []string) int {
 	if !ok {
 		return a.fail("furrow row archive", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("row %q cannot archive without a passing ->review gate", rowName)}, flags.json)
 	}
+	archiveCeremony := archiveCeremonySurface(root, rowName, state, artifacts)
 
 	now := nowRFC3339()
 	boundary := "review->archive"
@@ -454,6 +455,7 @@ func (a *App) runRowArchive(args []string) int {
 			"seed":                seed,
 			"artifacts":           artifacts,
 			"artifact_validation": summarizeArtifactValidation(artifacts),
+			"archive_ceremony":    archiveCeremony,
 			"blockers":            blockers,
 		},
 	})
@@ -504,6 +506,7 @@ func (a *App) runRowArchive(args []string) int {
 			"timestamp":     nilIfEmpty(getStringDefault(reviewGate, "timestamp", "")),
 			"evidence_path": optionalPath(getStringDefault(reviewGate, "evidence_path", "")),
 		},
+		"archive_ceremony": archiveCeremony,
 	}
 	if flags.json {
 		return a.okJSON("furrow row archive", data)
