@@ -3879,6 +3879,39 @@
   depends_on:
     - shared-blocker-taxonomy-spec
     - default-supervised-gating
+- id: alm-next-field-name-alignment-fix
+  title: alm-next field-name alignment fix
+  context: 'alm next was emitting ''jq: error: Cannot iterate over null'' because cmd_triage in bin/alm produced phases[].work_units[] with .branch_name fields, but cmd_next consumed phases[].rows[] with .branch fields. Schema drifted between writer and reader; one side wasn''t updated. Discovered during /furrow:triage interactive cluster-and-approve session in migration-state-of-the-union research row.'
+  work_needed: 'FIXED 2026-04-25 (this entry tracks the fact for audit). bin/alm renamed work_units -> rows and branch_name -> branch globally (cmd_triage emit, cmd_render output, cmd_next consume, handoff template). Verified: alm validate clean, alm triage regenerates roadmap.yaml with new fields, alm next runs without error and emits handoff prompts. Should mark as done after commit.'
+  source_type: manual
+  status: done
+  created_at: "2026-04-24T22:17:14-04:00"
+  urgency: high
+  impact: medium
+  effort: small
+  updated_at: "2026-04-24T22:17:14-04:00"
+  references:
+    - bin/alm
+  source_work_unit: migration-state-of-the-union
+- id: roadmap-row-cluster-machine-readable-representatio
+  title: Roadmap row-cluster machine-readable representation
+  context: 'alm triage currently produces one row per todo (83 rows in Phase 1 after triage-of-83-todos). The /furrow:triage slash command spec calls for row consolidation: bundle related todos into shared branches by subsystem / sequential dep / coherent theme. Today consolidation only lives in roadmap.md (16 row clusters across 8 phases) — there''s no machine-readable representation alm next can consume. Result: alm next surfaces the unconsolidated rows; consumers get the firehose, not the curated plan.'
+  work_needed: 'Extend alm triage (or add alm consolidate / alm cluster) to apply consolidation rules from /furrow:triage step 6a: same-subsystem grouping, sequential-dep collapse, coherent-theme bundling. Output should be a small set of row clusters per phase (typically 3-5), not one-per-todo. Optional: capture cluster metadata in todos.yaml as a parent-todo umbrella with absorbs[] linkage so the source-of-truth survives across regenerations. Ties into roadmap-generation-from-seeds (Phase 5) but is independent enough to ship sooner.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-24T22:17:14-04:00"
+  urgency: medium
+  impact: high
+  effort: large
+  updated_at: "2026-04-24T22:17:14-04:00"
+  references:
+    - bin/alm
+    - templates/roadmap.md.tmpl
+    - templates/roadmap-sections.yaml
+    - docs/architecture/pi-almanac-operating-model.md
+  source_work_unit: migration-state-of-the-union
+  depends_on:
+    - cli-architecture-overhaul-slice-2
 - context: |
     The `/work` loop is now real, which makes the next weakness much
     clearer. Furrow can now resolve or initialize rows, scaffold the active step

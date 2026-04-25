@@ -680,7 +680,7 @@ print(json.dumps(result))
       {
         phase: $wave_num,
         file_pattern: ($overlaps | join(", ")),
-        work_units: [$a, $b],
+        rows: [$a, $b],
         severity: (if ($overlaps | length) > 3 then "high" elif ($overlaps | length) > 1 then "medium" else "low" end),
         mitigation: "sequential ordering"
       }
@@ -712,9 +712,9 @@ print(json.dumps(result))
       title: ("Phase " + (.wave | tostring)),
       status: "planned",
       rationale: "Wave " + (.wave | tostring) + " of dependency graph",
-      work_units: [.todos | to_entries[] | {
+      rows: [.todos | to_entries[] | {
         index: (.key + 1),
-        branch_name: ("work/" + .value),
+        branch: ("work/" + .value),
         description: .value,
         todos: [.value],
         depends_on: [],
@@ -819,7 +819,7 @@ print(json.dumps(result))
       phases: $phases,
       deferred: $deferred,
       handoff: {
-        template: "Start with: `/work {branch_name} — {description}`\nSource TODOs: {todo_ids}\nKey files: {key_files}"
+        template: "Start with: `/work {branch} — {description}`\nSource TODOs: {todo_ids}\nKey files: {key_files}"
       }
     }')
 
@@ -883,7 +883,7 @@ cmd_next() {
   fi
 
   # Get handoff template
-  template=$(printf '%s' "$roadmap" | jq -r '.handoff.template // "Start with: `/work {branch_name} — {description}`\nSource TODOs: {todo_ids}\nKey files: {key_files}"')
+  template=$(printf '%s' "$roadmap" | jq -r '.handoff.template // "Start with: `/work {branch} — {description}`\nSource TODOs: {todo_ids}\nKey files: {key_files}"')
 
   phase_title=$(printf '%s' "$phase" | jq -r '.title // ("Phase " + (.number | tostring))')
   printf '=== %s ===\n\n' "$phase_title"
@@ -1174,7 +1174,7 @@ cmd_render() {
       "| Phase | Pattern | Work Units | Severity | Mitigation |\n" +
       "|-------|---------|------------|----------|------------|\n" +
       ([.conflict_zones[] |
-        "| " + (.phase | tostring) + " | " + .file_pattern + " | " + (.work_units | join(", ")) + " | " + .severity + " | " + .mitigation + " |"
+        "| " + (.phase | tostring) + " | " + .file_pattern + " | " + (.rows | join(", ")) + " | " + .severity + " | " + .mitigation + " |"
       ] | join("\n")) + "\n\n"
     else
       "No file conflicts detected.\n\n"
@@ -1185,8 +1185,8 @@ cmd_render() {
       "## Phase " + (.number | tostring) + ": " + .title + "\n\n" +
       "**Status:** " + .status + "  \n" +
       "**Rationale:** " + (.rationale // "-") + "\n\n" +
-      ([.work_units[] |
-        "### " + (.index | tostring) + ". " + .branch_name + "\n\n" +
+      ([.rows[] |
+        "### " + (.index | tostring) + ". " + .branch + "\n\n" +
         .description + "\n\n" +
         "- **TODOs:** " + (.todos | join(", ")) + "\n" +
         "- **Key files:** " + (if (.key_files | length) > 0 then (.key_files | join(", ")) else "(none)" end) + "\n" +
@@ -1207,7 +1207,7 @@ cmd_render() {
     "\n## Worktree Commands\n\n```sh\n" +
     ([.phases[] | select(.status != "done") |
       "# Phase " + (.number | tostring) + "\n" +
-      ([.work_units[] | "git worktree add ../" + $prefix + "-" + .branch_name + " -b " + .branch_name] | join("\n"))
+      ([.rows[] | "git worktree add ../" + $prefix + "-" + .branch + " -b " + .branch] | join("\n"))
     ] | join("\n\n")) +
     "\n```\n"
   ')
