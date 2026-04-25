@@ -1,0 +1,8 @@
+{
+  "code": "definition_unknown_keys",
+  "category": "definition",
+  "severity": "block",
+  "message": "{path}: contains unknown top-level keys: {keys}",
+  "remediation_hint": "Remove keys not declared in schemas/definition.schema.json (additionalProperties is false)",
+  "confirmation_path": "block"
+}

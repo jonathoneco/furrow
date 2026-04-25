@@ -1,0 +1,8 @@
+{
+  "code": "correction_limit_reached",
+  "category": "state-mutation",
+  "severity": "block",
+  "message": "Correction limit (3) reached for deliverable 'foo' (path: /tmp/x.go). Escalate to human for guidance.",
+  "remediation_hint": "The deliverable has reached its correction limit. Stop attempting fixes and escalate to a human reviewer; no CLI override exists.",
+  "confirmation_path": "block"
+}

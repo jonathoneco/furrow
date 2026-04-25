@@ -1,0 +1,8 @@
+{
+  "code": "summary_section_empty_warn",
+  "category": "summary",
+  "severity": "warn",
+  "message": "summary.md section 'Key Findings' has fewer than 2 lines of content for r1",
+  "remediation_hint": "Use `rws update-summary {section}` to add substantive content. This is a session-boundary warning, not a hard block.",
+  "confirmation_path": "silent"
+}

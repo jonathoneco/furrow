@@ -1,0 +1,1 @@
+correction_limit_reached requires materialized FURROW_ROOT state (plan.json+state.json+furrow.yaml) — covered by internal/cli/correction_limit_test.go; integration coverage is the future surface for follow-up TODO correction-limit-integration-fixture

@@ -1,0 +1,8 @@
+{
+  "version": "1",
+  "event_type": "pre_write_state_json",
+  "payload": {
+    "target_path": "/tmp/fakerow/.furrow/rows/r1/state.json",
+    "tool_name": "Write"
+  }
+}

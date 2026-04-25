@@ -1,0 +1,8 @@
+{
+  "code": "definition_gate_policy_missing",
+  "category": "definition",
+  "severity": "block",
+  "message": "{path}: missing required field 'gate_policy'",
+  "remediation_hint": "Set gate_policy to one of: supervised, delegated, autonomous",
+  "confirmation_path": "block"
+}

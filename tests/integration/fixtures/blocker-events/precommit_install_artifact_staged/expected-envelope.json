@@ -1,0 +1,8 @@
+{
+  "code": "precommit_install_artifact_staged",
+  "category": "scaffold",
+  "severity": "block",
+  "message": "refusing to stage install-artifact bin/foo.bak; move to $XDG_STATE_HOME/furrow/",
+  "remediation_hint": "Install artifacts (bin/*.bak, .claude/rules/*.bak) belong in $XDG_STATE_HOME/furrow/, not in the repository. Unstage and relocate.",
+  "confirmation_path": "block"
+}

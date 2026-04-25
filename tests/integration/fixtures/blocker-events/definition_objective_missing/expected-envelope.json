@@ -1,0 +1,8 @@
+{
+  "code": "definition_objective_missing",
+  "category": "definition",
+  "severity": "block",
+  "message": "{path}: missing required field 'objective'",
+  "remediation_hint": "Add a one-sentence 'objective:' field at the top level of definition.yaml",
+  "confirmation_path": "block"
+}

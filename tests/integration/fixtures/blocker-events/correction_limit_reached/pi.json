@@ -1,0 +1,16 @@
+{
+  "toolName": "write",
+  "input": {
+    "path": "/tmp/x.go"
+  },
+  "_driver_branch": "guard",
+  "_driver_event_type": "pre_write_correction_limit",
+  "_driver_normalized": {
+    "version": "1",
+    "event_type": "pre_write_correction_limit",
+    "payload": {
+      "target_path": "/tmp/x.go",
+      "tool_name": "Write"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "toolName": "write",
+  "input": {
+    "path": "/tmp/fakerow/.furrow/rows/r1/state.json"
+  },
+  "_driver_branch": "guard",
+  "_driver_event_type": "pre_write_state_json",
+  "_driver_normalized": {
+    "version": "1",
+    "event_type": "pre_write_state_json",
+    "payload": {
+      "target_path": "/tmp/fakerow/.furrow/rows/r1/state.json",
+      "tool_name": "write"
+    }
+  }
+}

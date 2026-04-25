@@ -1,0 +1,8 @@
+{
+  "code": "definition_deliverables_empty",
+  "category": "definition",
+  "severity": "block",
+  "message": "{path}: deliverables[] is empty or missing; at least one deliverable is required",
+  "remediation_hint": "Add at least one deliverable entry with name and acceptance_criteria",
+  "confirmation_path": "block"
+}

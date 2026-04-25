@@ -1,0 +1,8 @@
+{
+  "code": "missing_required_artifact",
+  "category": "artifact",
+  "severity": "block",
+  "message": "required current-step artifact {artifact_id} is missing at {path}",
+  "remediation_hint": "Create or scaffold the required current-step artifact, then rerun /work or furrow row status.",
+  "confirmation_path": "block"
+}

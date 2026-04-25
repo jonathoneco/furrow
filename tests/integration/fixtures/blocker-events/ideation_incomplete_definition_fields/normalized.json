@@ -1,0 +1,11 @@
+{
+  "version": "1",
+  "event_type": "stop_ideation_completeness",
+  "row": "r1",
+  "step": "ideate",
+  "payload": {
+    "row": "r1",
+    "gate_policy": "supervised",
+    "definition_path": "__FIXTURE_DIR__/definition.yaml"
+  }
+}

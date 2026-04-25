@@ -1,0 +1,8 @@
+{
+  "code": "ownership_outside_scope",
+  "category": "ownership",
+  "severity": "warn",
+  "message": "{path} is outside file_ownership for any deliverable in {row}",
+  "remediation_hint": "Add the path to the appropriate deliverable's file_ownership in definition.yaml, or write to a different file",
+  "confirmation_path": "warn-with-confirm"
+}

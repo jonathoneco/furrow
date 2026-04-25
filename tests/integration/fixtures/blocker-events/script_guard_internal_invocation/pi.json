@@ -1,0 +1,15 @@
+{
+  "toolName": "bash",
+  "input": {
+    "command": "bash bin/frw.d/hooks/foo.sh"
+  },
+  "_driver_branch": "guard",
+  "_driver_event_type": "pre_bash_internal_script",
+  "_driver_normalized": {
+    "version": "1",
+    "event_type": "pre_bash_internal_script",
+    "payload": {
+      "command": "bash bin/frw.d/hooks/foo.sh"
+    }
+  }
+}

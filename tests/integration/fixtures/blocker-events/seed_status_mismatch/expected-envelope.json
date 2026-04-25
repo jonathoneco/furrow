@@ -1,0 +1,8 @@
+{
+  "code": "seed_status_mismatch",
+  "category": "seed",
+  "severity": "block",
+  "message": "linked seed {seed_id} status {actual_status} does not match expected {expected_status}",
+  "remediation_hint": "Repair the linked seed state so it matches the row step, then retry the checkpoint through the backend.",
+  "confirmation_path": "block"
+}

@@ -1,0 +1,8 @@
+{
+  "code": "step_order_invalid",
+  "category": "state-mutation",
+  "severity": "block",
+  "message": "row {row}: invalid step order — cannot transition from '{current_step}' to '{target_step}'",
+  "remediation_hint": "Only adjacent forward transitions in the step sequence are supported. Complete the current step or reground via `rws status`.",
+  "confirmation_path": "block"
+}

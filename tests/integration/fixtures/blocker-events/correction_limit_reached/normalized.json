@@ -1,0 +1,8 @@
+{
+  "version": "1",
+  "event_type": "pre_write_correction_limit",
+  "payload": {
+    "target_path": "__FIXTURE_DIR__/notexist.go",
+    "tool_name": "Write"
+  }
+}

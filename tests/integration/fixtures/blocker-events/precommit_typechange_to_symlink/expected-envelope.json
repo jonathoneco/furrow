@@ -1,0 +1,8 @@
+{
+  "code": "precommit_typechange_to_symlink",
+  "category": "scaffold",
+  "severity": "block",
+  "message": "refusing type-change to symlink on bin/alm (see docs/architecture/self-hosting.md)",
+  "remediation_hint": "Protected paths (bin/alm, bin/rws, bin/sds, .claude/rules/*) must remain regular files; do not stage a symlink type-change.",
+  "confirmation_path": "block"
+}

@@ -1,0 +1,8 @@
+{
+  "code": "summary_section_missing",
+  "category": "summary",
+  "severity": "block",
+  "message": "summary.md is missing required section 'Recommendations' (path: __FIXTURE_DIR__/summary.md)",
+  "remediation_hint": "Use `rws update-summary <section>` to add the missing section. summary.md must contain Task, Current State, Artifact Paths, Settled Decisions, Key Findings, Open Questions, and Recommendations.",
+  "confirmation_path": "block"
+}

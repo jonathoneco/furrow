@@ -1,0 +1,18 @@
+{
+  "toolName": "stop",
+  "input": {
+    "row": "r1"
+  },
+  "_driver_branch": "guard",
+  "_driver_event_type": "stop_work_check",
+  "_driver_normalized": {
+    "version": "1",
+    "event_type": "stop_work_check",
+    "row": "r1",
+    "payload": {
+      "row": "r1",
+      "summary_path": "/nonexistent/summary.md",
+      "state_validation_ok": false
+    }
+  }
+}

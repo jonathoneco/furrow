@@ -1,0 +1,3 @@
+# Fixture: missing required ideation fields (objective, gate_policy,
+# deliverables, context_pointers, constraints).
+mode: code
