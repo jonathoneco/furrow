@@ -6,9 +6,9 @@ This document records paired Pi-side and Claude-side observations for the same G
 
 | # | Scenario | Input path | Input row | D2 verdict | Pi handler outcome (D5) | Claude hook outcome (D6) | Parity OK? | Notes |
 |---|---|---|---|---|---|---|---|---|
-| 1 | in_scope match | `internal/cli/validate_ownership.go` | `pre-write-validation-go-first` | `in_scope`, matched_deliverable=`validate-ownership-go`, matched_glob=`internal/cli/validate_ownership.go` | silent allow (no notify, no confirm) | (filled by D6) | (filled by D6) |  |
-| 2 | out_of_scope | `tests/adversarial/outside.go` | `pre-write-validation-go-first` | `out_of_scope`, envelope.code=`ownership_outside_scope`, severity=`warn`, confirmation_path=`warn-with-confirm` | `ctx.ui.confirm("Furrow ownership check", "...outside file_ownership... Proceed anyway?")` fires | (filled by D6) | (filled by D6) | Pi UX is interactive; Claude is non-interactive. Both fire on the same trigger. |
-| 3 | not_applicable (no row) | `random/path.txt` | (none — no `--row`, no focused row) | `not_applicable`, reason=`no_active_row` | silent allow | (filled by D6) | (filled by D6) | Hook resolves as no-op when no row context exists |
+| 1 | in_scope match | `internal/cli/validate_ownership.go` | `pre-write-validation-go-first` | `in_scope`, matched_deliverable=`validate-ownership-go`, matched_glob=`internal/cli/validate_ownership.go` | silent allow (no notify, no confirm) | silent allow (no log_warning emitted; verdict is `in_scope` → hook returns 0 silently) | yes |  |
+| 2 | out_of_scope | `tests/adversarial/outside.go` | `pre-write-validation-go-first` | `out_of_scope`, envelope.code=`ownership_outside_scope`, severity=`warn`, confirmation_path=`warn-with-confirm` | `ctx.ui.confirm("Furrow ownership check", "...outside file_ownership... Proceed anyway?")` fires | `log_warning "tests/adversarial/outside.go is outside file_ownership for any deliverable in pre-write-validation-go-first"` emitted via the hook's `log_warning` helper; exit code 0 (warn-not-block) | yes | Pi UX is interactive; Claude is non-interactive. Both fire on the same trigger condition (D2 verdict `out_of_scope`). UX divergence is host-capability-driven and intrinsic. |
+| 3 | not_applicable (no row) | `random/path.txt` | (none — no `--row`, no focused row) | `not_applicable`, reason=`no_active_row` | silent allow | silent allow (`find_focused_row` returns empty when no `.furrow/.focused`; hook returns 0 before invoking Go validator) | yes | Hook short-circuits with no row context resolvable |
 
 ## Methodology
 
@@ -30,7 +30,17 @@ The handler at `adapters/pi/furrow.ts` (D5 block) reads `data.verdict` from the 
 
 ### Claude-side (D6) — manual verification
 
-(Filled by D6 when wave 6 implements the shell hook update.)
+The Claude shell hook at `bin/frw.d/hooks/ownership-warn.sh` delegates to the same `furrow validate ownership --path <file> --json` Go validator that D5 (Pi handler) consumes. This guarantees identical glob-matching semantics across runtimes — POSIX shell `case` patterns cannot replicate Go's `**` doublestar handling, which would otherwise silently break parity.
+
+Verification was performed by sourcing the hook function in a fixture row context and invoking with stdin matching the PreToolUse hook contract (`{"tool_input":{"file_path":"..."}}`):
+
+- **in_scope path** (`internal/cli/blocker_envelope.go`, owned by D3): no log_warning emitted; exit 0 silent.
+- **out_of_scope path** (`random/file.txt`, no matching glob): `log_warning` emitted via the project's standard log helper; exit 0 (warn-not-block preserved).
+- **no row context** (`.furrow/.focused` missing): hook short-circuits with `[ -z "$work_dir" ] && return 0`.
+- **mid-init row** (definition.yaml without deliverables): Go validator returns `not_applicable` reason `row_has_no_deliverables`; hook returns 0 silently.
+- **shellcheck**: passes with `# shellcheck shell=sh` directive (only remaining diagnostic is the SC1091 informational about `-x` source-following, which is expected and was present in the original file).
+
+The shared invariant — both runtimes fire on the same Go-validator verdict, never gate on `state.step`, never block — holds across all three paired scenarios above.
 
 ## Shared invariants
 

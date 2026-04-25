@@ -1,8 +1,23 @@
-# ownership-warn.sh — Warn on file_ownership violations during implement step
+# shellcheck shell=sh
+# ownership-warn.sh — Warn on file_ownership violations
 #
 # Hook: PreToolUse (matcher: Write|Edit)
 # Receives JSON on stdin with tool_name and tool_input.
 # Advisory only — always returns 0.
+#
+# Updated by D6 of pre-write-validation-go-first:
+#   - Delegates the verdict to `furrow validate ownership` (the canonical Go
+#     validator from D2). This guarantees identical glob-matching semantics
+#     across the Pi and Claude adapters — POSIX shell `case` patterns cannot
+#     replicate Go's `**` doublestar handling, which would silently break the
+#     cross-adapter parity invariant if implemented in shell directly.
+#   - Step gating removed: fires in any step (was: implement-only)
+#
+# Cross-adapter parity: this hook is the non-interactive Claude equivalent of
+# the Pi adapter ownership handler at adapters/pi/furrow.ts (D5). Claude shell
+# hooks have no interactive primitive at write time, so the surface here is
+# log_warning rather than a confirm prompt; the underlying trigger (the
+# `furrow validate ownership` verdict) is identical.
 
 # shellcheck source=../lib/common-minimal.sh
 . "${FURROW_ROOT}/bin/frw.d/lib/common-minimal.sh"
@@ -26,42 +41,25 @@ hook_ownership_warn() {
     return 0
   fi
 
-  state_file="$work_dir/state.json"
-  current_step="$(jq -r '.step // ""' "$state_file" 2>/dev/null)" || current_step=""
+  row_name="$(basename "$work_dir")"
 
-  if [ "$current_step" != "implement" ]; then
+  # Delegate to the canonical Go validator. Output is JSON; we only need the
+  # verdict and (on out_of_scope) the message field.
+  cd "${FURROW_ROOT}" || return 0
+  result_json="$(go run ./cmd/furrow validate ownership --path "$target_path" --row "$row_name" --json 2>/dev/null)" || return 0
+
+  verdict="$(echo "$result_json" | jq -r '.data.verdict // ""' 2>/dev/null)" || verdict=""
+
+  if [ "$verdict" != "out_of_scope" ]; then
     return 0
   fi
 
-  plan_file="$work_dir/plan.json"
+  message="$(echo "$result_json" | jq -r '.data.envelope.message // ""' 2>/dev/null)" || message=""
 
-  if [ ! -f "$plan_file" ]; then
-    return 0
+  if [ -z "$message" ]; then
+    message="File write outside file_ownership: ${target_path}"
   fi
 
-  # Get all file_ownership globs from wave assignments
-  ownership_globs="$(jq -r '
-    [.waves[].assignments | to_entries[].value.file_ownership // [] | .[]] | unique | .[]
-  ' "$plan_file" 2>/dev/null)" || ownership_globs=""
-
-  if [ -z "$ownership_globs" ]; then
-    return 0
-  fi
-
-  _matched=0
-  _IFS_SAVE="$IFS"
-  IFS="$(printf '\n')"
-  # shellcheck disable=SC2254
-  for _glob in $ownership_globs; do
-    case "$target_path" in
-      $_glob) _matched=1; break ;;
-    esac
-  done
-  IFS="$_IFS_SAVE"
-
-  if [ "$_matched" -eq 0 ]; then
-    log_warning "File write outside file_ownership: $target_path (assigned globs: $(echo "$ownership_globs" | tr '\n' ', ' | sed 's/,$//'))"
-  fi
-
+  log_warning "${message}"
   return 0
 }
