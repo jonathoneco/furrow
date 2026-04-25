@@ -107,7 +107,7 @@ func readAuditFile(t *testing.T, root, rowName string) []map[string]any {
 func TestRowRepairDeliverables(t *testing.T) {
 	cases := []struct {
 		name     string
-		manifest string         // YAML contents to write to manifest file; empty means don't create
+		manifest string // YAML contents to write to manifest file; empty means don't create
 		setup    func(t *testing.T, root string)
 		args     []string // appended after the row name (row name is "test-row" unless overridden by fullArgs)
 		rowName  string   // defaults to "test-row"
@@ -166,7 +166,7 @@ func TestRowRepairDeliverables(t *testing.T) {
 			},
 			fullArgs: []string{"test-row", "--manifest", "/nonexistent/path.yaml"},
 			wantExit: 3,
-			check: func(t *testing.T, root string) {},
+			check:    func(t *testing.T, root string) {},
 		},
 		{
 			name:     "schema invalid - missing evidence_paths",

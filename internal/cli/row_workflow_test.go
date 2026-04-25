@@ -35,12 +35,12 @@ func writeDefinitionYAML(t *testing.T, root, rowName, content string) {
 // TestRowBlockers_Supersedence is a table-driven unit test covering scenarios A, B, C, E, F.
 func TestRowBlockers_Supersedence(t *testing.T) {
 	cases := []struct {
-		name                  string // Scenario label
-		definitionSupersedes  map[string]any
-		supersedesConfirmed   string
-		wantBlockerCode       string // non-empty → expect this blocker code
-		wantNoBlockerCode     string // non-empty → expect this blocker code to be ABSENT
-		wantMsgContains       []string
+		name                 string // Scenario label
+		definitionSupersedes map[string]any
+		supersedesConfirmed  string
+		wantBlockerCode      string // non-empty → expect this blocker code
+		wantNoBlockerCode    string // non-empty → expect this blocker code to be ABSENT
+		wantMsgContains      []string
 	}{
 		{
 			// Scenario A: supersedes block present, flag missing → blocker
@@ -154,12 +154,12 @@ func containsString(s, substr string) bool {
 // of unexpected shape.
 func TestDefinitionSupersedes(t *testing.T) {
 	cases := []struct {
-		name             string
-		writeDefinition  bool
-		definitionBody   string
-		wantNil          bool
-		wantCommit       string
-		wantRow          string
+		name            string
+		writeDefinition bool
+		definitionBody  string
+		wantNil         bool
+		wantCommit      string
+		wantRow         string
 	}{
 		{
 			name:            "missing definition file returns nil",
@@ -187,7 +187,7 @@ func TestDefinitionSupersedes(t *testing.T) {
 		{
 			name:            "supersedes valid map returns parsed values",
 			writeDefinition: true,
-			definitionBody: "supersedes:\n  commit: e4adef5\n  row: pi-step-ceremony-and-artifact-enforcement\n",
+			definitionBody:  "supersedes:\n  commit: e4adef5\n  row: pi-step-ceremony-and-artifact-enforcement\n",
 			wantCommit:      "e4adef5",
 			wantRow:         "pi-step-ceremony-and-artifact-enforcement",
 		},

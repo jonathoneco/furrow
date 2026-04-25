@@ -84,7 +84,7 @@ func (a *App) runReviewStatus(args []string) int {
 	if flags.json {
 		return a.okJSON("furrow review status", data)
 	}
-		_, _ = fmt.Fprintf(a.stdout, "review status for %s\n", rowName)
+	_, _ = fmt.Fprintf(a.stdout, "review status for %s\n", rowName)
 	return 0
 }
 
