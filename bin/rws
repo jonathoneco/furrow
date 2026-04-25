@@ -2952,6 +2952,13 @@ case "$cmd" in
   load-step)          rws_load_step "$@" ;;
   rewind)             rws_rewind "$@" ;;
   diff)               rws_diff "$@" ;;
+  repair-deliverables)
+    FURROW_BIN="${FURROW_BIN:-${FURROW_ROOT}/bin/furrow}"
+    if [ ! -x "$FURROW_BIN" ]; then
+      die "furrow binary not found at $FURROW_BIN; run 'go build ./cmd/furrow'"
+    fi
+    exec "$FURROW_BIN" row repair-deliverables "$@"
+    ;;
   focus)              rws_focus "$@" ;;
   regenerate-summary) rws_regenerate_summary "$@" ;;
   validate-summary)   rws_validate_summary "$@" ;;
