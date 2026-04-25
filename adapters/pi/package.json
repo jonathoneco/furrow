@@ -1,0 +1,11 @@
+{
+  "name": "@furrow/pi-adapter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "bun test"
+  },
+  "description": "Pi (Tabby) adapter integration tests for the Furrow validate handlers.",
+  "comment": "Bun is the runtime; bun test is built-in (no devDependencies needed). Bootstrapped by D4 of pre-write-validation-go-first."
+}

@@ -1,0 +1,90 @@
+# Blocker taxonomy — canonical registry of error codes emitted by Furrow validators.
+#
+# Initial population covers validation-at-write-time codes only; future rows extend with
+# state-mutation, gate, archive, scaffold, summary, ideation codes per shared-blocker-taxonomy-spec.
+#
+# Conformance contract for emitters (see internal/cli/blocker_envelope.go):
+# - Every emitted code must appear in this file's blockers[] array.
+# - message_template uses {placeholder} substitution; emitters must supply matching keys.
+# - severity ∈ {block, warn, info}; confirmation_path ∈ {block, warn-with-confirm, silent}.
+# - applicable_steps absent (or empty array) means the code applies in every step.
+
+version: "1"
+
+blockers:
+  - code: definition_yaml_invalid
+    category: definition
+    severity: block
+    message_template: "{path}: definition.yaml failed schema validation: {detail}"
+    remediation_hint: "Inspect the YAML syntax and structural conformance against schemas/definition.schema.json"
+    confirmation_path: block
+
+  - code: definition_objective_missing
+    category: definition
+    severity: block
+    message_template: "{path}: missing required field 'objective'"
+    remediation_hint: "Add a one-sentence 'objective:' field at the top level of definition.yaml"
+    confirmation_path: block
+
+  - code: definition_gate_policy_missing
+    category: definition
+    severity: block
+    message_template: "{path}: missing required field 'gate_policy'"
+    remediation_hint: "Set gate_policy to one of: supervised, delegated, autonomous"
+    confirmation_path: block
+
+  - code: definition_gate_policy_invalid
+    category: definition
+    severity: block
+    message_template: "{path}: gate_policy '{value}' is not one of: supervised, delegated, autonomous"
+    remediation_hint: "Set gate_policy to one of the valid values"
+    confirmation_path: block
+
+  - code: definition_mode_invalid
+    category: definition
+    severity: block
+    message_template: "{path}: mode '{value}' is not one of: code, research"
+    remediation_hint: "Set mode to either code (default) or research"
+    confirmation_path: block
+
+  - code: definition_deliverables_empty
+    category: definition
+    severity: block
+    message_template: "{path}: deliverables[] is empty or missing; at least one deliverable is required"
+    remediation_hint: "Add at least one deliverable entry with name and acceptance_criteria"
+    confirmation_path: block
+
+  - code: definition_deliverable_name_missing
+    category: definition
+    severity: block
+    message_template: "{path}: deliverable at index {index} is missing required field 'name'"
+    remediation_hint: "Add a kebab-case 'name:' field to the deliverable"
+    confirmation_path: block
+
+  - code: definition_deliverable_name_invalid_pattern
+    category: definition
+    severity: block
+    message_template: "{path}: deliverable name '{name}' does not match kebab-case pattern ^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+    remediation_hint: "Rename the deliverable to lowercase with hyphen separators only"
+    confirmation_path: block
+
+  - code: definition_acceptance_criteria_placeholder
+    category: definition
+    severity: block
+    message_template: "{path}: deliverable '{name}' has placeholder text in acceptance_criteria: {value}"
+    remediation_hint: "Replace placeholder strings (TODO, TBD, XXX, placeholder) with concrete acceptance criteria"
+    confirmation_path: block
+
+  - code: definition_unknown_keys
+    category: definition
+    severity: block
+    message_template: "{path}: contains unknown top-level keys: {keys}"
+    remediation_hint: "Remove keys not declared in schemas/definition.schema.json (additionalProperties is false)"
+    confirmation_path: block
+
+  - code: ownership_outside_scope
+    category: ownership
+    severity: warn
+    message_template: "{path} is outside file_ownership for any deliverable in {row}"
+    remediation_hint: "Add the path to the appropriate deliverable's file_ownership in definition.yaml, or write to a different file"
+    confirmation_path: warn-with-confirm

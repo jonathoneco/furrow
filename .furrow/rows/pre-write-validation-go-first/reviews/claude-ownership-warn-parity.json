@@ -1,0 +1,21 @@
+{
+  "deliverable": "claude-ownership-warn-parity",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [
+  { "criterion": "Hook reads from definition.yaml deliverables (not plan.json)", "met": true, "evidence": "bin/frw.d/hooks/ownership-warn.sh delegates to furrow validate ownership; no plan.json reference" },
+  { "criterion": "Step gating removed", "met": true, "evidence": "no current_step != implement check in updated hook" },
+  { "criterion": "Warn-not-block preserved (returns 0)", "met": true, "evidence": "all return paths exit 0; only log_warning emitted on out_of_scope" },
+  { "criterion": "Graceful no-op for empty deliverables", "met": true, "evidence": "Go validator returns not_applicable; hook returns 0 silently when verdict != out_of_scope" },
+  { "criterion": "Graceful no-op when no row context", "met": true, "evidence": "[ -z \"$work_dir\" ] && return 0 in hook" },
+  { "criterion": "shellcheck passes (with shell=sh directive)", "met": true, "evidence": "shellcheck -e SC1091 bin/frw.d/hooks/ownership-warn.sh exit 0" },
+  { "criterion": "Manual verification documented", "met": true, "evidence": "parity-verification.md Methodology section + commit body 92cd532" },
+  { "criterion": "Parity-verification.md Claude rows filled", "met": true, "evidence": "3 Claude column entries added in commit 92cd532" }
+],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  }
+}

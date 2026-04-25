@@ -1,0 +1,110 @@
+{
+  "name": "pre-write-validation-go-first",
+  "title": "Pre-write validation: Go-first commands + Pi handlers",
+  "description": "Pre-write validation: Go-first commands + Pi handlers",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "blocker-taxonomy-schema": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "validate-definition-go": {
+      "status": "completed",
+      "wave": 2,
+      "corrections": 0
+    },
+    "validate-ownership-go": {
+      "status": "completed",
+      "wave": 3,
+      "corrections": 0
+    },
+    "pi-validate-definition-handler": {
+      "status": "completed",
+      "wave": 4,
+      "corrections": 0
+    },
+    "pi-ownership-warn-handler": {
+      "status": "completed",
+      "wave": 5,
+      "corrections": 0
+    },
+    "claude-ownership-warn-parity": {
+      "status": "completed",
+      "wave": 6,
+      "corrections": 0
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Ideate gate: definition.yaml validates (frw validate-definition pass); 6 deliverables across 2 waves; same-model review (reviews/ideation-same-model.md) APPROVE-WITH-NOTES with 4 findings, all addressed via R1-R4 revisions; cross-model codex review (reviews/ideation-cross.json) framing_quality:sound with 3 new findings addressed via R5-R7; follow-up todo pi-adapter-binary-caching added to almanac; summary.md populated with 5 carry-forward open questions, key findings, and recommendations; user explicitly approved transition",
+      "timestamp": "2026-04-25T13:28:32Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Research gate: research.md addresses all 5 ideate Open Questions with primary-source evidence (in-tree file inspection, latency measurements, grep across tests/+git). Key surprise: row_workflow.go is the actual emitter (9 codes), not row_semantics.go — D3 boundary should be tightened in plan. summary.md updated with 5 key findings, 4 plan-step open questions, 6 recommendations. User explicitly approved transition.",
+      "timestamp": "2026-04-25T13:34:45Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Plan gate: plan.json (4 waves, schema-valid), team-plan.md (AD-1..AD-7 grounded in research), definition.yaml amended (D3 boundary cites row_workflow.go, D1 shim continuity test added). Dual review: same-model APPROVE-WITH-NOTES 3+1 findings → all addressed; codex framing_quality:sound, overall:fail on file-ownership static analysis → 2 intentional AD-5 serialization, 1 real conflict resolved via wave split (D6 → wave 4). 4 carry-forward open questions are tactical content-design for spec.",
+      "timestamp": "2026-04-25T13:43:19Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Plan gate (retry after wave restructure): plan.json now 6 single-deliverable sequential waves; resolves harness file_ownership validator rejection of same-wave overlaps. AD-5 reframed: same-specialist consecutive waves replace single-agent-in-one-wave. Same-model + cross-model dual review findings all addressed; reviews recorded in reviews/plan-same-model.md and reviews/plan-cross.json.",
+      "timestamp": "2026-04-25T13:45:43Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Spec gate: 6 per-deliverable specs at specs/ with Interface Contract + Refined ACs + Test Scenarios + Implementation Notes + Dependencies; specs/README.md indexes set + resolves 4 plan-step open questions. Dual review: same-model APPROVE-WITH-NOTES 3 findings addressed (JSON Schema vendoring → hand-coded; D6 yq malformed-YAML → AC #9; D5/D6 modify-region → AC #10); cross-model codex 2 fail dimensions resolved (D3 11-codes consistency, 6 new test scenarios). Locked: 11 initial blocker codes, hand-coded validation per go.mod, canonical-artifact carve-out paths, parity-verification.md schema.",
+      "timestamp": "2026-04-25T14:04:48Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Decompose gate: plan.json (6 single-deliverable waves, schema-valid, file_ownership conflict-free) + team-plan.md (Coordination section added covering handoff protocol, per-wave prompt template, escalation paths, vertical-slicing check, skills injection). All open items from earlier steps resolved. Implement step begins with wave 1 (D3 blocker-taxonomy-schema).",
+      "timestamp": "2026-04-25T14:45:47Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Implement gate: 6/6 deliverables complete with 0 corrections each; 25 Go unit tests + 7 Pi contract tests + 3 shim integration tests all pass; shellcheck clean; manual verification documented in parity-verification.md and commits. Two mid-implement adaptations recorded in summary Open Questions for review scrutiny: D1 placeholder heuristic tightening (substring → first-token), D6 architecture (shell glob → Go-shell-out delegation for true parity).",
+      "timestamp": "2026-04-25T15:46:37Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/pre-write-validation-go-first",
+  "mode": "code",
+  "base_commit": "b2f477d3ca7020f356bbde9b6c5f0893c4f86fdf",
+  "seed_id": "furrow-61af",
+  "epic_seed_id": null,
+  "created_at": "2026-04-25T05:18:10Z",
+  "updated_at": "2026-04-25T16:56:20Z",
+  "archived_at": "2026-04-25T16:56:20Z",
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}
