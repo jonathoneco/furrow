@@ -177,6 +177,35 @@ gate_policy: supervised
 	}
 }
 
+func TestRunValidateOwnershipCLIFocusedRowFallback(t *testing.T) {
+	resetTaxonomyCacheForTest()
+	t.Cleanup(resetTaxonomyCacheForTest)
+
+	root := fixtureRoot(t, "focused-row", ownershipFixtureDef)
+	mustLinkSchemas(t, getRepoRootForTest(t), root)
+
+	// Write .furrow/.focused so the CLI defaults to it.
+	if err := os.WriteFile(filepath.Join(root, ".furrow", ".focused"), []byte("focused-row\n"), 0o644); err != nil {
+		t.Fatalf("write .focused: %v", err)
+	}
+
+	t.Chdir(root)
+
+	var stdout, stderr strings.Builder
+	app := New(&stdout, &stderr)
+	// No --row flag — should resolve via focused-row fallback.
+	exit := app.runValidateOwnership([]string{"--path", "internal/cli/validate_ownership.go", "--json"})
+	if exit != 0 {
+		t.Fatalf("exit: got %d, want 0 (stderr=%q)", exit, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "in_scope") {
+		t.Fatalf("expected in_scope verdict from focused-row fallback; got %q", stdout.String())
+	}
+	if !strings.Contains(stdout.String(), "code-paths") {
+		t.Fatalf("expected matched_deliverable=code-paths; got %q", stdout.String())
+	}
+}
+
 func TestRunValidateOwnershipCLINoFocusedRow(t *testing.T) {
 	resetTaxonomyCacheForTest()
 	t.Cleanup(resetTaxonomyCacheForTest)

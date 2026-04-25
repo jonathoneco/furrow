@@ -280,6 +280,8 @@ type ArchiveData = {
 import {
 	decideValidateDefinitionAction,
 	decideOwnershipAction,
+	shouldInterceptForDefinitionValidation,
+	shouldInterceptForOwnershipWarn,
 	type ValidateDefinitionData,
 	type ValidateOwnershipData,
 } from "./validate-actions.ts";
@@ -909,16 +911,14 @@ export default function furrowExtension(pi: ExtensionAPI) {
 	// Intercepts Write/Edit on `*/definition.yaml` and validates against the
 	// canonical schema before the write proceeds.
 	pi.on("tool_call", async (event, ctx) => {
-		if (event.toolName !== "edit" && event.toolName !== "write") return undefined;
 		const root = findFurrowRoot(ctx.cwd);
 		if (!root) return undefined;
 		const absolutePath = normalizePathArg((event.input as any)?.path, ctx.cwd);
-		if (!absolutePath) return undefined;
-		if (!absolutePath.endsWith("/definition.yaml")) return undefined;
+		if (!shouldInterceptForDefinitionValidation(event.toolName, absolutePath)) return undefined;
 
 		const result = await runFurrowJson<ValidateDefinitionData>(
 			root,
-			["validate", "definition", "--path", absolutePath, "--json"],
+			["validate", "definition", "--path", absolutePath!, "--json"],
 			ctx.signal,
 		);
 		return decideValidateDefinitionAction(result.envelope?.data, ctx.hasUI ? ctx.ui.notify.bind(ctx.ui) : undefined);
@@ -930,15 +930,14 @@ export default function furrowExtension(pi: ExtensionAPI) {
 	// Step-agnostic by design (verdict comes from the Go validator which never
 	// reads state.json.step).
 	pi.on("tool_call", async (event, ctx) => {
-		if (event.toolName !== "edit" && event.toolName !== "write") return undefined;
 		const root = findFurrowRoot(ctx.cwd);
 		if (!root) return undefined;
 		const absolutePath = normalizePathArg((event.input as any)?.path, ctx.cwd);
-		if (!absolutePath) return undefined;
+		if (!shouldInterceptForOwnershipWarn(event.toolName, absolutePath)) return undefined;
 
 		const result = await runFurrowJson<ValidateOwnershipData>(
 			root,
-			["validate", "ownership", "--path", absolutePath, "--json"],
+			["validate", "ownership", "--path", absolutePath!, "--json"],
 			ctx.signal,
 		);
 		return decideOwnershipAction(result.envelope?.data, ctx.hasUI ? ctx.ui.confirm.bind(ctx.ui) : undefined);

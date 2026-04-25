@@ -1,0 +1,169 @@
+objective: "Two co-equal goals: (1) close the empirical-pain top-2 from research §8 (validate-definition timing, ownership-warn timing) by shipping Go-first pre-write validators consumed by Pi tool_call handlers and the existing Claude shell hook; and (2) lay the canonical schemas/blocker-taxonomy.yaml foundation — bounded to D1/D2-emitted codes only — that future enforcement-parity rows extend by adding codes and migrating other emission sites."
+
+deliverables:
+  - name: validate-definition-go
+    specialist: go-specialist
+    depends_on: [blocker-taxonomy-schema]
+    acceptance_criteria:
+      - "furrow validate definition --path <file> --json exits 0 on a valid definition.yaml"
+      - "Exits non-zero with a structured JSON envelope on invalid input; envelope conforms to schemas/blocker-taxonomy.yaml"
+      - "Replicates bin/frw.d/scripts/validate-definition.sh semantics: required objective, gate_policy enum (supervised|delegated|autonomous), mode enum (code|research) when present, deliverables array minItems 1, deliverable name presence and kebab-case pattern, acceptance_criteria placeholder detection (e.g., 'TODO', 'tbd'), full schema validation against schemas/definition.schema.json including additionalProperties:false enforcement"
+      - "Every error code emitted resolves to a registered taxonomy entry in schemas/blocker-taxonomy.yaml; emitting an unregistered code is a test-time panic"
+      - "internal/cli/app.go routes top-level 'validate' to the dispatcher; the dispatcher (runValidate) lives in internal/cli/validate.go with joint D1+D2 file_ownership and registers the definition subcommand. Original spec said app.go directly; architectural refinement during review-step extracted the dispatcher to its own file to give D1+D2 clean joint ownership of the shared registration surface"
+      - "Unit tests cover: happy path, missing objective, invalid gate_policy, invalid mode, missing deliverable name, deliverable name with bad pattern, placeholder acceptance criterion, schema-invalid YAML (parse error), unknown top-level keys, empty deliverables array"
+      - "go test ./... passes"
+      - "bin/frw.d/scripts/validate-definition.sh rewritten as thin shim that exec-delegates to furrow validate definition with no business logic in shell"
+      - "Shim continuity test: existing callers via the frw dispatch (frw validate-definition <path>) continue to produce the same exit codes (0 for valid, non-zero for invalid) post-rewrite. Test added to tests/integration/ exercising both happy and unhappy paths through the dispatch entry"
+    file_ownership:
+      - "internal/cli/validate_definition.go"
+      - "internal/cli/validate_definition_test.go"
+      - "internal/cli/validate.go"
+      - "internal/cli/app.go"
+      - "bin/frw.d/scripts/validate-definition.sh"
+      - "tests/integration/test-validate-definition-shim.sh"
+
+  - name: validate-ownership-go
+    specialist: go-specialist
+    depends_on: [blocker-taxonomy-schema]
+    acceptance_criteria:
+      - "furrow validate ownership --path <target> [--row <name>] --json exits 0 with verdict in JSON"
+      - "Verdict in_scope when path matches any deliverables[].file_ownership glob in the row's definition.yaml; JSON includes matched_deliverable and matched_glob"
+      - "Verdict out_of_scope with envelope code ownership_outside_scope (severity warn, confirmation_path warn-with-confirm) when no glob matches"
+      - "Verdict not_applicable when (a) --row omitted and no focused row; (b) target path is a canonical row artifact (state.json, definition.yaml, summary.md, learnings.jsonl); (c) row has zero deliverables"
+      - "Step-agnostic: never reads state.json.step to gate the verdict"
+      - "--row defaults to the focused row (.furrow/.focused) when omitted"
+      - "Unit tests cover: in-scope match, out-of-scope, no-focused-row, missing-row, multi-deliverable globs (matches one of several), nested glob patterns (e.g., **/*.go), canonical-artifact carve-out, focused-row fallback"
+      - "go test ./... passes"
+      - "internal/cli/validate.go (the shared dispatcher under joint D1+D2 file_ownership) registers the ownership subcommand alongside definition. internal/cli/app.go remains the top-level router that delegates to runValidate"
+    file_ownership:
+      - "internal/cli/validate_ownership.go"
+      - "internal/cli/validate_ownership_test.go"
+      - "internal/cli/validate.go"
+      - "internal/cli/app.go"
+
+  - name: blocker-taxonomy-schema
+    specialist: harness-engineer
+    acceptance_criteria:
+      - "schemas/blocker-taxonomy.yaml exists at the canonical path cited by todo shared-blocker-taxonomy-spec"
+      - "Schema structure: top-level version (string) and blockers[]; each blocker has code (kebab-case-or-snake-case string, unique), category (string), severity (block|warn|info), message_template (string with {placeholder} interpolation syntax), remediation_hint (string), confirmation_path (block|warn-with-confirm|silent), applicable_steps (optional array; defaults to all steps when omitted)"
+      - "schemas/blocker-taxonomy.schema.json validates the YAML structure (JSON Schema for the schema; additionalProperties:false at all levels)"
+      - "Initial population includes every code D1 emits (definition_yaml_invalid, definition_objective_missing, definition_gate_policy_missing, definition_gate_policy_invalid, definition_mode_invalid, definition_deliverables_empty, definition_deliverable_name_missing, definition_deliverable_name_invalid_pattern, definition_acceptance_criteria_placeholder, definition_unknown_keys) and D2's ownership_outside_scope"
+      - "internal/cli/blocker_envelope.go provides Go struct mirroring the schema, LoadTaxonomy() parsing the YAML, and EmitBlocker(code string, interp map[string]string) producing the JSON envelope D1 and D2 emit"
+      - "internal/cli/blocker_envelope_test.go proves: every D1/D2-emitted code resolves to a registered taxonomy entry; emitting an unknown code panics in test mode (asserted via panic recovery); message_template interpolation substitutes {placeholders} correctly; missing interpolation key surfaces as a clear error"
+      - "Schema header comment annotates: 'Initial population covers validation-at-write-time codes only; future rows extend with state-mutation, gate, archive, scaffold, summary, ideation codes per shared-blocker-taxonomy-spec.'"
+      - "Bounded scope: D3 governs the taxonomy file structure plus the codes emitted by D1 and D2. Per research §Q4: the existing blocker emitter today is internal/cli/row_workflow.go (rowBlockers() at lines 1005-1084 — 9 hardcoded codes including pending_user_actions, seed_*, missing_required_artifact, artifact_scaffold_incomplete, artifact_validation_failed, archive_requires_review_gate); internal/cli/row_semantics.go is a helper template (blocker() constructor + blockerConfirmationPath() map) with zero current call sites. D3 MUST NOT modify row_workflow.go (real emitter), row_semantics.go (helper template), or any other existing blocker emission site — those migrate in future rows."
+      - "docs/architecture/pi-step-ceremony-and-artifact-enforcement.md cites schemas/blocker-taxonomy.yaml in the existing Blocker baseline section (single-line addition, no other doc rewrites)"
+      - "go test ./... passes"
+    file_ownership:
+      - "schemas/blocker-taxonomy.yaml"
+      - "schemas/blocker-taxonomy.schema.json"
+      - "internal/cli/blocker_envelope.go"
+      - "internal/cli/blocker_envelope_test.go"
+      - "docs/architecture/pi-step-ceremony-and-artifact-enforcement.md"
+
+  - name: pi-validate-definition-handler
+    specialist: typescript-specialist
+    depends_on: [validate-definition-go]
+    acceptance_criteria:
+      - "adapters/pi/furrow.ts gains a tool_call handler that intercepts Write and Edit tool calls when the target file_path matches the pattern */definition.yaml"
+      - "Handler calls runFurrowJson<ValidateDefinitionData>(root, ['validate', 'definition', '--path', filePath, '--json'], ctx.signal) following the existing pattern at adapters/pi/furrow.ts:313-346"
+      - "On verdict invalid: returns { block: true, reason: <interpolated message> } and ctx.ui.notify(message, 'error') with the remediation_hint surfaced"
+      - "On verdict valid: returns no block (silent allow)"
+      - "Existing state-guard interception at adapters/pi/furrow.ts:883-899 runs first and is untouched"
+      - "Pi adapter test scaffolding: if no test runner exists in adapters/pi/ today (no package.json with test script, no *.test.ts), D4 establishes the minimum viable scaffolding — a package.json adding a 'test' script (bun test or vitest), a tsconfig if absent, and one furrow.test.ts test file. D5 reuses the same scaffolding."
+      - "Pi adapter test exercises both branches against a fixture row (valid definition.yaml passes; invalid blocks with surfaced reason)"
+      - "Pi adapter test runner passes (bun test, vitest, or whatever scaffold D4 establishes)"
+    file_ownership:
+      - "adapters/pi/furrow.ts"
+      - "adapters/pi/furrow.test.ts"
+      - "adapters/pi/validate-actions.ts"
+      - "adapters/pi/package.json"
+      - "adapters/pi/tsconfig.json"
+      - "adapters/pi/README.md"
+
+  - name: pi-ownership-warn-handler
+    specialist: typescript-specialist
+    depends_on: [validate-ownership-go, blocker-taxonomy-schema]
+    acceptance_criteria:
+      - "adapters/pi/furrow.ts gains a tool_call handler that intercepts all Write and Edit tool calls"
+      - "Handler calls runFurrowJson<ValidateOwnershipData>(root, ['validate', 'ownership', '--path', filePath, '--json'], ctx.signal)"
+      - "On verdict out_of_scope: ctx.ui.confirm('This file is outside the deliverable file_ownership. Proceed anyway?', message); user 'yes' returns { block: false }; user 'no' returns { block: true, reason }"
+      - "On verdict in_scope: silent allow"
+      - "On verdict not_applicable: silent allow (no notify, no confirm)"
+      - "Step-agnostic: handler does not gate on state.step"
+      - "Pi adapter test covers: in_scope, out_of_scope confirmed (proceed), out_of_scope rejected (block), not_applicable"
+      - "Pi adapter test runner passes"
+      - "Parity verification: contributes Pi-side rows to .furrow/rows/pre-write-validation-go-first/parity-verification.md alongside D6's Claude-side rows; record covers at least 3 paired scenarios (in_scope, out_of_scope, not_applicable) showing identical Go-validator output produces consistent step-agnostic non-blocking awareness on both runtimes (Pi: confirm prompt; Claude: log_warning)"
+    file_ownership:
+      - "adapters/pi/furrow.ts"
+      - "adapters/pi/furrow.test.ts"
+      - "adapters/pi/validate-actions.ts"
+      - ".furrow/rows/pre-write-validation-go-first/parity-verification.md"
+
+  - name: claude-ownership-warn-parity
+    specialist: shell-specialist
+    depends_on: [validate-ownership-go, blocker-taxonomy-schema]
+    acceptance_criteria:
+      - "bin/frw.d/hooks/ownership-warn.sh delegates the verdict to the canonical Go validator (furrow validate ownership --path <file> --row <name> --json) — replacing the previous yq+plan.json glob-matching pipeline. Architectural shift from the original 'read definition.yaml via yq' spec text was made because POSIX shell case patterns cannot replicate Go's ** doublestar glob semantics, which would silently break the cross-adapter parity invariant. Recorded in commit 92cd532 + parity-verification.md Methodology"
+      - "Step gating removed: the hook no longer early-returns based on state.json.step; it fires in any step"
+      - "Behavior preserved: warn-not-block — the hook always returns 0; advisory log_warning emitted on out-of-scope writes (Claude shell hooks are non-interactive; this is the host-native equivalent of D5's confirm path)"
+      - "Graceful no-op when definition.yaml exists but has zero deliverables (mid-init rows do not get spurious warnings)"
+      - "Graceful no-op when no row context can be resolved (path outside any .furrow/rows/ tree and no focused row)"
+      - "shellcheck passes (with -e SC1091 to silence the informational sourced-file warning that is unavoidable without -x mode and was present in the original hook)"
+      - "Manual verification documented in commit body: edit outside-ownership during plan/spec triggers log_warning; edit inside-ownership is silent; mid-init row with no deliverables is silent"
+      - "Parity verification: contributes Claude-side rows to .furrow/rows/pre-write-validation-go-first/parity-verification.md alongside D5's Pi-side rows; same paired scenarios (in_scope, out_of_scope, not_applicable) showing identical Go-validator output produces step-agnostic non-blocking awareness on the Claude runtime (log_warning on out_of_scope; silent otherwise)"
+    file_ownership:
+      - "bin/frw.d/hooks/ownership-warn.sh"
+      - "tests/integration/test-ownership-warn-hook.sh"
+      - ".furrow/rows/pre-write-validation-go-first/parity-verification.md"
+
+context_pointers:
+  - path: ".furrow/rows/migration-state-of-the-union/research.md"
+    note: "Sections §8 (empirical audit of Pi conversation history) and §9 (final locked scope) are the primary source for this row's design — empirical top-3 ranking, Go-first stance, deferred follow-ups"
+  - path: ".furrow/almanac/todos.yaml"
+    symbols:
+      - shared-blocker-taxonomy-spec
+      - claude-blocker-enforcement-parity
+      - pi-correction-limit-visibility
+      - pi-session-resume-reground
+    note: "Source TODO (partially closed by D3) and informed-but-not-closed dependents; pi-correction-limit-visibility and pi-session-resume-reground are deferred per research §9"
+  - path: ".furrow/almanac/roadmap.yaml"
+    note: "Phase 3 row 2 specification; depends on work/pi-row-audit-cleanup which has shipped"
+  - path: "bin/frw.d/scripts/validate-definition.sh"
+    note: "Shell semantics that D1 ports to Go; preserved as thin shim post-port"
+  - path: "bin/frw.d/hooks/ownership-warn.sh"
+    note: "Shell hook updated by D6 for parity (drop step gate, read definition.yaml not plan.json)"
+  - path: "internal/cli/row_repair.go"
+    note: "Go CLI conventions reference: additionalProperties:false handling, JSON envelope shape, atomic semantics, app.go registration pattern"
+  - path: "adapters/pi/furrow.ts"
+    symbols:
+      - runFurrowJson
+    note: "Lines 313-346 define runFurrowJson<T>() pattern that D4 and D5 reuse; lines 883-899 are the existing state-guard tool_call interceptor pattern that D4 and D5 follow"
+  - path: "docs/architecture/pi-native-capability-leverage.md"
+    note: "Lines 113-146: anti-pattern that critical Furrow semantics must not live only in prompt text or skills — motivates Go-first canonical validation logic"
+  - path: "docs/architecture/migration-stance.md"
+    note: "Lines 86-89: 'Pi and Claude flows do not silently diverge' — motivates D6 in this row rather than deferring shell parity"
+  - path: "docs/architecture/go-cli-contract.md"
+    note: "Defines top-level command groups; furrow validate added here as a new artifact-scoped group parallel to furrow row, furrow gate, etc."
+  - path: "schemas/definition.schema.json"
+    note: "D1's structural validation source; D1 emits a code on every constraint violation it detects"
+
+constraints:
+  - "Validation logic stays canonical in Go (per pi-native-capability-leverage.md:144-146); Pi and Claude adapters call the backend via runFurrowJson or shell exec, never duplicate logic"
+  - "furrow validate is a new top-level command group; registered once in internal/cli/app.go and used by definition (D1) and ownership (D2) subcommands"
+  - "D1 and D2 emit errors only via codes registered in schemas/blocker-taxonomy.yaml; emitting an unregistered code panics in test mode"
+  - "Cross-adapter parity invariant (honest framing): D5 (Pi) and D6 (Claude shell) implement identical step-agnostic non-blocking awareness — both fire on the same Go-validator verdicts, neither blocks. UX divergence is intrinsic and accepted: Pi has interactive ctx.ui.confirm at write time; Claude shell hooks are non-interactive and surface via log_warning. The shared invariants are step-agnosticism, no-block behavior, and identical Go-validator-driven trigger conditions; the divergence is purely host-capability UX. Both deliverables contribute paired rows to parity-verification.md proving the shared invariants hold"
+  - "Shell→Go migration is partial in this row: D6 updates Claude shell to match the new step-agnostic semantic; full Claude→Go shell-out replacement remains future work under cli-architecture-overhaul"
+  - "No state.json or summary.md mutations from this row's commands; D1 and D2 are pure read+validate"
+  - "frw validate-definition shell command preserved post-D1 as a thin exec shim — no business logic remains in shell"
+  - "No new external Go dependencies; reuse vendored YAML and JSON libraries"
+  - "Conventional commits per project convention (feat:, fix:, chore:, refactor:, test:, infra:); each deliverable lands in its own commit referencing the deliverable name"
+  - "Execution order is 6 sequential single-deliverable waves per plan.json: Wave 1 = D3 (blocker-taxonomy-schema); Wave 2 = D1 (validate-definition-go) registering validate command group in app.go; Wave 3 = D2 (validate-ownership-go) extending app.go with the ownership subcommand; Wave 4 = D4 (pi-validate-definition-handler) bootstrapping Pi test scaffold + first handler in furrow.ts; Wave 5 = D5 (pi-ownership-warn-handler) extending furrow.ts + authoring parity-verification.md; Wave 6 = D6 (claude-ownership-warn-parity) appending Claude rows to parity-verification.md. Single-deliverable waves are required because shared files (internal/cli/app.go between D1 and D2; adapters/pi/furrow.ts and furrow.test.ts between D4 and D5; parity-verification.md between D5 and D6) cannot be co-owned within a wave per the harness file_ownership validator. Same-specialist consecutive waves (go-specialist for waves 2-3; typescript-specialist for waves 4-5) preserve context across waves but execute sequentially."
+  - "shared-blocker-taxonomy-spec is partially closed by D3 only (schema + initial codes from D1/D2 only); full closure (expanding codes to cover state-mutation/gate/archive/scaffold/summary/ideation, migrating non-validation emission sites — primarily internal/cli/row_workflow.go's rowBlockers(), and the row_semantics.go helper template) remains future work and must NOT be folded into this row"
+  - "Pi adapter cold-start latency is a known regression: runFurrowJson at adapters/pi/furrow.ts:322 invokes 'go run ./cmd/furrow' per call, and D4+D5 double-fire on every Write/Edit. This row accepts the regression; a follow-up todo pi-adapter-binary-caching captures the optimization (pre-build the binary at adapter init, exec the binary path) for a future row. If empirical regression is severe in early Pi sessions, the follow-up gets promoted; otherwise it queues with other adapter-perf todos"
+  - "Dependency chain (explicit): D3 -> D1, D2 -> D4 (consumes D1 envelope), D5 (consumes D2 verdict + D3 envelope), D6 (consumes D2 design + D3 envelope). Wave 1 = {D3 first, then D1+D2 in parallel}; Wave 2 = {D4+D5+D6 in parallel}"
+
+gate_policy: supervised
+mode: code
+source_todos:
+  - shared-blocker-taxonomy-spec

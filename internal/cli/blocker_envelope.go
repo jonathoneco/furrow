@@ -158,20 +158,61 @@ func (t *Taxonomy) EmitBlocker(code string, interp map[string]string) BlockerEnv
 	}
 }
 
-// interpolate substitutes {key} occurrences in template with interp[key].
-// Missing keys are left as-is so a downstream caller (or test) can detect them.
+// interpolate substitutes {key} occurrences in template with interp[key], then
+// surfaces any remaining {key} placeholders as a clear error: panics in test
+// mode (matching unregistered-code behavior) and prepends an "[unfilled
+// placeholder]" marker on the rendered string in production so callers see
+// the issue rather than silently shipping a half-rendered message.
 func interpolate(template string, interp map[string]string) string {
-	if len(interp) == 0 {
-		return template
-	}
 	out := template
-	keys := make([]string, 0, len(interp))
-	for k := range interp {
-		keys = append(keys, k)
+	if len(interp) > 0 {
+		keys := make([]string, 0, len(interp))
+		for k := range interp {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			out = strings.ReplaceAll(out, "{"+k+"}", interp[k])
+		}
 	}
-	sort.Strings(keys)
-	for _, k := range keys {
-		out = strings.ReplaceAll(out, "{"+k+"}", interp[k])
+	if missing := unresolvedPlaceholders(out); len(missing) > 0 {
+		if testing.Testing() {
+			panic(fmt.Sprintf("blocker taxonomy: unresolved interpolation placeholders %v in template %q", missing, template))
+		}
+		return "[unfilled placeholder " + strings.Join(missing, ",") + "] " + out
 	}
 	return out
+}
+
+// unresolvedPlaceholders returns the set of {key} tokens still present in s.
+// Tokens are detected by scanning for "{...}" with simple identifier contents.
+func unresolvedPlaceholders(s string) []string {
+	var found []string
+	for i := 0; i < len(s); i++ {
+		if s[i] != '{' {
+			continue
+		}
+		end := strings.IndexByte(s[i+1:], '}')
+		if end < 0 {
+			break
+		}
+		key := s[i+1 : i+1+end]
+		if isPlaceholderIdent(key) {
+			found = append(found, key)
+		}
+		i += end
+	}
+	return found
+}
+
+func isPlaceholderIdent(s string) bool {
+	if s == "" {
+		return false
+	}
+	for _, r := range s {
+		if !((r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '_') {
+			return false
+		}
+	}
+	return true
 }

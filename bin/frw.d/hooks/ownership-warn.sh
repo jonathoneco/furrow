@@ -19,7 +19,7 @@
 # log_warning rather than a confirm prompt; the underlying trigger (the
 # `furrow validate ownership` verdict) is identical.
 
-# shellcheck source=../lib/common-minimal.sh
+# shellcheck source=../lib/common-minimal.sh disable=SC1091
 . "${FURROW_ROOT}/bin/frw.d/lib/common-minimal.sh"
 
 hook_ownership_warn() {

@@ -31,6 +31,7 @@ focused_backup=""
 if [ -f "${focused_path}" ]; then
 	focused_backup="$(cat "${focused_path}")"
 fi
+# shellcheck disable=SC2329  # invoked via trap below
 restore_focus() {
 	if [ -n "${focused_backup}" ]; then
 		echo "${focused_backup}" > "${focused_path}"
