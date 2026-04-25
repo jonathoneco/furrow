@@ -33,8 +33,20 @@ hook_ownership_warn() {
 
   work_dir="$(extract_row_from_path "$target_path")"
 
+  # If the path is not inside any row, fall back to .furrow/.focused — but
+  # ONLY if .focused is present and names an active row. Do NOT fall through
+  # to find_active_row's most-recently-updated heuristic, because the spec
+  # requires graceful silence when no explicit row context exists.
   if [ -z "$work_dir" ]; then
-    work_dir="$(find_focused_row)"
+    if [ -f ".furrow/.focused" ]; then
+      _focused_name="$(cat ".furrow/.focused" 2>/dev/null)" || _focused_name=""
+      if [ -n "$_focused_name" ] && [ -f ".furrow/rows/${_focused_name}/state.json" ]; then
+        _archived="$(jq -r '.archived_at // "null"' ".furrow/rows/${_focused_name}/state.json" 2>/dev/null)" || _archived="null"
+        if [ "$_archived" = "null" ]; then
+          work_dir=".furrow/rows/${_focused_name}"
+        fi
+      fi
+    fi
   fi
 
   if [ -z "$work_dir" ]; then

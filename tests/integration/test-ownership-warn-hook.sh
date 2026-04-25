@@ -92,6 +92,14 @@ assert_not_contains "in-scope test file is silent" "outside file_ownership" "${o
 output="$(run_hook '{"tool_input":{"file_path":"random/totally/unrelated.txt"}}' 2>&1 || true)"
 assert_contains "out-of-scope path emits log_warning" "outside file_ownership" "${output}"
 
+# --- empty .focused, path outside any row → silent (no fallback to find_active_row) ---
+echo "" > "${focused_path}"
+output="$(run_hook '{"tool_input":{"file_path":"random/no-row-context.txt"}}' 2>&1 || true)"
+assert_not_contains "empty .focused + non-row path → silent (no active-row fallback)" "outside file_ownership" "${output}"
+
+# Restore for remaining tests
+echo "${ROW}" > "${focused_path}"
+
 # --- canonical row artifact: state.json under .furrow/rows/<row>/ → not_applicable → silent ---
 output="$(run_hook '{"tool_input":{"file_path":".furrow/rows/'"${ROW}"'/state.json"}}' 2>&1 || true)"
 assert_not_contains "canonical row artifact is silent (not_applicable)" "outside file_ownership" "${output}"
