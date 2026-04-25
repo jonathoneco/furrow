@@ -11,18 +11,19 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// runValidate dispatches `furrow validate <subcommand>`. D1 ships the
-// `definition` subcommand; D2 (wave 3) adds `ownership`.
+// runValidate dispatches `furrow validate <subcommand>`.
 func (a *App) runValidate(args []string) int {
 	if len(args) == 0 {
-		_, _ = fmt.Fprintln(a.stdout, "furrow validate\n\nAvailable subcommands: definition")
+		_, _ = fmt.Fprintln(a.stdout, "furrow validate\n\nAvailable subcommands: definition, ownership")
 		return 0
 	}
 	switch args[0] {
 	case "definition":
 		return a.runValidateDefinition(args[1:])
+	case "ownership":
+		return a.runValidateOwnership(args[1:])
 	case "help", "-h", "--help":
-		_, _ = fmt.Fprintln(a.stdout, "furrow validate\n\nAvailable subcommands: definition")
+		_, _ = fmt.Fprintln(a.stdout, "furrow validate\n\nAvailable subcommands: definition, ownership")
 		return 0
 	default:
 		return a.fail("furrow validate", &cliError{
