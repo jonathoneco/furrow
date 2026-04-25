@@ -119,6 +119,20 @@ var (
 		"file_ownership":      {},
 		"gate":                {},
 	}
+	// allowedContextPointerKeys mirrors context_pointers[].properties +
+	// additionalProperties:false.
+	allowedContextPointerKeys = map[string]struct{}{
+		"path":    {},
+		"symbols": {},
+		"note":    {},
+	}
+	// allowedSupersedesKeys mirrors supersedes.properties + additionalProperties:false.
+	allowedSupersedesKeys = map[string]struct{}{
+		"commit": {},
+		"row":    {},
+	}
+	// validDeliverableGates mirrors deliverables[].gate enum.
+	validDeliverableGates = map[string]struct{}{"human": {}, "automated": {}}
 )
 
 // validateDefinition runs all D1 checks and returns the list of envelopes for
@@ -259,6 +273,57 @@ func validateDefinition(path string, tx *Taxonomy) []BlockerEnvelope {
 					"keys": fmt.Sprintf("deliverables[%d]: %s", i, strings.Join(unknownNested, ", ")),
 				}))
 			}
+
+			// gate enum check (optional field; if present must be valid)
+			if gate, present := d["gate"]; present {
+				gs, _ := gate.(string)
+				if _, ok := validDeliverableGates[gs]; !ok {
+					envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+						"path": displayPath,
+						"keys": fmt.Sprintf("deliverables[%d].gate: %v (must be human|automated)", i, gate),
+					}))
+				}
+			}
+		}
+	}
+
+	// context_pointers[] additionalProperties:false
+	if rawCP, ok := raw["context_pointers"].([]any); ok {
+		for j, item := range rawCP {
+			cp, ok := item.(map[string]any)
+			if !ok {
+				continue
+			}
+			var unknown []string
+			for k := range cp {
+				if _, ok := allowedContextPointerKeys[k]; !ok {
+					unknown = append(unknown, k)
+				}
+			}
+			if len(unknown) > 0 {
+				sort.Strings(unknown)
+				envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+					"path": displayPath,
+					"keys": fmt.Sprintf("context_pointers[%d]: %s", j, strings.Join(unknown, ", ")),
+				}))
+			}
+		}
+	}
+
+	// supersedes additionalProperties:false (optional block)
+	if rawSup, ok := raw["supersedes"].(map[string]any); ok {
+		var unknown []string
+		for k := range rawSup {
+			if _, ok := allowedSupersedesKeys[k]; !ok {
+				unknown = append(unknown, k)
+			}
+		}
+		if len(unknown) > 0 {
+			sort.Strings(unknown)
+			envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+				"path": displayPath,
+				"keys": fmt.Sprintf("supersedes: %s", strings.Join(unknown, ", ")),
+			}))
 		}
 	}
 

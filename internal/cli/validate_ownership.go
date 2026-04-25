@@ -67,30 +67,23 @@ type OwnershipVerdict struct {
 	Envelope           *BlockerEnvelope `json:"envelope,omitempty"`
 }
 
-// canonicalArtifactRowSubpaths are top-level paths within .furrow/rows/<name>/
-// that are row infrastructure rather than deliverable content. Writes to these
-// always yield not_applicable.
+// canonicalArtifactRowSubpaths are the row-infrastructure files that always
+// yield not_applicable per spec — kept narrow to match specs/validate-ownership-go.md
+// AC #4 exactly. Other row artifacts (research.md, plan.json, team-plan.md,
+// parity-verification.md, specs/*, reviews/*, gates/*, etc.) are NOT carved out;
+// they must be explicitly listed in deliverables[].file_ownership when a
+// deliverable touches them.
 var canonicalArtifactRowSubpaths = []string{
 	"state.json",
 	"definition.yaml",
 	"summary.md",
 	"learnings.jsonl",
-	"research.md",
-	"plan.json",
-	"team-plan.md",
-	"parity-verification.md",
 }
 
-// canonicalArtifactRowDirs are subdirectory prefixes within .furrow/rows/<name>/
-// that are row infrastructure (specs, reviews, gates).
-var canonicalArtifactRowDirs = []string{
-	"specs/",
-	"reviews/",
-	"gates/",
-	"deliverables/",
-	"research/",
-	"gate-prompts/",
-}
+// canonicalArtifactRowDirs is intentionally empty. The spec's canonical-artifact
+// carve-out is by-file, not by-directory. Earlier versions of this validator
+// included specs/, reviews/, gates/, etc. — that broadening was outside spec.
+var canonicalArtifactRowDirs = []string{}
 
 // computeOwnership runs the ownership check for a given row + target path. It
 // is step-agnostic and pure (no I/O beyond reading definition.yaml). Returns a
