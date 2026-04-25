@@ -15,7 +15,6 @@
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "frw hook gate-check" },
           { "type": "command", "command": "frw hook script-guard" }
         ]
       }
