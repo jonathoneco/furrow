@@ -228,15 +228,22 @@ func validateDefinition(path string, tx *Taxonomy) []BlockerEnvelope {
 				}))
 			}
 
-			// acceptance_criteria: required + minItems:1 + per-item placeholder check
+			// acceptance_criteria: required + must be an array + minItems:1 + per-item placeholder check
 			rawCriteria, hasCriteria := d["acceptance_criteria"]
+			criteria, criteriaIsArray := rawCriteria.([]any)
 			if !hasCriteria {
 				envs = append(envs, tx.EmitBlocker("definition_acceptance_criteria_placeholder", map[string]string{
 					"path":  displayPath,
 					"name":  name,
 					"value": "(missing)",
 				}))
-			} else if criteria, ok := rawCriteria.([]any); ok {
+			} else if !criteriaIsArray {
+				envs = append(envs, tx.EmitBlocker("definition_acceptance_criteria_placeholder", map[string]string{
+					"path":  displayPath,
+					"name":  name,
+					"value": fmt.Sprintf("(wrong type: %T, must be array)", rawCriteria),
+				}))
+			} else {
 				if len(criteria) == 0 {
 					envs = append(envs, tx.EmitBlocker("definition_acceptance_criteria_placeholder", map[string]string{
 						"path":  displayPath,
@@ -287,14 +294,21 @@ func validateDefinition(path string, tx *Taxonomy) []BlockerEnvelope {
 		}
 	}
 
-	// context_pointers: required + minItems:1 + per-item required path/note + additionalProperties:false
+	// context_pointers: required + must be an array + minItems:1 + per-item required path/note + additionalProperties:false
 	rawCP, hasCP := raw["context_pointers"]
-	if !hasCP {
+	cpArr, cpIsArray := rawCP.([]any)
+	switch {
+	case !hasCP:
 		envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
 			"path": displayPath,
 			"keys": "(missing required field) context_pointers",
 		}))
-	} else if cpArr, ok := rawCP.([]any); ok {
+	case !cpIsArray:
+		envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+			"path": displayPath,
+			"keys": fmt.Sprintf("context_pointers: type is %T, must be an array", rawCP),
+		}))
+	default:
 		if len(cpArr) == 0 {
 			envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
 				"path": displayPath,
@@ -348,30 +362,45 @@ func validateDefinition(path string, tx *Taxonomy) []BlockerEnvelope {
 		}))
 	}
 
-	// source_todos (optional array): if present must have uniqueItems
-	if rawST, ok := raw["source_todos"].([]any); ok {
-		seen := make(map[string]struct{})
-		var dupes []string
-		for _, item := range rawST {
-			s, isStr := item.(string)
-			if !isStr {
-				continue
-			}
-			if _, exists := seen[s]; exists {
-				dupes = append(dupes, s)
-			}
-			seen[s] = struct{}{}
-		}
-		if len(dupes) > 0 {
-			sort.Strings(dupes)
+	// source_todos (optional array): if present must have minItems:1 + uniqueItems
+	if rawST, hasST := raw["source_todos"]; hasST {
+		stArr, isArr := rawST.([]any)
+		if !isArr {
 			envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
 				"path": displayPath,
-				"keys": fmt.Sprintf("source_todos: duplicate entries violate uniqueItems: %s", strings.Join(dupes, ", ")),
+				"keys": fmt.Sprintf("source_todos: type is %T, must be an array", rawST),
 			}))
+		} else {
+			if len(stArr) == 0 {
+				envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+					"path": displayPath,
+					"keys": "source_todos: minItems:1 violated (array is empty)",
+				}))
+			}
+			seen := make(map[string]struct{})
+			var dupes []string
+			for _, item := range stArr {
+				s, isStr := item.(string)
+				if !isStr {
+					continue
+				}
+				if _, exists := seen[s]; exists {
+					dupes = append(dupes, s)
+				}
+				seen[s] = struct{}{}
+			}
+			if len(dupes) > 0 {
+				sort.Strings(dupes)
+				envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+					"path": displayPath,
+					"keys": fmt.Sprintf("source_todos: duplicate entries violate uniqueItems: %s", strings.Join(dupes, ", ")),
+				}))
+			}
 		}
 	}
 
-	// supersedes (optional block; if present, requires commit AND row)
+	// supersedes (optional block; if present, requires commit AND row;
+	// row must match kebab-case slug pattern)
 	if rawSup, ok := raw["supersedes"].(map[string]any); ok {
 		if !nonEmptyString(rawSup["commit"]) {
 			envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
@@ -379,10 +408,16 @@ func validateDefinition(path string, tx *Taxonomy) []BlockerEnvelope {
 				"keys": "supersedes: missing required field 'commit'",
 			}))
 		}
-		if !nonEmptyString(rawSup["row"]) {
+		row, hasRow := rawSup["row"].(string)
+		if !hasRow || strings.TrimSpace(row) == "" {
 			envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
 				"path": displayPath,
 				"keys": "supersedes: missing required field 'row'",
+			}))
+		} else if !slugPattern.MatchString(row) {
+			envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+				"path": displayPath,
+				"keys": fmt.Sprintf("supersedes.row '%s' does not match kebab-case pattern ^[a-z][a-z0-9]*(-[a-z0-9]+)*$", row),
 			}))
 		}
 	}
