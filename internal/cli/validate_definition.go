@@ -266,6 +266,44 @@ func validateDefinition(path string, tx *Taxonomy) []BlockerEnvelope {
 				}
 			}
 
+			// file_ownership: optional but if present must be array of strings
+			if rawFO, present := d["file_ownership"]; present {
+				if foArr, isArr := rawFO.([]any); !isArr {
+					envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+						"path": displayPath,
+						"keys": fmt.Sprintf("deliverables[%d].file_ownership: type is %T, must be an array", i, rawFO),
+					}))
+				} else {
+					for k, item := range foArr {
+						if _, isStr := item.(string); !isStr {
+							envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+								"path": displayPath,
+								"keys": fmt.Sprintf("deliverables[%d].file_ownership[%d]: type is %T, must be a string", i, k, item),
+							}))
+						}
+					}
+				}
+			}
+
+			// depends_on: optional but if present must be array of strings
+			if rawDO, present := d["depends_on"]; present {
+				if doArr, isArr := rawDO.([]any); !isArr {
+					envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+						"path": displayPath,
+						"keys": fmt.Sprintf("deliverables[%d].depends_on: type is %T, must be an array", i, rawDO),
+					}))
+				} else {
+					for k, item := range doArr {
+						if _, isStr := item.(string); !isStr {
+							envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+								"path": displayPath,
+								"keys": fmt.Sprintf("deliverables[%d].depends_on[%d]: type is %T, must be a string", i, k, item),
+							}))
+						}
+					}
+				}
+			}
+
 			// nested additionalProperties:false — flag any keys not in the schema
 			var unknownNested []string
 			for k := range d {
@@ -332,6 +370,24 @@ func validateDefinition(path string, tx *Taxonomy) []BlockerEnvelope {
 					"keys": fmt.Sprintf("context_pointers[%d]: missing required field 'note'", j),
 				}))
 			}
+			// symbols: optional, but if present must be array of strings
+			if rawSym, present := cp["symbols"]; present {
+				if symArr, isArr := rawSym.([]any); !isArr {
+					envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+						"path": displayPath,
+						"keys": fmt.Sprintf("context_pointers[%d].symbols: type is %T, must be an array", j, rawSym),
+					}))
+				} else {
+					for k, item := range symArr {
+						if _, isStr := item.(string); !isStr {
+							envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+								"path": displayPath,
+								"keys": fmt.Sprintf("context_pointers[%d].symbols[%d]: type is %T, must be a string", j, k, item),
+							}))
+						}
+					}
+				}
+			}
 			var unknown []string
 			for k := range cp {
 				if _, ok := allowedContextPointerKeys[k]; !ok {
@@ -348,18 +404,27 @@ func validateDefinition(path string, tx *Taxonomy) []BlockerEnvelope {
 		}
 	}
 
-	// constraints: required + must be an array
+	// constraints: required + must be an array of strings
 	rawConstraints, hasConstraints := raw["constraints"]
 	if !hasConstraints {
 		envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
 			"path": displayPath,
 			"keys": "(missing required field) constraints",
 		}))
-	} else if _, ok := rawConstraints.([]any); !ok {
+	} else if cArr, ok := rawConstraints.([]any); !ok {
 		envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
 			"path": displayPath,
 			"keys": fmt.Sprintf("constraints: type is %T, must be an array", rawConstraints),
 		}))
+	} else {
+		for i, item := range cArr {
+			if _, isStr := item.(string); !isStr {
+				envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+					"path": displayPath,
+					"keys": fmt.Sprintf("constraints[%d]: type is %T, must be a string", i, item),
+				}))
+			}
+		}
 	}
 
 	// source_todos (optional array): if present must have minItems:1 + uniqueItems
@@ -378,16 +443,30 @@ func validateDefinition(path string, tx *Taxonomy) []BlockerEnvelope {
 				}))
 			}
 			seen := make(map[string]struct{})
-			var dupes []string
-			for _, item := range stArr {
+			var dupes, badPatterns []string
+			for i, item := range stArr {
 				s, isStr := item.(string)
 				if !isStr {
+					envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+						"path": displayPath,
+						"keys": fmt.Sprintf("source_todos[%d]: type is %T, must be a string", i, item),
+					}))
 					continue
+				}
+				if !slugPattern.MatchString(s) {
+					badPatterns = append(badPatterns, s)
 				}
 				if _, exists := seen[s]; exists {
 					dupes = append(dupes, s)
 				}
 				seen[s] = struct{}{}
+			}
+			if len(badPatterns) > 0 {
+				sort.Strings(badPatterns)
+				envs = append(envs, tx.EmitBlocker("definition_unknown_keys", map[string]string{
+					"path": displayPath,
+					"keys": fmt.Sprintf("source_todos: entries do not match kebab-case pattern: %s", strings.Join(badPatterns, ", ")),
+				}))
 			}
 			if len(dupes) > 0 {
 				sort.Strings(dupes)
