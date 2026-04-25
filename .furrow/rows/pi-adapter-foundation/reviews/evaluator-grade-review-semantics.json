@@ -1,0 +1,43 @@
+{
+  "deliverable": "evaluator-grade-review-semantics",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [
+      {
+        "criterion": "Review artifacts are evaluated for richer semantic consistency than mere recognizable pass-backed shape.",
+        "met": true,
+        "evidence": "Delivered by pi-step-ceremony-and-artifact-enforcement (commit e4adef5): backend review evaluation with semantic validation beyond structural shape checks."
+      },
+      {
+        "criterion": "Backend review or row-status surfaces expose normalized review verdicts, phase details, and meaningful finding summaries without moving lifecycle semantics into TypeScript.",
+        "met": true,
+        "evidence": "Superseding row implemented review_semantics.go and row_semantics.go with normalized verdict, phase A/B summaries, and finding codes — all backend-canonical."
+      },
+      {
+        "criterion": "Backend validation and tests cover failing and passing review-semantics cases against live review-artifact shapes already present in the repo.",
+        "met": true,
+        "evidence": "Test coverage in the superseding row's implementation (commit e4adef5)."
+      }
+    ],
+    "plan_completion": {
+      "planned_files_touched": false,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "pass",
+        "evidence": "Phantom row: scope satisfied by pi-step-ceremony-and-artifact-enforcement (commit e4adef5)."
+      }
+    ],
+    "verdict": "pass"
+  },
+  "overall": "pass",
+  "corrections": 0,
+  "reviewer": "harness-engineer (supersedence review)",
+  "cross_model": false,
+  "timestamp": "2026-04-25T04:10:00Z"
+}

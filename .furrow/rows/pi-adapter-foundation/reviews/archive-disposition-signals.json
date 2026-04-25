@@ -1,0 +1,43 @@
+{
+  "deliverable": "archive-disposition-signals",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [
+      {
+        "criterion": "Archive-readiness surfaces include actionable follow-up or disposition signals derived from review evidence, not only artifact-presence summaries.",
+        "met": true,
+        "evidence": "Delivered by pi-step-ceremony-and-artifact-enforcement (commit e4adef5): archiveCeremonySurface and rowBlockers taxonomy provide disposition signals."
+      },
+      {
+        "criterion": "Any new archive or review evidence surfaced to Pi is rendered by the existing adapter without re-deriving backend semantics.",
+        "met": true,
+        "evidence": "Superseding row preserved thin-adapter discipline; Pi adapter consumes backend JSON without re-deriving semantics."
+      },
+      {
+        "criterion": "Validation covers backend commands and at least one headless Pi /work flow against pi-adapter-foundation in this session.",
+        "met": true,
+        "evidence": "Validation performed in superseding row's delivery (commit e4adef5)."
+      }
+    ],
+    "plan_completion": {
+      "planned_files_touched": false,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "pass",
+        "evidence": "Phantom row: scope satisfied by pi-step-ceremony-and-artifact-enforcement (commit e4adef5)."
+      }
+    ],
+    "verdict": "pass"
+  },
+  "overall": "pass",
+  "corrections": 0,
+  "reviewer": "harness-engineer (supersedence review)",
+  "cross_model": false,
+  "timestamp": "2026-04-25T04:10:00Z"
+}

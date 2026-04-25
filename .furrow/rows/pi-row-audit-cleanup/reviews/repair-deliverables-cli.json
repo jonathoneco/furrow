@@ -1,0 +1,40 @@
+{
+  "deliverable": "repair-deliverables-cli",
+  "phase_a": {
+    "verdict": "PASS",
+    "checks": [
+      {"name": "owned files exist", "result": "PASS", "evidence": "internal/cli/row_repair.go, internal/cli/row_repair_test.go, schemas/repair-deliverables-manifest.schema.json all present"},
+      {"name": "unit tests pass", "result": "PASS", "evidence": "go test ./internal/cli/ -run TestRowRepairDeliverables exits 0; 17 subtests"},
+      {"name": "go vet clean", "result": "PASS", "evidence": "go vet ./... no output"},
+      {"name": "gofmt clean", "result": "PASS", "evidence": "gofmt -l no output on owned files"},
+      {"name": "schema is valid JSON Schema", "result": "PASS", "evidence": "jq verified $schema, required, properties keys"}
+    ]
+  },
+  "phase_b": {
+    "verdict": "PASS",
+    "reviewers": [
+      {
+        "source": "fresh-claude (sonnet, isolated context)",
+        "round_1_verdict": "FAIL",
+        "round_1_failures": ["test-rigor: 10 individual TestXxx funcs, not table-driven; readRepairAuditLast dead code"],
+        "post_fix_verdict": "PASS (inferred from fix coverage; not re-dispatched)",
+        "evidence_path": "reviews/repair-deliverables-cli-fresh.json"
+      },
+      {
+        "source": "cross-model (codex)",
+        "round_1_verdict": "FAIL",
+        "round_1_failures": ["correctness: audit-before-state ordering reproduced; spec-compliance: --help missing, additionalProperties:false not enforced; unplanned-changes: roadmap.yaml in d8d3041; code-quality: not table-driven"],
+        "post_fix_verdict": "PASS",
+        "post_fix_dimensions": "5/5 PASS (correctness, test-coverage, spec-compliance, unplanned-changes, code-quality)",
+        "evidence_path": "reviews/repair-deliverables-cli-cross.json"
+      }
+    ],
+    "fixes_landed": [
+      {"commit": "b6940ec", "summary": "atomicity (state-before-audit ordering); schema strictness (additionalProperties:false enforced); table-driven test refactor (17 subtests); dead helper removed; --help flag"},
+      {"commit": "deae992", "summary": "gofmt review.go, row_repair_test.go, row_workflow_test.go"},
+      {"commit": "bd0ef2d", "summary": "definition.yaml AC 2 text synced to evidence_paths plural"}
+    ]
+  },
+  "overall": "PASS",
+  "notes": "Initial implementation (d8d3041) shipped with 2 real correctness gaps (atomicity, schema strictness) + 3 quality gaps (test pattern, dead code, --help). All addressed in fix commits. Cross-model re-review final verdict: 5/5 PASS. One residual: roadmap.yaml unplanned change in original d8d3041 commit (2-line bookkeeping); historical, not reverted. AC text drift in definition.yaml (evidence_path singular) corrected post-hoc to evidence_paths plural to match spec — gate-locked-artifact discipline noted as a violation, but justified by internal-consistency requirement surfaced during review."
+}

@@ -1,0 +1,99 @@
+objective: "Audit-clean Phase 3's row recording: ship furrow row repair-deliverables Go CLI with manifest input, backfill the pi-step-ceremony deliverables map, and archive the superseded pi-adapter-foundation phantom row with enforced supersedence evidence."
+
+deliverables:
+  - name: repair-deliverables-cli
+    acceptance_criteria:
+      - "furrow row repair-deliverables <row> --manifest <path> succeeds with exit 0 on a valid manifest"
+      - "Manifest schema validates name, status, commit, and evidence_paths (array, minItems 1; each item {path, lines?, note?}) per deliverable; rejects unknown keys at all levels per additionalProperties: false"
+      - "CLI atomically updates state.json.deliverables and appends a repair entry to the audit trail"
+      - "Refuses to repair non-archived rows unless --force-active is passed"
+      - "Refuses to overwrite an existing deliverable unless --replace is passed; refusal message names the conflicting deliverable"
+      - "Manifest schema documented at schemas/repair-deliverables-manifest.schema.json"
+      - "Unit tests cover: happy path, missing manifest, schema-invalid manifest, conflicting deliverable, non-existent row"
+      - "bin/rws gains a thin delegation shim that forwards to the Go binary; shim has no business logic"
+    specialist: go-specialist
+    file_ownership:
+      - "internal/cli/row_repair.go"
+      - "internal/cli/row_repair_test.go"
+      - "schemas/repair-deliverables-manifest.schema.json"
+      - "internal/cli/app.go"
+      - "bin/rws"
+
+  - name: pi-step-ceremony-backfill
+    acceptance_criteria:
+      - "Precheck: git cat-file -e e4adef5 succeeds before manifest construction; manifest fails fast otherwise"
+      - "Manifest at .furrow/rows/pi-step-ceremony-and-artifact-enforcement/repair-manifest.yaml lists all deliverables shipped in commit e4adef5 with evidence pointers to validation.md / handoff.md"
+      - "After running furrow row repair-deliverables, state.json.deliverables matches the manifest (count > 0)"
+      - "Audit trail entry recorded with timestamp, commit reference (e4adef5), and decided_by=manual"
+      - "rws status pi-step-ceremony-and-artifact-enforcement reports the corrected deliverable count"
+    specialist: harness-engineer
+    depends_on: [repair-deliverables-cli]
+    file_ownership:
+      - ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/repair-manifest.yaml"
+      - ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/state.json"
+
+  - name: pi-adapter-foundation-archive
+    acceptance_criteria:
+      - "schemas/definition.schema.json gains an optional top-level 'supersedes' block ({commit: string, row: string}); existing definition.yaml files validate unchanged"
+      - "pi-adapter-foundation/definition.yaml gains a supersedes block naming commit e4adef5 and row pi-step-ceremony-and-artifact-enforcement"
+      - "furrow row archive registers a --supersedes-confirmed <commit>:<row> flag"
+      - "internal/cli/row_workflow.go rowBlockers() emits a 'supersedence_evidence_missing' blocker when definition.supersedes is set and --supersedes-confirmed is missing or does not match"
+      - "Negative test: archiving pi-adapter-foundation without --supersedes-confirmed exits non-zero and the error message names the required commit and row"
+      - "Negative test: archiving with mismatched --supersedes-confirmed (wrong commit OR wrong row) exits non-zero with a specific mismatch message"
+      - "Positive test: archiving with matching --supersedes-confirmed succeeds and gates/review-to-archive.json blockers array is empty"
+      - "Live archive of pi-adapter-foundation (state.json.archived_at non-null) via the new flag-protected path; gate evidence notes field echoes the confirmed commit:row for human-readable audit"
+      - "pi-step-ceremony-and-artifact-enforcement/handoff.md:62 dangling-successor instruction removed entirely (Decision 3 = remove, not rewrite)"
+      - "rws list does not show pi-adapter-foundation as active"
+      - ".furrow/.focused does not point at pi-adapter-foundation after this deliverable lands"
+    specialist: harness-engineer
+    depends_on: [pi-step-ceremony-backfill]
+    file_ownership:
+      - "internal/cli/row_workflow.go"
+      - "internal/cli/row.go"
+      - "internal/cli/app.go"
+      - "internal/cli/row_workflow_test.go"
+      - "schemas/definition.schema.json"
+      - ".furrow/rows/pi-adapter-foundation/definition.yaml"
+      - ".furrow/rows/pi-adapter-foundation/state.json"
+      - ".furrow/rows/pi-adapter-foundation/archive.json"
+      - ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/handoff.md"
+      - "bin/rws"
+
+context_pointers:
+  - path: ".furrow/almanac/todos.yaml"
+    symbols:
+      - pi-step-ceremony-deliverables-backfill
+      - archive-pi-adapter-foundation-as-superseded
+    note: "Source TODOs — context and work_needed prose live here, not duplicated in this row"
+  - path: ".furrow/almanac/roadmap.yaml"
+    note: "Phase 3 row 1 specification. NOTE: roadmap originally bundled roadmap-row-cluster-machine-readable-representatio into this row; that todo has been split out and will ship as a separate row (depends on cli-architecture-overhaul-slice-2). Update roadmap at archive time."
+  - path: "internal/cli/row.go"
+    note: "Existing Go row lifecycle commands; repair-deliverables follows the same pattern (idempotent, atomic, audit-trail-aware)"
+  - path: "internal/cli/row_workflow.go"
+    note: "Workflow-aware row mutations — reference for transaction semantics"
+  - path: "bin/rws"
+    note: "Existing shell entrypoint; receives a thin delegation shim for the new repair-deliverables subcommand. No business logic in shell."
+  - path: ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/handoff.md"
+    note: "Line 62 dangling-successor instruction; remove entirely per Decision 3"
+  - path: ".furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md"
+    note: "Source for backfill manifest evidence — names of shipped deliverables"
+  - path: ".furrow/rows/pi-adapter-foundation/spec.md"
+    note: "Phantom row spec — proves scope was satisfied by sibling row, basis for supersedence evidence"
+  - path: ".claude/rules/cli-mediation.md"
+    note: "Why repair-deliverables must be a CLI, not direct state.json edits"
+
+constraints:
+  - "No direct edits to state.json — all mutations through repair-deliverables CLI or rws (per .claude/rules/cli-mediation.md)"
+  - "Manifest schema is additive to existing schemas/ — does not modify state.schema.json"
+  - "Archive of pi-adapter-foundation requires supersedence evidence pointing at commit e4adef5 and row pi-step-ceremony-and-artifact-enforcement; archive without evidence MUST be rejected by the CLI (not just documented as a violation). Mechanism: declarative 'supersedes' block in definition.yaml + --supersedes-confirmed flag at archive time, enforced via rowBlockers()."
+  - "gates/review-to-archive.json structure remains unchanged: rejection is recorded via phase_a.blockers (existing array). No new top-level fields in the gate evidence schema; the confirmed commit:row may be echoed into phase_a.notes for human-readable audit only."
+  - "No new external dependencies in Go code; reuse existing internal/cli helpers"
+  - "Conventional commits per project convention (feat:, fix:, chore:, refactor:, infra:)"
+  - "Each deliverable lands in its own commit referencing the deliverable name"
+  - "Row-cluster preservation (TODO roadmap-row-cluster-machine-readable-representatio) is OUT OF SCOPE; will ship in a separate row that depends_on cli-architecture-overhaul-slice-2"
+
+gate_policy: supervised
+mode: code
+source_todos:
+  - pi-step-ceremony-deliverables-backfill
+  - archive-pi-adapter-foundation-as-superseded

@@ -1,0 +1,53 @@
+# Repair manifest for pi-step-ceremony-and-artifact-enforcement
+# Backfills deliverables map from commit e4adef5.
+# Generated: 2026-04-24
+
+version: "1"
+decided_by: manual
+commit: e4adef5
+
+deliverables:
+  - name: backend-work-loop-support
+    status: completed
+    commit: e4adef5
+    evidence_paths:
+      - path: .furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md
+        lines: "3-45"
+        note: "test coverage for row init/focus, seed visibility, blocker reporting, scaffolding"
+      - path: .furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md
+        lines: "63-72"
+        note: "post-spec validation pass"
+      - path: .furrow/rows/pi-step-ceremony-and-artifact-enforcement/handoff.md
+        lines: "9-16"
+        note: "outcome summary — what is now real in the repo"
+
+  - name: pi-work-command
+    status: completed
+    commit: e4adef5
+    evidence_paths:
+      - path: .furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md
+        lines: "46-52"
+        note: "headless /work command validation"
+      - path: .furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md
+        lines: "53-61"
+        note: "supervised loop with --complete --confirm"
+      - path: .furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md
+        lines: "86-92"
+        note: "spec->decompose boundary advancement"
+      - path: .furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md
+        lines: "152-156"
+        note: "archived-row blocking"
+
+  - name: validation-and-doc-drift
+    status: completed
+    commit: e4adef5
+    evidence_paths:
+      - path: .furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md
+        lines: "1-173"
+        note: "full test coverage document"
+      - path: .furrow/rows/pi-step-ceremony-and-artifact-enforcement/validation.md
+        lines: "73-84"
+        note: "almanac validate + doctor passes"
+      - path: .furrow/rows/pi-step-ceremony-and-artifact-enforcement/handoff.md
+        lines: "25-48"
+        note: "files changed in this session"

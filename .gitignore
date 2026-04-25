@@ -35,3 +35,10 @@ bin/alm
 # install-artifact contamination (moved to $XDG_STATE_HOME/furrow/)
 bin/*.bak
 .claude/rules/*.bak
+
+# Go build artifacts (cmd/furrow output)
+/furrow
+/bin/furrow
+
+# codex CLI workspace marker
+.codex

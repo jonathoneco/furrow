@@ -1,0 +1,41 @@
+{
+  "type": "ideation",
+  "dimensions": [
+    {
+      "name": "feasibility",
+      "verdict": "conditional",
+      "evidence": "The objective is technically achievable with the stated constraints because the repo already has the relevant surfaces: CLI-mediated row mutation is the required pattern in `.claude/rules/cli-mediation.md`, `pi-step-ceremony-and-artifact-enforcement` is archived with an empty `deliverables` map, `pi-adapter-foundation` is still active, and Phase 3 already scopes this row in `.furrow/almanac/roadmap.md`. The main feasibility caveat is the `alm-triage-row-cluster-preservation` slice: its ACs require preserving the curated 16-cluster shape while remaining YAML-compatible for existing `alm next` consumers, which is doable but broader and riskier than the other three deliverables."
+    },
+    {
+      "name": "alignment",
+      "verdict": "pass",
+      "evidence": "The deliverables collectively cover the stated objective cleanly: `repair-deliverables-cli` creates the missing mutation mechanism, `pi-step-ceremony-backfill` uses it to repair the archived row, `pi-adapter-foundation-archive` removes the superseded phantom row with explicit evidence, and `alm-triage-row-cluster-preservation` protects the curated roadmap from being lost on regeneration. This matches both the objective text and the existing Phase 3 roadmap entry for `work/pi-row-audit-cleanup`."
+    },
+    {
+      "name": "dependency validity",
+      "verdict": "conditional",
+      "evidence": "The explicit dependencies are directionally correct: backfill depends on the new repair CLI, and archive depends on the backfill so supersedence evidence can point at the corrected sibling row. However, the framing leaves two implicit dependencies underspecified. First, the archive deliverable also depends on the existing archive flow accepting and persisting the required supersedence evidence, not just on the backfill. Second, the cluster-preservation deliverable hinges on choosing a single authority for preserved cluster metadata (`todos.yaml` umbrella+`absorbs[]` versus `roadmap-sections.yaml`), but the AC currently allows either, which weakens dependency clarity."
+    },
+    {
+      "name": "risk assessment",
+      "verdict": "conditional",
+      "evidence": "The constraints do a good job constraining the cleanup work: no direct `state.json` edits, additive schema only, mandatory supersedence evidence for archive, no new Go dependencies, and per-deliverable commits. The main remaining scope-creep risk is the triage deliverable, because phrases like `or equivalent representation` and `or a documented superset` create room to expand beyond preservation into broader roadmap redesign. There is also no explicit regression requirement for `alm next` or roadmap consumers beyond a general compatibility statement."
+    },
+    {
+      "name": "completeness",
+      "verdict": "conditional",
+      "evidence": "The set is mostly complete for the stated objective, but two obvious gaps remain. There is no explicit AC that the archive flow itself rejects archival without the required evidence, even though the constraint says doing so is a violation. There is also no explicit validation AC for consumer compatibility on the triage slice, such as proving `alm next` still reads regenerated `roadmap.yaml` successfully. The framing also has an unresolved design choice masquerading as an AC: whether preserved cluster metadata lives in `todos.yaml` or `roadmap-sections.yaml`."
+    }
+  ],
+  "framing_quality": "questionable",
+  "suggested_revisions": [
+    "Make the cluster-preservation representation decision explicit: choose either `todos.yaml` parent/`absorbs[]` or `roadmap-sections.yaml` as the machine-readable source of truth, instead of allowing both.",
+    "Tighten the triage ACs by replacing `or equivalent representation` and `or a documented superset` with a single concrete success condition tied to the current curated 16-cluster roadmap.",
+    "Add an acceptance criterion that the archive path rejects `pi-adapter-foundation` archival when the required supersedence evidence is missing or does not reference commit `e4adef5` and row `pi-step-ceremony-and-artifact-enforcement`.",
+    "Add an acceptance criterion or test requirement proving existing `alm next` consumers still work against the regenerated YAML, not just that the output is broadly `YAML-compatible`.",
+    "Clarify that `pi-adapter-foundation-archive` depends on the archive command's evidence-capture behavior as well as on the repaired sibling row, so the dependency chain matches the actual mutation path."
+  ],
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-25T02:51:46Z"
+}
