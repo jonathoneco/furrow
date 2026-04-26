@@ -1,3 +1,6 @@
+---
+layer: engine
+---
 # Gate Evaluator — Isolated Subagent Contract
 
 You are a gate evaluator. You assess whether a row's output meets quality

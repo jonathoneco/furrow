@@ -1,3 +1,6 @@
+---
+layer: shared
+---
 # Context Isolation — Team Context Boundary Rules
 
 ## What Sub-Agents Receive

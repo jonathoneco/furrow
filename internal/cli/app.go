@@ -1,14 +1,18 @@
 package cli
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"strings"
 
 	ctx "github.com/jonathoneco/furrow/internal/cli/context"
 	"github.com/jonathoneco/furrow/internal/cli/handoff"
+	"github.com/jonathoneco/furrow/internal/cli/hook"
 	"github.com/jonathoneco/furrow/internal/cli/render"
 
 	// Blank-import triggers init() registration of all 7 step strategies.
@@ -20,6 +24,7 @@ const contractVersion = "v1alpha1"
 type App struct {
 	stdout io.Writer
 	stderr io.Writer
+	stdin  io.Reader
 }
 
 type envelope struct {
@@ -46,7 +51,12 @@ type cliError struct {
 func (e *cliError) Error() string { return e.message }
 
 func New(stdout, stderr io.Writer) *App {
-	return &App{stdout: stdout, stderr: stderr}
+	return &App{stdout: stdout, stderr: stderr, stdin: os.Stdin}
+}
+
+// NewWithStdin creates an App with an explicit stdin (used in tests).
+func NewWithStdin(stdout, stderr io.Writer, stdin io.Reader) *App {
+	return &App{stdout: stdout, stderr: stderr, stdin: stdin}
 }
 
 func (a *App) Run(args []string) int {
@@ -80,6 +90,8 @@ func (a *App) Run(args []string) int {
 		return a.runHandoff(args[1:])
 	case "render":
 		return a.runRender(args[1:])
+	case "hook":
+		return a.runHook(args[1:])
 	case "merge":
 		return a.runStubGroup("furrow merge", args[1:], []string{"plan", "run", "validate"})
 	case "doctor":
@@ -192,6 +204,35 @@ func (a *App) runStubLeaf(command string, args []string) int {
 	return a.fail(command, &cliError{exit: 4, code: "not_implemented", message: command + " is not implemented in the Go CLI draft yet"}, flags.json)
 }
 
+// runHook dispatches `furrow hook <subcommand>` — runtime adapter hooks.
+//
+// D3 ships: layer-guard (PreToolUse boundary enforcement).
+// D6 will add: presentation-check.
+func (a *App) runHook(args []string) int {
+	if len(args) == 0 {
+		_, _ = fmt.Fprintln(a.stdout, "furrow hook\n\nAvailable subcommands: layer-guard")
+		return 0
+	}
+	switch args[0] {
+	case "layer-guard":
+		policyPath := filepath.Join(".furrow", "layer-policy.yaml")
+		// Allow override via env for testing.
+		if override := os.Getenv("FURROW_LAYER_POLICY_PATH"); override != "" {
+			policyPath = override
+		}
+		return hook.RunLayerGuard(context.Background(), policyPath, a.stdin, a.stdout)
+	case "help", "-h", "--help":
+		_, _ = fmt.Fprintln(a.stdout, "furrow hook\n\nAvailable subcommands: layer-guard")
+		return 0
+	default:
+		return a.fail("furrow hook", &cliError{
+			exit:    1,
+			code:    "usage",
+			message: fmt.Sprintf("unknown hook subcommand %q", args[0]),
+		}, false)
+	}
+}
+
 func (a *App) okJSON(command string, data any) int {
 	return a.writeJSON(envelope{OK: true, Command: command, Version: contractVersion, Data: data}, 0)
 }
@@ -236,9 +277,11 @@ Commands:
   review    Review orchestration contract surface
   almanac   Planning and knowledge contract surface
   seeds     Seed/task primitive contract surface
+  validate  Schema and policy validation (definition, layer-policy, skill-layers, driver-definitions)
   context   Context bundle assembly (for-step)
   handoff   Handoff render and validate contract surface
   render    Render runtime-specific files from definitions
+  hook      Runtime adapter hooks (layer-guard)
   merge     Merge pipeline contract surface
   doctor    Environment and adapter readiness checks
   init      Repo bootstrap and migration entrypoint

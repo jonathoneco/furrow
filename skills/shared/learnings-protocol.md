@@ -1,3 +1,6 @@
+---
+layer: shared
+---
 # Learnings Protocol
 
 Capture durable insights during work execution. Learnings accumulate per row

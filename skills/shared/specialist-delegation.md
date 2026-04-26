@@ -1,3 +1,6 @@
+---
+layer: shared
+---
 # Specialist Delegation Protocol (Driver→Engine)
 
 **Audience**: phase drivers. This document replaces the former operator→specialist

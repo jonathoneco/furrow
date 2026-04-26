@@ -157,20 +157,36 @@ function readSkill(root: string, step: string): string | undefined {
 // Layer-guard hook integration (forward-compatible stub for D3)
 // ---------------------------------------------------------------------------
 
-/** Attempt to call `furrow hook layer-guard` with the given payload.
- * Returns the verdict, or undefined if the command is not yet available (D3 W5). */
+/** Call `furrow hook layer-guard` with the given payload.
+ *
+ * Implements D3 boundary enforcement for the Pi adapter. The payload shape
+ * is identical to Claude's PreToolUse hook JSON, ensuring cross-adapter parity:
+ * both adapters call the same Go binary with the same stdin shape, so verdict
+ * logic is never duplicated.
+ *
+ * Exit-code semantics mirror Claude hook protocol:
+ *   - exit 0 (or error from binary not found) → allow
+ *   - exit 2 with JSON stdout containing block:true → block
+ *
+ * Pi capability gap: this hook fires on main-thread tool calls only.
+ * Subprocess-spawned subagents are blind to the parent hook bus — see module
+ * docstring and docs/architecture/orchestration-delegation-contract.md §7.
+ */
 function callLayerGuard(payload: LayerGuardPayload): LayerGuardVerdict | undefined {
+  const input = JSON.stringify(payload);
+  const res = execFileSync("furrow", ["hook", "layer-guard"], {
+    input,
+    encoding: "utf-8",
+    timeout: 2000,
+  });
+  // furrow hook layer-guard exits 0 and emits nothing on allow.
+  // If we reach here (no thrown error), the call succeeded with exit 0 → allow.
   try {
-    const input = JSON.stringify(payload);
-    const result = execFileSync("furrow", ["hook", "layer-guard"], {
-      input,
-      encoding: "utf-8",
-      timeout: 2000,
-    });
-    return JSON.parse(result) as LayerGuardVerdict;
+    const verdict = JSON.parse(res) as LayerGuardVerdict;
+    return verdict;
   } catch {
-    // D3 not yet installed — treat as allow (no block).
-    return undefined;
+    // Exit 0 with empty/non-JSON stdout → allow.
+    return { block: false, reason: "" };
   }
 }
 
@@ -235,7 +251,19 @@ export class FurrowPiAdapter {
     };
   }
 
-  /** Handle tool_call for layer-guard enforcement (D3 W5 forward-compatible). */
+  /**
+   * Handle tool_call for layer-guard enforcement (D3).
+   *
+   * Normalizes Pi's tool_call event into Claude's PreToolUse JSON shape and
+   * executes `furrow hook layer-guard` synchronously. Identical payload shape
+   * ensures cross-adapter parity: same Go binary, same stdin structure, same
+   * verdict logic — no duplication.
+   *
+   * Enforcement scope: main-thread (operator) tool calls only. Subprocess
+   * subagents spawned via pi-subagents are invisible to the parent hook bus.
+   * See Pi capability gap documentation in
+   * docs/architecture/orchestration-delegation-contract.md §7.
+   */
   async onToolCall(
     ctx: ToolCallContext,
     event: ToolCallEvent,
@@ -243,14 +271,32 @@ export class FurrowPiAdapter {
     const payload: LayerGuardPayload = {
       hook_event_name: "PreToolUse",
       tool_name: event.tool_name,
-      tool_input: event.tool_input,
+      tool_input: event.tool_input ?? {},
       agent_id: ctx.agentId,
-      agent_type: ctx.agentName,
+      agent_type: ctx.agentName,  // "driver:{step}" | "engine:{id}" | "operator"
     };
 
-    const verdict = callLayerGuard(payload);
-    if (verdict?.block) {
-      return { block: true, reason: verdict.reason };
+    try {
+      const verdict = callLayerGuard(payload);
+      if (verdict?.block) {
+        return { block: true, reason: verdict.reason };
+      }
+    } catch (err: unknown) {
+      // execFileSync throws on non-zero exit. Parse stdout from the error for
+      // the block reason (furrow hook layer-guard exits 2 + JSON on block).
+      const anyErr = err as { stdout?: string; status?: number };
+      if (anyErr.status === 2 && anyErr.stdout) {
+        try {
+          const verdict = JSON.parse(anyErr.stdout) as LayerGuardVerdict;
+          if (verdict.block) {
+            return { block: true, reason: verdict.reason };
+          }
+        } catch {
+          return { block: true, reason: `layer_tool_violation: layer-guard exited 2` };
+        }
+      }
+      // furrow binary not installed or other error → fail-open (allow).
+      // Log but do not block — avoids breaking Pi usage in non-Furrow projects.
     }
     return undefined;
   }

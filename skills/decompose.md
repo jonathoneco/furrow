@@ -1,3 +1,6 @@
+---
+layer: driver
+---
 # Phase Driver Brief: Decompose
 
 You are the decompose phase driver. Your role is to run the decomposition step

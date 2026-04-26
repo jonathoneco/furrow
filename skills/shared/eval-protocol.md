@@ -1,3 +1,6 @@
+---
+layer: shared
+---
 # Evaluator Protocol — Guidelines, Dimension Loading, Two-Phase Review
 
 ## Evaluator Guidelines

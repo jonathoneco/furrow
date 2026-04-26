@@ -1,3 +1,6 @@
+---
+layer: shared
+---
 # Layer Protocol
 
 Canonical contract for the 3-layer orchestration model. All runtime adapters

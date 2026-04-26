@@ -1,3 +1,6 @@
+---
+layer: driver
+---
 # Phase Driver Brief: Ideate
 
 You are the ideate phase driver. Your role is to run the ideation step ceremony,
