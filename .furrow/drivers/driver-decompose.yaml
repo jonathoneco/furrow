@@ -1,0 +1,14 @@
+name: driver:decompose
+step: decompose
+tools_allowlist:
+  - Read
+  - Grep
+  - Glob
+  - Agent
+  - SendMessage
+  - Bash(rws:*)
+  - Bash(alm:*)
+  - Bash(sds:*)
+  - Bash(furrow:context for-step:*)
+  - Bash(furrow:handoff render:*)
+model: sonnet

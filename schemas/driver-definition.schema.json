@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://furrow.dev/schemas/driver-definition.schema.json",
+  "title": "DriverDefinition",
+  "description": "Static, runtime-agnostic driver definition for a Furrow phase driver. Persona is implicit: skills/{step}.md is the driver brief.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "step", "tools_allowlist", "model"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^driver:(ideate|research|plan|spec|decompose|implement|review)$",
+      "description": "Driver identifier — driver:{step}. Must match the step field."
+    },
+    "step": {
+      "type": "string",
+      "enum": ["ideate", "research", "plan", "spec", "decompose", "implement", "review"],
+      "description": "The Furrow workflow step this driver executes."
+    },
+    "tools_allowlist": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Tool names the driver is allowed to invoke. Bash invocations use Bash(cmd:*) notation for prefix matching."
+    },
+    "model": {
+      "type": "string",
+      "enum": ["opus", "sonnet", "haiku"],
+      "description": "Model tier for this driver. opus for deep reasoning (research, review); sonnet for structured execution."
+    }
+  }
+}

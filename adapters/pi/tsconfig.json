@@ -1,14 +1,7 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "noEmit": true,
-    "allowImportingTsExtensions": true,
-    "types": ["bun-types"]
-  },
-  "include": ["*.ts"]
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.bun.json" },
+    { "path": "./tsconfig.extension.json" }
+  ]
 }

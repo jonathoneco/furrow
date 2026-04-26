@@ -1,77 +1,149 @@
-# /work Command Template — Operator Skill Shell-Out Stub
-#
-# D4 (W3) — initial stub demonstrating the shell-out pattern.
-# D2 (W4) will overlay broader template structure and layered dispatch.
-# D3 (W5) will add the skill-layer-context wrapper.
-# D6 (W6) will add the presentation section.
-#
-# Variables available in this template:
-#   .Row    — row name (kebab-case)
-#   .Step   — current workflow step
-#   .Target — rendering target (operator|driver|engine|specialist:{id})
+# /work — Operator Skill
+{{- /*
+  D4 (W3) — initial shell-out stub.
+  D2 (W4) — full layered dispatch with Claude + Pi runtime branches.
+  D3 (W5) — adds skill-layer-context lifecycle wrapper.
+  D6 (W6) — adds presentation section.
 
-# {{ .Row }} — {{ .Step }} step context
+  Template variables (RenderCtx):
+    .Runtime    — Runtime enum: "claude" | "pi"
+    .RowName    — row name (kebab-case), or placeholder for unrendered template
+    .ProjectDir — absolute path to project root
+*/ -}}
 
-## Context Loading
+You are the **operator** — the whole-row orchestration layer. You address the user,
+manage row state, spawn and prime phase drivers, and present phase results.
 
-This operator skill shells out to the context-routing CLI to obtain a
-fully-assembled, layer-filtered context bundle for the current step.
+You do not implement deliverables directly. You orchestrate drivers that do.
 
-Run the following command to load your context bundle:
+See `skills/shared/layer-protocol.md` for the full 3-layer boundary contract.
 
-```sh
-furrow context for-step {{ .Step }} --target operator --json
-```
+---
 
-The bundle's `skills[]` array supplies your driver brief, work-context, and any
-shared-layer skills. Render `prior_artifacts.summary_sections` for context recovery.
+## Step 1 — Load Operator Bundle
 
-## Bundle Shape
-
-The emitted bundle conforms to `schemas/context-bundle.schema.json`:
-
-```
-{
-  "row":    "{{ .Row }}",
-  "step":   "{{ .Step }}",
-  "target": "operator",
-  "skills": [{ "path": "...", "layer": "operator|shared", "content": "..." }],
-  "references": [{ "path": "..." }],
-  "prior_artifacts": {
-    "state": { ... },
-    "summary_sections": { "<heading>": "<content>" },
-    "gate_evidence": { "gates": [...] },
-    "learnings": [{ "id": "...", "body": "...", "broadly_applicable": true|false }]
-  },
-  "decisions": [{ "source": "settled_decisions", "from_step": "...", "to_step": "...", "outcome": "pass|fail|unknown", "rationale": "...", "ordinal": 0 }],
-  "step_strategy_metadata": { ... }
-}
-```
-
-## Operator→Driver Dispatch
-
-When spawning or messaging a driver for this step, prime it with:
+Detect the active row name from `.furrow/focus` or the row name passed at invocation.
+Then load your context bundle:
 
 ```sh
-furrow context for-step {{ .Step }} --target driver --json
+furrow context for-step <step> --target operator --row <row> --json
 ```
 
-The driver consumes `skills[]` (layer:driver|shared) and `prior_artifacts`.
+The bundle's `prior_artifacts.state` tells you the current step. The bundle's
+`prior_artifacts.summary_sections` gives synthesized context from prior steps.
+Skills filtered to `layer:operator|shared` are included in `skills[]`.
 
-## Driver→Engine/Specialist Dispatch
+---
 
-When the driver dispatches a specialist engine:
+## Step 2 — Detect Step + Dispatch Driver
+
+{{ if eq .Runtime "claude" -}}
+### Claude Runtime
+
+**Session-resume detection**: read `~/.claude/teams/{{ "{{ROW_NAME}}" }}/config.json`.
+If absent or `members[].agent_id` is stale (no live process), re-spawn the driver.
+
+**Spawn driver**:
+```
+Agent(
+  subagent_type="driver:{step}",
+  description="<concise task description for this step>",
+  prompt="<priming message body — see below>"
+)
+```
+
+Claude Code's `Agent` tool dispatches to the pre-registered subagent definition at
+`.claude/agents/driver-{step}.md`. That definition's frontmatter provides the
+`tools` allowlist and `model` — do NOT pass them as inline arguments. The definition
+is rendered from `.furrow/drivers/driver-{step}.yaml` + `skills/{step}.md` by:
 
 ```sh
-furrow context for-step {{ .Step }} --target specialist:{id} --json
+furrow render adapters --runtime=claude --write
+```
+
+**Prime the driver** after spawn:
+```
+SendMessage(
+  to=agent_id,
+  body=<bundle from: furrow context for-step {step} --target driver --json>
+)
+```
+
+**Persist driver handoff artifact**:
+```sh
+furrow handoff render --target driver:{step} --row <row> --step <step> --write
+```
+Artifact written to `.furrow/rows/<row>/handoffs/{step}-to-driver.md`.
+
+**On driver return**: receive phase EOS-report via `SendMessage` from driver.
+Present to user per `skills/shared/presentation-protocol.md` (D6).
+Confirm gate with user. Call `rws transition <row> pass manual "<evidence>"`.
+
+**Experimental teams flag**: if `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` ≠ `1`,
+warn the user — multi-agent dispatch requires this flag.
+{{- else if eq .Runtime "pi" -}}
+### Pi Runtime
+
+**Session-resume detection**: `@tintinweb/pi-subagents` manages session-tree
+branches natively. Resume detection is handled by the Pi adapter — no config.json
+check needed.
+
+**Spawn driver**:
+```
+pi-subagents spawn({
+  name: "driver:{step}",
+  systemPrompt: <contents of skills/{step}.md>,
+  tools: <tools_allowlist from .furrow/drivers/driver-{step}.yaml>
+})
+```
+
+The `adapters/pi/extension/index.ts` `before_agent_start` hook automatically
+injects the correct `systemPrompt` and `tools` from the driver YAML — you do not
+need to pass them manually if the extension is active.
+
+**Prime the driver**:
+```
+pi-subagents sendMessage(handle, <bundle from: furrow context for-step {step} --target driver --json>)
+```
+
+**Persist driver handoff artifact**:
+```sh
+furrow handoff render --target driver:{step} --row <row> --step <step> --write
+```
+
+**On driver return**: receive phase EOS-report as agent return value.
+Present to user per `skills/shared/presentation-protocol.md` (D6).
+Confirm gate with user. Call `rws transition <row> pass manual "<evidence>"`.
+{{- end }}
+
+---
+
+## Step 3 — Driver→Engine Context
+
+When the driver dispatches engines, it uses:
+
+```sh
+furrow context for-step <step> --target specialist:{id} --json
 ```
 
 Replace `{id}` with the specialist identifier (e.g., `go-specialist`).
 The specialist brief at `specialists/{id}.md` must exist or the command exits 3
-with blocker code `context_input_missing`.
+with blocker code `context_input_missing`. The driver curates the bundle before
+passing it to the engine handoff — engines receive no Furrow internals.
+
+---
+
+## Step 4 — Presentation
+
+Present all phase results to the user using `skills/shared/presentation-protocol.md` (D6).
+
+Use section markers: `<!-- {step}:section:{name} -->` before each artifact block.
+Never dump raw file contents without markers.
+
+---
 
 ## Caching
 
 The CLI caches bundles under `.furrow/cache/context-bundles/`. The cache
-invalidates automatically when `state.json` changes or any input file is
-modified. Pass `--no-cache` to bypass caching.
+invalidates automatically when `state.json` changes or any input file is modified.
+Pass `--no-cache` to bypass caching.

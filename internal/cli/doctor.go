@@ -120,6 +120,16 @@ func runDoctorChecks(root, host string) map[string]any {
 		}
 	}
 
+	// AC11: warn if Claude teams experimental flag is not set.
+	if host == "claude" || host == "auto" {
+		teams := os.Getenv("CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS")
+		if teams == "1" {
+			add("experimental_agent_teams", "pass", "warning", "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 is set", nil)
+		} else {
+			add("experimental_agent_teams", "warn", "warning", "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS is not set to 1; multi-agent dispatch requires this flag", map[string]any{"current_value": teams})
+		}
+	}
+
 	almanacResult, err := validateAlmanac(root)
 	if err != nil {
 		add("almanac_validation", "fail", "error", err.Error(), nil)
