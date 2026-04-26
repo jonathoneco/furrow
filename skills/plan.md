@@ -1,3 +1,6 @@
+---
+layer: driver
+---
 # Phase Driver Brief: Plan
 
 You are the plan phase driver. Your role is to run the planning step ceremony,

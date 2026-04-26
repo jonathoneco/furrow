@@ -1,0 +1,78 @@
+version: "1"
+# Maps observed agent_type values (Claude PreToolUse JSON) to layer labels.
+# Pattern source: D2 driver-{step} naming + D1 engine:{specialist-id} convention.
+# Unknown agent_type → engine (fail-closed default; see policy.go LookupLayer).
+agent_type_map:
+  operator:           operator
+  driver:ideate:      driver
+  driver:research:    driver
+  driver:plan:        driver
+  driver:spec:        driver
+  driver:decompose:   driver
+  driver:implement:   driver
+  driver:review:      driver
+  engine:freeform:    engine
+  # engine:specialist:{id} matched by "engine:" prefix in LookupLayer — not enumerated.
+
+layers:
+  operator:
+    tools_allow: ["*"]     # full surface — operator is the user-facing coordination layer
+    tools_deny: []
+    path_deny: []
+    bash_allow_prefixes: []
+    bash_deny_substrings: []
+
+  driver:
+    tools_allow:
+      - Read
+      - Grep
+      - Glob
+      - SendMessage
+      - Agent
+      - TaskCreate
+      - TaskGet
+      - TaskList
+      - TaskUpdate
+      - Bash
+    tools_deny:
+      - Edit
+      - Write
+      - NotebookEdit
+    path_deny: []
+    bash_allow_prefixes:
+      - "rws "
+      - "alm "
+      - "sds "
+      - "furrow context "
+      - "furrow handoff render"
+      - "furrow validate "
+      - "go test "
+    bash_deny_substrings:
+      - " > "        # output redirection
+      - " >> "
+      - "rm -"
+      - "git commit"
+
+  engine:
+    tools_allow:
+      - Read
+      - Grep
+      - Glob
+      - Edit
+      - Write
+      - Bash
+    tools_deny:
+      - SendMessage
+      - Agent
+      - TaskCreate
+    path_deny:
+      - ".furrow/"
+      - "schemas/blocker-taxonomy.yaml"
+      - "schemas/definition.schema.json"
+    bash_allow_prefixes: []    # no whitelist; deny-list mode
+    bash_deny_substrings:
+      - "furrow "
+      - "rws "
+      - "alm "
+      - "sds "
+      - ".furrow/"

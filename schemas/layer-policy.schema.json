@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://furrow.local/schemas/layer-policy.schema.json",
+  "title": "Furrow Layer Policy",
+  "description": "Canonical allow/deny matrix for the 3-layer orchestration model (operator → driver → engine). Consumed identically by Claude and Pi adapters via furrow hook layer-guard.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "agent_type_map", "layers"],
+  "properties": {
+    "version": {
+      "description": "Schema version. Must be '1'.",
+      "const": "1"
+    },
+    "agent_type_map": {
+      "description": "Maps agent_type strings (from Claude PreToolUse JSON) to layer labels. Supports exact keys; prefix fallback (engine:*, driver:*) is handled in code, not in this map.",
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^(operator|driver:[a-z_]+|engine:[a-z0-9_:\\-]+)$": {
+          "type": "string",
+          "enum": ["operator", "driver", "engine"]
+        }
+      }
+    },
+    "layers": {
+      "description": "Per-layer enforcement rules. All three layers (operator, driver, engine) are required.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operator", "driver", "engine"],
+      "properties": {
+        "operator": { "$ref": "#/$defs/layerRules" },
+        "driver":   { "$ref": "#/$defs/layerRules" },
+        "engine":   { "$ref": "#/$defs/layerRules" }
+      }
+    }
+  },
+  "$defs": {
+    "layerRules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tools_allow", "tools_deny", "path_deny", "bash_allow_prefixes", "bash_deny_substrings"],
+      "properties": {
+        "tools_allow": {
+          "description": "Whitelist of allowed tool names. ['*'] means all tools. Must be non-null.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "tools_deny": {
+          "description": "Explicit deny list. Takes precedence over tools_allow.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "path_deny": {
+          "description": "Path prefixes that file-touching tools (Edit, Write, Read) must not access.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "bash_allow_prefixes": {
+          "description": "Whitelist of allowed Bash command prefixes. Empty means no prefix whitelist (fall through to deny-substring check).",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "bash_deny_substrings": {
+          "description": "Forbidden substrings in Bash commands. Checked before prefix whitelist.",
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

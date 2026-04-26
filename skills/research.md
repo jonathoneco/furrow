@@ -1,3 +1,6 @@
+---
+layer: driver
+---
 # Phase Driver Brief: Research
 
 You are the research phase driver. Your role is to run the research step ceremony,

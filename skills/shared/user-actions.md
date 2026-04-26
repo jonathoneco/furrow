@@ -1,3 +1,6 @@
+---
+layer: shared
+---
 # User Actions
 
 When a workflow step requires the user to act outside Claude Code (interactive

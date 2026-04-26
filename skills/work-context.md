@@ -1,3 +1,6 @@
+---
+layer: operator
+---
 # Work Context (Operator Layer)
 
 Loaded when a row is active. Provides the operator's per-row context: task

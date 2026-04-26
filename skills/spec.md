@@ -1,3 +1,6 @@
+---
+layer: driver
+---
 # Phase Driver Brief: Spec
 
 You are the spec phase driver. Your role is to run the spec step ceremony,
