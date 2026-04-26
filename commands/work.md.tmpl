@@ -1,0 +1,77 @@
+# /work Command Template — Operator Skill Shell-Out Stub
+#
+# D4 (W3) — initial stub demonstrating the shell-out pattern.
+# D2 (W4) will overlay broader template structure and layered dispatch.
+# D3 (W5) will add the skill-layer-context wrapper.
+# D6 (W6) will add the presentation section.
+#
+# Variables available in this template:
+#   .Row    — row name (kebab-case)
+#   .Step   — current workflow step
+#   .Target — rendering target (operator|driver|engine|specialist:{id})
+
+# {{ .Row }} — {{ .Step }} step context
+
+## Context Loading
+
+This operator skill shells out to the context-routing CLI to obtain a
+fully-assembled, layer-filtered context bundle for the current step.
+
+Run the following command to load your context bundle:
+
+```sh
+furrow context for-step {{ .Step }} --target operator --json
+```
+
+The bundle's `skills[]` array supplies your driver brief, work-context, and any
+shared-layer skills. Render `prior_artifacts.summary_sections` for context recovery.
+
+## Bundle Shape
+
+The emitted bundle conforms to `schemas/context-bundle.schema.json`:
+
+```
+{
+  "row":    "{{ .Row }}",
+  "step":   "{{ .Step }}",
+  "target": "operator",
+  "skills": [{ "path": "...", "layer": "operator|shared", "content": "..." }],
+  "references": [{ "path": "..." }],
+  "prior_artifacts": {
+    "state": { ... },
+    "summary_sections": { "<heading>": "<content>" },
+    "gate_evidence": { "gates": [...] },
+    "learnings": [{ "id": "...", "body": "...", "broadly_applicable": true|false }]
+  },
+  "decisions": [{ "source": "settled_decisions", "from_step": "...", "to_step": "...", "outcome": "pass|fail|unknown", "rationale": "...", "ordinal": 0 }],
+  "step_strategy_metadata": { ... }
+}
+```
+
+## Operator→Driver Dispatch
+
+When spawning or messaging a driver for this step, prime it with:
+
+```sh
+furrow context for-step {{ .Step }} --target driver --json
+```
+
+The driver consumes `skills[]` (layer:driver|shared) and `prior_artifacts`.
+
+## Driver→Engine/Specialist Dispatch
+
+When the driver dispatches a specialist engine:
+
+```sh
+furrow context for-step {{ .Step }} --target specialist:{id} --json
+```
+
+Replace `{id}` with the specialist identifier (e.g., `go-specialist`).
+The specialist brief at `specialists/{id}.md` must exist or the command exits 3
+with blocker code `context_input_missing`.
+
+## Caching
+
+The CLI caches bundles under `.furrow/cache/context-bundles/`. The cache
+invalidates automatically when `state.json` changes or any input file is
+modified. Pass `--no-cache` to bypass caching.

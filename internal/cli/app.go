@@ -7,7 +7,11 @@ import (
 	"io"
 	"strings"
 
+	ctx "github.com/jonathoneco/furrow/internal/cli/context"
 	"github.com/jonathoneco/furrow/internal/cli/handoff"
+
+	// Blank-import triggers init() registration of all 7 step strategies.
+	_ "github.com/jonathoneco/furrow/internal/cli/context/strategies"
 )
 
 const contractVersion = "v1alpha1"
@@ -69,6 +73,8 @@ func (a *App) Run(args []string) int {
 		return a.runStubGroup("furrow seeds", args[1:], []string{"create", "update", "show", "list", "close"})
 	case "validate":
 		return a.runValidate(args[1:])
+	case "context":
+		return a.runContext(args[1:])
 	case "handoff":
 		return a.runHandoff(args[1:])
 	case "merge":
@@ -152,6 +158,11 @@ func (a *App) runInit(args []string) int {
 	return a.fail("furrow init", &cliError{exit: 4, code: "not_implemented", message: "init is not implemented in the Go CLI draft yet", details: details}, flags.json)
 }
 
+func (a *App) runContext(args []string) int {
+	h := ctx.New(a.stdout, a.stderr)
+	return h.Run(args)
+}
+
 func (a *App) runHandoff(args []string) int {
 	h := handoff.New(a.stdout, a.stderr)
 	return h.Run(args)
@@ -217,6 +228,7 @@ Commands:
   review    Review orchestration contract surface
   almanac   Planning and knowledge contract surface
   seeds     Seed/task primitive contract surface
+  context   Context bundle assembly (for-step)
   handoff   Handoff render and validate contract surface
   merge     Merge pipeline contract surface
   doctor    Environment and adapter readiness checks
