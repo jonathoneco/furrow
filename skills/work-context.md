@@ -1,7 +1,14 @@
-# Work Context (Work Layer)
+# Work Context (Operator Layer)
 
-Loaded when a row is active. Provides task discovery, state conventions,
-and command entry points. Does NOT contain step-specific guidance.
+Loaded when a row is active. Provides the operator's per-row context: task
+discovery, state conventions, and command entry points.
+
+Per-step context is NOT loaded here. It is obtained at runtime via:
+```sh
+furrow context for-step <step> --target operator --row <row> --json
+```
+This delegates to D4's context-routing CLI, which filters skills by layer and
+assembles the structured bundle for the current step.
 
 ## Commands
 
@@ -34,6 +41,29 @@ All rows traverse all 7 steps. No steps are skipped. Pre-step evaluation
 may determine a step adds no information and record a `prechecked` gate, advancing
 without user input (unless `gate_policy: supervised`).
 
+## Operator Responsibilities
+
+The operator is the only layer that:
+- Addresses the user directly
+- Calls `rws`/`alm`/`sds` CLI commands
+- Reads and mutates row state
+- Spawns and primes phase drivers
+- Presents phase results per `skills/shared/presentation-protocol.md` (D6)
+- Requests step transitions after user approval
+
+See `skills/shared/layer-protocol.md` for the full 3-layer boundary contract.
+
+## Driver Dispatch
+
+For each step, the operator spawns a phase driver and primes it:
+
+1. Load driver context: `furrow context for-step <step> --target driver --json`
+2. Persist driver handoff: `furrow handoff render --target driver:{step} --write`
+3. Spawn driver (runtime-specific — see `commands/work.md` for Claude and Pi branches)
+4. Prime driver with context bundle via `message` primitive
+5. Receive phase result (EOS-report) from driver
+6. Present to user; request `rws transition`
+
 ## File Path Conventions
 
 | Element | Convention | Example |
@@ -45,6 +75,7 @@ without user input (unless `gate_policy: supervised`).
 | Spec files | `specs/{component}.md` | `specs/middleware-design.md` |
 | Review results | `reviews/{deliverable}.json` | `reviews/rate-limiter-middleware.json` |
 | Gate evidence | `gates/{from}-to-{to}.json` | `gates/plan-to-spec.json` |
+| Handoff artifacts | `handoffs/{step}-to-{target}.md` | `handoffs/plan-to-driver.md` |
 | Schema fields | snake_case | `step_status`, `created_at` |
 
 ## Write Ownership
@@ -56,19 +87,23 @@ without user input (unless `gate_policy: supervised`).
 | `plan.json` | Coordinator (write-once) | All agents, Furrow |
 | `summary.md` | Harness + step agent | Next step, reground |
 | `reviews/*.json` | Review agent | Harness, human |
+| `handoffs/*.md` | Furrow CLI (`--write`) | Drivers, engines |
 
 ## Core Files
 
 Every row has: `definition.yaml`, `state.json`, `summary.md`, `reviews/`.
-Conditional files created by steps: `plan.json`, `team-plan.md`, `research.md`,
-`spec.md`, `gates/`.
+Conditional files created by steps: `plan.json`, `research.md`,
+`spec.md`, `gates/`, `handoffs/`.
+
+Note: `team-plan.md` is retired. Engine teams are composed at dispatch-time
+by drivers, not at planning-time by the operator. See `skills/shared/layer-protocol.md`.
 
 ## Context Recovery
 
 After compaction or session break, read ONLY:
 - `state.json` (step, progress, gates)
 - `summary.md` (synthesized context)
-- Current step's skill (`skills/{step}.md`)
+- Reload operator bundle: `furrow context for-step <step> --target operator --json`
 
 NEVER re-read: raw research notes, previous handoff prompts, gate evidence, transcripts.
 
@@ -83,13 +118,12 @@ from the user, explore the codebase, design the approach for this step's work).
 Incorrect usage: plan mode produces artifacts that span or replace multiple
 Furrow steps (e.g., a single plan that covers spec + decompose + implement).
 
-Each Furrow step exists to produce a specific artifact with a specific gate.
-Plan mode helps you do the current step well. It does not skip steps.
-
 ## Step Skill Loading
 
-Each step has a skill at `skills/{step}.md`. Only the current step's skill is active.
-At step boundaries, the previous skill is replaced (not appended).
+Each step has a driver brief at `skills/{step}.md`. Only the current step's brief
+is injected into the driver's context. At step boundaries, the previous brief is
+replaced (not appended). The operator's per-step skill is filtered from the bundle
+by `--target operator`.
 
 ## Component Rationale
 
@@ -110,11 +144,6 @@ Step transitions produce gate records in `state.json.gates[]`:
 - `decided_by`: `manual` | `evaluated` | `prechecked`
 - Append-only — never modified after creation.
 
-Vocabulary:
-- `manual`: human reviewed and approved the gate
-- `evaluated`: isolated subagent evaluated, trust gradient auto-approved
-- `prechecked`: pre-step evaluation determined step not needed
-
 Gate evaluation flow:
 1. Phase A (deterministic, shell): `rws gate-check` checks structural criteria
 2. Phase B (judgment, isolated subagent): evaluator assesses quality dimensions from `evals/gates/{step}.yaml`
@@ -122,15 +151,10 @@ Gate evaluation flow:
 
 ## Trust Gradient
 
-`gate_policy` in `definition.yaml` controls human oversight of evaluator verdicts
-(not whether evaluation happens — evaluation always runs):
+`gate_policy` in `definition.yaml` controls human oversight of evaluator verdicts:
 - `supervised`: evaluator runs, verdict presented to human for approval (`decided_by: manual`)
-- `delegated`: evaluator verdict accepted for most gates (`decided_by: evaluated`); human reviews implement->review and review->archive (`decided_by: manual`)
+- `delegated`: evaluator verdict accepted for most gates (`decided_by: evaluated`)
 - `autonomous`: evaluator verdict accepted for all gates (`decided_by: evaluated`)
-
-Pre-step evaluation that determines a step is trivially skippable records `decided_by: prechecked`.
-
-Per-deliverable `gate` field overrides the top-level policy for that deliverable.
 
 ## Reference Documents
 
@@ -141,6 +165,5 @@ Detailed protocols live in `references/` (NOT injected — read on demand):
 - `references/eval-dimensions.md` — dimension definitions
 - `references/specialist-template.md` — specialist format
 - `references/definition-shape.md` — complexity mapping
-- `references/deduplication-strategy.md` — context dedup rules
 - `references/research-mode.md` — research mode conventions
 - `references/row-layout.md` — directory layout conventions

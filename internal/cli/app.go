@@ -9,6 +9,7 @@ import (
 
 	ctx "github.com/jonathoneco/furrow/internal/cli/context"
 	"github.com/jonathoneco/furrow/internal/cli/handoff"
+	"github.com/jonathoneco/furrow/internal/cli/render"
 
 	// Blank-import triggers init() registration of all 7 step strategies.
 	_ "github.com/jonathoneco/furrow/internal/cli/context/strategies"
@@ -77,6 +78,8 @@ func (a *App) Run(args []string) int {
 		return a.runContext(args[1:])
 	case "handoff":
 		return a.runHandoff(args[1:])
+	case "render":
+		return a.runRender(args[1:])
 	case "merge":
 		return a.runStubGroup("furrow merge", args[1:], []string{"plan", "run", "validate"})
 	case "doctor":
@@ -168,6 +171,11 @@ func (a *App) runHandoff(args []string) int {
 	return h.Run(args)
 }
 
+func (a *App) runRender(args []string) int {
+	h := render.New(a.stdout, a.stderr)
+	return h.Run(args)
+}
+
 func (a *App) runStubGroup(command string, args []string, children []string) int {
 	if len(args) == 0 {
 		_, _ = fmt.Fprintf(a.stdout, "%s\n\nAvailable subcommands: %s\n", command, strings.Join(children, ", "))
@@ -230,6 +238,7 @@ Commands:
   seeds     Seed/task primitive contract surface
   context   Context bundle assembly (for-step)
   handoff   Handoff render and validate contract surface
+  render    Render runtime-specific files from definitions
   merge     Merge pipeline contract surface
   doctor    Environment and adapter readiness checks
   init      Repo bootstrap and migration entrypoint

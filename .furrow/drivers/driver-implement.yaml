@@ -1,0 +1,16 @@
+name: driver:implement
+step: implement
+tools_allowlist:
+  - Read
+  - Grep
+  - Glob
+  - Edit
+  - Write
+  - Agent
+  - SendMessage
+  - Bash(rws:*)
+  - Bash(alm:*)
+  - Bash(sds:*)
+  - Bash(furrow:context for-step:*)
+  - Bash(furrow:handoff render:*)
+model: sonnet

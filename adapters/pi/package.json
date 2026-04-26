@@ -4,8 +4,19 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "bun test"
+    "test": "bun test",
+    "typecheck": "tsc --noEmit --project tsconfig.extension.json"
   },
-  "description": "Pi (Tabby) adapter integration tests for the Furrow validate handlers.",
-  "comment": "Bun is the runtime; bun test is built-in (no devDependencies needed). Bootstrapped by D4 of pre-write-validation-go-first."
+  "description": "Pi (Tabby) adapter for the Furrow harness. Integrates @tintinweb/pi-subagents for driver/engine lifecycle management.",
+  "dependencies": {
+    "@tintinweb/pi-subagents": "0.6.1"
+  },
+  "peerDependencies": {
+    "@mariozechner/pi-coding-agent": "^0.70.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "@types/node": "^22.0.0"
+  },
+  "comment": "Bun is the runtime; bun test is built-in. D2 adds @tintinweb/pi-subagents for driver/engine lifecycle. D3 will wire layer-guard hook in extension/index.ts."
 }
