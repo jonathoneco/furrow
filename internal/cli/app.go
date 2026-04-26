@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/jonathoneco/furrow/internal/cli/handoff"
 )
 
 const contractVersion = "v1alpha1"
@@ -67,6 +69,8 @@ func (a *App) Run(args []string) int {
 		return a.runStubGroup("furrow seeds", args[1:], []string{"create", "update", "show", "list", "close"})
 	case "validate":
 		return a.runValidate(args[1:])
+	case "handoff":
+		return a.runHandoff(args[1:])
 	case "merge":
 		return a.runStubGroup("furrow merge", args[1:], []string{"plan", "run", "validate"})
 	case "doctor":
@@ -148,6 +152,11 @@ func (a *App) runInit(args []string) int {
 	return a.fail("furrow init", &cliError{exit: 4, code: "not_implemented", message: "init is not implemented in the Go CLI draft yet", details: details}, flags.json)
 }
 
+func (a *App) runHandoff(args []string) int {
+	h := handoff.New(a.stdout, a.stderr)
+	return h.Run(args)
+}
+
 func (a *App) runStubGroup(command string, args []string, children []string) int {
 	if len(args) == 0 {
 		_, _ = fmt.Fprintf(a.stdout, "%s\n\nAvailable subcommands: %s\n", command, strings.Join(children, ", "))
@@ -208,6 +217,7 @@ Commands:
   review    Review orchestration contract surface
   almanac   Planning and knowledge contract surface
   seeds     Seed/task primitive contract surface
+  handoff   Handoff render and validate contract surface
   merge     Merge pipeline contract surface
   doctor    Environment and adapter readiness checks
   init      Repo bootstrap and migration entrypoint

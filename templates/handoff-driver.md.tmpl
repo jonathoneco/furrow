@@ -1,0 +1,21 @@
+<!-- driver-handoff:section:target -->
+# Driver Handoff: {{ .Target }}
+Step: {{ .Step }}    Row: {{ .Row }}
+
+<!-- driver-handoff:section:objective -->
+## Objective
+{{ .Objective }}
+
+<!-- driver-handoff:section:grounding -->
+## Grounding
+Bundle: {{ .Grounding }}
+
+<!-- driver-handoff:section:constraints -->
+## Constraints
+{{- range .Constraints }}
+- {{ . }}
+{{- end }}
+
+<!-- driver-handoff:section:return-format -->
+## Return Format
+`{{ .ReturnFormat }}` (resolves to templates/handoffs/return-formats/{{ .ReturnFormat }}.json)

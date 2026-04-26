@@ -88,3 +88,24 @@ blockers:
     message_template: "{path} is outside file_ownership for any deliverable in {row}"
     remediation_hint: "Add the path to the appropriate deliverable's file_ownership in definition.yaml, or write to a different file"
     confirmation_path: warn-with-confirm
+
+  - code: handoff_schema_invalid
+    category: handoff
+    severity: block
+    message_template: "{path}: handoff failed schema validation: {detail}"
+    remediation_hint: "Inspect the handoff structure against schemas/handoff-driver.schema.json or schemas/handoff-engine.schema.json; ensure the target prefix matches the schema used"
+    confirmation_path: block
+
+  - code: handoff_required_field_missing
+    category: handoff
+    severity: block
+    message_template: "{path}: handoff is missing required field '{field}'"
+    remediation_hint: "Add the missing field to the handoff; use 'furrow handoff render' to produce a complete handoff"
+    confirmation_path: block
+
+  - code: handoff_unknown_field
+    category: handoff
+    severity: block
+    message_template: "{path}: handoff contains unknown field '{field}' (additionalProperties:false)"
+    remediation_hint: "Remove the unknown field; only fields declared in the handoff schema are permitted"
+    confirmation_path: block

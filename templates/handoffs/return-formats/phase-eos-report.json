@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://furrow.dev/schemas/return-formats/phase-eos-report.json",
+  "title": "PhaseEOSReport",
+  "description": "Driver phase end-of-session report returned to the operator.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["phase", "summary", "deliverables_touched", "decisions_made", "open_questions", "status"],
+  "properties": {
+    "phase": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The step/phase this report covers."
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000,
+      "description": "Narrative summary of work done in this phase."
+    },
+    "deliverables_touched": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Identifiers of deliverables created or modified."
+    },
+    "decisions_made": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Key decisions recorded during this phase."
+    },
+    "open_questions": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Unresolved questions requiring operator input."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["complete", "blocked", "partial"],
+      "description": "Completion status of this phase."
+    }
+  }
+}
