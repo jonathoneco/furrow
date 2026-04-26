@@ -1,0 +1,36 @@
+<!-- engine-handoff:section:target -->
+# Engine Handoff: {{ .Target }}
+
+<!-- engine-handoff:section:objective -->
+## Objective
+{{ .Objective }}
+
+<!-- engine-handoff:section:deliverables -->
+## Deliverables
+{{- range .Deliverables }}
+### {{ .Name }}
+**Acceptance criteria:**
+{{- range .AcceptanceCriteria }}
+- {{ . }}
+{{- end }}
+**File ownership:**
+{{- range .FileOwnership }}
+- `{{ . }}`
+{{- end }}
+{{ end }}
+
+<!-- engine-handoff:section:constraints -->
+## Constraints
+{{- range .Constraints }}
+- {{ . }}
+{{- end }}
+
+<!-- engine-handoff:section:grounding -->
+## Grounding
+{{- range .Grounding }}
+- `{{ .Path }}` — {{ .WhyRelevant }}
+{{- end }}
+
+<!-- engine-handoff:section:return-format -->
+## Return Format
+`{{ .ReturnFormat }}`

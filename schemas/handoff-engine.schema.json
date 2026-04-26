@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://furrow.dev/schemas/handoff-engine.schema.json",
+  "title": "EngineHandoff",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["target", "objective", "deliverables", "constraints", "grounding", "return_format"],
+  "properties": {
+    "target": {
+      "type": "string",
+      "pattern": "^engine:([a-z0-9]+(-[a-z0-9]+)*|freeform)$"
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000,
+      "not": {
+        "pattern": "(?i)\\b(gate_policy|deliverable|blocker|almanac|rationale\\.yaml)\\b|\\.furrow/|\\bfurrow (row|context|handoff|hook|validate|gate)\\b|\\b(rws|alm|sds)\\s"
+      }
+    },
+    "deliverables": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "acceptance_criteria", "file_ownership"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "acceptance_criteria": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "file_ownership": {
+            "type": "array",
+            "minItems": 0,
+            "items": {
+              "type": "string",
+              "not": {
+                "pattern": "\\.furrow/"
+              }
+            }
+          }
+        }
+      }
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "not": {
+          "pattern": "(?i)\\b(gate_policy|deliverable|blocker|almanac|rationale\\.yaml)\\b|\\.furrow/|\\bfurrow (row|context|handoff|hook|validate|gate)\\b|\\b(rws|alm|sds)\\s"
+        }
+      }
+    },
+    "grounding": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "why_relevant"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "not": {
+              "pattern": "\\.furrow/"
+            }
+          },
+          "why_relevant": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      }
+    },
+    "return_format": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    }
+  }
+}
