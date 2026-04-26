@@ -1,0 +1,25 @@
+{
+  "name": "context-routing-test-fixture",
+  "title": "Context Routing Test Fixture",
+  "step": "plan",
+  "step_status": "in_progress",
+  "steps_sequence": ["ideate","research","plan","spec","decompose","implement","review"],
+  "deliverables": {
+    "test-deliverable": {"status": "in_progress", "wave": 1, "corrections": 0}
+  },
+  "gates": [
+    {"boundary": "ideate->research", "outcome": "pass", "decided_by": "manual", "evidence": "fixture gate", "timestamp": "2026-04-25T00:00:00Z"},
+    {"boundary": "research->plan", "outcome": "pass", "decided_by": "manual", "evidence": "fixture gate", "timestamp": "2026-04-25T00:01:00Z"}
+  ],
+  "force_stop_at": null,
+  "branch": "work/context-routing-test-fixture",
+  "mode": "code",
+  "base_commit": "abc123",
+  "seed_id": null,
+  "epic_seed_id": null,
+  "created_at": "2026-04-25T00:00:00Z",
+  "updated_at": "2026-04-25T00:00:00Z",
+  "archived_at": null,
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}
