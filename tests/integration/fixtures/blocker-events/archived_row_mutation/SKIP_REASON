@@ -1,0 +1,1 @@
+no guard event-type — emitted Go-side only (validators / row_workflow.go); covered by internal/cli/*_test.go; future surface for follow-up TODO go-side-emit-event-types

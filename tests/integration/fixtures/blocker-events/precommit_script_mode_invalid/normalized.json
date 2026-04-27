@@ -1,0 +1,12 @@
+{
+  "version": "1",
+  "event_type": "pre_commit_script_modes",
+  "payload": {
+    "script_modes": [
+      {
+        "path": "bin/frw.d/scripts/foo.sh",
+        "mode": "100644"
+      }
+    ]
+  }
+}

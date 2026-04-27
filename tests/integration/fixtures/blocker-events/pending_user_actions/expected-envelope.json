@@ -1,0 +1,8 @@
+{
+  "code": "pending_user_actions",
+  "category": "user_action",
+  "severity": "block",
+  "message": "row has {count} pending user action(s)",
+  "remediation_hint": "Resolve or clear the pending user actions through the canonical workflow before advancing.",
+  "confirmation_path": "block"
+}

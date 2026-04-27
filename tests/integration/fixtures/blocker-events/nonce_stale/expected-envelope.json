@@ -1,0 +1,8 @@
+{
+  "code": "nonce_stale",
+  "category": "gate",
+  "severity": "block",
+  "message": "evaluator result nonce '{nonce}' is stale or does not match the expected '{expected_nonce}' for row {row}",
+  "remediation_hint": "Re-run the evaluator with a fresh nonce; stale evaluator results cannot satisfy the gate.",
+  "confirmation_path": "block"
+}

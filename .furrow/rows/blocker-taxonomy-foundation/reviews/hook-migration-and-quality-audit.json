@@ -1,0 +1,54 @@
+{
+  "deliverable": "hook-migration-and-quality-audit",
+  "phase": "B",
+  "reviewer": "fresh-claude-subagent",
+  "dimensions": [
+    {
+      "name": "hook-count",
+      "verdict": "PASS",
+      "evidence": "ls bin/frw.d/hooks/ shows exactly the 10 emit-bearing migrated shims (correction-limit.sh, pre-commit-bakfiles.sh, pre-commit-script-modes.sh, pre-commit-typechange.sh, script-guard.sh, state-guard.sh, stop-ideation.sh, validate-summary.sh, verdict-guard.sh, work-check.sh) plus the out-of-scope/non-emit hooks (append-learning.sh, auto-install.sh, ownership-warn.sh, post-compact.sh, validate-definition.sh). gate-check.sh is absent — `test -e bin/frw.d/hooks/gate-check.sh` returns ABSENT. Commit 781681b shows `bin/frw.d/hooks/gate-check.sh | 20 --` (full deletion)."
+    },
+    {
+      "name": "canonical-shim-shape-c5",
+      "verdict": "PASS",
+      "evidence": "Per-shim executable line counts (using the AC-2.1 reference awk counter — excluding shebang, blanks, comment-only, and source-library lines for common-minimal/common/blocker_emit/precommit_payloads/stop_payloads): state-guard 5, verdict-guard 5, correction-limit 5, script-guard 5, stop-ideation 5, validate-summary 5, work-check 3, pre-commit-bakfiles 13, pre-commit-script-modes 13, pre-commit-typechange 13. All ten shims are well under the 30-line ceiling (max 13 lines, far below budget). The four PreToolUse(Write|Edit|Bash) shims each implement the literal C5 pipeline `claude_tool_input_to_event <type> | furrow_guard <type> | emit_canonical_blocker`. The Stop and pre-commit shims need an extra empty-payload short-circuit (added in commit d5935e3 to handle the requireArray bug) but stay within the 4-step skeleton."
+    },
+    {
+      "name": "no-domain-logic",
+      "verdict": "PASS",
+      "evidence": "All four AC-2.2 forbidden patterns checked across all 10 migrated shims with grep — zero matches anywhere. Forbidden #1 (semantic-enum compares like `[ \"$x\" = \"implement\" ]` etc.): 0 matches. Forbidden #2 (`case .* in` not matching `severity`): 0 matches in any shim. Forbidden #3 (literal stderr via echo/printf/cat to >&2): 0 matches. Forbidden #4 (project-file reads via jq/yq/cat/grep on .json/.yaml/.md): 0 matches in any shim. The pre-commit shims contain `[ -n \"$_ev\" ]` and `[ \"$_ec\" -eq 2 ]` checks but these are presence/exit-code tests, not semantic value comparisons (the `2`→`1` translation is the host-convention translation explicitly permitted in spec §1, not domain logic). All file reads, glob matching, awk parsing, and message construction live in lib/ helpers (precommit_payloads.sh, stop_payloads.sh, blocker_emit.sh) or in Go (internal/cli/*.go)."
+    },
+    {
+      "name": "anti-cheat-subprocess-invocation",
+      "verdict": "PASS",
+      "evidence": "Every one of the 10 migrated shims contains a `furrow_guard` call AND an `emit_canonical_blocker` call — both required matches present. PreToolUse shims (state-guard, verdict-guard, correction-limit, script-guard) invoke `furrow_guard <event_type>` directly in the pipeline. pre-commit shims invoke `printf '%s' \"$_ev\" | furrow_guard <event_type> | emit_canonical_blocker`. Stop shims (stop-ideation, validate-summary) likewise. work-check.sh delegates the entire dispatch to `run_stop_work_check` (defined in lib/stop_payloads.sh:178-228) which itself calls `furrow_guard stop_work_check` — verified by reading the helper consumer attribution in hook-audit-final.md §3."
+    },
+    {
+      "name": "anti-cheat-no-inline-envelopes",
+      "verdict": "PASS",
+      "evidence": "grep -nE '\"code\"[[:space:]]*:[[:space:]]*\"' across all 10 migrated shims returns zero matches. No shim hard-codes a canonical envelope JSON string (which would let it pass parity tests by mimicking Go output). The closest semantic strings are the event-type identifiers (e.g., `pre_write_state_json`) passed as args to helpers — not envelope content."
+    },
+    {
+      "name": "helper-extraction",
+      "verdict": "PASS",
+      "evidence": "Helpers shared by ≥2 shims live exclusively in bin/frw.d/lib/. D2's blocker_emit.sh exports (claude_tool_input_to_event, furrow_guard, emit_canonical_blocker, precommit_init) are unchanged — verified by reading bin/frw.d/lib/blocker_emit.sh:68-216, which retains the exact signatures from D2 (idempotent source guard at line 46-49, signature-locked function bodies). D3 added two new helper files: precommit_payloads.sh (precommit_event_bakfiles/typechange/script_modes — three pre-commit shims share precommit_init from D2 plus their dedicated payload builder) and stop_payloads.sh (stop_event_ideation, stop_event_summary, run_stop_work_check, plus internal _stop_resolve_row / _stop_resolve_gate_policy shared between stop_event_ideation and stop_event_summary). Audit report §3 enumerates every helper with line-range and consumer list. AC-2.3 grep check (no shared `jq -r`/`yq -r`/`git rev-parse`/`git diff --cached` invocation duplicated across two shims) holds — no shim body contains those tokens directly (verified via Forbidden #4 grep above)."
+    },
+    {
+      "name": "audit-report",
+      "verdict": "PASS",
+      "evidence": "research/hook-audit-final.md exists (165 lines). Section 1 has the per-hook table with all 7 required columns (Hook, Pre-lines, Post-lines, Helpers added/used, Quality findings tightened, Complexity confirmed, Deferred Y/N, Deferral rationale) and 11 data rows (10 migrated hooks + 1 deleted gate-check entry). Section 2 walks every one of the 11 quality findings from research/hook-audit.md §8 with a status of RESOLVED (8 entries) or MOVED-TO-GO (3 entries) — zero OPEN entries. Section 3 enumerates 12 helpers with file:line ranges and consumer lists. Section 4 explicitly states 'No deferrals' with rationale. Section 5 (verification log) records the AC-1/AC-2.1/AC-2.2/AC-2.3 checks. Section 6 names two coordinator follow-ups outside D3's strict file_ownership (settings.json edit and pre-commit test wording — both also addressed in commits d5bc32d and the test-precommit-* recommendation)."
+    },
+    {
+      "name": "deferrals",
+      "verdict": "PASS",
+      "evidence": "Zero deferrals — matches the D3 spec default position. hook-audit-final.md §4 states 'No deferrals. All 10 hooks fully migrated.' Both pre-approved deferral candidates are explicitly accounted for: (a) script-guard.sh — Go port already landed in D2 (commit dc06f79, internal/cli/shellparse.go), so the 4h threshold did not apply and the shim ships at 5 exec lines; (b) work-check.sh updated_at side-effect — removed entirely rather than deferred-and-split, with the rationale that no consumer depends on Stop-time mutation (rws transition / update-summary / complete-deliverable already touch updated_at). grep against .furrow/almanac/todos.yaml for 'work-check-side-effect-split' or 'script-guard-go-parser-port' returns zero matches, consistent with the no-deferral claim. (Caveat: hook source comment in work-check.sh:14 mentions a TODO 'work-check-side-effect-split' which does not exist in todos.yaml — minor documentation inconsistency, not an AC violation; the audit report §4 explicitly resolves to 'no follow-up TODO required'.)"
+    },
+    {
+      "name": "gate-check-unregistered",
+      "verdict": "PASS",
+      "evidence": ".claude/settings.json contains zero occurrences of 'gate-check' (grep -c returned 0). The PreToolUse(Bash) matcher at lines 15-20 contains exactly one entry — `frw hook script-guard` — with the `frw hook gate-check` line removed. Settings change landed in commit d5bc32d ('chore(hooks): unregister deleted gate-check from PreToolUse(Bash)') after the main D3 refactor commit 781681b. Without this fix the harness would fail every Bash tool call with `die \"hook not found: gate-check\"`. The remaining hooks dispatched are all valid: state-guard, ownership-warn, validate-definition, correction-limit, verdict-guard, append-learning (PreToolUse Write|Edit), script-guard (Bash), work-check, stop-ideation, validate-summary (Stop), auto-install (SessionStart), post-compact (PostCompact)."
+    }
+  ],
+  "overall": "PASS",
+  "notes": "All 9 review dimensions PASS. The migration is clean and disciplined: 10 emit-bearing shims reduced to 3-13 executable lines each (max 13 vs 30 budget — 57% of budget unused), zero domain logic remaining in shell, every shim invokes the Go backend via the canonical helper trio, and the gate-check coordinator follow-up is closed (commit d5bc32d). The audit report walks all 11 pre-existing quality findings to closure with zero OPEN entries. Two minor observations not flagged as failures: (1) work-check.sh:14 has a stale source-comment reference to a 'work-check-side-effect-split' TODO that the audit report §4 explicitly retracts (the side-effect was removed outright rather than deferred); the comment should be cleaned up but is not an AC violation. (2) The pre-commit shims grew an extra 4-line empty-event short-circuit (commit d5935e3) to work around a Go-side `requireArray` rejection — a defensible pragmatic deviation from the strict 4-step shape, well within the 30-line budget, with the empty-stdout contract documented in precommit_event_* helpers. Coordinator follow-ups in audit report §6 (test-precommit-{block,bypass}.sh literal 'pre-commit:' assertions) are pre-existing D1 breakage, not introduced by D3, and properly flagged out-of-scope."
+}

@@ -1007,20 +1007,41 @@ func rowBlockers(state map[string]any, seed map[string]any, artifacts []map[stri
 		return []map[string]any{}
 	}
 
+	// Single-point migration: every emit-site routes through the canonical
+	// taxonomy via `blocker(tx, ...)`. LoadTaxonomy is cached package-level;
+	// a missing/invalid registry is a programmer error and the test-mode
+	// panic surfaces it loudly. Production fallback (synthetic envelope)
+	// keeps the runtime alive if the YAML ever ships broken.
+	tx, _ := LoadTaxonomy()
+
 	blockers := make([]map[string]any, 0)
 	if pending, ok := asSlice(state["pending_user_actions"]); ok && len(pending) > 0 {
-		blockers = append(blockers, blocker("pending_user_actions", "user_action", fmt.Sprintf("row has %d pending user action(s)", len(pending)), map[string]any{"count": len(pending)}))
+		count := len(pending)
+		blockers = append(blockers, blocker(tx, "pending_user_actions",
+			map[string]string{"count": fmt.Sprintf("%d", count)},
+			map[string]any{"count": count}))
 	}
 	seedState, _ := seed["state"].(string)
 	switch seedState {
 	case "unavailable":
-		blockers = append(blockers, blocker("seed_store_unavailable", "seed", "seed store could not be read", nil))
+		blockers = append(blockers, blocker(tx, "seed_store_unavailable", nil, nil))
 	case "missing_record":
-		blockers = append(blockers, blocker("missing_seed_record", "seed", fmt.Sprintf("linked seed %v was not found", seed["id"]), map[string]any{"seed_id": seed["id"]}))
+		seedID := fmt.Sprintf("%v", seed["id"])
+		blockers = append(blockers, blocker(tx, "missing_seed_record",
+			map[string]string{"seed_id": seedID},
+			map[string]any{"seed_id": seed["id"]}))
 	case "closed":
-		blockers = append(blockers, blocker("closed_seed", "seed", fmt.Sprintf("linked seed %v is closed", seed["id"]), map[string]any{"seed_id": seed["id"]}))
+		seedID := fmt.Sprintf("%v", seed["id"])
+		blockers = append(blockers, blocker(tx, "closed_seed",
+			map[string]string{"seed_id": seedID},
+			map[string]any{"seed_id": seed["id"]}))
 	case "inconsistent":
-		blockers = append(blockers, blocker("seed_status_mismatch", "seed", fmt.Sprintf("linked seed %v status %v does not match expected %v", seed["id"], seed["status"], seed["expected_status"]), map[string]any{"seed_id": seed["id"], "expected_status": seed["expected_status"], "actual_status": seed["status"]}))
+		seedID := fmt.Sprintf("%v", seed["id"])
+		actual := fmt.Sprintf("%v", seed["status"])
+		expected := fmt.Sprintf("%v", seed["expected_status"])
+		blockers = append(blockers, blocker(tx, "seed_status_mismatch",
+			map[string]string{"seed_id": seedID, "actual_status": actual, "expected_status": expected},
+			map[string]any{"seed_id": seed["id"], "expected_status": seed["expected_status"], "actual_status": seed["status"]}))
 	}
 	// Supersedence confirmation check
 	if opts.DefinitionSupersedes != nil {
@@ -1036,19 +1057,23 @@ func rowBlockers(state map[string]any, seed map[string]any, artifacts []map[stri
 		}
 		switch {
 		case confirmed == "":
-			blockers = append(blockers, blocker(
-				"supersedence_evidence_missing",
-				"archive",
-				fmt.Sprintf("row definition declares supersedes (commit=%s, row=%s); pass --supersedes-confirmed %s:%s to acknowledge",
-					requiredCommit, requiredRow, requiredCommit, requiredRow),
+			blockers = append(blockers, blocker(tx, "supersedence_evidence_missing",
+				map[string]string{
+					"required_commit":  requiredCommit,
+					"required_row":     requiredRow,
+					"confirmed_commit": "",
+					"confirmed_row":    "",
+				},
 				map[string]any{"required_commit": requiredCommit, "required_row": requiredRow},
 			))
 		case confirmedCommit != requiredCommit || confirmedRow != requiredRow:
-			blockers = append(blockers, blocker(
-				"supersedence_evidence_missing",
-				"archive",
-				fmt.Sprintf("--supersedes-confirmed mismatch: got %s:%s, definition requires %s:%s",
-					confirmedCommit, confirmedRow, requiredCommit, requiredRow),
+			blockers = append(blockers, blocker(tx, "supersedence_evidence_missing",
+				map[string]string{
+					"required_commit":  requiredCommit,
+					"required_row":     requiredRow,
+					"confirmed_commit": confirmedCommit,
+					"confirmed_row":    confirmedRow,
+				},
 				map[string]any{
 					"required_commit":  requiredCommit,
 					"required_row":     requiredRow,
@@ -1059,26 +1084,33 @@ func rowBlockers(state map[string]any, seed map[string]any, artifacts []map[stri
 		}
 	}
 	for _, artifact := range artifacts {
-		label, _ := artifact["label"].(string)
 		required, _ := artifact["required"].(bool)
 		if !required {
 			continue
 		}
+		artifactID := fmt.Sprintf("%v", artifact["id"])
+		artifactPath := fmt.Sprintf("%v", artifact["path"])
 		if exists, _ := artifact["exists"].(bool); !exists {
-			blockers = append(blockers, blocker("missing_required_artifact", "artifact", fmt.Sprintf("required current-step artifact %s is missing", label), map[string]any{"path": artifact["path"], "artifact_id": artifact["id"]}))
+			blockers = append(blockers, blocker(tx, "missing_required_artifact",
+				map[string]string{"artifact_id": artifactID, "path": artifactPath},
+				map[string]any{"path": artifact["path"], "artifact_id": artifact["id"]}))
 			continue
 		}
 		if incomplete, _ := artifact["incomplete"].(bool); incomplete {
-			blockers = append(blockers, blocker("artifact_scaffold_incomplete", "artifact", fmt.Sprintf("current-step artifact %s is still an incomplete scaffold", label), map[string]any{"path": artifact["path"], "artifact_id": artifact["id"]}))
+			blockers = append(blockers, blocker(tx, "artifact_scaffold_incomplete",
+				map[string]string{"artifact_id": artifactID, "path": artifactPath},
+				map[string]any{"path": artifact["path"], "artifact_id": artifact["id"]}))
 			continue
 		}
 		if blockingArtifactValidation(artifact) {
-			blockers = append(blockers, blocker("artifact_validation_failed", "artifact", fmt.Sprintf("current-step artifact %s failed validation", label), map[string]any{"path": artifact["path"], "artifact_id": artifact["id"], "finding_codes": validationFindingCodes(artifact)}))
+			blockers = append(blockers, blocker(tx, "artifact_validation_failed",
+				map[string]string{"artifact_id": artifactID, "path": artifactPath},
+				map[string]any{"path": artifact["path"], "artifact_id": artifact["id"], "finding_codes": validationFindingCodes(artifact)}))
 		}
 	}
 	if getStringDefault(state, "step", "") == "review" && getStringDefault(state, "step_status", "") == "completed" {
 		if _, ok := latestPassingReviewGate(state); !ok {
-			blockers = append(blockers, blocker("archive_requires_review_gate", "archive", "row cannot archive until a passing ->review gate exists", nil))
+			blockers = append(blockers, blocker(tx, "archive_requires_review_gate", nil, nil))
 		}
 	}
 	return blockers

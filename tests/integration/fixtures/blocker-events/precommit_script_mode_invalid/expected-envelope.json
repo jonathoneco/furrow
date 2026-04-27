@@ -1,0 +1,8 @@
+{
+  "code": "precommit_script_mode_invalid",
+  "category": "scaffold",
+  "severity": "block",
+  "message": "bin/frw.d/scripts/foo.sh must be 100755 (got 100644)",
+  "remediation_hint": "Run `chmod +x {path}` and re-stage so the file's git index mode is 100755.",
+  "confirmation_path": "block"
+}

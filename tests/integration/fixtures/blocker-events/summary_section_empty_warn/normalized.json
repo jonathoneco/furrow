@@ -1,0 +1,10 @@
+{
+  "version": "1",
+  "event_type": "stop_work_check",
+  "row": "r1",
+  "payload": {
+    "row": "r1",
+    "summary_path": "__FIXTURE_DIR__/summary.md",
+    "state_validation_ok": true
+  }
+}

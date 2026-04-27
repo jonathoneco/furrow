@@ -1,0 +1,8 @@
+{
+  "code": "missing_seed_record",
+  "category": "seed",
+  "severity": "block",
+  "message": "linked seed {seed_id} was not found",
+  "remediation_hint": "Repair the linked seed state so it matches the row step, then retry the checkpoint through the backend.",
+  "confirmation_path": "block"
+}

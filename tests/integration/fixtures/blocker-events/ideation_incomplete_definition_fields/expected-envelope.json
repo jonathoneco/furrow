@@ -1,0 +1,8 @@
+{
+  "code": "ideation_incomplete_definition_fields",
+  "category": "ideation",
+  "severity": "block",
+  "message": "Ideation incomplete — definition.yaml missing required fields: constraints, context_pointers, deliverables, gate_policy, objective",
+  "remediation_hint": "Populate the missing definition.yaml fields (objective, gate_policy, deliverables, context_pointers, constraints) before completing the ideate step.",
+  "confirmation_path": "block"
+}

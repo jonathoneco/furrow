@@ -123,7 +123,7 @@ test_typechange_hook_body_emits_warning() {
   assert_output_contains \
     "stderr contains refusing type-change" \
     "$stderr_out" \
-    "pre-commit: refusing type-change"
+    "refusing type-change to symlink"
 
   rm -rf "$test_dir"
   trap - EXIT INT TERM

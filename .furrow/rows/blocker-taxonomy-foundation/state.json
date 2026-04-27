@@ -1,0 +1,98 @@
+{
+  "name": "blocker-taxonomy-foundation",
+  "title": "Canonical blocker schema + Claude-side audit + contradiction reconciliation",
+  "description": "Canonical blocker schema + Claude-side audit + contradiction reconciliation",
+  "step": "review",
+  "step_status": "completed",
+  "steps_sequence": [
+    "ideate",
+    "research",
+    "plan",
+    "spec",
+    "decompose",
+    "implement",
+    "review"
+  ],
+  "deliverables": {
+    "canonical-blocker-taxonomy": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "doc-contradiction-reconciliation": {
+      "status": "completed",
+      "wave": 1,
+      "corrections": 0
+    },
+    "normalized-blocker-event-and-go-emission-path": {
+      "status": "completed",
+      "wave": 2,
+      "corrections": 0
+    },
+    "hook-migration-and-quality-audit": {
+      "status": "completed",
+      "wave": 3,
+      "corrections": 0
+    },
+    "coverage-and-parity-tests": {
+      "status": "completed",
+      "wave": 4,
+      "corrections": 0
+    }
+  },
+  "gates": [
+    {
+      "boundary": "ideate->research",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Definition validated; summary complete with key-findings/open-questions/recommendations; dual outside-voice review complete (fresh reviewer + codex cross-model rated framing sound); all material review findings applied (status canonical envelope AC, sharper D3 ACs with line-count + subprocess-only constraints, versioned event schema, parity-test subprocess-invocation assertion, meta-pattern threshold). User approved transition.",
+      "timestamp": "2026-04-25T18:09:41Z"
+    },
+    {
+      "boundary": "research->plan",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Three parallel research agents completed; synthesis.md consolidates findings. Hook target confirmed at 10 emit-bearing (gate-check.sh dead code), 5/5 mechanical/non-trivial split. Status migration is single-point at row_semantics.go:46-58. Pi adapter consumer (validate-actions.ts) already canonical — no new shim per migration-stance. Test wiring auto-discovered via run-all.sh glob. Meta-pattern threshold met for D5. Citation error in source TODO caught (go-cli-contract.md:392-399 not 385-388). Definition.yaml amended (D3 inventory, D4 Makefile out + adapters/pi/** in) and revalidated. User approved transition.",
+      "timestamp": "2026-04-25T18:19:09Z"
+    },
+    {
+      "boundary": "plan->spec",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Plan step complete. plan.json (4 waves) + team-plan.md + amended definition.yaml all validate. Dual review applied: fresh reviewer flagged D1 specialist mismatch + scope sprawl + D5 forward citation (all applied — D1 reassigned to migration-strategist, file_ownership expanded, forward citation documented); cross-model codex flagged D3 audit-doc alignment + D4 emit-site inventory gate + W3 fallback thresholds (all applied — D3 row-local at research/hook-audit-final.md, D4 inventory AC added, W3 thresholds 4h/2h with TODO-before-W4). Three plan decisions locked: _warn suffix convention, D2 lands lib helpers first, Pi prose from remediation_hint. User approved transition.",
+      "timestamp": "2026-04-25T18:32:04Z"
+    },
+    {
+      "boundary": "spec->decompose",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Five per-deliverable specs authored in parallel; dual reviewer flagged 8 cross-spec drifts; resolved via specs/shared-contracts.md (C1-C9) which takes precedence over individual specs (C9 rule). Locked: 10 per-hook event types, furrow guard CLI (no flags, array stdout, exit 0/1 only), 6-field BlockerEnvelope with caller-owned details, blocker_emit.sh contract with 4 named exports, hook shim canonical 4-step pattern <=30 lines, single internal/cli/guard.go layout, taxonomy walk via .blockers[].code, Pi-handler-absent skip rule. Each individual spec carries a precedence note. Summary updated. User approved transition.",
+      "timestamp": "2026-04-25T18:49:58Z"
+    },
+    {
+      "boundary": "decompose->implement",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "Decompose confirmed plan.json wave structure (4 waves, 5 deliverables); team-plan.md amended with shared-contracts coordination notes (C1 parity check, C2 CLI anti-cheat, C5 line-count discipline, C7 Pi skip rule, W3 fallback mechanics); internal/cli/** ownership cleanly partitioned (D1 edits existing, D2 adds new siblings per C6); vertical slicing confirmed; branch work/blocker-taxonomy-foundation already exists. User approved transition.",
+      "timestamp": "2026-04-25T18:54:47Z"
+    },
+    {
+      "boundary": "implement->review",
+      "outcome": "pass",
+      "decided_by": "manual",
+      "evidence": "All 5 deliverables completed with zero corrections across 4 waves. 7 commits on branch. D1 canonical taxonomy 11->40 codes with envelope cutover; D2 furrow guard CLI + blocker_emit.sh per shared-contracts C1-C9; D3 10 hooks to canonical 4-step shims (avg 5 exec lines vs 43 pre-migration), gate-check.sh deleted; D4 coverage+parity tests (244+59+14+6 assertions pass, 13 logged Pi skips per pi-tool-call-canonical-schema-and-surface-audit TODO); D5 4 doc reconciliations + new authority-taxonomy section. Coordinator settings.json gate-check unregister landed. All anti-cheats verified. go test, frw validate-definition, all integration tests PASS. User approved transition.",
+      "timestamp": "2026-04-25T20:07:58Z"
+    }
+  ],
+  "force_stop_at": null,
+  "branch": "work/blocker-taxonomy-foundation",
+  "mode": "code",
+  "base_commit": "08f08f8f28b758917e20347da9d991761c27e189",
+  "seed_id": "furrow-dfb7",
+  "epic_seed_id": null,
+  "created_at": "2026-04-25T17:21:14Z",
+  "updated_at": "2026-04-25T20:24:36Z",
+  "archived_at": "2026-04-25T20:24:36Z",
+  "source_todo": null,
+  "gate_policy_init": "supervised"
+}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -62,14 +63,72 @@ var (
 //   - codes must be unique
 func LoadTaxonomy() (*Taxonomy, error) {
 	taxonomyOnce.Do(func() {
-		root, err := findFurrowRoot()
-		if err != nil {
-			cachedTaxonomyLoadError = fmt.Errorf("blocker taxonomy: %w", err)
+		// Resolution order:
+		//   1. FURROW_TAXONOMY_PATH env var (explicit override; useful for tests
+		//      and out-of-tree deployments).
+		//   2. <findFurrowRoot()>/schemas/blocker-taxonomy.yaml — the
+		//      conventional location inside a Furrow project tree.
+		//   3. <module-source-root>/schemas/blocker-taxonomy.yaml — discovered
+		//      via runtime.Caller. Lets `go test` runs and binaries built
+		//      inside the source tree find the canonical registry without
+		//      requiring callers to provision it in temp roots.
+		// This is expand-contract migration discipline: existing callers under
+		// the project root keep working (path 2), tests in temp dirs fall back
+		// to the source-tree copy (path 3), and ad-hoc consumers can override
+		// with FURROW_TAXONOMY_PATH (path 1).
+		for _, path := range candidateTaxonomyPaths() {
+			if path == "" {
+				continue
+			}
+			if _, statErr := os.Stat(path); statErr != nil {
+				continue
+			}
+			cachedTaxonomy, cachedTaxonomyLoadError = loadTaxonomyFrom(path)
 			return
 		}
-		cachedTaxonomy, cachedTaxonomyLoadError = loadTaxonomyFrom(filepath.Join(root, "schemas", "blocker-taxonomy.yaml"))
+		cachedTaxonomyLoadError = fmt.Errorf("blocker taxonomy: schemas/blocker-taxonomy.yaml not found in any candidate location (set FURROW_TAXONOMY_PATH to override)")
 	})
 	return cachedTaxonomy, cachedTaxonomyLoadError
+}
+
+// candidateTaxonomyPaths returns the ordered list of paths LoadTaxonomy
+// probes for the canonical YAML registry. See LoadTaxonomy for resolution
+// order rationale.
+func candidateTaxonomyPaths() []string {
+	candidates := make([]string, 0, 3)
+	if override := strings.TrimSpace(os.Getenv("FURROW_TAXONOMY_PATH")); override != "" {
+		candidates = append(candidates, override)
+	}
+	if root, err := findFurrowRoot(); err == nil {
+		candidates = append(candidates, filepath.Join(root, "schemas", "blocker-taxonomy.yaml"))
+	}
+	if srcRoot, ok := moduleSourceRoot(); ok {
+		candidates = append(candidates, filepath.Join(srcRoot, "schemas", "blocker-taxonomy.yaml"))
+	}
+	return candidates
+}
+
+// moduleSourceRoot walks up from this source file's location to find the
+// nearest directory containing a `schemas/blocker-taxonomy.yaml`. Returns the
+// project root containing both `internal/cli/` and `schemas/`. This is a
+// best-effort fallback for tests and tools that run outside a `.furrow/`
+// project tree; it returns ok=false when run from a stripped binary.
+func moduleSourceRoot() (string, bool) {
+	_, file, _, ok := runtime.Caller(0)
+	if !ok || file == "" {
+		return "", false
+	}
+	dir := filepath.Dir(file)
+	for {
+		if _, err := os.Stat(filepath.Join(dir, "schemas", "blocker-taxonomy.yaml")); err == nil {
+			return dir, true
+		}
+		next := filepath.Dir(dir)
+		if next == dir {
+			return "", false
+		}
+		dir = next
+	}
 }
 
 // resetTaxonomyCacheForTest clears the package-level cache; only intended for
@@ -126,6 +185,37 @@ func loadTaxonomyFrom(path string) (*Taxonomy, error) {
 	}
 
 	return &t, nil
+}
+
+// Lookup returns the registered Blocker for the given code, or (nil, false)
+// when the code is not registered. Useful for callers that need to inspect
+// the canonical entry (e.g., to honor applicable_steps) before deciding to
+// emit.
+func (t *Taxonomy) Lookup(code string) (*Blocker, bool) {
+	if t == nil || t.index == nil {
+		return nil, false
+	}
+	b, ok := t.index[code]
+	return b, ok
+}
+
+// Applies reports whether a code applies in the given row step. Codes whose
+// applicable_steps is absent or empty apply to every step. Unregistered codes
+// return false (a code that does not exist in the registry never "applies").
+func (t *Taxonomy) Applies(code, step string) bool {
+	b, ok := t.Lookup(code)
+	if !ok {
+		return false
+	}
+	if len(b.ApplicableSteps) == 0 {
+		return true
+	}
+	for _, s := range b.ApplicableSteps {
+		if s == step {
+			return true
+		}
+	}
+	return false
 }
 
 // EmitBlocker resolves the code in the taxonomy, interpolates {placeholder}

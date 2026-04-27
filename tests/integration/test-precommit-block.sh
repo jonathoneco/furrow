@@ -69,7 +69,7 @@ test_typechange_bin_alm_blocked() {
 
   assert_exit_code "typechange bin/alm exits 1" 1 "$exit_code"
   assert_output_contains "stderr: refusing type-change for bin/alm" "$stderr_out" \
-    "pre-commit: refusing type-change"
+    "refusing type-change to symlink"
 
   rm -rf "$fix_dir"
   trap - EXIT INT TERM
@@ -93,7 +93,7 @@ test_typechange_bin_rws_blocked() {
 
   assert_exit_code "typechange bin/rws exits 1" 1 "$exit_code"
   assert_output_contains "stderr: refusing type-change for bin/rws" "$stderr_out" \
-    "pre-commit: refusing type-change"
+    "refusing type-change to symlink"
 
   rm -rf "$fix_dir"
   trap - EXIT INT TERM
@@ -117,7 +117,7 @@ test_typechange_bin_sds_blocked() {
 
   assert_exit_code "typechange bin/sds exits 1" 1 "$exit_code"
   assert_output_contains "stderr: refusing type-change for bin/sds" "$stderr_out" \
-    "pre-commit: refusing type-change"
+    "refusing type-change to symlink"
 
   rm -rf "$fix_dir"
   trap - EXIT INT TERM
@@ -141,7 +141,7 @@ test_typechange_claude_rules_blocked() {
 
   assert_exit_code "typechange .claude/rules/cli-mediation.md exits 1" 1 "$exit_code"
   assert_output_contains "stderr: refusing type-change for .claude/rules/*" "$stderr_out" \
-    "pre-commit: refusing type-change"
+    "refusing type-change to symlink"
 
   rm -rf "$fix_dir"
   trap - EXIT INT TERM

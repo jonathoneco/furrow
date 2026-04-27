@@ -1,0 +1,19 @@
+{
+  "toolName": "git_commit",
+  "input": {
+    "staged_paths": [
+      "bin/foo.bak"
+    ]
+  },
+  "_driver_branch": "guard",
+  "_driver_event_type": "pre_commit_bakfiles",
+  "_driver_normalized": {
+    "version": "1",
+    "event_type": "pre_commit_bakfiles",
+    "payload": {
+      "staged_paths": [
+        "bin/foo.bak"
+      ]
+    }
+  }
+}

@@ -88,6 +88,19 @@ human, that must remain explicit.
 Pi and Claude-compatible flows do not need identical UX, but they should not
 silently diverge on canonical workflow semantics.
 
+> **Reconciliation note (2026-04-25, row `blocker-taxonomy-foundation`)**:
+> the asymmetry where Pi-side blocker codes were canonically enumerated in
+> `pi-step-ceremony-and-artifact-enforcement.md` while Claude-side
+> enforcement was undefined is closed by deliverables
+> `canonical-blocker-taxonomy` + `normalized-blocker-event-and-go-emission-path`
+> + `hook-migration-and-quality-audit` + `coverage-and-parity-tests` of that
+> row. The durable anti-drift mechanism is
+> `tests/integration/test-blocker-parity.sh`, which fails CI when the two
+> adapters produce non-identical canonical envelopes for any migrated code.
+> (Forward citation: `tests/integration/test-blocker-parity.sh` is authored
+> by deliverable `coverage-and-parity-tests` in Wave 4 of this row and does
+> not exist until that deliverable lands.)
+
 ## Non-invariants
 
 These are important implementation choices, but they are not core truths of the

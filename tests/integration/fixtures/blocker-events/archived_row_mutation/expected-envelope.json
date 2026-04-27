@@ -1,0 +1,8 @@
+{
+  "code": "archived_row_mutation",
+  "category": "archive",
+  "severity": "block",
+  "message": "row {row} is archived and cannot be mutated",
+  "remediation_hint": "Archived rows are read-only. Open a new row instead of editing an archived one.",
+  "confirmation_path": "block"
+}

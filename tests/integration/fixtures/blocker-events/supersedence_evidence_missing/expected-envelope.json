@@ -1,0 +1,8 @@
+{
+  "code": "supersedence_evidence_missing",
+  "category": "archive",
+  "severity": "block",
+  "message": "supersedence evidence missing or mismatched for row (required commit={required_commit}, row={required_row}; confirmed commit={confirmed_commit}, row={confirmed_row})",
+  "remediation_hint": "Pass --supersedes-confirmed <commit>:<row> matching the supersedes block in definition.yaml so the archive ceremony has durable evidence.",
+  "confirmation_path": "block"
+}

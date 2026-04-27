@@ -1,0 +1,8 @@
+{
+  "code": "verdict_direct_write",
+  "category": "gate",
+  "severity": "block",
+  "message": "gate-verdicts/ is write-protected — verdicts written by evaluator subagent only (path: /tmp/fakerow/.furrow/rows/r1/gate-verdicts/v1.json)",
+  "remediation_hint": "Verdict files are written exclusively by the gate-evaluator subagent via the canonical evaluation flow. Do not hand-edit gate-verdicts/.",
+  "confirmation_path": "block"
+}

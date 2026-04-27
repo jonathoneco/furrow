@@ -1,0 +1,63 @@
+{
+  "deliverable": "canonical-blocker-taxonomy",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "pass",
+        "evidence": "`go test ./internal/cli/...`, `bun test adapters/pi/furrow.test.ts`, `tests/integration/test-blocker-coverage.sh`, and `tests/integration/test-blocker-parity.sh` all passed, and a fresh `go run ./cmd/furrow row status --json` emitted canonical blocker objects with `code/category/severity/message/remediation_hint/confirmation_path` on both `data.blockers` and `data.row.gates.pending_blockers`."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "fail",
+        "evidence": "New branching helpers `candidateTaxonomyPaths()` and `moduleSourceRoot()` in `internal/cli/blocker_envelope.go` are not directly exercised for their env-override/source-root fallback branches; existing tests cover `Lookup`/`Applies` but not those new resolution paths."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "pass",
+        "evidence": "`schemas/blocker-taxonomy.yaml` now contains 40 codes across the required categories, preserves the locked 11 legacy codes via `TestBlockerTaxonomyBackwardCompat11`, the schema enforces the canonical fields/enums, and the docs now cite the taxonomy as canonical instead of duplicating the registry."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "pass",
+        "evidence": "All files changed by commit `5f4fd59ff4826dca0882f7bbc2047303356781bc` are within the deliverable’s declared `file_ownership` globs (`adapters/pi/furrow.ts`, `docs/...pi-step-ceremony...md`, `internal/cli/{blocker_envelope.go,blocker_envelope_test.go,row_semantics.go,row_workflow.go}`, `schemas/blocker-taxonomy.yaml`)."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "pass",
+        "evidence": "The change follows project conventions and the relevant verification suite is green (`go test ./internal/cli/...`, Bun adapter tests, and both blocker integration scripts), with no adapter-specific fields introduced into the canonical taxonomy."
+      }
+    ],
+    "verdict": "fail"
+  },
+  "overall": "fail",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "diff_scope": {
+    "base": "08f08f8f28b758917e20347da9d991761c27e189",
+    "commits": [
+      "5f4fd59ff4826dca0882f7bbc2047303356781bc"
+    ],
+    "files_matched": [
+      "adapters/pi/furrow.ts",
+      "docs/architecture/pi-step-ceremony-and-artifact-enforcement.md",
+      "internal/cli/blocker_envelope.go",
+      "internal/cli/blocker_envelope_test.go",
+      "internal/cli/row_semantics.go",
+      "internal/cli/row_workflow.go",
+      "schemas/blocker-taxonomy.yaml"
+    ]
+  },
+  "unplanned_changes": "absent",
+  "timestamp": "2026-04-25T20:14:59Z"
+}
