@@ -255,67 +255,6 @@ func TestMissingSkillLayer_StrategyToleratesMissing(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// Cache: identical inputs → identical bytes.
-// ---------------------------------------------------------------------------
-
-func TestCache_IdenticalInputsProduceIdenticalBytes(t *testing.T) {
-	root := furrowRoot(t)
-	cache := ctx.NewCache(root)
-
-	row := "pre-write-validation-go-first"
-	step := "review"
-	target := "driver"
-
-	// Build two bundles with the same source using BuildChainWithStrategy.
-	buildBundle := func() ctx.Bundle {
-		src := ctx.NewFileContextSource(root, row, step, target)
-		b := ctx.NewBundleBuilder(row, step, target)
-		s, err := ctx.LookupStrategy(step)
-		if err != nil {
-			t.Fatalf("LookupStrategy: %v", err)
-		}
-		chain := ctx.BuildChainWithStrategy(s)
-		if err := ctx.WalkChain(chain, b, src); err != nil {
-			t.Fatalf("WalkChain: %v", err)
-		}
-		bundle, err := b.Build()
-		if err != nil {
-			t.Fatalf("Build: %v", err)
-		}
-		return bundle
-	}
-
-	b1 := buildBundle()
-	b2 := buildBundle()
-
-	// Compare row/step/target at minimum.
-	if b1.Row != b2.Row || b1.Step != b2.Step || b1.Target != b2.Target {
-		t.Errorf("bundles differ on identity: %v vs %v", b1, b2)
-	}
-
-	// Cache store/load round-trip.
-	key, err := ctx.Key(row, step, target, []string{})
-	if err != nil {
-		t.Fatalf("Key: %v", err)
-	}
-	if err := cache.Store(key, row, &b1); err != nil {
-		t.Fatalf("Store: %v", err)
-	}
-	loaded, err := cache.Load(key, row, []string{})
-	if err != nil {
-		t.Fatalf("Load: %v", err)
-	}
-	if loaded == nil {
-		t.Fatal("expected cache hit, got nil")
-	}
-	if loaded.Row != b1.Row || loaded.Step != b1.Step {
-		t.Errorf("loaded bundle differs: got %v, want %v", loaded, b1)
-	}
-
-	_ = cache
-}
-
-// ---------------------------------------------------------------------------
 // R9 — ListSkills covers skills/shared/* and specialist injection.
 // ---------------------------------------------------------------------------
 

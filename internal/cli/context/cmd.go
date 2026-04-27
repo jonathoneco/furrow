@@ -52,7 +52,7 @@ func (h *Handler) printHelp() {
 	_, _ = fmt.Fprintln(h.stdout, `furrow context
 
 Usage:
-  furrow context for-step <step> [--row <name>] [--target <t>] [--json] [--no-cache]
+  furrow context for-step <step> [--row <name>] [--target <t>] [--json]
 
 Subcommands:
   for-step  Assemble a context bundle for the given workflow step
@@ -67,15 +67,12 @@ func (h *Handler) runForStep(args []string) int {
 	var positionals []string
 	row := ""
 	target := "driver"
-	noCache := false
 
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
 		switch {
 		case arg == "--json":
 			// --json is the default; accepted but no-op in strict mode.
-		case arg == "--no-cache":
-			noCache = true
 		case arg == "--row":
 			if i+1 >= len(args) {
 				_, _ = fmt.Fprintln(h.stderr, "furrow context for-step: --row requires a value")
@@ -165,26 +162,6 @@ func (h *Handler) runForStep(args []string) int {
 	}
 
 	src := NewFileContextSource(furrowRoot, row, step, target)
-	cache := NewCache(furrowRoot)
-
-	// Enumerate input paths for cache key.
-	inputPaths := enumerateInputPaths(furrowRoot, row)
-
-	var cacheKey string
-	if !noCache {
-		cacheKey, err = Key(row, step, target, inputPaths)
-		if err != nil {
-			// Non-fatal: proceed without cache.
-			cacheKey = ""
-		}
-	}
-
-	// Check cache.
-	if cacheKey != "" && !noCache {
-		if cached, _ := cache.Load(cacheKey, row, inputPaths); cached != nil {
-			return h.emitBundle(cached)
-		}
-	}
 
 	// Assemble bundle.
 	builder := NewBundleBuilder(row, step, target)
@@ -214,18 +191,10 @@ func (h *Handler) runForStep(args []string) int {
 		}
 	}
 
-	// Store metadata about cache inputs.
-	builder.SetMetadata("cache_inputs", inputPaths)
-
 	bundle, err := builder.Build()
 	if err != nil {
 		_, _ = fmt.Fprintf(h.stderr, "furrow context for-step: build: %v\n", err)
 		return 1
-	}
-
-	// Store in cache (non-fatal on error).
-	if cacheKey != "" && !noCache {
-		_ = cache.Store(cacheKey, row, &bundle)
 	}
 
 	return h.emitBundle(&bundle)
@@ -311,38 +280,6 @@ func readFocusedRow(root string) (string, error) {
 	return name, nil
 }
 
-// enumerateInputPaths returns the set of files that contribute to the bundle.
-func enumerateInputPaths(root, row string) []string {
-	rowDir := filepath.Join(root, ".furrow", "rows", row)
-	var paths []string
-
-	// Core row files.
-	for _, rel := range []string{"state.json", "summary.md", "learnings.jsonl", "plan.json", "research.md"} {
-		paths = append(paths, filepath.Join(rowDir, rel))
-	}
-
-	// Specs directory.
-	specsDir := filepath.Join(rowDir, "specs")
-	if entries, err := os.ReadDir(specsDir); err == nil {
-		for _, e := range entries {
-			if !e.IsDir() {
-				paths = append(paths, filepath.Join(specsDir, e.Name()))
-			}
-		}
-	}
-
-	// Skills directory (recursive walk to include skills/shared/*).
-	skillsDir := filepath.Join(root, "skills")
-	_ = filepath.WalkDir(skillsDir, func(p string, d os.DirEntry, err error) error {
-		if err != nil || d.IsDir() || !strings.HasSuffix(d.Name(), ".md") {
-			return nil
-		}
-		paths = append(paths, p)
-		return nil
-	})
-
-	return paths
-}
 
 // validTarget returns true if target is a valid --target value.
 func validTarget(t string) bool {

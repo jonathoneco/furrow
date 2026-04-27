@@ -148,12 +148,11 @@
     "step_strategy_metadata": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Step-strategy-specific metadata. Keys and value shapes are defined per step: ideate={is_first_step:bool}; research={topic_count:int}; plan={has_research:bool}; spec={deliverable_count:int}; decompose={spec_count:int}; implement={wave:int,deliverables:[string]}; review={review_round:int}. The row/step/target triple and cache_inputs are injected by the defaults node for all steps.",
+      "description": "Step-strategy-specific metadata. Keys and value shapes are defined per step: ideate={is_first_step:bool}; research={topic_count:int}; plan={has_research:bool}; spec={deliverable_count:int}; decompose={spec_count:int}; implement={wave:int,deliverables:[string]}; review={review_round:int}. The row/step/target triple is injected by the defaults node for all steps.",
       "properties": {
         "row":             { "type": "string" },
         "step":            { "type": "string" },
         "target":          { "type": "string" },
-        "cache_inputs":    { "type": "array", "items": { "type": "string" } },
         "is_first_step":   { "type": "boolean" },
         "topic_count":     { "type": "integer" },
         "has_research":    { "type": "boolean" },
