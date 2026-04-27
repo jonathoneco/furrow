@@ -4452,3 +4452,12 @@
   created_at: "2026-04-27T13:07:44-04:00"
   updated_at: "2026-04-27T13:07:44-04:00"
   source_work_unit: orchestration-delegation-contract
+- id: port-frw-hook-validate-summary-shell-hook-to-go-st
+  title: Port frw hook validate-summary shell hook to Go (stale parser)
+  context: frw hook validate-summary fails non-blocking on summaries that rws validate-summary (Go) accepts as valid. Surfaced post-archive on orchestration-delegation-contract row. Likely the shell parser doesn't match the canonical Go summary schema.
+  work_needed: Port the shell hook to a furrow hook validate-summary Go subcommand consuming the same schema as rws validate-summary; or update the shell hook to match the current section structure. Part of broader canonical-Go shell-hook port (roadmap)
+  source_type: manual
+  status: active
+  created_at: "2026-04-27T13:09:37-04:00"
+  updated_at: "2026-04-27T13:09:37-04:00"
+  source_work_unit: orchestration-delegation-contract
