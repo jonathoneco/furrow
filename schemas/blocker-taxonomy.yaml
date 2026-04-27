@@ -146,3 +146,13 @@ blockers:
     message_template: "{path}: driver definition failed schema validation: {detail}"
     remediation_hint: "Validate against schemas/driver-definition.schema.json; required keys: name (driver:{step}), step, tools_allowlist, model"
     confirmation_path: block
+
+  # D6: artifact-presentation-protocol codes (W6)
+
+  - code: presentation_protocol_violation
+    category: presentation
+    severity: warn
+    message_template: "{path}: artifact-shaped content lacks section markers ({detail})"
+    remediation_hint: "Wrap each artifact section with <!-- {phase}:section:{name} --> per skills/shared/presentation-protocol.md"
+    confirmation_path: silent
+    applicable_steps: []
