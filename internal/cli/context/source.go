@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -169,35 +170,68 @@ func slugify(s string) string {
 	return s
 }
 
-// ListSkills returns skills from the skills/ directory, tagged with layer
-// from front-matter. Skills missing a layer: tag are returned with a
-// special sentinel layer "MISSING" so the caller can emit skill_layer_unset.
+// ListSkills returns skills from the skills/ directory tree (including
+// skills/shared/*), tagged with layer from front-matter. Skills missing a
+// layer: tag are returned with sentinel layer "MISSING" so the caller can
+// emit skill_layer_unset. When the target is specialist:{id}, the
+// specialists/{id}.md brief is also injected as a Skill with layer "engine".
 func (s *FileContextSource) ListSkills() ([]Skill, error) {
 	skillsDir := filepath.Join(s.root, "skills")
-	entries, err := os.ReadDir(skillsDir)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("source: list skills: %w", err)
-	}
 	var skills []Skill
-	for _, e := range entries {
-		if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") {
-			continue
-		}
-		path := filepath.Join(skillsDir, e.Name())
-		data, err := os.ReadFile(path)
+
+	// Walk skills/ recursively so skills/shared/* is included.
+	walkErr := filepath.WalkDir(skillsDir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			return nil, fmt.Errorf("source: read skill %s: %w", e.Name(), err)
+			if os.IsNotExist(err) {
+				return nil
+			}
+			return fmt.Errorf("source: walk skills: %w", err)
+		}
+		if d.IsDir() || !strings.HasSuffix(d.Name(), ".md") {
+			return nil
+		}
+		data, readErr := os.ReadFile(path)
+		if readErr != nil {
+			return fmt.Errorf("source: read skill %s: %w", path, readErr)
+		}
+		// Compute path relative to s.root for consistent relative paths.
+		relPath, relErr := filepath.Rel(s.root, path)
+		if relErr != nil {
+			relPath = path
 		}
 		layer := extractLayer(string(data))
 		skills = append(skills, Skill{
-			Path:    filepath.Join("skills", e.Name()),
+			Path:    relPath,
 			Layer:   layer,
 			Content: string(data),
 		})
+		return nil
+	})
+	if walkErr != nil {
+		if os.IsNotExist(walkErr) {
+			// skills/ directory doesn't exist yet; non-fatal.
+		} else {
+			return nil, walkErr
+		}
 	}
+
+	// When target is specialist:{id}, inject the specialist brief as an engine-layer skill.
+	if strings.HasPrefix(s.target, "specialist:") {
+		id := strings.TrimPrefix(s.target, "specialist:")
+		briefPath := filepath.Join(s.root, "specialists", id+".md")
+		data, err := os.ReadFile(briefPath)
+		if err != nil && !os.IsNotExist(err) {
+			return nil, fmt.Errorf("source: read specialist brief %s: %w", briefPath, err)
+		}
+		if err == nil {
+			skills = append(skills, Skill{
+				Path:    filepath.Join("specialists", id+".md"),
+				Layer:   "engine",
+				Content: string(data),
+			})
+		}
+	}
+
 	return skills, nil
 }
 

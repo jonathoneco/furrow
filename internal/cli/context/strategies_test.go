@@ -266,20 +266,17 @@ func TestCache_IdenticalInputsProduceIdenticalBytes(t *testing.T) {
 	step := "review"
 	target := "driver"
 
-	// Build two bundles with the same source.
+	// Build two bundles with the same source using BuildChainWithStrategy.
 	buildBundle := func() ctx.Bundle {
 		src := ctx.NewFileContextSource(root, row, step, target)
 		b := ctx.NewBundleBuilder(row, step, target)
-		chain := ctx.BuildChain()
-		if err := ctx.WalkChain(chain, b, src); err != nil {
-			t.Fatalf("WalkChain: %v", err)
-		}
 		s, err := ctx.LookupStrategy(step)
 		if err != nil {
 			t.Fatalf("LookupStrategy: %v", err)
 		}
-		if err := s.Apply(b, src); err != nil {
-			t.Fatalf("Apply: %v", err)
+		chain := ctx.BuildChainWithStrategy(s)
+		if err := ctx.WalkChain(chain, b, src); err != nil {
+			t.Fatalf("WalkChain: %v", err)
 		}
 		bundle, err := b.Build()
 		if err != nil {
@@ -316,4 +313,195 @@ func TestCache_IdenticalInputsProduceIdenticalBytes(t *testing.T) {
 	}
 
 	_ = cache
+}
+
+// ---------------------------------------------------------------------------
+// R9 — ListSkills covers skills/shared/* and specialist injection.
+// ---------------------------------------------------------------------------
+
+// TestListSkills_SharedSkillsIncluded verifies that ListSkills returns at
+// least one skills/shared/* file (recursive walk correctness).
+func TestListSkills_SharedSkillsIncluded(t *testing.T) {
+	root := furrowRoot(t)
+	src := ctx.NewFileContextSource(root, "pre-write-validation-go-first", "plan", "driver")
+	skills, err := src.ListSkills()
+	if err != nil {
+		t.Fatalf("ListSkills: %v", err)
+	}
+	foundShared := false
+	for _, sk := range skills {
+		if len(sk.Path) > 13 && sk.Path[:13] == "skills/shared" {
+			foundShared = true
+			break
+		}
+	}
+	if !foundShared {
+		t.Errorf("ListSkills: no skills/shared/* files found; expected at least one from skills/shared/")
+	}
+}
+
+// TestListSkills_SpecialistBriefInjected verifies that when target is
+// specialist:{id}, the specialists/{id}.md brief is included as an
+// engine-layer skill.
+func TestListSkills_SpecialistBriefInjected(t *testing.T) {
+	root := furrowRoot(t)
+	src := ctx.NewFileContextSource(root, "pre-write-validation-go-first", "implement", "specialist:go-specialist")
+	skills, err := src.ListSkills()
+	if err != nil {
+		t.Fatalf("ListSkills: %v", err)
+	}
+	var brief *ctx.Skill
+	for i := range skills {
+		if skills[i].Path == "specialists/go-specialist.md" {
+			brief = &skills[i]
+			break
+		}
+	}
+	if brief == nil {
+		t.Fatal("ListSkills with specialist:go-specialist: specialists/go-specialist.md not in skills list")
+	}
+	if brief.Layer != "engine" {
+		t.Errorf("specialist brief must have layer=engine, got %q", brief.Layer)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// R6 — Chain ordering: target filter runs after strategy adds skills.
+// ---------------------------------------------------------------------------
+
+// TestChainOrdering_StrategySkillsAreFiltered verifies that skills added by
+// strategy.Apply are subject to TargetFilterNode (i.e., strategy runs before
+// the target filter in the chain).
+func TestChainOrdering_StrategySkillsAreFiltered(t *testing.T) {
+	// Use a real FileContextSource and BuildChainWithStrategy. The driver target
+	// must contain ONLY driver|shared layers; if strategy ran AFTER the filter,
+	// all unfiltered skills would be present.
+	root := furrowRoot(t)
+	row := "pre-write-validation-go-first"
+	step := "plan"
+	target := "driver"
+
+	src := ctx.NewFileContextSource(root, row, step, target)
+	b := ctx.NewBundleBuilder(row, step, target)
+
+	s, err := ctx.LookupStrategy(step)
+	if err != nil {
+		t.Fatalf("LookupStrategy(%q): %v", step, err)
+	}
+
+	chain := ctx.BuildChainWithStrategy(s)
+	if err := ctx.WalkChain(chain, b, src); err != nil {
+		t.Fatalf("WalkChain: %v", err)
+	}
+
+	bundle, err := b.Build()
+	if err != nil {
+		t.Fatalf("Build: %v", err)
+	}
+
+	if len(bundle.Skills) == 0 {
+		t.Fatal("expected non-empty skills after chain walk with driver target")
+	}
+
+	for _, sk := range bundle.Skills {
+		if sk.Layer != "driver" && sk.Layer != "shared" {
+			t.Errorf("driver target bundle contains skill with layer=%q (path=%s); want driver or shared only", sk.Layer, sk.Path)
+		}
+	}
+}
+
+// TestChainOrdering_DifferentTargetsDifferentSkills is a regression guard for
+// R6: operator, driver, and specialist:go-specialist targets must produce
+// distinct skill layer sets.
+func TestChainOrdering_DifferentTargetsDifferentSkills(t *testing.T) {
+	root := furrowRoot(t)
+	row := "pre-write-validation-go-first"
+	step := "plan"
+
+	buildBundle := func(target string) ctx.Bundle {
+		src := ctx.NewFileContextSource(root, row, step, target)
+		b := ctx.NewBundleBuilder(row, step, target)
+		s, err := ctx.LookupStrategy(step)
+		if err != nil {
+			t.Fatalf("LookupStrategy: %v", err)
+		}
+		chain := ctx.BuildChainWithStrategy(s)
+		if err := ctx.WalkChain(chain, b, src); err != nil {
+			t.Fatalf("WalkChain (target=%s): %v", target, err)
+		}
+		bundle, err := b.Build()
+		if err != nil {
+			t.Fatalf("Build (target=%s): %v", target, err)
+		}
+		return bundle
+	}
+
+	opBundle := buildBundle("operator")
+	drBundle := buildBundle("driver")
+	spBundle := buildBundle("specialist:go-specialist")
+
+	// Collect unique layers per bundle.
+	uniqueLayers := func(b ctx.Bundle) map[string]bool {
+		m := map[string]bool{}
+		for _, sk := range b.Skills {
+			m[sk.Layer] = true
+		}
+		return m
+	}
+
+	opLayers := uniqueLayers(opBundle)
+	drLayers := uniqueLayers(drBundle)
+	spLayers := uniqueLayers(spBundle)
+
+	// operator must have operator layer; driver must not.
+	if !opLayers["operator"] {
+		t.Error("operator target: expected operator layer in skills")
+	}
+	if drLayers["operator"] {
+		t.Error("driver target: must not contain operator-layer skills")
+	}
+
+	// driver must have driver layer; operator must not.
+	if !drLayers["driver"] {
+		t.Error("driver target: expected driver layer in skills")
+	}
+	if opLayers["driver"] {
+		t.Error("operator target: must not contain driver-layer skills")
+	}
+
+	// specialist target must have engine layer; operator and driver must not.
+	if !spLayers["engine"] {
+		t.Error("specialist target: expected engine layer in skills")
+	}
+	if opLayers["engine"] {
+		t.Error("operator target: must not contain engine-layer skills")
+	}
+	if drLayers["engine"] {
+		t.Error("driver target: must not contain engine-layer skills")
+	}
+}
+
+// ---------------------------------------------------------------------------
+// R1 — SetMetadata via Builder interface (conformance).
+// ---------------------------------------------------------------------------
+
+// TestBuilderInterface_SetMetadata verifies that fakeBuilder (which now
+// implements SetMetadata) satisfies the Builder interface and stores metadata.
+func TestBuilderInterface_SetMetadata(t *testing.T) {
+	b := newFakeBuilder()
+	b.SetMetadata("key", "value")
+	b.SetMetadata("count", 42)
+	bundle, err := b.Build()
+	if err != nil {
+		t.Fatalf("Build: %v", err)
+	}
+	if bundle.StepStrategyMetadata == nil {
+		t.Fatal("StepStrategyMetadata must not be nil after SetMetadata calls")
+	}
+	if bundle.StepStrategyMetadata["key"] != "value" {
+		t.Errorf("key: want %q got %v", "value", bundle.StepStrategyMetadata["key"])
+	}
+	if bundle.StepStrategyMetadata["count"] != 42 {
+		t.Errorf("count: want 42 got %v", bundle.StepStrategyMetadata["count"])
+	}
 }

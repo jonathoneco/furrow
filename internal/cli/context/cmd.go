@@ -189,16 +189,12 @@ func (h *Handler) runForStep(args []string) int {
 	// Assemble bundle.
 	builder := NewBundleBuilder(row, step, target)
 
-	// Walk the chain (defaults → artifacts → target-filter).
-	chain := BuildChain()
+	// Walk the chain: defaults → artifacts → strategy → target-filter.
+	// Spec-required order: strategy.Apply must run AFTER artifacts are loaded
+	// and BEFORE TargetFilterNode so skills added by the strategy are filtered.
+	chain := BuildChainWithStrategy(strategy)
 	if err := WalkChain(chain, builder, src); err != nil {
 		_, _ = fmt.Fprintf(h.stderr, "furrow context for-step: chain: %v\n", err)
-		return 1
-	}
-
-	// Apply strategy.
-	if err := strategy.Apply(builder, src); err != nil {
-		_, _ = fmt.Fprintf(h.stderr, "furrow context for-step: strategy: %v\n", err)
 		return 1
 	}
 
@@ -335,15 +331,15 @@ func enumerateInputPaths(root, row string) []string {
 		}
 	}
 
-	// Skills directory.
+	// Skills directory (recursive walk to include skills/shared/*).
 	skillsDir := filepath.Join(root, "skills")
-	if entries, err := os.ReadDir(skillsDir); err == nil {
-		for _, e := range entries {
-			if !e.IsDir() && strings.HasSuffix(e.Name(), ".md") {
-				paths = append(paths, filepath.Join(skillsDir, e.Name()))
-			}
+	_ = filepath.WalkDir(skillsDir, func(p string, d os.DirEntry, err error) error {
+		if err != nil || d.IsDir() || !strings.HasSuffix(d.Name(), ".md") {
+			return nil
 		}
-	}
+		paths = append(paths, p)
+		return nil
+	})
 
 	return paths
 }
