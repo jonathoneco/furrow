@@ -49,7 +49,7 @@
  * behind a thin interface so the dep is swappable per constraint.
  */
 
-import { execFileSync, execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
@@ -315,7 +315,7 @@ export class FurrowPiAdapter {
     options: { cwd?: string; timeout?: number } = {},
   ): string {
     try {
-      const result = execSync(`pi -p "${engineHandoffMarkdown.replace(/"/g, '\\"')}"`, {
+      const result = execFileSync("pi", ["--prompt", engineHandoffMarkdown], {
         cwd: options.cwd,
         timeout: options.timeout ?? 120000,
         encoding: "utf-8",
