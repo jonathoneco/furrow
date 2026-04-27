@@ -35,7 +35,7 @@ ACs sourced from `definition.yaml` (lines 64-101).
   "$id": "https://furrow.dev/schemas/context-bundle.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["row", "step", "target", "skills", "references", "prior_artifacts", "decisions", "step_strategy_metadata"],
+  "required": ["row", "step", "target", "skills", "references", "prior_artifacts", "decisions"],
   "properties": {
     "row":    { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
     "step":   { "type": "string", "enum": ["ideate","research","plan","spec","decompose","implement","review"] },
@@ -87,11 +87,14 @@ ACs sourced from `definition.yaml` (lines 64-101).
           "ordinal":   { "type": "integer", "minimum": 0 }
         }
       }
-    },
-    "step_strategy_metadata": { "type": "object" }
+    }
   }
 }
 ```
+
+> **Reconciled post-archive**: `step_strategy_metadata` (originally listed as the
+> 8th required key + open-typed object) was removed. Speculative forward-compat
+> field with no consumer; per D5/D4 OQ #1 disposition. See commit `eb2a43f`.
 
 `additionalProperties:false` at every level (constraint pattern from `schemas/definition.schema.json`).
 
@@ -140,19 +143,21 @@ Algorithm:
 
 Conformance test (`strategies_test.go`): runs extractor against the 7 historic populated rows from T3 research and asserts ≥49 entries returned, all four regex groups non-empty, all `outcome ∈ {pass,fail}`.
 
-## Caching
+## Performance
 
-- Cache file: `.furrow/cache/context-bundles/{sha256}.json` (8 hex prefix dirs for fanout).
-- Key: `sha256(row || step || target || sorted_join(content_hash(input_path) for input_path in inputs))`. Inputs enumerated by the strategy and recorded into `step_strategy_metadata.cache_inputs`.
-- Invalidation triggers: any input file mtime > cache mtime, OR `state.json` mtime > cache mtime (state mtime is a coarse override invalidating regardless of strategy inputs — handles step transitions, gate writes), OR `--no-cache` flag set, OR cache file missing/unparseable.
-- Cache write atomic via temp-file + rename (within same fs).
-- Performance budget: AC §9 — <500 ms cold on the reference fixture (a 7-step row). Cache hit target: <50 ms.
+- Performance budget: AC §9 — <500 ms cold on the reference fixture (a 7-step row).
+- Measured cold-run wall-clock on the reference fixture: 4 ms — the budget is met by an order of magnitude without a caching layer.
 
-Edge cases handled:
-
-- Concurrent writers — temp-rename is atomic; last writer wins; readers always see a complete file or fall through to recompute.
-- Clock skew — comparison is mtime-vs-mtime; if cache appears in the future, treat as valid (won't loop).
-- Missing input — fail-loud with structured error, do not silently emit a partial bundle.
+> **Reconciled post-archive**: this section originally specified a full caching
+> layer (`.furrow/cache/context-bundles/{sha256}.json` with sha256-keyed
+> bundles, 8-hex-prefix shard dirs, mtime-based invalidation, atomic
+> temp-rename writes, edge-case handling for concurrent writers / clock skew /
+> missing inputs, and a <50 ms cache-hit target). The cache was stripped after
+> empirical measurement showed cold-run perf was already 125× under budget;
+> the cache surface added failure modes (stale-cache risk, low-resolution-mtime
+> fallback OQ, gitignore gap, row-isolation drift) without earning meaningful
+> wall-clock savings. Determinism (identical inputs → identical bytes) is now
+> verified by the integration test directly. See commit `60dc80b`.
 
 ## CLI Surface
 
@@ -161,7 +166,6 @@ furrow context for-step <step>
     --row <name>         (default: focused row from .furrow/focus)
     --target <t>         (default: driver; t in {operator,driver,engine,specialist:<id>})
     --json               (default true; reserved for future text-mode rendering)
-    --no-cache           (bypass + do not write)
 ```
 
 Exit codes: `0` success; `2` usage; `3` blocker emitted (envelope on stdout, code on stderr); `1` internal error.
@@ -201,24 +205,24 @@ Joint-touch order per constraint #10: D4 (W3) is the FIRST writer to `commands/w
 - **AC §5 (skill_layer_unset)** — WHEN a skill file lacks `layer:` front-matter, THEN exit 3, blocker code `skill_layer_unset` on stderr. Verify: fixture row with one stripped skill; assert exit code.
 - **AC §6 (decisions)** — WHEN summary.md contains 7 gate-transition entries with one retry, THEN `.decisions | length == 6` (last-wins) AND ordinal preserves first-occurrence position. Verify against `pre-write-validation-go-first` row.
 - **AC §7 (learnings filter)** — WHEN `--target=engine`, THEN `.prior_artifacts.learnings[] | select(.broadly_applicable == false) | length == 0`. Verify with seeded learnings.jsonl fixture.
-- **AC §9 (perf)** — WHEN cold cache run on reference fixture, THEN wall-clock < 500ms. Verify: `time furrow context for-step implement --target driver --row test-fixture --no-cache`.
-- **AC §10 (cache)** — WHEN identical inputs, THEN identical bytes (`diff <(... ) <(... )` empty). WHEN `state.json` mtime touched, THEN cache miss. Verify: integration test sets mtime via `touch`, asserts re-emission.
+- **AC §9 (perf)** — WHEN bundle generation runs against the reference fixture, THEN wall-clock < 500ms. Verify: `time furrow context for-step implement --target driver --row test-fixture`. (Reconciled post-archive: removed `--no-cache` flag and "cold cache" wording; cache layer was stripped — see commit `60dc80b`.)
+- **AC §10 (determinism)** — WHEN identical inputs, THEN identical output bytes. Verify: `diff <(furrow context for-step ...) <(furrow context for-step ...)` empty. (Reconciled post-archive: was originally cache-identity test with mtime invalidation; rewritten as pure determinism test after cache strip.)
 - **AC §12 (integration)** — WHEN tests/integration/test-context-routing.sh runs end-to-end, THEN bundle from `furrow context for-step plan --target driver` round-trips through `furrow handoff render --target driver:plan` (D1) producing a renderable handoff. Note grammar: D4 takes step as positional (`for-step <step>`) + `--target` is layer-only (`driver|engine|operator|specialist:{id}`); D1 takes target as combined layer+step (`driver:{step}|engine:{id}`) since it has no separate step argument. Script exits 0.
 - **AC §13 (app registration)** — WHEN `furrow context --help` runs, THEN exit 0 listing `for-step`. Asserts joint-ownership ordering of `internal/cli/app.go` (D1's `handoff` already registered).
 - **AC §14 (tests)** — `go test ./internal/cli/context/... && go test ./...` passes.
 
 ## Open Questions
 
-1. Does `step_strategy_metadata` need a per-step JSON Schema, or is `type: object` sufficient? Lean: keep open at D4; D5 conformance test uses the open object today; tighten in a follow-up if drivers depend on specific keys.
-2. Cache eviction policy — bounded by total bytes, age, or unbounded? Lean: unbounded for V1 (`.furrow/cache/` is gitignored; users can `rm -rf` if needed); revisit if size becomes a problem.
-3. Should `--target=specialist:{id}` validate that `specialists/{id}.md` exists, or fail-soft with empty injection? Lean: hard fail with `context_input_missing` blocker — silent fail risks engines getting under-curated context, violating constraint #8 spirit.
+1. Should `--target=specialist:{id}` validate that `specialists/{id}.md` exists, or fail-soft with empty injection? Lean: hard fail with `context_input_missing` blocker — silent fail risks engines getting under-curated context, violating constraint #8 spirit.
+
+> **Reconciled post-archive**: two original OQs were resolved by removal — (1) `step_strategy_metadata` JSON Schema typing (the field was stripped entirely; see commit `eb2a43f`), and (2) cache eviction policy (cache layer was stripped; see commit `60dc80b`).
 
 ---
 
 ## Summary (≤150 words)
 
-**Top 3 implementation risks**: (1) **Cache invalidation correctness** — mtime-based heuristic risks stale bundles when an input file is rewritten with identical content but newer mtime, or when filesystem timestamps lose resolution; mitigated by content-hash key (changes only when bytes change) plus mtime as fast-path early-exit. (2) **Joint app.go register order with D1** — D4 must land after D1's `handoff` group; W3 sequential wave plan enforces. (3) **D5 contract drift** — strategies plug into D5's harness during W3 review; if D5's `Apply` signature shifts, all 7 strategies need update; mitigated by in-row D5-before-D4 ordering and conformance harness as gate.
+**Top 3 implementation risks** (original): (1) **Cache invalidation correctness** — mtime-based heuristic risks stale bundles when an input file is rewritten with identical content but newer mtime, or when filesystem timestamps lose resolution; mitigated by content-hash key (changes only when bytes change) plus mtime as fast-path early-exit. (2) **Joint app.go register order with D1** — D4 must land after D1's `handoff` group; W3 sequential wave plan enforces. (3) **D5 contract drift** — strategies plug into D5's harness during W3 review; if D5's `Apply` signature shifts, all 7 strategies need update; mitigated by in-row D5-before-D4 ordering and conformance harness as gate.
+
+> **Reconciled post-archive**: risk (1) is moot — the cache layer was stripped after empirical perf measurement (4 ms cold << 500 ms budget). See commit `60dc80b`.
 
 **Decisions extraction conformance plan**: Test-fixture: T3's 7 populated rows replayed in `strategies_test.go`; assertion: 49 entries extracted, 100% regex match, retries collapsed last-wins with first-position ordinal. Add the current row to fixtures post-archive.
-
-**Caching invalidation edge cases**: state.json mtime as coarse override (handles step transitions undetected by strategy inputs); atomic temp-rename writes (concurrent-writer safe); future-dated cache mtime treated as valid (clock-skew safe); missing input fails loud, never silently emits partial bundle.
