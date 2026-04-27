@@ -215,7 +215,13 @@ Bundle: {{ .Grounding }}
 
 <!-- driver-handoff:section:return-format -->
 ## Return Format
-`{{ .ReturnFormat }}` (resolves to templates/handoffs/return-formats/{{ .ReturnFormat }}.json)
+Identifier: `{{ .ReturnFormat }}`
+
+Your phase EOS-report MUST validate against this JSON Schema:
+
+```json
+{{ .ReturnFormatSchema }}
+```
 ```
 
 ### `templates/handoff-engine.md.tmpl`
@@ -256,7 +262,13 @@ Bundle: {{ .Grounding }}
 
 <!-- engine-handoff:section:return-format -->
 ## Return Format
-`{{ .ReturnFormat }}`
+Identifier: `{{ .ReturnFormat }}`
+
+Your task EOS-report MUST validate against this JSON Schema:
+
+```json
+{{ .ReturnFormatSchema }}
+```
 ```
 
 Both templates use stable section order. Markers follow the D6 presentation-protocol convention (`<!-- {phase}:section:{name} -->`). Templates are embedded into the binary via `//go:embed`.
@@ -264,11 +276,14 @@ Both templates use stable section order. Markers follow the D6 presentation-prot
 <!-- spec:section:return-format-resolution -->
 ## Return-format resolution
 
-`return_format` is a string identifier (kebab-case). Resolution algorithm (in `internal/cli/handoff/return_format.go`):
+`return_format` is a string identifier (kebab-case). Resolution happens in two paths in `internal/cli/handoff/return_format.go`:
 
-1. Compute `path := filepath.Join("templates/handoffs/return-formats", id+".json")`.
-2. Stat path; if missing, fail with `handoff_schema_invalid` blocker code, message `unknown return_format identifier: %s`.
-3. The schema file itself is a JSON Schema (draft 2020-12) describing the shape the engine/driver must return. Resolution is read-only at render-time; engines are expected to receive the resolved schema in their grounding bundle (D4 stitches it in).
+1. **Existence check** (`ResolveReturnFormat`): compute `path := filepath.Join("templates/handoffs/return-formats", id+".json")`; stat the embedded path. If missing, fail with `handoff_schema_invalid` blocker code, message `unknown return_format identifier: %s`.
+2. **Content load** (`LoadReturnFormatSchema`): read the embedded schema file's full JSON content; return it as a string.
+
+The schema file itself is a JSON Schema (draft 2020-12) describing the shape the engine/driver must return. The schema content is **inlined directly into the rendered handoff** under the Return Format section (in a fenced ```json block) so the receiving LLM gets the actual shape without an extra Read hop.
+
+> **Reconciled post-archive**: the original spec said *"Resolution is read-only at render-time; engines are expected to receive the resolved schema in their grounding bundle (D4 stitches it in)."* In practice D4 didn't stitch it in — only the identifier reached the LLM, leaving the EOS-report shape unspecified at the prompt level. After-the-fact wiring (commit `eb2a43f`) inlines the schema content into the rendered handoff template instead, eliminating the need for a separate D4 stitch step.
 
 ### Initial return-format schemas shipped this row
 

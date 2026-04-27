@@ -58,7 +58,7 @@ model: sonnet
 
 The 6 other YAMLs (`driver-ideate.yaml`, `driver-plan.yaml`, `driver-spec.yaml`, `driver-decompose.yaml`, `driver-implement.yaml`, `driver-review.yaml`) follow the same shape; `driver-implement.yaml` adds `Edit`/`Write` and removes `WebFetch`; `driver-review.yaml` is read-only.
 
-`furrow validate driver-definitions --json` (D3 owns the registration, D2 owns the schema and emits blocker `driver_definition_invalid` per the joint-ownership note).
+`furrow validate driver-definitions --json` (D3 owns the registration, D2 owns the schema and emits blocker `driver_definition_invalid` per the joint-ownership note). Reconciled post-archive: also wired into `frw doctor` (under "Driver definitions" section) so a broken driver YAML surfaces at doctor-time, not just on demand. See commit `eb2a43f`.
 
 ## layer-protocol-doc
 

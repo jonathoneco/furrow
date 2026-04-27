@@ -57,12 +57,13 @@ package context
 type Bundle struct {
     Row                  string                 `json:"row"`
     Step                 string                 `json:"step"`
-    Target               string                 `json:"target"`
-    Skills               []Skill                `json:"skills"`
-    References           []Reference            `json:"references"`
-    PriorArtifacts       Artifact               `json:"prior_artifacts"`
-    Decisions            []Decision             `json:"decisions"`
-    StepStrategyMetadata map[string]any         `json:"step_strategy_metadata"`
+    Target         string      `json:"target"`
+    Skills         []Skill     `json:"skills"`
+    References     []Reference `json:"references"`
+    PriorArtifacts Artifact    `json:"prior_artifacts"`
+    Decisions      []Decision  `json:"decisions"`
+    // Reconciled post-archive: StepStrategyMetadata field removed —
+    // speculative forward-compat with no consumer; see commit eb2a43f.
 }
 
 type Skill struct {
@@ -152,7 +153,7 @@ type ChainNode interface {
 }
 ```
 
-Errors: `ErrBuilderConsumed`, `ErrStrategyStepUnknown`, `ErrChainTerminated` declared as package-level `errors.New(...)` sentinels.
+Errors: `ErrBuilderConsumed`, `ErrStrategyStepUnknown` declared as package-level `errors.New(...)` sentinels. (Reconciled post-archive: `ErrChainTerminated` was originally listed alongside these but had no concrete return path in any implementation; removed in commit `eb2a43f`.)
 
 <!-- spec:section:conformance-harness -->
 ## Conformance Harness
@@ -259,12 +260,13 @@ WHEN `go test ./...` and `go vet ./...` run THEN both exit 0. CI gate.
 <!-- spec:section:open-questions -->
 ## Open Questions
 
-1. **`step_strategy_metadata` typing** — `map[string]any` for forward compat; if D4 needs a typed sub-shape, widen via assertions or re-spec a sealed interface. Default: leave as map unless D4's W3 plan documents a concrete need.
-2. **Structural-test gating** — env var (`FURROW_STRUCTURE_TEST_REQUIRE_STRATEGIES`) vs build tag (`//go:build furrow_d4`). Default env var; switch to build tag if CI cannot inject per-wave envs. Resolve before W1 commit.
-3. **`Bundle.Learnings` placement** — D4's AC has only `prior_artifacts.learnings`, no top-level. Resolution: drop top-level `Learnings` from `Bundle`; keep only `Artifact.Learnings`. **(Already applied in interface block.)**
-4. **`ContextSource` ownership** — D5 defines (Strategy.Apply references it); D4 ships the concrete reader. Confirmed split.
+1. **Structural-test gating** — env var (`FURROW_STRUCTURE_TEST_REQUIRE_STRATEGIES`) vs build tag (`//go:build furrow_d4`). Default env var; switch to build tag if CI cannot inject per-wave envs. Resolve before W1 commit.
+2. **`Bundle.Learnings` placement** — D4's AC has only `prior_artifacts.learnings`, no top-level. Resolution: drop top-level `Learnings` from `Bundle`; keep only `Artifact.Learnings`. **(Already applied in interface block.)**
+3. **`ContextSource` ownership** — D5 defines (Strategy.Apply references it); D4 ships the concrete reader. Confirmed split.
 
 None block W1 implementation; defaults documented above.
+
+> **Reconciled post-archive**: original OQ #1 (`step_strategy_metadata` typing) was resolved by removal — the field was stripped entirely as speculative forward-compat with no consumer; see commit `eb2a43f`.
 
 <!-- spec:section:review-coupling -->
 ## Review Coupling
