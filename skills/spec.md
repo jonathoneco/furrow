@@ -69,6 +69,13 @@ Read these when relevant to your current action:
 - `skills/shared/layer-protocol.md` — layer boundaries
 - `skills/shared/summary-protocol.md` — before completing step
 
+**Presentation**: when surfacing this step's artifact for user review, render it
+using the canonical mode defined in `skills/shared/presentation-protocol.md` —
+section markers `<!-- presentation:section:{name} -->` immediately preceding
+each section per the artifact's row in the protocol's section-break table. The
+operator owns this rendering; phase drivers return structured results, not
+user-facing markdown.
+
 ## Step Mechanics
 Transition out: gate record `spec->decompose` with outcome `pass` required.
 Pre-step shell check (`rws gate-check`): 1 deliverable, >=2 ACs, not supervised,

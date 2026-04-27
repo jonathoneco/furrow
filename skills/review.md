@@ -64,6 +64,13 @@ After all deliverable reviews complete:
 - `skills/shared/layer-protocol.md` — layer boundaries
 - `skills/shared/summary-protocol.md` — before completing step
 
+**Presentation**: when surfacing this step's artifact for user review, render it
+using the canonical mode defined in `skills/shared/presentation-protocol.md` —
+section markers `<!-- presentation:section:{name} -->` immediately preceding
+each section per the artifact's row in the protocol's section-break table. The
+operator owns this rendering; phase drivers return structured results, not
+user-facing markdown.
+
 ## Step Mechanics
 Review is the final step. No pre-step evaluation — review always runs.
 Post-step gate evaluates Phase A and Phase B results across all deliverables.

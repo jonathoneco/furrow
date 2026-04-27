@@ -35,7 +35,8 @@
         "hooks": [
           { "type": "command", "command": "frw hook work-check" },
           { "type": "command", "command": "frw hook stop-ideation" },
-          { "type": "command", "command": "frw hook validate-summary" }
+          { "type": "command", "command": "frw hook validate-summary" },
+          { "type": "command", "command": "furrow hook presentation-check" }
         ]
       }
     ],

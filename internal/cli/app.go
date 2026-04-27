@@ -207,10 +207,10 @@ func (a *App) runStubLeaf(command string, args []string) int {
 // runHook dispatches `furrow hook <subcommand>` — runtime adapter hooks.
 //
 // D3 ships: layer-guard (PreToolUse boundary enforcement).
-// D6 will add: presentation-check.
+// D6 ships: presentation-check (Stop hook advisory scan).
 func (a *App) runHook(args []string) int {
 	if len(args) == 0 {
-		_, _ = fmt.Fprintln(a.stdout, "furrow hook\n\nAvailable subcommands: layer-guard")
+		_, _ = fmt.Fprintln(a.stdout, "furrow hook\n\nAvailable subcommands: layer-guard, presentation-check")
 		return 0
 	}
 	switch args[0] {
@@ -221,8 +221,10 @@ func (a *App) runHook(args []string) int {
 			policyPath = override
 		}
 		return hook.RunLayerGuard(context.Background(), policyPath, a.stdin, a.stdout)
+	case "presentation-check":
+		return hook.RunPresentationCheck(context.Background(), a.stdin, a.stdout)
 	case "help", "-h", "--help":
-		_, _ = fmt.Fprintln(a.stdout, "furrow hook\n\nAvailable subcommands: layer-guard")
+		_, _ = fmt.Fprintln(a.stdout, "furrow hook\n\nAvailable subcommands: layer-guard, presentation-check")
 		return 0
 	default:
 		return a.fail("furrow hook", &cliError{
@@ -281,7 +283,7 @@ Commands:
   context   Context bundle assembly (for-step)
   handoff   Handoff render and validate contract surface
   render    Render runtime-specific files from definitions
-  hook      Runtime adapter hooks (layer-guard)
+  hook      Runtime adapter hooks (layer-guard, presentation-check)
   merge     Merge pipeline contract surface
   doctor    Environment and adapter readiness checks
   init      Repo bootstrap and migration entrypoint
