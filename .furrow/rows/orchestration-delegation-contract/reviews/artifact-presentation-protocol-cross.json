@@ -1,0 +1,69 @@
+{
+  "deliverable": "artifact-presentation-protocol",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "fail",
+        "evidence": "Core D6 behavior diverges from the acceptance criteria: `skills/ideate.md:33` still prescribes `<!-- ideation:section:{name} -->`, `commands/work.md.tmpl:140` tells the operator to use `<!-- {step}:section:{name} -->` instead of `presentation`, and `internal/cli/hook/presentation_check.go:17-24,97-103` scans `transcript_path` rather than assistant-turn content from Stop-hook stdin."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "pass",
+        "evidence": "New branching hook logic is covered by `internal/cli/hook/presentation_check_test.go`, and the deliverable adds an integration replay in `tests/integration/test-presentation-protocol.sh`; `go test -count=1 ./...` and `sh tests/integration/test-presentation-protocol.sh` both passed in the current tree."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "fail",
+        "evidence": "The implementation misses explicit interface-contract details from the spec: the Stop hook input shape is transcript-based instead of assistant-content based (`internal/cli/hook/presentation_check.go:17-24`), and the required additive references in the steps’ `Supervised Transition Protocol` sections are absent entirely (`rg \"Supervised Transition Protocol|Presentation\" skills/{plan,spec,review}.md` shows only standalone `Presentation` notes)."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "fail",
+        "evidence": "`bb64f75` modifies `internal/cli/app.go` to register `presentation-check`, but `artifact-presentation-protocol` file ownership in `.furrow/rows/orchestration-delegation-contract/definition.yaml` does not include `internal/cli/app.go`, and no justification is documented."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "pass",
+        "evidence": "The new Go and shell code follows repo conventions well enough to build and test cleanly (`go test -count=1 ./...` passed; the hook uses `slog`, tests are conventional, and the shell script quotes variables and runs under `sh`)."
+      }
+    ],
+    "verdict": "fail"
+  },
+  "overall": "fail",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "diff_scope": {
+    "base": "08f08f8f28b758917e20347da9d991761c27e189",
+    "commits": [
+      "bb64f753fa752f500f7be4977237d9704fbf2076",
+      "cd5b0221e5e6dc117d2b2cc825c61524d9884ec6",
+      "f17efb20e671926ff973a7c4223f75a0f254fc59",
+      "89aed6b4ab6f80c34d115db18c821d0b30c27c72",
+      "95a2b44d56d2a773072d7d20f564814953069834"
+    ],
+    "files_matched": [
+      ".claude/settings.json",
+      "commands/work.md.tmpl",
+      "internal/cli/hook/presentation_check.go",
+      "internal/cli/hook/presentation_check_test.go",
+      "schemas/blocker-taxonomy.yaml",
+      "skills/plan.md",
+      "skills/review.md",
+      "skills/spec.md",
+      "tests/integration/test-presentation-protocol.sh"
+    ]
+  },
+  "unplanned_changes": "absent",
+  "timestamp": "2026-04-27T15:11:57Z"
+}

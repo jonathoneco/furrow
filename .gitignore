@@ -40,5 +40,9 @@ bin/*.bak
 /furrow
 /bin/furrow
 
+# Furrow runtime cache (was D4's context-bundle cache; stripped in eb2a43f
+# but pattern stays in case future runtime caches land at .furrow/cache/)
+.furrow/cache/
+
 # codex CLI workspace marker
 .codex
