@@ -327,43 +327,37 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# AC §10 — Cache: two runs produce identical output
+# Determinism: two runs with same inputs produce identical output
 # ---------------------------------------------------------------------------
 
 echo ""
-echo "--- AC 10: cache identity ---"
+echo "--- determinism ---"
 
-# Two runs with same inputs must produce identical output.
 out1=$("$FURROW" context for-step plan --target driver --row "$FIXTURE_ROW" --json 2>/dev/null) || true
 out2=$("$FURROW" context for-step plan --target driver --row "$FIXTURE_ROW" --json 2>/dev/null) || true
 
 if [ "$out1" = "$out2" ]; then
-    pass "AC 10: identical inputs produce identical output"
+    pass "determinism: identical inputs produce identical output"
 else
-    fail "AC 10: two runs produced different output"
+    fail "determinism: two runs produced different output"
 fi
 
-# --no-cache flag is accepted.
-"$FURROW" context for-step plan --target driver --row "$FIXTURE_ROW" --no-cache --json > /dev/null 2>&1 || true
-pass "AC 10: --no-cache flag accepted without error"
-
 # ---------------------------------------------------------------------------
-# Performance: AC §9 — cold cache < 500ms
+# Performance: bundle generation is fast (no cache; cold-path measurement)
 # ---------------------------------------------------------------------------
 
 echo ""
-echo "--- AC 9: performance (cold cache) ---"
+echo "--- performance ---"
 
-# Use date +%s%3N for milliseconds (available on Linux).
 start_ms=$(date +%s%3N)
-"$FURROW" context for-step plan --target driver --row "$FIXTURE_ROW" --no-cache --json > /dev/null 2>&1 || true
+"$FURROW" context for-step plan --target driver --row "$FIXTURE_ROW" --json > /dev/null 2>&1 || true
 end_ms=$(date +%s%3N)
 
 elapsed=$((end_ms - start_ms))
 if [ "$elapsed" -lt 500 ]; then
-    pass "AC 9: cold cache < 500ms (${elapsed}ms)"
+    pass "performance: bundle generation < 500ms (${elapsed}ms)"
 else
-    fail "AC 9: cold cache ${elapsed}ms >= 500ms budget"
+    fail "performance: bundle generation ${elapsed}ms >= 500ms budget"
 fi
 
 # ---------------------------------------------------------------------------
