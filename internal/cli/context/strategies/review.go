@@ -79,24 +79,6 @@ func (s *ReviewStrategy) Apply(b ctx.Builder, src ctx.ContextSource) error {
 		Learnings:       learnings,
 	})
 
-	// Derive review round from the number of implement→review gate entries.
-	reviewRound := 1
-	if gates, ok := state["gates"].([]any); ok {
-		round := 0
-		for _, g := range gates {
-			if gate, ok := g.(map[string]any); ok {
-				if b, ok := gate["boundary"].(string); ok && b == "implement->review" {
-					round++
-				}
-			}
-		}
-		if round > 0 {
-			reviewRound = round
-		}
-	}
-
-	b.SetMetadata("review_round", reviewRound)
-
 	return nil
 }
 

@@ -20,10 +20,24 @@ var (
 	engineTmpl = template.Must(template.New("engine").Parse(engineTmplSrc))
 )
 
+// driverRenderCtx wraps DriverHandoff with the inlined schema content so the
+// template can render the actual EOS-report shape rather than just an identifier.
+type driverRenderCtx struct {
+	DriverHandoff
+	ReturnFormatSchema string
+}
+
+// engineRenderCtx wraps EngineHandoff similarly.
+type engineRenderCtx struct {
+	EngineHandoff
+	ReturnFormatSchema string
+}
+
 // RenderDriver renders a DriverHandoff to its canonical markdown representation.
 // The section order is stable and driven by the embedded template.
-// R3: return_format is resolved against the embedded schema set before rendering;
-// an error is returned if the ID is unknown, producing a handoff_schema_invalid signal.
+// R3: return_format is resolved and the schema content is INLINED into the
+// rendered handoff so the receiving driver LLM gets the actual EOS-report shape
+// (not just an identifier requiring a separate file read).
 func RenderDriver(h DriverHandoff) (string, error) {
 	if h.Target == "" {
 		return "", fmt.Errorf("render driver: target is required")
@@ -34,14 +48,18 @@ func RenderDriver(h DriverHandoff) (string, error) {
 	if h.Constraints == nil {
 		h.Constraints = []string{}
 	}
-	// Validate return_format resolves before rendering (R3).
+	// Resolve and load the schema content (R3 + prompt-scaffolding wiring).
+	var schemaContent string
 	if h.ReturnFormat != "" {
-		if err := ResolveReturnFormat(h.ReturnFormat); err != nil {
+		content, err := LoadReturnFormatSchema(h.ReturnFormat)
+		if err != nil {
 			return "", fmt.Errorf("render driver: %w", err)
 		}
+		schemaContent = content
 	}
+	ctx := driverRenderCtx{DriverHandoff: h, ReturnFormatSchema: schemaContent}
 	var buf bytes.Buffer
-	if err := driverTmpl.Execute(&buf, h); err != nil {
+	if err := driverTmpl.Execute(&buf, ctx); err != nil {
 		return "", fmt.Errorf("render driver: template execution: %w", err)
 	}
 	return buf.String(), nil
@@ -49,7 +67,8 @@ func RenderDriver(h DriverHandoff) (string, error) {
 
 // RenderEngine renders an EngineHandoff to its canonical markdown representation.
 // The section order is stable and driven by the embedded template.
-// R3: return_format is resolved against the embedded schema set before rendering.
+// R3: return_format schema content is inlined into the rendered handoff so the
+// receiving engine LLM gets the actual EOS-report shape.
 func RenderEngine(h EngineHandoff) (string, error) {
 	if h.Target == "" {
 		return "", fmt.Errorf("render engine: target is required")
@@ -66,14 +85,18 @@ func RenderEngine(h EngineHandoff) (string, error) {
 	if h.Grounding == nil {
 		h.Grounding = []EngineGroundingItem{}
 	}
-	// Validate return_format resolves before rendering (R3).
+	// Resolve and load the schema content (R3 + prompt-scaffolding wiring).
+	var schemaContent string
 	if h.ReturnFormat != "" {
-		if err := ResolveReturnFormat(h.ReturnFormat); err != nil {
+		content, err := LoadReturnFormatSchema(h.ReturnFormat)
+		if err != nil {
 			return "", fmt.Errorf("render engine: %w", err)
 		}
+		schemaContent = content
 	}
+	ctx := engineRenderCtx{EngineHandoff: h, ReturnFormatSchema: schemaContent}
 	var buf bytes.Buffer
-	if err := engineTmpl.Execute(&buf, h); err != nil {
+	if err := engineTmpl.Execute(&buf, ctx); err != nil {
 		return "", fmt.Errorf("render engine: template execution: %w", err)
 	}
 	return buf.String(), nil
@@ -154,20 +177,10 @@ func ParseDriverMarkdown(content string) (DriverHandoff, error) {
 	}
 
 	// Extract return_format: content after section:return-format marker.
+	// New format: "Identifier: `{id}`"   (followed by inlined schema in fenced block)
 	rfBlock := strings.TrimSpace(extractAfterMarker(content, "<!-- driver-handoff:section:return-format -->"))
 	rfBlock = strings.TrimSpace(strings.TrimPrefix(rfBlock, "## Return Format"))
-	// Line: "`{id}` (resolves to ...)"
-	for _, line := range strings.Split(rfBlock, "\n") {
-		stripped := strings.TrimSpace(line)
-		if strings.HasPrefix(stripped, "`") {
-			// Extract the backtick-enclosed ID.
-			end := strings.Index(stripped[1:], "`")
-			if end >= 0 {
-				h.ReturnFormat = stripped[1 : end+1]
-			}
-			break
-		}
-	}
+	h.ReturnFormat = extractReturnFormatID(rfBlock)
 
 	if h.Target == "" {
 		return DriverHandoff{}, fmt.Errorf("parse driver markdown: could not extract target")
@@ -241,24 +254,37 @@ func ParseEngineMarkdown(content string) (EngineHandoff, error) {
 		h.Grounding = append(h.Grounding, EngineGroundingItem{Path: path, WhyRelevant: rest})
 	}
 
-	// Extract return_format.
+	// Extract return_format. New format: "Identifier: `{id}`" followed by inlined schema.
 	rfBlock := strings.TrimSpace(extractAfterMarker(content, "<!-- engine-handoff:section:return-format -->"))
 	rfBlock = strings.TrimSpace(strings.TrimPrefix(rfBlock, "## Return Format"))
-	for _, line := range strings.Split(rfBlock, "\n") {
-		stripped := strings.TrimSpace(line)
-		if strings.HasPrefix(stripped, "`") {
-			end := strings.Index(stripped[1:], "`")
-			if end >= 0 {
-				h.ReturnFormat = stripped[1 : end+1]
-			}
-			break
-		}
-	}
+	h.ReturnFormat = extractReturnFormatID(rfBlock)
 
 	if h.Target == "" {
 		return EngineHandoff{}, fmt.Errorf("parse engine markdown: could not extract target")
 	}
 	return h, nil
+}
+
+// extractReturnFormatID extracts the return-format identifier from the rendered
+// "Identifier: `{id}`" line in the return-format section. Falls back to a bare
+// "`{id}`" line for backwards compatibility with the older template format.
+func extractReturnFormatID(block string) string {
+	for _, line := range strings.Split(block, "\n") {
+		stripped := strings.TrimSpace(line)
+		// New format: "Identifier: `{id}`"
+		if rest, ok := strings.CutPrefix(stripped, "Identifier:"); ok {
+			rest = strings.TrimSpace(rest)
+			rest = strings.TrimPrefix(rest, "`")
+			if end := strings.Index(rest, "`"); end >= 0 {
+				return rest[:end]
+			}
+		}
+		// Stop scanning once we hit the schema fenced code block.
+		if strings.HasPrefix(stripped, "```") {
+			break
+		}
+	}
+	return ""
 }
 
 // parseStepRow parses "Step: X    Row: Y" into step, row strings.

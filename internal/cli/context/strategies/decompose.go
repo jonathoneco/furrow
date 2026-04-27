@@ -83,7 +83,6 @@ func (s *DecomposeStrategy) Apply(b ctx.Builder, src ctx.ContextSource) error {
 		Learnings:       learnings,
 	})
 
-	b.SetMetadata("spec_count", specCount)
 
 	return nil
 }

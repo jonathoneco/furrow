@@ -18,4 +18,10 @@ Bundle: {{ .Grounding }}
 
 <!-- driver-handoff:section:return-format -->
 ## Return Format
-`{{ .ReturnFormat }}` (resolves to templates/handoffs/return-formats/{{ .ReturnFormat }}.json)
+Identifier: `{{ .ReturnFormat }}`
+
+Your phase EOS-report MUST validate against this JSON Schema:
+
+```json
+{{ .ReturnFormatSchema }}
+```

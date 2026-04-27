@@ -359,7 +359,13 @@ Bundle: bundle.json
 
 <!-- driver-handoff:section:return-format -->
 ## Return Format
-` + "`nonexistent-format`" + ` (resolves to templates/handoffs/return-formats/nonexistent-format.json)
+Identifier: ` + "`nonexistent-format`" + `
+
+Your phase EOS-report MUST validate against this JSON Schema:
+
+` + "```" + `json
+{}
+` + "```" + `
 `
 	tmp, err := createTempFile(t, content)
 	if err != nil {

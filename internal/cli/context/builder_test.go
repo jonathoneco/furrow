@@ -14,38 +14,6 @@ func TestBundleBuilderConformance(t *testing.T) {
 	})
 }
 
-// TestBundleBuilder_SetMetadata verifies SetMetadata accumulates key/value pairs.
-func TestBundleBuilder_SetMetadata(t *testing.T) {
-	b := ctx.NewBundleBuilder("r", "ideate", "driver")
-	b.SetMetadata("is_first_step", true)
-	b.SetMetadata("topic_count", 5)
-
-	bundle, err := b.Build()
-	if err != nil {
-		t.Fatalf("Build: %v", err)
-	}
-	if v, ok := bundle.StepStrategyMetadata["is_first_step"].(bool); !ok || !v {
-		t.Errorf("expected is_first_step=true, got %v", bundle.StepStrategyMetadata["is_first_step"])
-	}
-	if v, ok := bundle.StepStrategyMetadata["topic_count"].(int); !ok || v != 5 {
-		t.Errorf("expected topic_count=5, got %v", bundle.StepStrategyMetadata["topic_count"])
-	}
-}
-
-// TestBundleBuilder_ResetClearsMetadata verifies metadata is cleared on Reset.
-func TestBundleBuilder_ResetClearsMetadata(t *testing.T) {
-	b := ctx.NewBundleBuilder("r", "ideate", "driver")
-	b.SetMetadata("key", "value")
-	b.Reset()
-	bundle, err := b.Build()
-	if err != nil {
-		t.Fatalf("Build after Reset: %v", err)
-	}
-	if len(bundle.StepStrategyMetadata) != 0 {
-		t.Errorf("expected empty metadata after Reset, got %v", bundle.StepStrategyMetadata)
-	}
-}
-
 // TestBundleBuilder_RowStepTargetPreserved verifies row/step/target are set in Bundle.
 func TestBundleBuilder_RowStepTargetPreserved(t *testing.T) {
 	b := ctx.NewBundleBuilder("my-row", "plan", "engine")

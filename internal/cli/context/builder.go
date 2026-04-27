@@ -27,7 +27,6 @@ type BundleBuilder struct {
 	references []Reference
 	artifact   Artifact
 	decisions  []Decision
-	metadata   map[string]any
 }
 
 // NewBundleBuilder constructs a ready-to-use BundleBuilder for the given
@@ -38,7 +37,6 @@ func NewBundleBuilder(row, step, target string) *BundleBuilder {
 		step:     step,
 		target:   target,
 		artifact: Artifact{State: map[string]any{}, SummarySections: map[string]any{}, GateEvidence: map[string]any{}, Learnings: []Learning{}},
-		metadata: map[string]any{},
 	}
 }
 
@@ -53,7 +51,6 @@ func (b *BundleBuilder) Reset() {
 	b.references = nil
 	b.artifact = Artifact{State: map[string]any{}, SummarySections: map[string]any{}, GateEvidence: map[string]any{}, Learnings: []Learning{}}
 	b.decisions = nil
-	b.metadata = map[string]any{}
 }
 
 // AddSkill appends a Skill in insertion order.
@@ -91,14 +88,6 @@ func (b *BundleBuilder) AddLearning(l Learning) {
 	b.artifact.Learnings = append(b.artifact.Learnings, l)
 }
 
-// SetMetadata stores a step-strategy metadata key/value pair. Keys are
-// merged; later calls for the same key overwrite earlier ones.
-func (b *BundleBuilder) SetMetadata(key string, val any) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.metadata[key] = val
-}
-
 // Build assembles the Bundle from accumulated state.
 // Returns ErrBuilderConsumed if called a second time without Reset.
 func (b *BundleBuilder) Build() (Bundle, error) {
@@ -124,19 +113,13 @@ func (b *BundleBuilder) Build() (Bundle, error) {
 	artifact := b.artifact
 	artifact.Learnings = learnings
 
-	meta := make(map[string]any, len(b.metadata))
-	for k, v := range b.metadata {
-		meta[k] = v
-	}
-
 	return Bundle{
-		Row:                  b.row,
-		Step:                 b.step,
-		Target:               b.target,
-		Skills:               skills,
-		References:           refs,
-		PriorArtifacts:       artifact,
-		Decisions:            decs,
-		StepStrategyMetadata: meta,
+		Row:            b.row,
+		Step:           b.step,
+		Target:         b.target,
+		Skills:         skills,
+		References:     refs,
+		PriorArtifacts: artifact,
+		Decisions:      decs,
 	}, nil
 }

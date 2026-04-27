@@ -96,8 +96,6 @@ func (s *ImplementStrategy) Apply(b ctx.Builder, src ctx.ContextSource) error {
 		}
 	}
 
-	b.SetMetadata("wave", wave)
-	b.SetMetadata("deliverables", deliverableNames)
 
 	return nil
 }

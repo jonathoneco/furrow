@@ -80,16 +80,6 @@ func (s *PlanStrategy) Apply(b ctx.Builder, src ctx.ContextSource) error {
 		Learnings:       learnings,
 	})
 
-	hasResearch := false
-	if _, ok := summary["Key Findings"]; ok {
-		hasResearch = true
-	}
-	if _, ok := summary["Research"]; ok {
-		hasResearch = true
-	}
-
-	b.SetMetadata("has_research", hasResearch)
-
 	return nil
 }
 

@@ -11,7 +11,7 @@
 #
 # Coverage:
 #   - CLI surface: for-step subcommand exists and dispatches
-#   - Bundle shape: skills/references/prior_artifacts/decisions/step_strategy_metadata
+#   - Bundle shape: skills/references/prior_artifacts/decisions
 #   - Target filtering: operator|driver|specialist:* return distinct layer sets (R6)
 #   - ListSkills coverage: skills/shared/* present in output (R9)
 #   - Specialist injection: specialists/{id}.md injected as engine-layer skill (R9)
@@ -121,7 +121,6 @@ if printf '%s' "$raw_out" | jq -e '.row' > /dev/null 2>&1; then
     assert_jq "AC 1: bundle has skills array" "$raw_out" '.skills | type == "array"'
     assert_jq "AC 1: bundle has decisions array" "$raw_out" '.decisions | type == "array"'
     assert_jq "AC 1: bundle has prior_artifacts" "$raw_out" '.prior_artifacts | type == "object"'
-    assert_jq "AC 1: bundle has step_strategy_metadata" "$raw_out" '.step_strategy_metadata | type == "object"'
     assert_jq "AC 1: skills array is non-empty" "$raw_out" '.skills | length > 0'
 elif printf '%s' "$raw_out" | jq -e '.blocker.code == "skill_layer_unset"' > /dev/null 2>&1; then
     fail "AC 1: skill_layer_unset blocker fired — skills are missing layer: front-matter tags (D3 required)"

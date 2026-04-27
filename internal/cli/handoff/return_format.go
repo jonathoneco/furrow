@@ -38,3 +38,17 @@ func ResolveReturnFormat(id string) error {
 	}
 	return nil
 }
+
+// LoadReturnFormatSchema returns the raw JSON Schema content for the given
+// return-format ID, or an error wrapping ErrUnknownReturnFormat if absent.
+// The content is the literal text of the embedded schema file — used by
+// render.go to inline the schema into the rendered handoff so the LLM
+// receives the actual EOS-report shape (not just an identifier).
+func LoadReturnFormatSchema(id string) (string, error) {
+	path := fmt.Sprintf("%s/%s.json", returnFormatDir, id)
+	data, err := returnFormatFS.ReadFile(path)
+	if err != nil {
+		return "", fmt.Errorf("return_format %q: schema not found at %s: %w", id, path, ErrUnknownReturnFormat)
+	}
+	return string(data), nil
+}
