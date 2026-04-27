@@ -1,0 +1,19 @@
+\.furrow/
+^\.furrow$
+\bfurrow row\b
+\bfurrow handoff\b
+\bfurrow context\b
+\bfurrow validate\b
+\bfurrow hook\b
+\brws\s
+\balm\s
+\bsds\s
+\bstate\.json\b
+\bdefinition\.yaml\b
+\bsummary\.md\b
+\bblocker_envelope\b
+\bgate_policy\b
+\bdeliverable_id\b
+\balmanac\b
+\brationale\.yaml\b
+skill_layer_unset|layer_policy_invalid|layer_tool_violation|engine_furrow_leakage|driver_definition_invalid

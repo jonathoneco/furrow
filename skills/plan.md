@@ -1,4 +1,11 @@
-# Step: Plan
+---
+layer: driver
+---
+# Phase Driver Brief: Plan
+
+You are the plan phase driver. Your role is to run the planning step ceremony,
+dispatch engine teams where needed, and assemble the phase EOS-report for the operator.
+You do not address the user directly — that is the operator's responsibility.
 
 ## What This Step Does
 Synthesize research into architecture decisions and execution strategy.
@@ -7,62 +14,99 @@ Synthesize research into architecture decisions and execution strategy.
 - Architecture decisions recorded in `summary.md`
 - `plan.json` if parallel execution is needed (multiple deliverables).
   Use `templates/plan.json` as the schema reference for plan.json structure.
-- `team-plan.md` if agent teams will be used
+
+Note: `team-plan.md` is retired. Engine teams are composed at dispatch-time
+by drivers when entering the implement step, not at planning-time. `plan.json`'s
+`specialist:` field per deliverable is a hint for the implementing driver,
+not a binding contract.
 
 ## Model Default
 model_default: sonnet
 
-## Step-Specific Rules
+## Step Ceremony
+
 - Every deliverable from `definition.yaml` must have a clear implementation path.
 - Architecture decisions must reference research findings, not assumptions.
-- Ensure `skills/work-context.md` is loaded.
-- Read `summary.md` for research context.
-- CC plan mode (EnterPlanMode) may be used to explore the codebase and get
-  clarity from the user for this step's decisions. It must not produce artifacts
-  that span or replace the spec, decompose, or implement steps.
+- Load context bundle from operator prime message (includes research synthesis).
+- Read `summary.md` for research context via bundle `prior_artifacts.summary_sections`.
+- CC plan mode (EnterPlanMode) may be used to explore the codebase for this step's
+  decisions. It must not produce artifacts that span or replace spec, decompose, or implement.
+
+## Engine Dispatch
+
+Dispatch codebase exploration engine when architecture investigation is needed.
+
+1. Build engine handoff via `furrow handoff render --target engine:specialist:{id}`
+2. Grounding: exploration question, file/symbol targets, research findings summary
+3. Exclude: trade-off discussions, risk tolerance decisions
+4. Engine returns: codebase findings (file structures, patterns, dependencies)
+
+**Dispatch protocol**: `skills/shared/specialist-delegation.md`
 
 ## Collaboration Protocol
 
-Record decisions using `skills/shared/decision-format.md`. Don't assume — ask.
+Record decisions using `skills/shared/decision-format.md`. Return decisions to operator.
 
 **Decision categories** for planning:
 - **Architecture trade-offs** — simplicity vs extensibility, performance vs maintainability
 - **Dependency ordering** — what blocks what and why
 - **Risk tolerance** — acceptable failure modes and mitigation level
 
-**High-value question examples** (ask these, not "does this look right?"):
-- "This trades simplicity for extensibility. Given the project scope, which do you prefer?"
-- "I see two dependency orders — {A then B} or {B then A}. Any reason to prefer one?"
-- "This approach has {risk}. Is that acceptable, or should we add mitigation?"
-
 Mid-step iteration is expected; `step_status` remains `in_progress` throughout.
 
-### Step-Level Specialist Modifier
-When working with a specialist during planning, emphasize architectural framing
-over implementation detail. The specialist should reason about component boundaries,
-dependency direction, and trade-off analysis. Prefer options analysis (A vs B
-with trade-offs stated) over prescriptive solutions. The specialist's domain
-expertise applies to architecture decisions: what interfaces exist, what coupling
-to accept, what patterns to follow.
+## Layered Model and plan.json
 
-## Agent Dispatch Metadata
-- **Dispatch pattern**: Optional — codebase exploration agent for architecture investigation
-- **Agent model**: sonnet (structured codebase reading, not architectural reasoning)
-- **Context to agent**: Exploration question, file/symbol targets, research findings summary
-- **Context excluded**: Trade-off discussions, risk tolerance decisions
-- **Returns**: Codebase findings (file structures, patterns, dependencies)
+Under the layered model, engine teams are composed at dispatch-time:
+- `plan.json`'s `waves` and `file_ownership` remain authoritative for execution order and ownership.
+- `plan.json`'s `specialist:` field per deliverable is a **hint** — the implementing driver
+  uses it as a starting point and may adapt team composition at dispatch-time.
+- Parallel engines within a deliverable are legitimate; `file_ownership` prevents conflicts.
+
+## Dual-Reviewer Protocol
+
+Before returning phase result, dispatch both reviewers in parallel:
+1. **Fresh reviewer engine** — isolated context, receives: plan.json, definition.yaml.
+   Excludes: summary.md, conversation history, state.json.
+   Engine handoff via `furrow handoff render --target engine:specialist:reviewer`.
+2. **Cross-model reviewer** — `frw cross-model-review {name} --plan`
+   if `cross_model.provider` configured in `furrow.yaml`. Skip if absent.
+Synthesize findings: flag disagreements, note unique findings, record
+both sources in gate evidence.
 
 ## Shared References
 Read these when relevant to your current action:
 - `skills/shared/red-flags.md` — before finalizing plan
 - `skills/shared/learnings-protocol.md` — when capturing learnings
+- `skills/shared/specialist-delegation.md` — driver→engine dispatch protocol
+- `skills/shared/layer-protocol.md` — layer boundaries; engine-team-composed-at-dispatch model
 - `skills/shared/summary-protocol.md` — before completing step
-- `skills/shared/specialist-delegation.md` — specialist selection and delegation protocol
 
-## Team Planning
-When `plan.json` has multiple deliverables, create `team-plan.md` with specialist
-assignments per deliverable. Read `references/specialist-template.md` for format.
-Assign `file_ownership` globs to prevent cross-specialist conflicts in waves.
+**Presentation**: when surfacing this step's artifact for user review, render it
+using the canonical mode defined in `skills/shared/presentation-protocol.md` —
+section markers `<!-- presentation:section:{name} -->` immediately preceding
+each section per the artifact's row in the protocol's section-break table. The
+operator owns this rendering; phase drivers return structured results, not
+user-facing markdown.
+
+## Step Mechanics
+Transition out: gate record `plan->spec` with outcome `pass` required.
+Pre-step shell check (`rws gate-check`): 1 deliverable, no depends_on, not
+supervised, not force-stopped.
+Next step expects: architecture decisions in `summary.md`, `plan.json` if
+parallel execution needed, and clear implementation path per deliverable.
+
+## EOS-Report Assembly
+
+Assemble phase EOS-report per `templates/handoffs/return-formats/plan.json`.
+Include: plan.json path, architecture decisions summary, reviewer findings,
+dependency ordering rationale, open questions.
+Return to operator via runtime primitive (Claude: `SendMessage` to operator lead;
+Pi: agent return value).
+
+## Learnings
+When you discover a reusable insight (pattern, pitfall, preference, convention,
+or dependency quirk), append it to `.furrow/rows/{name}/learnings.jsonl` using the
+learning schema. Read `skills/shared/learnings-protocol.md` for format.
 
 ## Research Mode
 When `state.json.mode` is `"research"`:
@@ -71,39 +115,3 @@ When `state.json.mode` is `"research"`:
 - No parallel waves needed — research deliverables are authored sequentially or by section.
 - Specialist assignment uses research roles (domain-researcher, synthesis-writer).
 - Read `references/research-mode.md` for artifact formats.
-
-## Step Mechanics
-Transition out: gate record `plan->spec` with outcome `pass` required.
-Pre-step shell check (`rws gate-check`): 1 deliverable, no depends_on, not
-supervised, not force-stopped.
-Pre-step evaluator (`evals/gates/plan.yaml`): complexity-assessment — does the
-deliverable need architectural decisions beyond definition.yaml? Per `skills/shared/gate-evaluator.md`.
-Next step expects: architecture decisions in `summary.md`, `plan.json` if
-parallel execution needed, and clear implementation path per deliverable.
-
-## Dual-Reviewer Protocol
-Before requesting transition, run both reviewers in parallel:
-1. **Fresh Claude reviewer** — `claude -p --bare` with plan artifacts,
-   definition.yaml ACs, and `evals/dimensions/plan.yaml` dimensions.
-   Specialist template included if specialist was delegated during this step.
-   Receives: plan.json, team-plan.md (if exists), definition.yaml.
-   Excludes: summary.md, conversation history, state.json.
-2. **Cross-model reviewer** — `frw cross-model-review {name} --plan`
-   if `cross_model.provider` configured in `furrow.yaml`. Skip if absent.
-Synthesize findings: flag disagreements, note unique findings, record
-both sources in gate evidence. Address or explicitly reject all findings
-before requesting transition.
-
-## Supervised Transition Protocol
-Before requesting a step transition:
-1. Update `summary.md` — write Key Findings, Open Questions, and Recommendations sections.
-2. Present work to user per `skills/shared/summary-protocol.md`.
-3. Ask explicitly: "**Ready to advance to spec?** Yes / No"
-4. Wait for user response. Do NOT proceed without explicit approval.
-5. On "yes": call `rws transition <name> pass manual "<evidence summary>"`.
-6. On "no": ask what needs to change, address feedback, return to step 2.
-
-## Learnings
-When you discover a reusable insight (pattern, pitfall, preference, convention,
-or dependency quirk), append it to `.furrow/rows/{name}/learnings.jsonl` using the
-learning schema. Read `skills/shared/learnings-protocol.md` for format.

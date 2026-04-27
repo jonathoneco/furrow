@@ -1,19 +1,30 @@
 package cli
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"strings"
+
+	ctx "github.com/jonathoneco/furrow/internal/cli/context"
+	"github.com/jonathoneco/furrow/internal/cli/handoff"
+	"github.com/jonathoneco/furrow/internal/cli/hook"
+	"github.com/jonathoneco/furrow/internal/cli/render"
+
+	// Blank-import triggers init() registration of all 7 step strategies.
+	_ "github.com/jonathoneco/furrow/internal/cli/context/strategies"
 )
 
 const contractVersion = "v1alpha1"
 
 type App struct {
-	stdin  io.Reader
 	stdout io.Writer
 	stderr io.Writer
+	stdin  io.Reader
 }
 
 type envelope struct {
@@ -43,13 +54,14 @@ func (e *cliError) Error() string { return e.message }
 // reader. Stdin-reading subcommands (currently `furrow guard`) report a
 // clear "no stdin reader configured" error in this configuration.
 func New(stdout, stderr io.Writer) *App {
-	return &App{stdout: stdout, stderr: stderr}
+	return &App{stdout: stdout, stderr: stderr, stdin: os.Stdin}
 }
 
-// NewWithStdin constructs an App with an explicit stdin reader. Used by
-// cmd/furrow/main.go (production: os.Stdin) and by guard tests.
-func NewWithStdin(stdin io.Reader, stdout, stderr io.Writer) *App {
-	return &App{stdin: stdin, stdout: stdout, stderr: stderr}
+// NewWithStdin constructs an App with an explicit stdin reader. Canonical
+// signature is (stdout, stderr, stdin) per orchestration-delegation-contract.
+// Used by cmd/furrow/main.go (production: os.Stdin), guard tests, and hook tests.
+func NewWithStdin(stdout, stderr io.Writer, stdin io.Reader) *App {
+	return &App{stdout: stdout, stderr: stderr, stdin: stdin}
 }
 
 func (a *App) Run(args []string) int {
@@ -79,6 +91,14 @@ func (a *App) Run(args []string) int {
 		return a.runValidate(args[1:])
 	case "guard":
 		return a.runGuard(args[1:])
+	case "context":
+		return a.runContext(args[1:])
+	case "handoff":
+		return a.runHandoff(args[1:])
+	case "render":
+		return a.runRender(args[1:])
+	case "hook":
+		return a.runHook(args[1:])
 	case "merge":
 		return a.runStubGroup("furrow merge", args[1:], []string{"plan", "run", "validate"})
 	case "doctor":
@@ -160,6 +180,21 @@ func (a *App) runInit(args []string) int {
 	return a.fail("furrow init", &cliError{exit: 4, code: "not_implemented", message: "init is not implemented in the Go CLI draft yet", details: details}, flags.json)
 }
 
+func (a *App) runContext(args []string) int {
+	h := ctx.New(a.stdout, a.stderr)
+	return h.Run(args)
+}
+
+func (a *App) runHandoff(args []string) int {
+	h := handoff.New(a.stdout, a.stderr)
+	return h.Run(args)
+}
+
+func (a *App) runRender(args []string) int {
+	h := render.New(a.stdout, a.stderr)
+	return h.Run(args)
+}
+
 func (a *App) runStubGroup(command string, args []string, children []string) int {
 	if len(args) == 0 {
 		_, _ = fmt.Fprintf(a.stdout, "%s\n\nAvailable subcommands: %s\n", command, strings.Join(children, ", "))
@@ -174,6 +209,37 @@ func (a *App) runStubLeaf(command string, args []string) int {
 		return a.fail(command, err, false)
 	}
 	return a.fail(command, &cliError{exit: 4, code: "not_implemented", message: command + " is not implemented in the Go CLI draft yet"}, flags.json)
+}
+
+// runHook dispatches `furrow hook <subcommand>` — runtime adapter hooks.
+//
+// D3 ships: layer-guard (PreToolUse boundary enforcement).
+// D6 ships: presentation-check (Stop hook advisory scan).
+func (a *App) runHook(args []string) int {
+	if len(args) == 0 {
+		_, _ = fmt.Fprintln(a.stdout, "furrow hook\n\nAvailable subcommands: layer-guard, presentation-check")
+		return 0
+	}
+	switch args[0] {
+	case "layer-guard":
+		policyPath := filepath.Join(".furrow", "layer-policy.yaml")
+		// Allow override via env for testing.
+		if override := os.Getenv("FURROW_LAYER_POLICY_PATH"); override != "" {
+			policyPath = override
+		}
+		return hook.RunLayerGuard(context.Background(), policyPath, a.stdin, a.stdout)
+	case "presentation-check":
+		return hook.RunPresentationCheck(context.Background(), a.stdin, a.stdout)
+	case "help", "-h", "--help":
+		_, _ = fmt.Fprintln(a.stdout, "furrow hook\n\nAvailable subcommands: layer-guard, presentation-check")
+		return 0
+	default:
+		return a.fail("furrow hook", &cliError{
+			exit:    1,
+			code:    "usage",
+			message: fmt.Sprintf("unknown hook subcommand %q", args[0]),
+		}, false)
+	}
 }
 
 func (a *App) okJSON(command string, data any) int {
@@ -220,6 +286,11 @@ Commands:
   review    Review orchestration contract surface
   almanac   Planning and knowledge contract surface
   seeds     Seed/task primitive contract surface
+  validate  Schema and policy validation (definition, layer-policy, skill-layers, driver-definitions)
+  context   Context bundle assembly (for-step)
+  handoff   Handoff render and validate contract surface
+  render    Render runtime-specific files from definitions
+  hook      Runtime adapter hooks (layer-guard, presentation-check)
   merge     Merge pipeline contract surface
   doctor    Environment and adapter readiness checks
   guard     Translate normalized blocker events into canonical envelopes

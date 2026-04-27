@@ -312,3 +312,72 @@ blockers:
     remediation_hint: "Record a passing implement->review gate before archiving so the review boundary has durable evidence."
     confirmation_path: block
     applicable_steps: ["review"]
+
+  # D1: handoff-schema codes
+  - code: handoff_schema_invalid
+    category: handoff
+    severity: block
+    message_template: "{path}: handoff failed schema validation: {detail}"
+    remediation_hint: "Inspect the handoff structure against schemas/handoff-driver.schema.json or schemas/handoff-engine.schema.json; ensure the target prefix matches the schema used"
+    confirmation_path: block
+
+  - code: handoff_required_field_missing
+    category: handoff
+    severity: block
+    message_template: "{path}: handoff is missing required field '{field}'"
+    remediation_hint: "Add the missing field to the handoff; use 'furrow handoff render' to produce a complete handoff"
+    confirmation_path: block
+
+  - code: handoff_unknown_field
+    category: handoff
+    severity: block
+    message_template: "{path}: handoff contains unknown field '{field}' (additionalProperties:false)"
+    remediation_hint: "Remove the unknown field; only fields declared in the handoff schema are permitted"
+    confirmation_path: block
+
+  # D3: boundary-enforcement codes (W5)
+
+  - code: skill_layer_unset
+    category: layer
+    severity: block
+    message_template: "{path}: skill missing required 'layer:' front-matter field"
+    remediation_hint: "Add 'layer: operator|driver|engine|shared' to the YAML frontmatter at the top of the file; see skills/shared/skill-template.md"
+    confirmation_path: block
+
+  - code: layer_policy_invalid
+    category: layer
+    severity: block
+    message_template: "{path}: .furrow/layer-policy.yaml failed schema validation: {detail}"
+    remediation_hint: "Validate against schemas/layer-policy.schema.json; ensure required keys version/agent_type_map/layers are present and all three layer definitions (operator, driver, engine) exist"
+    confirmation_path: block
+
+  - code: layer_tool_violation
+    category: layer
+    severity: block
+    message_template: "agent_type={agent_type} layer={layer}: tool {tool_name} denied: {detail}"
+    remediation_hint: "Either invoke the tool from the appropriate layer, or revisit .furrow/layer-policy.yaml if the policy is wrong"
+    confirmation_path: block
+
+  - code: engine_furrow_leakage
+    category: layer
+    severity: block
+    message_template: "engine artifact {artifact_path} contains Furrow vocabulary or path: {match}"
+    remediation_hint: "Driver must strip Furrow vocab from EngineHandoff grounding/objective; see D1 EngineHandoff content discipline and schemas/handoff-engine.schema.json"
+    confirmation_path: block
+
+  - code: driver_definition_invalid
+    category: definition
+    severity: block
+    message_template: "{path}: driver definition failed schema validation: {detail}"
+    remediation_hint: "Validate against schemas/driver-definition.schema.json; required keys: name (driver:{step}), step, tools_allowlist, model"
+    confirmation_path: block
+
+  # D6: artifact-presentation-protocol codes (W6)
+
+  - code: presentation_protocol_violation
+    category: presentation
+    severity: warn
+    message_template: "{path}: artifact-shaped content lacks section markers ({detail})"
+    remediation_hint: "Wrap each artifact section with <!-- {phase}:section:{name} --> per skills/shared/presentation-protocol.md"
+    confirmation_path: silent
+    applicable_steps: []

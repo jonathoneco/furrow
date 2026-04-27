@@ -1,4 +1,11 @@
-# Step: Research
+---
+layer: driver
+---
+# Phase Driver Brief: Research
+
+You are the research phase driver. Your role is to run the research step ceremony,
+dispatch parallel research engine teams, and assemble the phase EOS-report for the operator.
+You do not address the user directly — that is the operator's responsibility.
 
 ## What This Step Does
 Investigate prior art, architecture options, and constraints identified during ideation.
@@ -11,76 +18,65 @@ Investigate prior art, architecture options, and constraints identified during i
 ## Model Default
 model_default: opus
 
-## Step-Specific Rules
+## Step Ceremony
+
 - All questions from ideation must be addressed or explicitly deferred.
 - Research must reference `definition.yaml` deliverables by name.
-- Ensure `skills/work-context.md` is loaded.
-- Read `summary.md` for ideation context (do not re-read raw definition discussions).
+- Load context bundle from operator prime message (includes `prior_artifacts.summary_sections` from ideation).
 - Source hierarchy: primary (official docs, source code, changelogs, `--help`) >
   secondary (blogs, tutorials, StackOverflow) > tertiary (training data).
   Training data is acceptable for well-established facts (language syntax, stdlib).
   Version-specific, behavior-specific, or config-specific claims require primary source verification.
 - Claims about external software that cannot be verified against a primary source must be flagged as **unverified**.
 
+## Engine Dispatch
+
+Dispatch parallel research engines per topic. Compose engine team at dispatch-time.
+
+For each research topic from the definition:
+1. Build engine handoff via `furrow handoff render --target engine:specialist:{id}`
+2. Grounding: research question, definition.yaml deliverable names, source hierarchy rules, synthesis from ideation
+3. Exclude: source-trust decisions from other topics, user validation conversations
+4. Engine returns: per-topic research document with Sources Consulted section
+
+Collect all per-topic EOS-reports. Synthesize into `research/synthesis.md`.
+
+**Dispatch protocol**: `skills/shared/specialist-delegation.md`
+
 ## Collaboration Protocol
 
-Record decisions using `skills/shared/decision-format.md`. Don't assume — ask.
+Record decisions using `skills/shared/decision-format.md`. Return decisions and
+findings to operator — do not self-answer trust decisions.
 
 **Decision categories** for research:
 - **Source trust** — which sources to rely on when findings conflict
 - **Finding validation** — whether findings match the user's domain knowledge
 - **Coverage sufficiency** — when to stop researching and move on
 
-**High-value question examples** (ask these, not "does this look right?"):
-- "Source A says {X}, Source B says {Y}. Which should we trust for this project?"
-- "Does this finding match your domain experience, or should I dig deeper into {area}?"
-- "I've covered {areas}. Is there a dimension I'm missing, or is this sufficient?"
-
 Mid-step iteration is expected; `step_status` remains `in_progress` throughout.
-
-### Step-Level Specialist Modifier
-When working with a specialist during research, emphasize investigation breadth
-and source triangulation over depth in any single approach. The specialist should
-identify what is unknown and what claims require primary source verification.
-The specialist's domain expertise applies to knowing where to look and what to
-distrust in secondary sources.
-
-## Agent Dispatch Metadata
-- **Dispatch pattern**: Parallel agents per research topic
-- **Agent model**: opus (multi-source investigation requires deep reasoning)
-- **Context to agent**: Research question, definition.yaml deliverable names, source hierarchy rules, summary.md context from ideation
-- **Context excluded**: Source-trust decisions from other topics, user validation conversations
-- **Returns**: Per-topic research document with Sources Consulted section
 
 ## Shared References
 Read these when relevant to your current action:
 - `skills/shared/red-flags.md` — before concluding research
 - `skills/shared/learnings-protocol.md` — when capturing learnings
-- `skills/shared/context-isolation.md` — when dispatching research sub-agents
+- `skills/shared/specialist-delegation.md` — driver→engine dispatch protocol
+- `skills/shared/layer-protocol.md` — layer boundaries
 - `skills/shared/summary-protocol.md` — before completing step
-- `skills/shared/specialist-delegation.md` — specialist selection and delegation protocol
-
-## Team Planning
-When definition has multiple deliverables or >3 research questions, dispatch
-parallel sub-agents per topic. Read `skills/shared/context-isolation.md`.
 
 ## Step Mechanics
 Transition out: gate record `research->plan` with outcome `pass` required.
 Pre-step shell check (`rws gate-check`): 1 deliverable, code mode, path-referencing
 ACs, no directory context pointers, not supervised, not force-stopped.
-Pre-step evaluator (`evals/gates/research.yaml`): path-relevance — are referenced
-paths sufficient without broader investigation? Per `skills/shared/gate-evaluator.md`.
 Next step expects: research findings addressing all ideation questions, recorded
 in `research.md` or `research/` directory with `synthesis.md`.
 
-## Supervised Transition Protocol
-Before requesting a step transition:
-1. Update `summary.md` — write Key Findings, Open Questions, and Recommendations sections.
-2. Present work to user per `skills/shared/summary-protocol.md`.
-3. Ask explicitly: "**Ready to advance to plan?** Yes / No"
-4. Wait for user response. Do NOT proceed without explicit approval.
-5. On "yes": call `rws transition <name> pass manual "<evidence summary>"`.
-6. On "no": ask what needs to change, address feedback, return to step 2.
+## EOS-Report Assembly
+
+Assemble phase EOS-report per `templates/handoffs/return-formats/research.json`.
+Include: per-topic research file paths, synthesis.md path, source tiers used,
+unverified claims flagged, open questions, coverage gaps.
+Return to operator via runtime primitive (Claude: `SendMessage` to operator lead;
+Pi: agent return value).
 
 ## Learnings
 When you discover a reusable insight (pattern, pitfall, preference, convention,

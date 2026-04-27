@@ -1,3 +1,6 @@
+---
+layer: shared
+---
 # Summary Section Protocol
 
 Populate agent-written sections in `summary.md` before requesting step transition.

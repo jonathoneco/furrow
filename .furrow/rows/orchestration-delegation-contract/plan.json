@@ -1,0 +1,178 @@
+{
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": ["context-construction-patterns"],
+      "assignments": {
+        "context-construction-patterns": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "internal/cli/context/contracts.go",
+            "internal/cli/context/contracts_test.go",
+            "internal/cli/context/structure_test.go",
+            "docs/architecture/context-construction-patterns.md"
+          ],
+          "skills": ["systems-architect", "go-specialist"]
+        }
+      }
+    },
+    {
+      "wave": 2,
+      "deliverables": ["handoff-schema"],
+      "assignments": {
+        "handoff-schema": {
+          "specialist": "go-specialist",
+          "file_ownership": [
+            "schemas/handoff-driver.schema.json",
+            "schemas/handoff-engine.schema.json",
+            "templates/handoff-driver.md.tmpl",
+            "templates/handoff-engine.md.tmpl",
+            "templates/handoffs/return-formats/",
+            "internal/cli/handoff/schema.go",
+            "internal/cli/handoff/render.go",
+            "internal/cli/handoff/validate.go",
+            "internal/cli/handoff/handoff_test.go",
+            "internal/cli/app.go",
+            "schemas/blocker-taxonomy.yaml"
+          ],
+          "skills": ["api-designer"]
+        }
+      }
+    },
+    {
+      "wave": 3,
+      "deliverables": ["context-routing-cli"],
+      "assignments": {
+        "context-routing-cli": {
+          "specialist": "go-specialist",
+          "file_ownership": [
+            "internal/cli/context/builder.go",
+            "internal/cli/context/chain.go",
+            "internal/cli/context/registry.go",
+            "internal/cli/context/strategies/ideate.go",
+            "internal/cli/context/strategies/research.go",
+            "internal/cli/context/strategies/plan.go",
+            "internal/cli/context/strategies/spec.go",
+            "internal/cli/context/strategies/decompose.go",
+            "internal/cli/context/strategies/implement.go",
+            "internal/cli/context/strategies/review.go",
+            "internal/cli/context/strategies_test.go",
+            "internal/cli/context/builder_test.go",
+            "internal/cli/context/chain_test.go",
+            "internal/cli/context/cmd.go",
+            "internal/cli/app.go",
+            "schemas/context-bundle.schema.json",
+            "tests/integration/test-context-routing.sh",
+            "commands/work.md.tmpl"
+          ],
+          "skills": []
+        }
+      }
+    },
+    {
+      "wave": 4,
+      "deliverables": ["driver-architecture"],
+      "assignments": {
+        "driver-architecture": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            ".furrow/drivers/driver-ideate.yaml",
+            ".furrow/drivers/driver-research.yaml",
+            ".furrow/drivers/driver-plan.yaml",
+            ".furrow/drivers/driver-spec.yaml",
+            ".furrow/drivers/driver-decompose.yaml",
+            ".furrow/drivers/driver-implement.yaml",
+            ".furrow/drivers/driver-review.yaml",
+            "schemas/driver-definition.schema.json",
+            "skills/shared/layer-protocol.md",
+            "skills/shared/specialist-delegation.md",
+            "skills/work-context.md",
+            "skills/ideate.md",
+            "skills/research.md",
+            "skills/plan.md",
+            "skills/spec.md",
+            "skills/decompose.md",
+            "skills/implement.md",
+            "skills/review.md",
+            "commands/work.md.tmpl",
+            "internal/cli/render/adapters.go",
+            "internal/cli/render/adapters_test.go",
+            "internal/cli/app.go",
+            "adapters/pi/package.json",
+            "adapters/pi/extension/index.ts",
+            "adapters/pi/tsconfig.json",
+            "tests/integration/test-driver-architecture.sh"
+          ],
+          "skills": ["systems-architect", "typescript-specialist"]
+        }
+      }
+    },
+    {
+      "wave": 5,
+      "deliverables": ["boundary-enforcement"],
+      "assignments": {
+        "boundary-enforcement": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "schemas/blocker-taxonomy.yaml",
+            "schemas/layer-policy.schema.json",
+            ".furrow/layer-policy.yaml",
+            "internal/cli/layer/policy.go",
+            "internal/cli/layer/policy_test.go",
+            "internal/cli/validate_layer_policy.go",
+            "internal/cli/validate_layer_policy_test.go",
+            "internal/cli/validate_skill_layers.go",
+            "internal/cli/validate_skill_layers_test.go",
+            "internal/cli/validate_driver_definitions.go",
+            "internal/cli/validate_driver_definitions_test.go",
+            "internal/cli/validate.go",
+            "internal/cli/hook/layer_guard.go",
+            "internal/cli/hook/layer_guard_test.go",
+            "internal/cli/app.go",
+            ".claude/settings.json",
+            "adapters/pi/extension/index.ts",
+            "tests/integration/test-boundary-leakage.sh",
+            "tests/integration/test-layered-dispatch-e2e.sh",
+            "tests/integration/test-layer-policy-parity.sh",
+            "docs/architecture/orchestration-delegation-contract.md",
+            "skills/ideate.md",
+            "skills/research.md",
+            "skills/plan.md",
+            "skills/spec.md",
+            "skills/decompose.md",
+            "skills/implement.md",
+            "skills/review.md",
+            "skills/work-context.md",
+            "skills/shared/layer-protocol.md",
+            "skills/shared/specialist-delegation.md"
+          ],
+          "skills": ["security-engineer", "go-specialist"]
+        }
+      }
+    },
+    {
+      "wave": 6,
+      "deliverables": ["artifact-presentation-protocol"],
+      "assignments": {
+        "artifact-presentation-protocol": {
+          "specialist": "harness-engineer",
+          "file_ownership": [
+            "skills/shared/presentation-protocol.md",
+            "internal/cli/hook/presentation_check.go",
+            "internal/cli/hook/presentation_check_test.go",
+            "tests/integration/test-presentation-protocol.sh",
+            "schemas/blocker-taxonomy.yaml",
+            ".claude/settings.json",
+            "skills/plan.md",
+            "skills/spec.md",
+            "skills/review.md",
+            "commands/work.md.tmpl"
+          ],
+          "skills": ["technical-writer"]
+        }
+      }
+    }
+  ],
+  "created_at": "2026-04-25T22:00:00Z",
+  "created_by": "operator-during-spec-step-after-architecture-finalization"
+}

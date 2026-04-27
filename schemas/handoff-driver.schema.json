@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://furrow.dev/schemas/handoff-driver.schema.json",
+  "title": "DriverHandoff",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["target", "step", "row", "objective", "grounding", "constraints", "return_format"],
+  "properties": {
+    "target": {
+      "type": "string",
+      "pattern": "^driver:(ideate|research|plan|spec|decompose|implement|review)$"
+    },
+    "step": {
+      "type": "string",
+      "enum": ["ideate", "research", "plan", "spec", "decompose", "implement", "review"]
+    },
+    "row": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "grounding": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Path to D4 bundle artifact; single string per AC #4(b)"
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0
+    },
+    "return_format": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Resolves to templates/handoffs/return-formats/{id}.json"
+    }
+  }
+}

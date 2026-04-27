@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://furrow.dev/schemas/return-formats/engine-eos-report.json",
+  "title": "EngineEOSReport",
+  "description": "Engine end-of-session report returned to the driver.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_completed", "files_changed", "deviations", "blockers", "summary"],
+  "properties": {
+    "task_completed": {
+      "type": "boolean",
+      "description": "True if the engine completed its assigned task."
+    },
+    "files_changed": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Relative paths of files created or modified."
+    },
+    "deviations": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Any deviations from the assigned spec with rationale."
+    },
+    "blockers": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Blockers preventing task completion."
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000,
+      "description": "Narrative summary of what was accomplished."
+    }
+  }
+}

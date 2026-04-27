@@ -9,13 +9,21 @@
           { "type": "command", "command": "frw hook validate-definition" },
           { "type": "command", "command": "frw hook correction-limit" },
           { "type": "command", "command": "frw hook verdict-guard" },
-          { "type": "command", "command": "frw hook append-learning" }
+          { "type": "command", "command": "frw hook append-learning" },
+          { "type": "command", "command": "furrow hook layer-guard" }
         ]
       },
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "frw hook script-guard" }
+          { "type": "command", "command": "frw hook script-guard" },
+          { "type": "command", "command": "furrow hook layer-guard" }
+        ]
+      },
+      {
+        "matcher": "SendMessage|Agent|TaskCreate|TaskUpdate",
+        "hooks": [
+          { "type": "command", "command": "furrow hook layer-guard" }
         ]
       }
     ],
@@ -26,7 +34,8 @@
         "hooks": [
           { "type": "command", "command": "frw hook work-check" },
           { "type": "command", "command": "frw hook stop-ideation" },
-          { "type": "command", "command": "frw hook validate-summary" }
+          { "type": "command", "command": "frw hook validate-summary" },
+          { "type": "command", "command": "furrow hook presentation-check" }
         ]
       }
     ],

@@ -1,0 +1,38 @@
+{
+  "deliverable": "driver-architecture",
+  "phase_a": "pass",
+  "phase_b": "pass-after-correction",
+  "overall": "pass-after-correction",
+  "reviewers": [
+    {
+      "id": "fresh-claude-sonnet",
+      "verdict": "pass",
+      "ship_blockers": [
+        {
+          "id": "SB-D2-1",
+          "claim": "adapters/pi/extension/index.ts:318 dispatchEngineAsSubprocess uses execSync with shell-string interpolation; multi-line handoff content with backticks/$()/etc. is shell-injection prone",
+          "verdict": "REAL — escaping only handles double-quotes via .replace(/\"/g, '\\\\\"'). Untrusted EngineHandoff content (per the very layer-protocol the row enforces) is shell-evaluated. Fix: use execFileSync(['pi', '--prompt', engineHandoffMarkdown]) bypassing shell entirely."
+        }
+      ],
+      "key_concerns": [
+        "driver-review.yaml uses sonnet not opus; spec example listed opus for review (deep-reasoning step)",
+        "Pi typecheck (AC9) not statically verifiable from review — relies on tsconfig.extension.json existence",
+        "frw doctor experimental-flag check (AC11) outside file_ownership; deferred to follow-up"
+      ]
+    }
+  ],
+  "phase_a_evidence": {
+    "files_present": "all 26 D2 files present",
+    "driver_yamls": "7/7 valid against driver-definition.schema.json",
+    "skill_reframes": "10/10 (7 step + work-context + 2 shared) reframed/written",
+    "team_plan_md_retired": "verified plan.md drops prescription; decompose.md drops prescription",
+    "pi_pinned": "@tintinweb/pi-subagents@0.6.1 (exact)",
+    "recursive_spawn_verdict": "FALLBACK_NEEDED — documented in extension/index.ts:9-49; subprocess fallback implemented",
+    "go_test": "internal/cli/render: ok"
+  },
+  "correction_count": 1,
+  "correction_outcome": "ship blockers fixed; all integration tests green; full suite passes including new strict bundle-assembly assertions",
+  "rerun_verdict": "pass",
+  "rerun_method": "fresh-claude-sonnet-rerun on corrected commit",
+  "rerun_evidence_caveat": "layer-guard blocks engine-layer agent CLI invocations (expected); empirical CLI verification done by operator (orchestrator) where applicable"
+}

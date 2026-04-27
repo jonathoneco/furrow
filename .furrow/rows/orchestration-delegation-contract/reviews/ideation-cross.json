@@ -1,0 +1,41 @@
+{
+  "type": "ideation",
+  "dimensions": [
+    {
+      "name": "Feasibility",
+      "verdict": "conditional",
+      "evidence": "The row is implementable in this repo because the planned touch points already exist (`commands/work.md`, `skills/{step}.md`, `adapters/pi/furrow.ts`, `schemas/blocker-taxonomy.yaml`, `internal/cli/app.go`) and the framing constrains implementation to backend-canonical Go plus adapter consumption. The main feasibility caveat is that D1 cannot be fully specified yet: its field set is explicitly deferred to a future research artifact and spec freeze, so downstream D2/D4 work is only feasible if that freeze happens before they start. A second caveat is live driver addressing: the framing assumes a reliable spawn-or-resume primitive for `driver:{step}`, but it does not yet define the canonical runtime mapping or lookup mechanism."
+    },
+    {
+      "name": "Alignment",
+      "verdict": "pass",
+      "evidence": "The deliverables collectively cover the stated objective well. D5 establishes the construction contract, D1 defines the typed handoff, D4 provides neutral context routing, D2 rewires `/work` and step skills into the vertical operator→driver→engine model, D3 enforces boundaries at prompt/tool/test levels, and D6 standardizes how operator-layer artifact presentation reaches the user. That is a coherent decomposition of the target architecture rather than a grab bag of adjacent ideas."
+    },
+    {
+      "name": "Dependency validity",
+      "verdict": "conditional",
+      "evidence": "The overall wave order is sensible and matches the joint-ownership constraints: D5→D1→D4→D2→D3→D6 is the right shape. However, some dependency edges are carried more by prose constraints than by `depends_on`. Most notably, D6 only depends on `layer-architecture` even though it adds blocker codes after D3 and defines handoff-field presentation rules that implicitly rely on D1. Likewise the parity invariant for `.furrow/layer-policy.yaml` depends on D3, but no earlier deliverable owns a canonical Go definition for that policy. The sequence is sufficient if the wave plan is enforced exactly, but the explicit dependency graph is slightly under-declared."
+    },
+    {
+      "name": "Risk assessment",
+      "verdict": "conditional",
+      "evidence": "The framing has strong anti-scope-creep controls: canonical Go authority, no new Go deps, explicit file ownership, sequential waves, test-gated blocker codes, adapter parity invariant, and a non-negotiable leakage corpus. Those are good guardrails. The residual risk is execution sprawl: this row still combines schema design, CLI routing, adapter parity, shell hooks, skill rewrites, and a command refactor in one slice. The constraints reduce opportunistic expansion, but they do not fully eliminate schedule and integration risk, especially around long-running driver behavior and cross-adapter parity."
+    },
+    {
+      "name": "Completeness",
+      "verdict": "conditional",
+      "evidence": "The deliverable set is close, but one obvious gap remains: the constraints say `layer-policy` is canonical Go plus schema authority, yet no deliverable explicitly owns a Go struct/schema/validator for `.furrow/layer-policy.yaml`; D3 only names the YAML file plus adapter consumers. A smaller gap is the lack of an explicit acceptance criterion for how a live `driver:{step}` is discovered/resolved within a session versus treated as absent across sessions. Without those two clarifications, the framing leaves key runtime contract details implicit."
+    }
+  ],
+  "framing_quality": "questionable",
+  "suggested_revisions": [
+    "Add explicit ownership for layer-policy authority: a Go type, validation path, and parity tests proving Pi and Claude consume the same parsed matrix rather than duplicating semantics around `.furrow/layer-policy.yaml`.",
+    "Strengthen the dependency graph, not just the prose wave plan: make D6 depend explicitly on D1 and D3, or state that wave-order is the authoritative dependency mechanism when stronger than `depends_on`.",
+    "Define the driver lifecycle lookup contract more concretely: what identifies a live `driver:{step}` in-session, what counts as resumable, and what exact fallback behavior occurs on a cold session.",
+    "Resolve the stale naming mismatch in `.furrow/rows/orchestration-delegation-contract/state.json`, whose title still references the superseded `furrow-aware/unaware split` framing.",
+    "State the research/spec gate for D1 as a hard prerequisite for downstream implementation, so D4/D2 cannot proceed against a provisional handoff shape."
+  ],
+  "reviewer": "codex",
+  "cross_model": true,
+  "timestamp": "2026-04-25T18:26:57Z"
+}

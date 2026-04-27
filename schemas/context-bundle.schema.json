@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://furrow.dev/schemas/context-bundle.schema.json",
+  "title": "ContextBundle",
+  "description": "Context bundle produced by `furrow context for-step` (D4). Contains skills, references, prior artifacts, decisions, and step-strategy metadata for a given row/step/target triple.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["row", "step", "target", "skills", "references", "prior_artifacts", "decisions"],
+  "properties": {
+    "row": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Row name (kebab-case identifier)."
+    },
+    "step": {
+      "type": "string",
+      "enum": ["ideate", "research", "plan", "spec", "decompose", "implement", "review"],
+      "description": "Workflow step this bundle was assembled for."
+    },
+    "target": {
+      "type": "string",
+      "pattern": "^(operator|driver|engine|specialist:[a-z][a-z0-9-]*)$",
+      "description": "Rendering target layer. Determines skill and reference filtering."
+    },
+    "skills": {
+      "type": "array",
+      "description": "Skill files filtered to the requested target layer.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "layer", "content"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Relative path to the skill file."
+          },
+          "layer": {
+            "type": "string",
+            "enum": ["operator", "driver", "engine", "shared"],
+            "description": "Layer tag from skill front-matter."
+          },
+          "content": {
+            "type": "string",
+            "description": "Full skill file content."
+          }
+        }
+      }
+    },
+    "references": {
+      "type": "array",
+      "description": "Reference documents available for on-demand loading.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Relative path to the reference file."
+          },
+          "content": {
+            "type": "string",
+            "description": "Optional pre-loaded content. Absent when not pre-loaded."
+          }
+        }
+      }
+    },
+    "prior_artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "summary_sections", "gate_evidence", "learnings"],
+      "description": "Prior-step outputs the current step may consult.",
+      "properties": {
+        "state": {
+          "type": "object",
+          "description": "Parsed state.json for this row."
+        },
+        "summary_sections": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "summary.md sections parsed as heading → content map."
+        },
+        "gate_evidence": {
+          "type": "object",
+          "description": "Gate evidence accumulated across prior steps."
+        },
+        "learnings": {
+          "type": "array",
+          "description": "Learnings from learnings.jsonl; engine/specialist targets receive broadly_applicable:true only.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "body", "broadly_applicable"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Learning identifier."
+              },
+              "body": {
+                "type": "string",
+                "description": "Learning body text."
+              },
+              "broadly_applicable": {
+                "type": "boolean",
+                "description": "Whether this learning applies broadly beyond this row's domain."
+              }
+            }
+          }
+        }
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "description": "Gate-transition verdicts extracted from summary.md Settled Decisions and Key Findings. De-duplicated last-wins with first-occurrence ordinal.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "from_step", "to_step", "outcome", "rationale", "ordinal"],
+        "properties": {
+          "source": {
+            "enum": ["settled_decisions", "key_findings_prose"],
+            "description": "Extraction site: settled_decisions (primary) or key_findings_prose (fallback)."
+          },
+          "from_step": {
+            "type": "string",
+            "description": "Step that produced the gate result."
+          },
+          "to_step": {
+            "type": "string",
+            "description": "Step the gate transitions into."
+          },
+          "outcome": {
+            "enum": ["pass", "fail", "unknown"],
+            "description": "Gate outcome. unknown is used for key_findings_prose entries."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "Gate evidence / rationale text."
+          },
+          "ordinal": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "First-occurrence position for de-dup last-wins semantics."
+          }
+        }
+      }
+    }
+  }
+}

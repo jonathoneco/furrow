@@ -1,3 +1,6 @@
+---
+layer: shared
+---
 # Git Conventions
 
 Shared git workflow conventions for implementation and review steps.

@@ -1,3 +1,6 @@
+---
+layer: shared
+---
 # Red Flags — Cross-Step Anti-Pattern Detection
 
 Read before any file write or step transition. Each flag has a signal, risk, and corrective action.

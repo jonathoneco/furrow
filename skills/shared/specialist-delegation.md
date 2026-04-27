@@ -1,47 +1,103 @@
-# Specialist Delegation Protocol
+---
+layer: shared
+---
+# Specialist Delegation Protocol (Driver→Engine)
 
-When a step involves domain-specific reasoning, select and delegate to specialists:
+**Audience**: phase drivers. This document replaces the former operator→specialist
+framing. Operators do not delegate directly to engines — drivers do.
 
-1. **Scan** — read `specialists/_meta.yaml` scenarios index. Match `When` descriptions
-   against the current task context (definition.yaml objective, deliverable names, file patterns).
-2. **Consult preferred-specialist overrides** — for each role implied by the match
-   (e.g. `harness`, `test-engineer`, `shell`), call
-   `resolve_config_value "preferred_specialists.<role>"` via
-   `bin/frw.d/lib/common.sh`. If the resolver returns a specialist name (exit 0),
-   prefer that specialist over the scenario's default. If the resolver exits 1,
-   fall through to the scenario-based selection from step 1.
-3. **Select** — choose specialists whose scenarios (or preferred-specialist overrides)
-   are relevant. Prefer fewer specialists (1-2) over broad coverage. When no scenario
-   matches and no override is set, proceed without specialist delegation.
-4. **Delegate** — dispatch selected specialists as **sub-agents** (never load into the
-   orchestration session). Include the specialist template (`specialists/{name}.md`) in
-   the sub-agent's context alongside the task-specific artifacts.
-5. **Record** — note specialist selections in `summary.md` key-findings with rationale
-   (e.g., "Selected go-specialist — scenario: error chain design for new CLI commands"
-   or "Selected harness-engineer-beta via preferred_specialists.harness override").
+Cross-reference: `skills/shared/layer-protocol.md` for layer boundaries and definitions.
 
-The Step-Level Specialist Modifier in each step skill defines the emphasis shift
-when working with a specialist at that step. Delegation is advisory at early steps
-(ideate, research) and authoritative at later steps (decompose, implement).
+---
 
-## Preferred-specialist lookup (reference implementation)
+## Why This Exists
 
-The preferred-specialists override is the first runtime consumer of the
-`preferred_specialists` XDG config field (previously write-only at install time).
+Engines run Furrow-unaware. They receive no row context, no step reference, no
+`.furrow/` paths. The **driver bears curation responsibility**: it must distil the
+relevant work context into a clean `EngineHandoff` (D1 schema) before dispatch.
+
+---
+
+## Composing an Engine Team at Dispatch
+
+One driver may dispatch **N engines in parallel** for a single deliverable. Team
+membership is decided **per-dispatch**, not per-plan. `plan.json`'s `specialist:` field
+is a hint — use it as a starting point but adapt to the work at hand.
+
+Composition guidelines:
+- **Solo engine**: one deliverable, single domain, self-contained — dispatch one engine.
+- **Parallel engines**: one deliverable spanning multiple domains (e.g., implementation + tests)
+  — dispatch parallel engines with disjoint `file_ownership`.
+- **Sequential engines**: deliverable where output of engine A feeds engine B — dispatch
+  serially, passing engine A's EOS-report as grounding to engine B.
+- **Team size**: prefer 1-3 engines per deliverable. Coordination cost rises with team size.
+
+---
+
+## Dispatch Primitive
+
+Build and dispatch an engine handoff:
 
 ```sh
-# In a selection context where $role is e.g. "harness", "test-engineer":
-#   PROJECT_ROOT and FURROW_ROOT must be exported (done by bin/frw and bin/rws).
-. "${FURROW_ROOT}/bin/frw.d/lib/common.sh"
-
-if override="$(resolve_config_value "preferred_specialists.${role}")"; then
-  specialist="$override"          # project/XDG/compiled-in override wins
-else
-  specialist="$default_for_role"  # fall back to scenario-matched default
-fi
+furrow handoff render \
+  --target engine:specialist:{id} \
+  --row <row-name> \
+  --step <step> \
+  [--write]
 ```
 
-Resolution order (first hit wins): project `.furrow/furrow.yaml` → XDG
-`${XDG_CONFIG_HOME:-$HOME/.config}/furrow/config.yaml` → compiled-in
-`${FURROW_ROOT}/.furrow/furrow.yaml`. See
-`docs/architecture/config-resolution.md` for the full three-tier contract.
+This renders an `EngineHandoff` markdown document. The driver provides the structured
+value (objective, deliverables, constraints, grounding) via stdin or args. D1's schema
+enforces that no `.furrow/` paths and no Furrow vocab appear in the output.
+
+Runtime spawn primitive receives the rendered markdown as the engine's input:
+- Claude: `Agent(subagent_type="engine:specialist:{id}", prompt=<rendered-handoff>)`
+- Pi: `pi-subagents spawn({name: "engine:{id}", systemPrompt: <specialist-brief>, tools: <allowlist>})`
+  then `pi-subagents sendMessage(handle, <rendered-handoff>)`
+
+---
+
+## Curation Checklist
+
+Before dispatching an engine, verify:
+
+- [ ] **Grounding paths** are source-tree relative (no `.furrow/` in any path).
+- [ ] **Constraints** use engine-scoped vocabulary — no `rws`, `alm`, `blocker`, `gate_policy`,
+  `deliverable`, `almanac`, `step`, `row`.
+- [ ] **Objective** is task-scoped, not row-scoped. No mention of Furrow row or step.
+- [ ] **Deliverables** enumerate `file_ownership` globs and `acceptance_criteria`.
+- [ ] **return_format** references a schema in `templates/handoffs/return-formats/`.
+
+If any check fails, revise the handoff before dispatch. Do not trust that schema
+validation alone will catch all curation errors — the schema enforces structure,
+not correctness.
+
+---
+
+## Return Contract
+
+Engines return an EOS-report per `templates/handoffs/return-formats/{step}.json`.
+The driver:
+
+1. Collects EOS-reports from all engines in the team.
+2. Assembles a per-deliverable rollup (merging findings, artifacts, open questions).
+3. Returns the phase result to the operator via runtime primitive
+   (Claude: `SendMessage` to operator lead; Pi: agent return value).
+
+The operator is responsible for presenting phase results to the user per
+`skills/shared/presentation-protocol.md` (D6). Drivers do NOT address the user.
+
+---
+
+## Driver Dispatches — Not the Operator
+
+```
+operator  ──spawn + prime──▶  driver
+                               driver  ──handoff──▶  engine(s)
+                               driver  ◀──EOS-report──
+operator  ◀──phase result──  driver
+```
+
+The operator does not know which engines were dispatched, how many ran in parallel,
+or what their individual EOS-reports contained. It receives only the assembled phase
+result from the driver. This keeps operator context lean and engine details encapsulated.

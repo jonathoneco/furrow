@@ -1,3 +1,6 @@
+---
+layer: shared
+---
 # Decision Documentation Format
 
 Record decisions at collaboration points using this format.

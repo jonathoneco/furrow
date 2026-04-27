@@ -1,68 +1,94 @@
-# Step: Decompose
+---
+layer: driver
+---
+# Phase Driver Brief: Decompose
+
+You are the decompose phase driver. Your role is to run the decomposition step
+ceremony, produce the wave plan, and assemble the phase EOS-report for the operator.
+You do not address the user directly — that is the operator's responsibility.
 
 ## What This Step Does
 Break spec into executable work items with concurrency map (waves).
 
 ## What This Step Produces
 - `plan.json` with wave assignments and specialist mappings
-- `team-plan.md` with coordination strategy
+
+Note: `team-plan.md` is retired under the layered model. Engine teams are composed
+at dispatch-time by the implement phase driver — not prescribed at decompose-time.
+`plan.json`'s `specialist:` field per deliverable is a dispatch hint, not a binding
+contract. This is an architectural decision codified for all future rows: decompose
+produces `plan.json` only, not `team-plan.md`.
 
 ## Model Default
 model_default: sonnet
 
-## Step-Specific Rules
+## Step Ceremony
+
 - Every deliverable must appear in exactly one wave.
 - `depends_on` ordering must be respected across waves.
 - `file_ownership` globs must not overlap within a wave.
-- Read `summary.md` for spec context.
-- Prefer vertical slices (each deliverable is independently testable). See red-flags.md and the `vertical-slicing` eval dimension.
+- Read plan decisions from context bundle `prior_artifacts.summary_sections`.
+- Prefer vertical slices (each deliverable is independently testable). See `skills/shared/red-flags.md`.
 
-### Step-Level Specialist Modifier
-When working with a specialist during decomposition, emphasize wave strategy,
-dependency ordering, and file ownership scoping. The specialist should reason
-about parallelism opportunities and minimize cross-deliverable coupling. The
-specialist's domain expertise applies to scope decisions: what belongs together,
-what can run concurrently, what order minimizes rework.
+## Engine Dispatch
 
-## Agent Dispatch Metadata
-- **Dispatch pattern**: None — orchestrator writes plan.json and team-plan.md directly
-- **Agent model**: N/A
-- **Rationale**: Decomposition is a small coordination task that reads specs and produces a wave map. Dispatching an agent adds overhead without value.
+Dispatch a decomposition engine when structural analysis is needed for complex plans.
+This step is typically small enough to execute directly without engine dispatch.
+
+If dispatching:
+1. Build engine handoff via `furrow handoff render --target engine:specialist:{id}`
+2. Grounding: spec files, definition.yaml deliverables, dependency graph
+3. Engine returns: suggested wave assignment and ownership globs
+
+**Dispatch protocol**: `skills/shared/specialist-delegation.md`
+
+## plan.json Shape
+
+```json
+{
+  "waves": [
+    {
+      "wave": 1,
+      "deliverables": [
+        {
+          "name": "...",
+          "specialist": "...",
+          "file_ownership": ["..."],
+          "depends_on": []
+        }
+      ]
+    }
+  ]
+}
+```
+
+`specialist` is a hint for the implement phase driver, not a binding assignment.
+The implement driver composes actual engine teams at dispatch-time.
 
 ## Shared References
 - `skills/shared/red-flags.md` — before finalizing decomposition
 - `skills/shared/git-conventions.md` — before any commit
 - `skills/shared/learnings-protocol.md` — when capturing learnings
-- `skills/shared/context-isolation.md` — when planning agent teams
+- `skills/shared/specialist-delegation.md` — driver→engine dispatch protocol
+- `skills/shared/layer-protocol.md` — engine-team-composed-at-dispatch model
 - `skills/shared/summary-protocol.md` — before completing step
-- `skills/shared/specialist-delegation.md` — specialist selection and delegation protocol
-
-## Team Planning
-Write `team-plan.md` before dispatching sub-agents (>1 deliverable).
-Sections: Scope Analysis, Team Composition, Task Assignment, Coordination, Skills.
-Team sizing: 2-3 specialists for 2-3 deliverables; 4+: 2-3 agents multi-tasking.
-Validate: every deliverable assigned, ownership globs match, skills exist.
-Resolve specialist templates from `specialists/*.md` by domain value.
-When assigning specialists, read `model_hint` from frontmatter and include it
-in team-plan.md task assignments. Resolution: specialist `model_hint` > step `model_default` > sonnet.
 
 ## Step Mechanics
 Transition out: gate record `decompose->implement` with `pass` required.
 Pre-step shell check (`rws gate-check`): <=2 deliverables, no depends_on, same
 specialist type, not supervised, not force-stopped.
 Pre-step evaluator (`evals/gates/decompose.yaml`): wave-triviality — can all
-deliverables execute in a single wave without coordination? Per `skills/shared/gate-evaluator.md`.
+deliverables execute in a single wave without coordination?
 At this boundary, `rws init` (with branch creation) creates the work branch.
-Next step expects: `plan.json` with waves, `team-plan.md` with coordination.
+Next step expects: `plan.json` with waves.
 
-## Supervised Transition Protocol
-Before requesting a step transition:
-1. Update `summary.md` — write Key Findings, Open Questions, and Recommendations sections.
-2. Present work to user per `skills/shared/summary-protocol.md`.
-3. Ask explicitly: "**Ready to advance to implement?** Yes / No"
-4. Wait for user response. Do NOT proceed without explicit approval.
-5. On "yes": call `rws transition <name> pass manual "<evidence summary>"`.
-6. On "no": ask what needs to change, address feedback, return to step 2.
+## EOS-Report Assembly
+
+Assemble phase EOS-report per `templates/handoffs/return-formats/decompose.json`.
+Include: plan.json path, wave count, deliverable list with specialist hints,
+dependency ordering, any structural notes.
+Return to operator via runtime primitive (Claude: `SendMessage` to operator lead;
+Pi: agent return value).
 
 ## Learnings
 Append reusable insights to `.furrow/rows/{name}/learnings.jsonl`.

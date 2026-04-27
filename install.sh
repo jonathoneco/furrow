@@ -104,6 +104,51 @@ for _cli in frw sds rws alm; do
   echo "  [LINK] $_dst -> $_rel"
 done
 
+# --- Install canonical Go binary ---
+# `furrow` is the canonical-Go CLI (vs the shell-script `frw`/`rws`/`alm`/`sds`).
+# `go install` puts it in $GOBIN (or $GOPATH/bin) which Go users have on PATH.
+# Hooks registered in .claude/settings.json (e.g., `furrow hook layer-guard`,
+# `furrow hook presentation-check`) require this binary on PATH to fire.
+if [ -d "$FURROW_ROOT/cmd/furrow" ]; then
+  if command -v go >/dev/null 2>&1; then
+    if (cd "$FURROW_ROOT" && go install ./cmd/furrow/ 2>&1); then
+      _furrow_path="$(command -v furrow 2>/dev/null || echo '')"
+      if [ -n "$_furrow_path" ]; then
+        echo "  [GO INSTALL] furrow -> $_furrow_path"
+      else
+        echo "  [WARN] furrow installed via 'go install' but not found on PATH."
+        echo "         Ensure \$GOBIN or \$GOPATH/bin is on PATH; hooks referencing 'furrow ...' will fail until then."
+      fi
+    else
+      echo "  [WARN] 'go install ./cmd/furrow/' failed; hooks referencing 'furrow ...' will not fire."
+    fi
+  else
+    echo "  [WARN] go toolchain not found; cannot install furrow Go binary."
+    echo "         Hooks referencing 'furrow ...' will not fire until 'go install ./cmd/furrow/' runs successfully."
+  fi
+fi
+
+# --- Render runtime-specific adapter files ---
+# `furrow render adapters` produces .claude/agents/driver-{step}.md (Claude
+# subagent definitions consumed by the Agent tool) + commands/work.md
+# (operator skill, runtime-branched from commands/work.md.tmpl). Without this,
+# the orchestration/delegation contract ships non-functional on Claude — the
+# operator's `Agent(subagent_type=driver:{step}, ...)` invocation can't dispatch
+# because the subagent definitions aren't on disk.
+#
+# Default to claude. Pi users re-run with --runtime=pi after install, or set
+# FURROW_RUNTIME=pi in the environment before invoking install.sh.
+_runtime="${FURROW_RUNTIME:-claude}"
+if command -v furrow >/dev/null 2>&1; then
+  if (cd "$FURROW_ROOT" && furrow render adapters --runtime="$_runtime" --write >/dev/null 2>&1); then
+    echo "  [RENDER ADAPTERS] runtime=$_runtime — wrote .claude/agents/* + commands/work.md"
+  else
+    echo "  [WARN] 'furrow render adapters --runtime=$_runtime --write' failed; layered dispatch may be non-functional."
+  fi
+else
+  echo "  [WARN] furrow binary not on PATH; skipping 'furrow render adapters' — layered dispatch will not work until rendered."
+fi
+
 # --- Delegate to frw install ---
 # bin/frw.d/install.sh is the sole producer of the 22
 # .claude/commands/specialist:*.md symlinks (glob-discovery loop at

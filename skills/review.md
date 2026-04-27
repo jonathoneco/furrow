@@ -1,4 +1,12 @@
-# Step: Review
+---
+layer: driver
+---
+# Phase Driver Brief: Review
+
+You are the review phase driver. Your role is to run the review step ceremony,
+dispatch reviewer engines, assemble the review rollup, and return the phase
+EOS-report for the operator. You do not address the user directly — that is the
+operator's responsibility.
 
 ## What This Step Does
 Evaluate implementation against spec and audit plan completion.
@@ -8,97 +16,85 @@ Evaluate implementation against spec and audit plan completion.
 - Gate record in `state.json` with overall verdict
 
 ## Model Default
-model_default: opus
+model_default: sonnet
 
-## Step-Specific Rules
-- **Phase A** (in-session): verify artifacts exist, acceptance criteria met, planned files touched.
-  Deterministic shell checks — runs in the current session.
-- **Phase B** (fresh-session): evaluate quality dimensions per artifact type.
-  Runs via `claude -p --bare` as an isolated process with no conversation context.
+## Step Ceremony
+
+- **Phase A** (in-driver): verify artifacts exist, acceptance criteria met, planned files touched.
+  Deterministic shell checks — runs within the driver session.
+- **Phase B** (engine dispatch): evaluate quality dimensions per artifact type.
+  Dispatch isolated reviewer engines per deliverable.
   See `commands/review.md` for the invocation protocol.
 - `overall` is `pass` only when both phases pass.
+- Load context bundle from operator prime message.
 - Read `references/review-methodology.md` and `references/eval-dimensions.md`.
 
-### Step-Level Specialist Modifier
-When working with a specialist during review, emphasize acceptance criteria
-verification, anti-pattern detection per the specialist's table, and quality
-dimension coverage. The specialist's reasoning patterns apply to review
-judgments: what to check, what constitutes a violation, what quality bar to hold.
+## Engine Dispatch
 
-## Agent Dispatch Metadata
-- **Dispatch pattern**: Phase B isolated evaluators (fresh Claude + cross-model)
-- **Agent model**: opus (quality judgment requires deep reasoning)
-- **Context to agent**: Review prompt template, artifact paths, eval dimensions ONLY
-- **Context excluded**: summary.md, state.json, conversation history, CLAUDE.md (generator-evaluator separation)
-- **Returns**: Per-deliverable review verdict with dimension scores
+Dispatch reviewer engines per deliverable. Two parallel reviewers per deliverable:
+
+1. **Fresh reviewer engine** — dispatch via `furrow handoff render --target engine:specialist:reviewer`.
+   Grounding: review prompt template, artifact paths, eval dimensions ONLY.
+   Excludes: summary.md, state.json, conversation history, CLAUDE.md.
+   Engine returns: per-deliverable review verdict with dimension scores.
+
+2. **Cross-model reviewer** — run `frw cross-model-review {name} {deliverable}`.
+   Reads `cross_model.provider` from `furrow.yaml`. Skip if absent.
+
+After both engines return, **synthesize**: flag dimension disagreements,
+note unique findings, produce final `reviews/{deliverable}.json` with `reviewers` field.
+
+**Dispatch protocol**: `skills/shared/specialist-delegation.md`
+
+## Review Rollup
+
+After all deliverable reviews complete:
+1. Aggregate per-deliverable verdicts.
+2. Determine overall pass/fail (any Phase A or Phase B fail → overall fail).
+3. Surface any decisions conditional on post-ship evidence:
+   record via `alm observe add --kind decision-review ...`
+4. Assemble phase EOS-report (see below).
 
 ## Shared References
 - `skills/shared/red-flags.md` — before any verdict
 - `skills/shared/eval-protocol.md` — evaluator guidelines
 - `skills/shared/git-conventions.md` — when reviewing commit quality
 - `skills/shared/learnings-protocol.md` — when capturing learnings
-- `skills/shared/context-isolation.md` — when dispatching review sub-agents
+- `skills/shared/specialist-delegation.md` — driver→engine dispatch protocol
+- `skills/shared/layer-protocol.md` — layer boundaries
 - `skills/shared/summary-protocol.md` — before completing step
 
-## Dual-Reviewer Protocol
-Every review runs **two independent reviewers in parallel**:
-1. **Fresh Claude reviewer** — `claude -p --bare` for generator-evaluator separation.
-   Receives ONLY the review prompt template + artifact paths + eval dimensions.
-   Does NOT receive: `summary.md`, `state.json`, conversation history, or CLAUDE.md.
-2. **Cross-model reviewer** — run `frw cross-model-review {name} {deliverable}`.
-   Reads `cross_model.provider` from `furrow.yaml`. If no provider configured, skip.
-
-Both reviewers evaluate the same deliverable against the same dimensions.
-After both complete, **synthesize** — flag any dimension where reviewers disagree,
-note unique findings from each, and produce the final `reviews/{deliverable}.json`
-with a `reviewers` field recording both sources.
-
-Agent tool subagents (used for gate evaluations) are isolated from conversation
-history but inherit system context — adequate for gates, not for final review.
-See `skills/shared/gate-evaluator.md` Isolation Verification section.
-
-## Team Planning
-For multi-deliverable work, Phase B runs one `claude -p` invocation per deliverable.
-Each invocation is fully independent — no shared state between deliverable reviews.
+**Presentation**: when surfacing this step's artifact for user review, render it
+using the canonical mode defined in `skills/shared/presentation-protocol.md` —
+section markers `<!-- presentation:section:{name} -->` immediately preceding
+each section per the artifact's row in the protocol's section-break table. The
+operator owns this rendering; phase drivers return structured results, not
+user-facing markdown.
 
 ## Step Mechanics
 Review is the final step. No pre-step evaluation — review always runs.
 Post-step gate evaluates Phase A and Phase B results across all deliverables.
-Reference: `evals/gates/review.yaml` post_step, per `skills/shared/gate-evaluator.md`.
 On pass: row ready for archive. On fail: returns to implement step.
 
-## Supervised Transition Protocol
-Before completing review:
-1. Update `summary.md` — write Key Findings, Open Questions, and Recommendations sections.
-   Before updating: check whether any decisions in this row are conditional on
-   post-ship evidence. If yes, record each via `alm observe add --kind decision-review ...`.
-2. Present review findings to user per `skills/shared/summary-protocol.md`.
-3. Ask explicitly: "**Ready to archive?** Yes / No"
-4. Wait for user response. Do NOT proceed without explicit approval.
-5. On "yes": proceed with archive per `/furrow:archive` command.
-6. On "no": ask what needs to change, address feedback, return to step 2.
+## EOS-Report Assembly
 
-### Consent Isolation
-Each question requiring user input is an independent decision — a "yes" to
-one question does NOT carry over to subsequent questions. Archive approval,
-TODO extraction, learning promotion, and any other user-facing decisions are
-separate consent gates. Do not interpret prior user responses as approval for
-unrelated subsequent decisions (e.g., "yes to archive" does not mean "yes to
-skip TODOs" or "yes to promote learnings").
+Assemble phase EOS-report per `templates/handoffs/return-formats/review.json`.
+Include: per-deliverable review JSON paths, overall verdict, phase A/B pass/fail
+per deliverable, dimension scores summary, reviewer synthesis notes, learnings to promote.
+Return to operator via runtime primitive (Claude: `SendMessage` to operator lead;
+Pi: agent return value). The operator presents findings to user and requests archive approval.
 
 ## Learnings
 Append reusable insights to `.furrow/rows/{name}/learnings.jsonl`.
 Read `skills/shared/learnings-protocol.md` for schema and categories.
 After review, scan artifacts for promotion candidates (architecture decisions,
-patterns, specialist defs, eval dimensions). Present each with rationale.
+patterns, specialist defs, eval dimensions). Include in EOS-report.
 
 ## Research Mode
 When `state.json.mode` is `"research"`:
-- Implement step: load `evals/dimensions/research-implement.yaml`.
-- Spec step: load `evals/dimensions/research-spec.yaml`.
 - Phase A: verify `.furrow/rows/{name}/deliverables/` files exist, match
   `plan.json` ownership, meet acceptance criteria from definition.yaml.
 - Phase B: evaluate coverage, evidence-basis, synthesis-quality,
   internal-consistency, actionability. Verify citations.
-- Scan deliverables for promotion candidates to flag at archive.
+- Load `evals/dimensions/research-implement.yaml` and `evals/dimensions/research-spec.yaml`.
 - Read `references/research-mode.md` for dimension selection logic.

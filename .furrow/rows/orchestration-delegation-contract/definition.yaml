@@ -1,0 +1,333 @@
+objective: |
+  Establish the orchestration/delegation contract as a vertical 3-layer architecture
+  (operator → phase driver → engine) with a runtime-agnostic Furrow backend and
+  thin Claude/Pi adapters. Backend defines canonical primitives: forked handoff
+  schemas (DriverHandoff Furrow-aware, EngineHandoff Furrow-unaware), context
+  routing CLI, layer-policy authority, hook Go subcommands, static driver
+  definitions, design-pattern interfaces. Adapters bridge runtime events into
+  these primitives — Claude via TeamCreate/Agent/SendMessage + .claude/agents/
+  rendering; Pi via @tintinweb/pi-subagents extension. Engines are TRULY
+  Furrow-unaware: no row, no step, no .furrow/ paths in the engine handoff;
+  drivers curate engine context. New hooks ship as `furrow hook <name>` Go
+  subcommands, NOT shell scripts, to avoid migration debt to the canonical-Go
+  end-state. The row ships contract + driver wiring + minimal-but-functioning
+  integration on both adapters proving the architecture end-to-end.
+
+deliverables:
+  - name: context-construction-patterns
+    specialist: harness-engineer
+    acceptance_criteria:
+      - "internal/cli/context/contracts.go defines canonical Go interfaces D4 implements: Builder (Reset, AddSkill, AddReference, AddArtifact, AddDecision, AddLearning, Build → Bundle), Strategy (Step() string; Apply(b Builder, src ContextSource) error), ChainNode (Next() ChainNode; Apply(b Builder, src ContextSource) error). Godoc names the design pattern (Builder, Strategy, Chain of Responsibility) and architectural intent on every interface"
+      - "internal/cli/context/contracts_test.go defines a generic conformance harness for each interface (e.g., Builder.Reset must zero state; Strategy.Apply must be idempotent on identical inputs; ChainNode.Next nullity terminates the chain). The harness is exported so D4's strategy implementations plug in during D4's review"
+      - "internal/cli/context/structure_test.go asserts every step listed in evals/gates/*.yaml has a registered Strategy in the strategy registry; asserts strategies/ contains exactly one .go file per registered step; asserts contracts.go is the only file in internal/cli/context/ that defines pattern interfaces"
+      - "docs/architecture/context-construction-patterns.md — sections: (1) Why patterns here, (2) Builder, (3) Strategy, (4) Chain of Responsibility, (5) When to add a new strategy, (6) Audit table mapping current ad-hoc loading sites in commands/work.md/skills/work-context.md/bin/frw.d/scripts/ to which pattern they migrate to"
+      - "Audit table is concrete: every existing context-loading site enumerated with file:line, current mechanism, target pattern, migration owner (D4 or follow-up). Sites not migrated in this row become explicit follow-up TODOs"
+      - "D5 ships before D4 starts (D4's depends_on enforces this). Contracts are a binding architectural reference, not a postmortem"
+      - "Review-step verification: D4's strategy implementations cite their pattern in godoc and pass the conformance harness. D5's acceptance is partially gated on D4 strategies passing the harness — exercised in wave 3 review, not wave 1 review (forces good integration; surfaces interface gaps early)"
+      - "go test ./... passes; go vet passes; structural test fails fast if a new step is added in evals/gates/ without a corresponding strategy file"
+    file_ownership:
+      - "internal/cli/context/contracts.go"
+      - "internal/cli/context/contracts_test.go"
+      - "internal/cli/context/structure_test.go"
+      - "docs/architecture/context-construction-patterns.md"
+
+  - name: handoff-schema
+    specialist: go-specialist
+    acceptance_criteria:
+      - "Two forked schemas at schemas/handoff-driver.schema.json and schemas/handoff-engine.schema.json (both JSON Schema draft 2020-12, additionalProperties:false at all levels). NO shared base — divergence documented in code structure. NO schema_version field (handoffs are ephemeral artifacts; no re-validation after delegation). NO persona_ref field (target encodes persona by convention)"
+      - "DriverHandoff (Furrow-aware, 7 fields): target (driver:{step}), step, row, objective (step-scoped), grounding (D4 bundle reference — path or inline structured per spec decision), constraints (row-level), return_format (phase EOS-report shape — schema reference, see field-shape AC below)"
+      - "EngineHandoff (Furrow-unaware, 6 fields): target (engine:{specialist-id} | engine:freeform), objective (task-scoped, no row/step/Furrow framing), deliverables [{name, acceptance_criteria, file_ownership}], constraints (engine-scoped only — no .furrow/ paths, no blocker codes, no Furrow vocab), grounding [{path, why_relevant}] (curated source-file refs only — no .furrow/ paths), return_format (engine EOS-report shape — schema reference)"
+      - "Field-shape decisions frozen at spec: (a) return_format — schema-reference style (string identifier resolving to a schema in templates/handoffs/return-formats/); (b) DriverHandoff.grounding — single path string referencing D4 bundle output; (c) EngineHandoff.grounding — array of {path, why_relevant} objects with relative paths only (no .furrow/* allowed by schema validation pattern)"
+      - "Two Go structs in internal/cli/handoff/: DriverHandoff and EngineHandoff. NO shared base struct (no HandoffCommon embedding). Struct tags drive both JSON Schema generation and template rendering"
+      - "Two render templates: templates/handoff-driver.md.tmpl and templates/handoff-engine.md.tmpl. Each is a Go text/template referencing every required schema field; rendered output is valid markdown with stable section order"
+      - "internal/cli/handoff/render.go provides RenderDriver(h DriverHandoff) (string, error) and RenderEngine(h EngineHandoff) (string, error) that load the templates and render against the structs. Round-trip property: parse rendered output → struct equals input for the round-trippable subset"
+      - "furrow handoff render --target driver:{step}|engine:{id} --row <name> --step <step> [--write] --json command exists. Dispatches on target prefix to DriverHandoff vs EngineHandoff renderer. --target driver:{step} builds DriverHandoff value (consumes D4 bundle reference, state.json, definition.yaml constraints); --target engine:{id} builds EngineHandoff value (driver-curated; the operator/driver provides the structured value via stdin or args). Emits markdown to stdout (default) or --json for the structured form"
+      - "Handoff artifacts written to .furrow/rows/{name}/handoffs/{step}-to-{target}.md when --write passed. Idempotent (same inputs → same output bytes)"
+      - "internal/cli/handoff/validate.go: furrow handoff validate <path> --json verifies a written handoff against the appropriate schema (sniffs target prefix to pick driver vs engine schema). Emits taxonomy-conformant blocker envelope on failure with codes registered in schemas/blocker-taxonomy.yaml: handoff_schema_invalid, handoff_required_field_missing, handoff_unknown_field"
+      - "Engine handoff content discipline (test-enforced): EngineHandoff schema rejects (validation fails) any path containing '.furrow/' or any string matching the Furrow vocab corpus (row, step, gate_policy, deliverable, blocker, almanac). Schema-level enforcement of Furrow-unaware constraint"
+      - "internal/cli/handoff/handoff_test.go covers: RenderDriver of valid value produces expected output; RenderEngine of valid value produces expected output; render with missing required fields fails with structured error; validate of valid file passes; validate of malformed file fails with registered code; round-trip parse-render-parse equality; engine handoff with .furrow/ path rejected at validation time"
+      - "internal/cli/app.go registers 'handoff' top-level command group following the pre-write-validation-go-first 'validate' group registration pattern"
+      - "go test ./... passes"
+    file_ownership:
+      - "schemas/handoff-driver.schema.json"
+      - "schemas/handoff-engine.schema.json"
+      - "templates/handoff-driver.md.tmpl"
+      - "templates/handoff-engine.md.tmpl"
+      - "templates/handoffs/return-formats/"
+      - "internal/cli/handoff/schema.go"
+      - "internal/cli/handoff/render.go"
+      - "internal/cli/handoff/validate.go"
+      - "internal/cli/handoff/handoff_test.go"
+      - "internal/cli/app.go"
+      - "schemas/blocker-taxonomy.yaml"
+
+  - name: context-routing-cli
+    specialist: go-specialist
+    depends_on: [context-construction-patterns]
+    acceptance_criteria:
+      - "furrow context for-step <step> --target <operator|driver|engine|specialist:{id}> --row <name> --json command exists. --row defaults to focused row; --target defaults to driver. Emits a structured context bundle conforming to schemas/context-bundle.schema.json"
+      - "Bundle shape: { row, step, target, skills: [{path, layer, content}], references: [{path, content?}], prior_artifacts: { state, summary_sections, gate_evidence, learnings }, decisions: [{source, from_step, to_step, outcome, rationale, ordinal}] }; schema validates additionalProperties:false at all levels. Decision shape derived from T3 finding (gate-transition regex output) — source distinguishes settled-decisions section vs key-findings fallback; ordinal preserves first-occurrence position for de-dup last-wins. (Reconciled post-archive: step_strategy_metadata removed — speculative forward-compat field with no consumer; per D5/D4 OQ disposition.)"
+      - "Implements D5's contracts: Builder assembles the bundle; Strategy is selected by step (one Strategy per step at internal/cli/context/strategies/{step}.go); ChainNode applies override layering (defaults → step strategy → row overrides → target filter)"
+      - "Per-step strategies for all 7 steps (ideate, research, plan, spec, decompose, implement, review); each registers via init() with the strategy registry; each cites its pattern in godoc"
+      - "Skill filtering by target: --target=driver returns skills tagged layer:driver|shared; --target=engine|specialist:* returns skills tagged layer:engine|shared plus the named specialist's brief if --target=specialist:{id}; --target=operator returns layer:operator|shared. Skills without a layer field are rejected at load time with blocker code skill_layer_unset (registered by D3)"
+      - "Decisions extraction (T3 finding): primary parser is strict regex against the de-facto gate-transition shape in summary.md ## Settled Decisions sections — pattern ^- \\*\\*([a-z_]+)->([a-z_]+)\\*\\*: (pass|fail) — (.*)$ — verified 49/49 conformance. Secondary fallback: best-effort scrape of ^- Decision: prose bullets in ## Key Findings. De-dup policy for gate retries: last-wins, preserving order"
+      - "Learnings inclusion: reads .furrow/rows/{row}/learnings.jsonl; --target=engine filters to broadly_applicable:true entries (engines should not see harness-specific learnings); --target=driver|operator includes all"
+      - "Replaces ad-hoc loading in commands/work.md.tmpl: the rendered operator skill no longer reads skills/{step}.md directly; shells out to furrow context for-step --target operator and consumes the bundle"
+      - "Same primitive used by D2: when the operator spawns/messages a driver, the priming message includes the bundle returned by furrow context for-step --target driver:{step}; when the driver dispatches an engine, it uses --target specialist:{id} and curates the result before passing to handoff render"
+      - "Performance: bundle generation under 500ms for a row with 7 steps of accumulated artifacts on the reference fixture"
+      - "Determinism: identical inputs produce identical output bytes (verified by integration test). (Reconciled post-archive: caching layer removed — measured cold-cache run was 4ms against the 500ms budget, so cache surface was not earning its keep. Originally specced as 'identical inputs produce identical bytes; --no-cache flag bypasses caching for testing; cache key derived from (row, step, target, content-hashes-of-inputs); cache invalidates on state.json mtime change' — the determinism guarantee survived without the cache mechanism; see commit 60dc80b.)"
+      - "Unit tests cover each strategy in isolation (every step), Builder assembly, ChainNode override layering, target filtering for each layer, missing-skill-layer rejection, missing-row error, decisions extraction, learnings filtering"
+      - "Integration test (tests/integration/test-context-routing.sh): exercises a fixture row across multiple steps, asserts bundle shape and content for each --target; round-trip via D1's furrow handoff render produces a renderable handoff"
+      - "internal/cli/app.go registers 'context' top-level command group (joint touch with D1's 'handoff' registration; sequential per wave plan)"
+      - "go test ./... passes"
+    file_ownership:
+      - "internal/cli/context/builder.go"
+      - "internal/cli/context/chain.go"
+      - "internal/cli/context/registry.go"
+      - "internal/cli/context/strategies/ideate.go"
+      - "internal/cli/context/strategies/research.go"
+      - "internal/cli/context/strategies/plan.go"
+      - "internal/cli/context/strategies/spec.go"
+      - "internal/cli/context/strategies/decompose.go"
+      - "internal/cli/context/strategies/implement.go"
+      - "internal/cli/context/strategies/review.go"
+      - "internal/cli/context/strategies_test.go"
+      - "internal/cli/context/builder_test.go"
+      - "internal/cli/context/chain_test.go"
+      - "internal/cli/context/cmd.go"
+      - "internal/cli/app.go"
+      - "schemas/context-bundle.schema.json"
+      - "tests/integration/test-context-routing.sh"
+      - "commands/work.md.tmpl"
+
+  - name: driver-architecture
+    specialist: harness-engineer
+    depends_on: [handoff-schema, context-routing-cli]
+    acceptance_criteria:
+      - "Driver definitions at .furrow/drivers/driver-{step}.yaml — 7 files (ideate, research, plan, spec, decompose, implement, review). Static, runtime-agnostic. Schema: { name: 'driver:{step}', step: '{step}', tools_allowlist: [...], model: 'opus|sonnet|haiku' }. Persona is implicit by convention (skills/{step}.md is the driver brief)"
+      - "schemas/driver-definition.schema.json validates the YAML structure (additionalProperties:false). furrow validate driver-definitions --json command checks every .furrow/drivers/driver-{step}.yaml against the schema and emits blocker code driver_definition_invalid (registered by D3 alongside other validation codes — see joint ownership note)"
+      - "skills/shared/layer-protocol.md is the canonical contract: defines operator (whole-row, user-facing, state-mutating), phase driver (one-step, session-scoped, runtime-managed), engine (one-shot, Furrow-unaware). Defines handoff exchange (driver→engine via D1's render command), engine-team-composed-at-dispatch model (drivers compose engine teams per dispatch, not at planning-time), and runtime-agnostic message-passing semantics. Cross-references skills/shared/specialist-delegation.md"
+      - "skills/shared/specialist-delegation.md rewritten for driver→engine dispatch (replacing the operator→specialist framing). References skills/shared/layer-protocol.md for boundaries; references furrow handoff render --target=engine:* for the dispatch primitive; documents engine-team composition (a driver can dispatch multiple engines in parallel for one deliverable)"
+      - "skills/work-context.md updated to describe the operator's per-row context (per-step context moves to driver context via furrow context for-step)"
+      - "All 7 skills/{step}.md (ideate, research, plan, spec, decompose, implement, review) reframed as driver briefs — addressed to the phase driver, not the operator. Driver responsibilities: run step ceremony, dispatch engine team, assemble EOS-report. User-facing presentation logic moves out of skills/{step}.md and into commands/work.md.tmpl (operator owns user dialog)"
+      - "skills/plan.md update: removes the team-plan.md prescription. Reframes planning step around layered model — engine teams composed at dispatch-time by drivers, not planning-time by operator. plan.json keeps wave/file_ownership/specialist-hint surface; team-plan.md is dropped from the row artifact set entirely (this row's existing team-plan.md will be deleted)"
+      - "commands/work.md.tmpl is a Go text/template (not a static markdown file) with runtime branches: {{ if eq .Runtime \"claude\" }} ... TeamCreate/Agent/SendMessage block ... {{ else if eq .Runtime \"pi\" }} ... pi-subagents primitives + tree-branch nav block ... {{ end }}. Rendered at install time by furrow render adapters --runtime=<claude|pi>"
+      - "furrow render adapters --runtime=<claude|pi> Go util (internal/cli/render/adapters.go) renders runtime-specific files from the runtime-agnostic definitions: (a) commands/work.md.tmpl → commands/work.md per runtime; (b) for Claude, .furrow/drivers/driver-{step}.yaml → .claude/agents/driver-{step}.md (subagent definition with tools/model frontmatter + skills/{step}.md as system prompt body); (c) any other runtime-specific renderings"
+      - "Operator session-resume protocol is RUNTIME-CONCERN, not Furrow-concern: the operator skill (rendered for Claude or Pi) instructs the LLM on the appropriate session-resume detection. Claude block: read ~/.claude/teams/{row-name}/config.json; detect stale members; re-spawn via TeamCreate. Pi block: @tintinweb/pi-subagents handles its own session resume. Furrow backend has NO session_id awareness, NO drivers.json, NO per-row driver registry"
+      - "Adapter integration in this row is minimal-but-functioning on BOTH adapters: at row close, an end-to-end smoke (operator spawns one driver, that driver dispatches one engine, full layer-guard active throughout, leakage test passes) succeeds on both runtimes. Deeper hardening (per-driver model routing, parallel engine teams, dashboard UX) is captured as follow-up rows"
+      - "Pi adapter package adoption: adapters/pi/package.json declares dep on @tintinweb/pi-subagents (pinned at the latest stable, currently 0.6.x — exact version locked at spec time after a quick npm registry check) and @mariozechner/pi-coding-agent peer dep (pinned 0.70.x). Wrapped behind a thin Furrow PiAdapter interface (internal package boundary) so the dep is swappable. adapters/pi/extension/index.ts hooks tool_call → exec `furrow hook layer-guard` with stdin JSON; before_agent_start → setActiveTools(driver.tools_allowlist) + return {systemPrompt: skills/{step}.md content}; bridges Furrow row state ↔ pi-subagents lifecycle"
+      - "Recursive-spawn verification: as a spec-time pre-implementation sanity check, read @tintinweb/pi-subagents src/agent-runner.ts to confirm subagents can themselves spawn subagents (driver→engine path). If broken, the engine-dispatch path needs fallback (subprocess subagent per pi-mono example). Spec captures the verification result; implementation may pivot if blocked"
+      - "Integration test (tests/integration/test-driver-architecture.sh): exercises layered dispatch end-to-end on a fixture row — operator spawns a driver for one step, driver dispatches an engine, engine returns EOS-report, driver returns phase result, operator presents to user. Asserts each layer made only its allowed tool calls (operator: rws/alm; driver: read-only; engine: none). Runs against BOTH adapter modes (Claude via in-process Agent stub; Pi via @tintinweb/pi-subagents)"
+      - "All step skills pass evals/skills/ structural checks (front-matter present, named sections per skills/shared/skill-template.md if extant, step-mechanics block present). D3 owns the layer: front-matter additions in a subsequent wave"
+    file_ownership:
+      - ".furrow/drivers/driver-ideate.yaml"
+      - ".furrow/drivers/driver-research.yaml"
+      - ".furrow/drivers/driver-plan.yaml"
+      - ".furrow/drivers/driver-spec.yaml"
+      - ".furrow/drivers/driver-decompose.yaml"
+      - ".furrow/drivers/driver-implement.yaml"
+      - ".furrow/drivers/driver-review.yaml"
+      - "schemas/driver-definition.schema.json"
+      - "skills/shared/layer-protocol.md"
+      - "skills/shared/specialist-delegation.md"
+      - "skills/work-context.md"
+      - "skills/ideate.md"
+      - "skills/research.md"
+      - "skills/plan.md"
+      - "skills/spec.md"
+      - "skills/decompose.md"
+      - "skills/implement.md"
+      - "skills/review.md"
+      - "commands/work.md.tmpl"
+      - "internal/cli/render/adapters.go"
+      - "internal/cli/render/adapters_test.go"
+      - "internal/cli/app.go"
+      - "adapters/pi/package.json"
+      - "adapters/pi/extension/index.ts"
+      - "adapters/pi/tsconfig.json"
+      - "tests/integration/test-driver-architecture.sh"
+
+  - name: boundary-enforcement
+    specialist: harness-engineer
+    depends_on: [driver-architecture, context-routing-cli]
+    acceptance_criteria:
+      - "Prompt-level scoping: every file under skills/ gains a layer: operator|driver|engine|shared front-matter field. D4's context loader filters loaded skills by requested target layer. Skills without a layer field are rejected at load time with blocker code skill_layer_unset (registered here in schemas/blocker-taxonomy.yaml)"
+      - "Skill layer assignment is mechanically derivable: skills/{step}.md → driver; skills/shared/* → tagged shared|operator|driver|engine per content; commands/work.md.tmpl rendered for operator → operator; specialist briefs at specialists/*.md → engine. D3 ships front-matter additions across all skill files (joint touch with D2)"
+      - "furrow validate skill-layers --json command asserts every skill file declares a layer; emits blocker skill_layer_unset on missing"
+      - "Layer policy authority: .furrow/layer-policy.yaml is canonical (static, runtime-agnostic). internal/cli/layer/policy.go defines the Go struct; schemas/layer-policy.schema.json validates the YAML; furrow validate layer-policy --json command exits non-zero on schema violations with blocker code layer_policy_invalid"
+      - "Layer policy content: maps agent_type values (driver:{step}, engine:{specialist}, operator) to layer labels and per-layer tool allow/deny matrices. Operator allows full tool surface; driver allows Read/Grep/Glob/SendMessage/Agent + read-only Bash invocations of rws/alm/sds (whitelist); engine allows Read/Grep/Glob/Edit/Write/Bash but NO furrow/rws/alm/sds invocations and NO reads under .furrow/"
+      - "furrow hook layer-guard Go subcommand (internal/cli/hook/layer_guard.go) reads stdin JSON (containing tool_name, tool_input, agent_id, agent_type per Claude Code hook input shape; equivalent payload from Pi adapter's tool_call event) and applies the allow/deny matrix from .furrow/layer-policy.yaml. Returns JSON envelope { block: bool, reason: string } and appropriate exit code for the hook protocol. NOT a shell script — Go subcommand, avoiding migration debt to canonical-Go target"
+      - "Claude adapter wiring: .claude/settings.json registers furrow hook layer-guard as PreToolUse hook. Configuration is additive to any existing settings.json content"
+      - "Pi adapter wiring: adapters/pi/extension/index.ts registers a tool_call event handler that exec's furrow hook layer-guard with stdin JSON formatted to match the Claude hook payload shape (agent_type, agent_id, tool_name, tool_input). Both adapters consume the same .furrow/layer-policy.yaml; no per-adapter policy duplication"
+      - "Pi capability gap (acknowledged): @tintinweb/pi-subagents subagent model uses subprocess spawn; the parent's hook bus is blind to subagent tool calls. This row scopes Pi-side layer-guard enforcement to main-thread (operator) only. Subagent layer enforcement on Pi documented as known limitation; engine-context safety preserved by EngineHandoff Furrow-stripping (D1) plus the post-hoc boundary leakage test (this deliverable)"
+      - "Cross-adapter parity test (tests/integration/test-layer-policy-parity.sh): same fixture (layer, tool, path) tuples produce identical allow/deny verdicts on Claude `furrow hook layer-guard` invocation AND Pi adapter's tool_call interceptor. Both consume the canonical .furrow/layer-policy.yaml. Test fails if any verdict diverges"
+      - "Post-hoc boundary leakage test (tests/integration/test-boundary-leakage.sh): sets up a fixture non-Furrow project at /tmp/test-furrow-leakage-{pid}/, dispatches a fixture engine via furrow handoff render --target=engine:specialist:{id} for a benign domain task ('add function double(x) returning x*2 to add.py'), captures the engine's output artifact and any files it writes, asserts ZERO matches against the leakage corpus (.furrow/, state.json, definition.yaml, summary.md, furrow row, rws , alm , sds , .furrow rationale, .furrow almanac, deliverable, gate_policy). Test fails if any leakage detected. NON-NEGOTIABLE per constraint #8"
+      - "End-to-end smoke (tests/integration/test-layered-dispatch-e2e.sh): fixture row exercises operator → driver → engine → driver → operator round-trip with layer-guard active throughout. Asserts each layer made only allowed tool calls AND zero leakage in engine artifacts. Runs against BOTH adapters"
+      - "schemas/blocker-taxonomy.yaml gains: skill_layer_unset, layer_policy_invalid, layer_tool_violation, engine_furrow_leakage, driver_definition_invalid (the latter for D2's furrow validate driver-definitions). Sequential additive ownership with D1 and D6 — no reordering, appendix-style"
+      - "Documentation: docs/architecture/orchestration-delegation-contract.md is the canonical reference combining D1 schema, D2 layer architecture + driver definitions, D3 enforcement matrix, D4 routing, D5 patterns. Cross-linked from each component's own doc"
+      - "go test ./... passes; bun/vitest test runner for adapters/pi/ passes"
+    file_ownership:
+      - "schemas/blocker-taxonomy.yaml"
+      - "schemas/layer-policy.schema.json"
+      - ".furrow/layer-policy.yaml"
+      - "internal/cli/layer/policy.go"
+      - "internal/cli/layer/policy_test.go"
+      - "internal/cli/validate_layer_policy.go"
+      - "internal/cli/validate_layer_policy_test.go"
+      - "internal/cli/validate_skill_layers.go"
+      - "internal/cli/validate_skill_layers_test.go"
+      - "internal/cli/validate_driver_definitions.go"
+      - "internal/cli/validate_driver_definitions_test.go"
+      - "internal/cli/validate.go"
+      - "internal/cli/hook/layer_guard.go"
+      - "internal/cli/hook/layer_guard_test.go"
+      - "internal/cli/app.go"
+      - ".claude/settings.json"
+      - "adapters/pi/extension/index.ts"
+      - "tests/integration/test-boundary-leakage.sh"
+      - "tests/integration/test-layered-dispatch-e2e.sh"
+      - "tests/integration/test-layer-policy-parity.sh"
+      - "docs/architecture/orchestration-delegation-contract.md"
+      - "skills/ideate.md"
+      - "skills/research.md"
+      - "skills/plan.md"
+      - "skills/spec.md"
+      - "skills/decompose.md"
+      - "skills/implement.md"
+      - "skills/review.md"
+      - "skills/work-context.md"
+      - "skills/shared/layer-protocol.md"
+      - "skills/shared/specialist-delegation.md"
+
+  - name: artifact-presentation-protocol
+    specialist: harness-engineer
+    depends_on: [driver-architecture, handoff-schema, boundary-enforcement]
+    acceptance_criteria:
+      - "skills/shared/presentation-protocol.md is the canonical reference. Codifies a single canonical mode for presenting artifacts in conversation: section-with-markers using format <!-- {phase}:section:{name} --> (the convention already used in skills/ideate.md). No alternative modes — full-file dumps and summary-with-link explicitly disallowed for in-conversation artifact presentation"
+      - "Per-artifact section-break rules table in the protocol doc: definition.yaml → objective | each deliverable (one section per deliverable, named by deliverable.name) | context_pointers | constraints | gate_policy; plan.json → step-list | dependencies | risks; spec.md → goals | non-goals | approach | acceptance | open-questions; summary.md → key-findings | open-questions | recommendations; research.md → method | findings | gaps; handoff artifact (D1) → one section per top-level schema field. Exhaustive for canonical row artifacts"
+      - "Phase prefix in markers is the current step (ideate, research, plan, spec, decompose, implement, review) when an artifact is being drafted/revised; presentation when shown for review; review when summarizing during the review step"
+      - "Operator-only constraint: artifact presentation in conversation is the operator layer's responsibility per D2. Phase drivers do NOT present artifacts to user directly; they return phase results to the operator who renders them following this protocol. skills/shared/layer-protocol.md (D2) cross-references this constraint"
+      - "furrow hook presentation-check Go subcommand (internal/cli/hook/presentation_check.go) reads stdin JSON (Stop hook input shape — assistant turn content), scans for artifact-shaped content (markdown blocks containing recognized artifact paths .furrow/rows/*/{definition,plan,spec,summary,research}.md|json|yaml or fenced code blocks > 30 lines matching canonical artifact schemas) without surrounding section markers. On detection, emits advisory warning with blocker code presentation_protocol_violation (severity warn, confirmation_path silent). Does NOT block. NOT a shell script"
+      - "Claude adapter wiring: .claude/settings.json registers furrow hook presentation-check as Stop hook (additive to D3's PreToolUse layer-guard registration)"
+      - "Blocker code: schemas/blocker-taxonomy.yaml gains presentation_protocol_violation (additive after D3's codes; sequential additive ownership)"
+      - "Existing skills retrofit: skills/ideate.md already uses the marker convention (source of truth). skills/{plan,spec,review}.md gain explicit references to skills/shared/presentation-protocol.md in their Supervised Transition Protocol sections so each step's presentation is consistent. No content rewrites — additive references only"
+      - "commands/work.md.tmpl gains a 'Presentation' section pointing to skills/shared/presentation-protocol.md as canonical mode reference; operator's user-facing rendering follows this protocol exclusively. Joint touch with D2/D4 — sequential per wave plan"
+      - "Integration test (tests/integration/test-presentation-protocol.sh): replays a fixture conversation transcript containing an artifact rendered without markers, asserts the Stop hook fires with expected blocker code; replays a transcript with proper markers, asserts no hook fire"
+      - "go test ./... passes; the blocker envelope emitted validates against schemas/blocker-taxonomy.yaml"
+    file_ownership:
+      - "skills/shared/presentation-protocol.md"
+      - "internal/cli/hook/presentation_check.go"
+      - "internal/cli/hook/presentation_check_test.go"
+      - "tests/integration/test-presentation-protocol.sh"
+      - "schemas/blocker-taxonomy.yaml"
+      - ".claude/settings.json"
+      - "skills/plan.md"
+      - "skills/spec.md"
+      - "skills/review.md"
+      - "commands/work.md.tmpl"
+
+context_pointers:
+  - path: ".furrow/almanac/todos.yaml"
+    symbols:
+      - handoff-prompt-artifact-template
+      - context-routing-infrastructure
+      - design-pattern-context-construction
+      - standardize-artifact-presentation
+      - furrow-context-isolation-layer
+      - delegation-boundary-enforcement
+    note: "Six source TODOs that this row collectively closes; their context fields motivate the contract"
+  - path: ".furrow/almanac/roadmap.yaml"
+    note: "Phase 4 row 4 specification; rationale for bundling these 6 todos as one contract"
+  - path: ".furrow/rows/orchestration-delegation-contract/research/synthesis.md"
+    note: "Cross-topic research synthesis (T1 handoff-shape VALID-WITH-CAVEATS, T2 subagent-semantics GO, T3 decision-format Tighten-required). Spec-step authoring starts here"
+  - path: ".furrow/rows/orchestration-delegation-contract/research/handoff-shape.md"
+    note: "T1 — prior-art-derived schema field set. Earlier 9-field provisional list refactored to forked DriverHandoff (7 fields) + EngineHandoff (6 fields) per O1 forked-schemas decision and O6 simplifications (drop schema_version, drop persona_ref)"
+  - path: ".furrow/rows/orchestration-delegation-contract/research/subagent-semantics.md"
+    note: "T2 — Claude Code primitives verified (TeamCreate/SendMessage/PreToolUse hooks/agent_type JSON-on-stdin/CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 flag/[/resume not restoring in-process teammates]). Pi capability gap surfaced (subprocess subagents blind parent hook bus)"
+  - path: ".furrow/rows/orchestration-delegation-contract/research/decision-format-parseability.md"
+    note: "T3 — gate-transition regex 49/49 conformance; canonical block format unused (0/8). D4 parses gate-transition strictly with - Decision: bullet fallback"
+  - path: "docs/architecture/workflow-power-preservation.md"
+    note: "Lines 123-142: 'Context routing must remain intentional' and 'parallel-orchestration as first-class power' — primary motivation for D2 vertical layering and D4 routing"
+  - path: "docs/architecture/pi-native-capability-leverage.md"
+    note: "Go-first canonical principle — schema authority, validation logic, all primitives in Go; adapters consume via runFurrowJson or shell exec, never duplicate logic. Motivates `furrow hook <name>` Go subcommand approach over shell hooks"
+  - path: "docs/architecture/migration-stance.md"
+    note: "'Pi and Claude flows do not silently diverge' — motivates the canonical .furrow/layer-policy.yaml shared between Claude `furrow hook layer-guard` and Pi adapter tool_call handler"
+  - path: "skills/shared/specialist-delegation.md"
+    note: "Current operator→specialist framing — D2 reframes to driver→engine; D2 also rewrites for engine-team-composed-at-dispatch (drivers compose engine teams per dispatch)"
+  - path: "skills/work-context.md"
+    note: "Operator's per-row context document; D2 narrows scope (per-step context moves to D4's furrow context for-step)"
+  - path: "skills/ideate.md"
+    note: "Source of marker convention codified by D6 as universal presentation mode. Touched by D2 (driver reframe) and D3 (layer front-matter)"
+  - path: "skills/research.md"
+    note: "Reframed by D2 as driver brief; layer front-matter added by D3"
+  - path: "skills/plan.md"
+    note: "Reframed by D2 (drops team-plan.md prescription, reframes around layered model); layer front-matter added by D3; presentation reference added by D6"
+  - path: "skills/spec.md"
+    note: "Reframed by D2; layer front-matter added by D3; presentation reference added by D6"
+  - path: "skills/decompose.md"
+    note: "Reframed by D2 as driver brief; layer front-matter added by D3"
+  - path: "skills/implement.md"
+    note: "Reframed by D2 as driver brief; layer front-matter added by D3"
+  - path: "skills/review.md"
+    note: "Reframed by D2 as driver brief; layer front-matter added by D3; presentation reference added by D6"
+  - path: "commands/work.md"
+    note: "Replaced by commands/work.md.tmpl (Go text/template with runtime branches). Existing static commands/work.md is regenerated by furrow render adapters at install time. Joint touch order across waves: D4 (cuts ad-hoc loading) → D2 (adds layered dispatch + introduces .tmpl) → D3 (adds layer-context lifecycle wrapper docs) → D6 (adds presentation section)"
+  - path: "evals/gates/"
+    note: "D5's structural test reads gate definitions to assert one Strategy per registered step; D4's strategies must align"
+  - path: ".furrow/rows/pre-write-validation-go-first/"
+    symbols:
+      - schemas/blocker-taxonomy.yaml
+      - internal/cli/validate.go
+      - internal/cli/blocker_envelope.go
+      - adapters/pi/furrow.ts
+    note: "Upstream row provides patterns this row extends: blocker-taxonomy schema + emission helpers (D1/D3/D6 add codes); validate command group registration pattern (D1 adds 'handoff', D4 adds 'context', D3 adds 'validate skill-layers'/'validate layer-policy'/'validate driver-definitions'); runFurrowJson Pi pattern"
+  - path: "internal/cli/app.go"
+    note: "Top-level command router. Joint touch with sequential ordering: D1 (handoff group, W2) → D4 (context group, W3) → D2 (render group, W4) → D3 (additional validate subcommands + hook group, W5)"
+  - path: "schemas/blocker-taxonomy.yaml"
+    note: "Joint additive surface: D1 (3 codes) → D3 (5 codes including driver_definition_invalid for D2) → D6 (1 code). Disjoint additions; appendix-style only — no reordering, no new top-level sections; sequential waves resolve write ordering"
+  - path: "schemas/definition.schema.json"
+    note: "Reference for additionalProperties:false convention used by D1 (handoff schemas), D2 (driver-definition schema), D3 (layer-policy schema), D4 (context-bundle schema)"
+  - path: "skills/shared/decision-format.md"
+    note: "D4's decisions extraction parses the de-facto gate-transition shape (T3 finding). The canonical ## Decision: block prescription is unused (0/8 rows) — retired as follow-up TODO at row close"
+  - path: "bin/frw.d/hooks/state-guard.sh"
+    note: "Existing PreToolUse hook pattern. NEW hooks in this row ship as `furrow hook <name>` Go subcommands instead — no new shell hooks"
+  - path: "https://github.com/tintinweb/pi-subagents"
+    note: "@tintinweb/pi-subagents — adopted Pi extension for driver/engine subagent management. Pin 0.6.x in adapters/pi/package.json. Recursive-spawn verification via src/agent-runner.ts read at spec time. Capability-gap-known: subagents are subprocess-spawn; parent hook bus blind for engine layer; mitigated by EngineHandoff Furrow-stripping + boundary leakage test"
+  - path: "https://github.com/badlogic/pi-mono"
+    note: "Pi runtime monorepo. Extension API surface (tool_call, before_agent_start, pi.events, registerTool, setActiveTools, appendEntry, session-tree branches) used by adapters/pi/extension/index.ts. Mature ecosystem (40k stars, 7.9M dl/mo)"
+  - path: "https://docs.anthropic.com/en/docs/claude-code/sub-agents"
+    note: "Claude Code subagent + agent-teams primitives. Source of TeamCreate/SendMessage/agent_type-JSON-on-stdin semantics verified in T2"
+
+constraints:
+  - "Backend canonical Go: handoff schemas, driver definitions schema, context-bundle schema, layer-policy schema, pattern interfaces, hook entry points (furrow hook *) all live in Go and JSON Schema. Adapters consume via runFurrowJson or process exec — never duplicate validation/policy logic"
+  - "End-state migration target: canonical Go (no shells) + canonical Pi adapter with Claude support. New hooks ship as `furrow hook <name>` Go subcommands, NOT shell scripts. Avoids migration tech debt to canonical-Go target. (Existing shell hooks — state-guard.sh etc. — are debt to port; new shells are debt creation.)"
+  - "Furrow backend is RUNTIME-AGNOSTIC. Claude-specific concepts (TeamCreate, .claude/agents/, ~/.claude/teams/) and Pi-specific concepts (@tintinweb/pi-subagents API, session-tree branches) live in the adapter integration layer ONLY. The backend has no awareness of session_id, no per-row driver registry, no runtime-specific files"
+  - "All blocker codes registered in schemas/blocker-taxonomy.yaml before any emission. Emitting an unregistered code panics in test mode (pattern from pre-write-validation-go-first). Code allotments: D1 adds 3 (handoff_schema_invalid, handoff_required_field_missing, handoff_unknown_field); D3 adds 5 (skill_layer_unset, layer_policy_invalid, layer_tool_violation, engine_furrow_leakage, driver_definition_invalid); D6 adds 1 (presentation_protocol_violation). 9 total"
+  - "Three-layer model is VERTICAL (operator → driver → engine), not horizontal across specialist types. The original 'furrow-aware vs unaware' framing in the source TODOs is superseded — harness-aware specialists are still engines from the contract's perspective; their handoff content can include Furrow internals only via curated grounding paths the driver passes them, but the layer they OPERATE in is engine"
+  - "Long-running phase drivers are runtime-managed — Claude via TeamCreate/team-config; Pi via @tintinweb/pi-subagents. Furrow has NO drivers.json, NO `furrow driver mark/clear/list/resolve` CLIs, NO .furrow/.layer-context.{agent_type} files. Adapters use their own runtime state. Cross-session continuity is the runtime's responsibility (operator skill instructs the LLM)"
+  - "Engine teams are composed at DISPATCH-TIME by drivers, not at PLANNING-TIME by the operator. team-plan.md is dropped from the row artifact set. plan.json's `specialist:` field per deliverable is a HINT for the implementing driver, not a binding contract. skills/plan.md is updated to reflect this"
+  - "Engines are TRULY Furrow-unaware: EngineHandoff has no row, no step, no schema_version, no .furrow/ paths. Drivers BEAR THE CURATION RESPONSIBILITY when constructing engine handoffs. Schema validation enforces this — EngineHandoff with .furrow/ in any path or Furrow vocab in constraints fails validation"
+  - "Cross-adapter parity invariant: Pi adapter (adapters/pi/extension/index.ts) and Claude `furrow hook layer-guard` Go subcommand consume the SAME .furrow/layer-policy.yaml. Pi adapter exec's furrow hook layer-guard with stdin JSON shaped to match Claude's hook payload. UX divergence (Pi: ctx.ui.notify; Claude: stdout/stderr) is intrinsic; the policy table and verdict logic are shared"
+  - "Boundary leakage test (tests/integration/test-boundary-leakage.sh) must pass with zero matches against the leakage corpus. NON-NEGOTIABLE — architecture's smoke alarm. If leakage detected, root-cause the boundary breach; do not relax the corpus"
+  - "Joint file ownership ordering (single-deliverable waves where overlap exists): internal/cli/app.go: D1 (W2) → D4 (W3) → D2 (W4) → D3 (W5); commands/work.md.tmpl: D4 (W3) → D2 (W4) → D3 (W5) → D6 (W6); skills/{ideate,research,plan,spec,decompose,implement,review}.md: D2 (W4 reframes content) → D3 (W5 adds layer: front-matter); skills/plan.md, skills/spec.md, skills/review.md additionally touched by D6 (W6, presentation references); schemas/blocker-taxonomy.yaml: D1 (W2) → D3 (W5) → D6 (W6); skills/shared/specialist-delegation.md: D2 (W4) → D3 (W5); docs/architecture/orchestration-delegation-contract.md: D3 owns; .claude/settings.json: D3 (W5) → D6 (W6) additive"
+  - "Wave plan (six sequential waves): W1 = D5 (context-construction-patterns); W2 = D1 (handoff-schema); W3 = D4 (context-routing-cli); W4 = D2 (driver-architecture); W5 = D3 (boundary-enforcement); W6 = D6 (artifact-presentation-protocol). Single-deliverable waves required by joint file ownership above; parallel waves not viable for this row"
+  - "No state.json or summary.md mutations from D1, D4, D5 (pure read+emit). D2/D3/D6 modify documentation and skill files but never touch row state directly. All state mutations route through rws as required by .claude/rules/cli-mediation.md"
+  - "No new external Go dependencies; reuse vendored YAML and JSON libraries. If go-jsonschema generation is chosen for D1, evaluate vendored vs hand-maintained struct↔schema during spec"
+  - "Pi adapter dependencies pinned: @tintinweb/pi-subagents@0.6.x and @mariozechner/pi-coding-agent@0.70.x in adapters/pi/package.json. Wrapped behind a thin Furrow PiAdapter interface so the dep is swappable. Recursive-spawn (subagent → subagent) verified at spec time by reading src/agent-runner.ts"
+  - "D5 ships before D4 starts: D5's contracts.go, contracts_test.go, structure_test.go, and architecture doc are the contract D4 implements against. D5's review sign-off is partially gated on D4 strategies passing the conformance harness — exercised in W3 review (forces good integration; surfaces D5 contract gaps early)"
+  - "Pi capability-gap (acknowledged): @tintinweb/pi-subagents subagent model is subprocess-spawn; parent's hook bus blind to subagent tool calls. Pi-side layer-guard scoped to main-thread (operator) only this row; subagent layer enforcement on Pi documented as known limitation. Engine context safety preserved by EngineHandoff Furrow-stripping (D1) plus post-hoc boundary leakage test (D3)"
+  - "Spec-step pre-implementation verifications: (a) read @tintinweb/pi-subagents src/agent-runner.ts to confirm recursive subagent spawn (driver→engine path) — if broken, engine dispatch falls back to subprocess subagent per pi-mono example; (b) audit Claude Code current docs (sub-agents, hooks, agent-teams) for any breaking changes since T2 research"
+  - "Conventional commits per project convention (feat:, fix:, chore:, docs:, refactor:, test:, infra:); each deliverable lands in its own commit (or contiguous commit run) referencing the deliverable name in the body"
+  - "Pre-existing skills/ideate.md marker convention <!-- {phase}:section:{name} --> is preserved exactly by D6 — the protocol formalizes what already exists, does not invent new syntax"
+  - "Risk register: D5-contract-rework (mitigation: conformance harness in D5's contracts_test.go run against D4's implementations during W3 review); internal/cli/app.go register-order contention (mitigation: every wave follows pre-write-validation-go-first registration pattern strictly); schemas/blocker-taxonomy.yaml four-way additive merge structural drift (mitigation: appendix-only additions, no reordering existing entries; D3 includes regression test that taxonomy stays under additionalProperties:false after each subsequent wave's append); experimental flag CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 absent (mitigation: frw doctor check added in D2)"
+  - "Spec-step kill-switches active: if recursive-spawn verification on @tintinweb/pi-subagents fails, the engine dispatch path falls back to subprocess subagents per pi-mono example (engine isolation preserved by EngineHandoff content discipline either way). If Claude Code primitives have changed since T2 research, spec captures the delta and adjusts. If neither adapter can be wired end-to-end in this row, redirect via /furrow:redirect rather than ship a half-architecture"
+
+gate_policy: supervised
+mode: code
+source_todos:
+  - handoff-prompt-artifact-template
+  - context-routing-infrastructure
+  - design-pattern-context-construction
+  - standardize-artifact-presentation
+  - furrow-context-isolation-layer
+  - delegation-boundary-enforcement

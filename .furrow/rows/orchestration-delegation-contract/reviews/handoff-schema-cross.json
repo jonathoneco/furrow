@@ -1,0 +1,72 @@
+{
+  "deliverable": "handoff-schema",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "fail",
+        "evidence": "`go run ./cmd/furrow handoff validate <invalid-driver.md> --json` returned `{\"ok\":true,\"verdict\":\"valid\"}` even when the handoff had `Step: NOT_A_REAL_STEP` and an invalid row, because `validateDriverMarkdown` only checks for marker presence."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "fail",
+        "evidence": "`internal/cli/handoff/cmd.go` adds branching in `Handler.Run`, `runRenderDriver`, `runRenderEngine`, `runValidate`, and `parseRenderFlags`, but `rg` found no tests covering those command handlers or flag parsing."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "fail",
+        "evidence": "The CLI/validator surface diverges from the spec: `runRenderDriver` fabricates objective/grounding and always emits empty constraints instead of consuming D4/state/definition data, `runRenderEngine` only accepts stdin, and `ValidateFile` chooses by H1 marker rather than sniffing the rendered handoff target prefix/schema content."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "fail",
+        "evidence": "The D1 commit also modified `go.mod` to promote `gopkg.in/yaml.v2` from indirect to direct, but that file is outside the obvious handoff deliverable surface and the commit summary does not justify the change."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "fail",
+        "evidence": "`internal/cli/handoff/validate.go` duplicates schema logic in ad hoc Go checks instead of validating against the checked-in JSON Schema files, leaving multiple sources of truth and already causing acceptance of invalid rendered driver handoffs."
+      }
+    ],
+    "verdict": "fail"
+  },
+  "overall": "fail",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "diff_scope": {
+    "base": "08f08f8f28b758917e20347da9d991761c27e189",
+    "commits": [
+      "bb64f753fa752f500f7be4977237d9704fbf2076",
+      "cd5b0221e5e6dc117d2b2cc825c61524d9884ec6",
+      "f17efb20e671926ff973a7c4223f75a0f254fc59",
+      "89aed6b4ab6f80c34d115db18c821d0b30c27c72",
+      "95a2b44d56d2a773072d7d20f564814953069834"
+    ],
+    "files_matched": [
+      "internal/cli/app.go",
+      "internal/cli/handoff/handoff_test.go",
+      "internal/cli/handoff/render.go",
+      "internal/cli/handoff/schema.go",
+      "internal/cli/handoff/validate.go",
+      "schemas/blocker-taxonomy.yaml",
+      "schemas/handoff-driver.schema.json",
+      "schemas/handoff-engine.schema.json",
+      "templates/handoff-driver.md.tmpl",
+      "templates/handoff-engine.md.tmpl",
+      "templates/handoffs/return-formats/engine-eos-report.json",
+      "templates/handoffs/return-formats/phase-eos-report.json"
+    ]
+  },
+  "unplanned_changes": "absent",
+  "timestamp": "2026-04-27T15:07:15Z"
+}

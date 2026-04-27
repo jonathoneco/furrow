@@ -1,0 +1,16 @@
+name: driver:research
+step: research
+tools_allowlist:
+  - Read
+  - Grep
+  - Glob
+  - WebFetch
+  - WebSearch
+  - Agent
+  - SendMessage
+  - Bash(rws:*)
+  - Bash(alm:*)
+  - Bash(sds:*)
+  - Bash(furrow:context for-step:*)
+  - Bash(furrow:handoff render:*)
+model: opus

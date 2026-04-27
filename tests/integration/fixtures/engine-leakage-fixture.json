@@ -1,0 +1,17 @@
+{
+  "target": "engine:specialist:go-specialist",
+  "objective": "Add a function double(x int) int returning x*2 to add.go.",
+  "deliverables": [
+    {
+      "name": "double-function",
+      "acceptance_criteria": [
+        "double(2) returns 4",
+        "go test ./... passes"
+      ],
+      "file_ownership": ["add.go", "add_test.go"]
+    }
+  ],
+  "constraints": ["No external dependencies"],
+  "grounding": [],
+  "return_format": "engine-eos-report"
+}

@@ -182,6 +182,17 @@ frw_doctor() {
     check_pass "no duplicate instructions across layers"
   fi
 
+  section "Driver definitions"
+  if command -v furrow >/dev/null 2>&1; then
+    if (cd "$ROOT" && furrow validate driver-definitions --json >/dev/null 2>&1); then
+      check_pass "all .furrow/drivers/driver-*.yaml validate against schema"
+    else
+      check_fail "driver definition validation failed (run 'furrow validate driver-definitions' for details)"
+    fi
+  else
+    check_warn "furrow binary not on PATH; skipping driver-definitions check"
+  fi
+
   # ============================================================
   # Tier 1.5: Spec completeness (always run)
   # ============================================================

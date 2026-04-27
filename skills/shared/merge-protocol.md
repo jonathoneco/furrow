@@ -1,3 +1,6 @@
+---
+layer: shared
+---
 # Merge Protocol
 
 Reference for the `/furrow:merge` five-phase flow. Loaded by the merge-specialist

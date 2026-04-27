@@ -478,7 +478,7 @@ func TestRunGuard_StdoutAlwaysArray(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			var stdout, stderr bytes.Buffer
-			app := NewWithStdin(strings.NewReader(tc.stdin), &stdout, &stderr)
+			app := NewWithStdin(&stdout, &stderr, strings.NewReader(tc.stdin))
 			exit := app.Run(tc.args)
 			if exit != tc.wantExit {
 				t.Errorf("exit = %d, want %d (stderr=%q)", exit, tc.wantExit, stderr.String())

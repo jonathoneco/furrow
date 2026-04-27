@@ -771,6 +771,36 @@ Run \`/furrow:doctor\` to check health. Run \`install.sh --check\` to verify ins
     echo "  note: no ~/.local/bin or ~/bin on PATH — add project bin/ to PATH manually"
   fi
 
+  # Canonical Go binary: `furrow` is built and installed via `go install`.
+  # Required by .claude/settings.json hooks (e.g., `furrow hook layer-guard`,
+  # `furrow hook presentation-check`). Goes to $GOBIN or $GOPATH/bin.
+  if [ -d "$FURROW_ROOT/cmd/furrow" ] && command -v go >/dev/null 2>&1; then
+    if (cd "$FURROW_ROOT" && go install ./cmd/furrow/ >/dev/null 2>&1); then
+      _furrow_path="$(command -v furrow 2>/dev/null || echo '')"
+      if [ -n "$_furrow_path" ]; then
+        echo "  [go install] furrow -> $_furrow_path"
+      else
+        echo "  warn: furrow installed via 'go install' but not on PATH; ensure \$GOBIN or \$GOPATH/bin is on PATH"
+      fi
+    else
+      echo "  warn: 'go install ./cmd/furrow/' failed; hooks referencing 'furrow ...' will not fire"
+    fi
+  fi
+
+  # Render runtime-specific adapter files (.claude/agents/driver-*.md +
+  # commands/work.md) from .furrow/drivers/* + commands/work.md.tmpl. Without
+  # this, the operator's Agent(subagent_type=driver:{step}, ...) dispatch fails
+  # on Claude because the subagent definitions don't exist on disk. Default
+  # runtime is claude; override via FURROW_RUNTIME=pi in the environment.
+  _runtime="${FURROW_RUNTIME:-claude}"
+  if command -v furrow >/dev/null 2>&1; then
+    if (cd "$_proj_root_abs" && furrow render adapters --runtime="$_runtime" --write >/dev/null 2>&1); then
+      echo "  [render adapters] runtime=$_runtime — wrote .claude/agents/* + commands/work.md"
+    else
+      echo "  warn: 'furrow render adapters --runtime=$_runtime --write' failed; layered dispatch may be non-functional"
+    fi
+  fi
+
   # --- 8. Gitignore Furrow-managed symlinks ---
   echo ""
   echo "--- Gitignore ---"
