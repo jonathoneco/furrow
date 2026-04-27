@@ -1,83 +1,101 @@
-# /work [description] [--mode research] [--stop-at <step>] [--gate-policy <policy>] [--switch <name>]
+# /work — Operator SkillYou are the **operator** — the whole-row orchestration layer. You address the user,
+manage row state, spawn and prime phase drivers, and present phase results.
 
-Primary entry point: start new work, continue existing, or switch between active rows.
+You do not implement deliverables directly. You orchestrate drivers that do.
 
-## Flag Parsing
+See `skills/shared/layer-protocol.md` for the full 3-layer boundary contract.
 
-Scan arguments in order:
-1. Extract `--switch <name>` if present (positional-agnostic).
-2. Extract `--mode`, `--stop-at`, `--gate-policy` flags if present.
-3. Remaining args are the description (joined with spaces).
-4. If `--switch` is present and description is non-empty:
-   -> Error: "Cannot use --switch with a description. Use /work <description> to create a new unit, or /work --switch <name> to switch focus."
-5. If `--switch` is present and any of `--mode`, `--stop-at`, `--gate-policy` are present:
-   -> Error: "Flags --mode, --stop-at, --gate-policy are only valid when creating a new row."
+---
 
-## Context Detection & Routing
+## Step 1 — Load Operator Bundle
 
-### Route 1: `/work --switch <name>` (switch focus)
+Detect the active row name from `.furrow/focus` or the row name passed at invocation.
+Then load your context bundle:
 
-1. Validate `.furrow/rows/{name}/state.json` exists.
-   If not: Error "Row '{name}' does not exist."
-2. Validate `archived_at` is null.
-   If not: Error "Row '{name}' is archived. Cannot switch to it."
-3. Set focus: `rws focus "{name}"`
-4. Read `state.json`, run `rws load-step "{name}"` to inject current skill.
-5. Display: task name, step, step_status, deliverable progress.
-6. Continue execution within the current step.
-7. After any transition: run `frw run-gate` (gate enforcement happens inside `rws transition` itself).
+```sh
+furrow context for-step <step> --target operator --row <row> --json
+```
 
-### Route 2: `/work <description>` (create new row)
+The bundle's `prior_artifacts.state` tells you the current step. The bundle's
+`prior_artifacts.summary_sections` gives synthesized context from prior steps.
+Skills filtered to `layer:operator|shared` are included in `skills[]`.
 
-Any number of existing active tasks is fine — creating alongside them is expected.
+---
 
-0. **Pre-flight**: If `.furrow/seeds/seeds.jsonl` or `.furrow/furrow.yaml` does not exist,
-   run `frw init` first (see `commands/init.md`). Do not proceed until init completes.
-1. Derive `{name}` from description (kebab-case, max 40 chars).
-2. Run `rws init "{name}" --title "{description}"`.
-3. Set focus: `rws focus "{name}"`
-4. If `--mode research`: set `state.json.mode` to `"research"`.
-5. If `--stop-at {step}`: set `state.json.force_stop_at` to step name.
-6. If `--gate-policy {policy}`: pass to definition.yaml `gate_policy`.
-7. Set `step_status` to `"in_progress"`.
-8. Read and follow `skills/ideate.md` to begin ideation.
+## Step 2 — Detect Step + Dispatch Driver
 
-### Route 3: Bare `/work` (no description, no --switch)
+### Claude Runtime
 
-Resolve the focused row via `find_focused_row()` logic:
+**Session-resume detection**: read `~/.claude/teams/{{ROW_NAME}}/config.json`.
+If absent or `members[].agent_id` is stale (no live process), re-spawn the driver.
 
-1. Read `.furrow/.focused` for the focused row name.
-2. If `.focused` exists and names a valid active unit (state.json exists, `archived_at` is null):
-   -> Continue that unit (go to Continuation below).
-3. If `.focused` is missing, empty, or references an invalid/archived unit:
-   -> Run `rws list` to enumerate active units.
+**Spawn driver**:
+```
+Agent(
+  subagent_type="driver:{step}",
+  description="<concise task description for this step>",
+  prompt="<priming message body — see below>"
+)
+```
 
-   **0 active units:**
-   -> Error: "No active task. Provide a description to start new work."
+Claude Code's `Agent` tool dispatches to the pre-registered subagent definition at
+`.claude/agents/driver-{step}.md`. That definition's frontmatter provides the
+`tools` allowlist and `model` — do NOT pass them as inline arguments. The definition
+is rendered from `.furrow/drivers/driver-{step}.yaml` + `skills/{step}.md` by:
 
-   **1 active unit:**
-   -> Set focus: `echo '{name}' > .furrow/.focused`
-   -> Continue that row (go to Continuation below).
+```sh
+furrow render adapters --runtime=claude --write
+```
 
-   **Multiple active rows:**
-   -> List all active rows with name, step, step_status, and updated_at.
-   -> Prompt: "Multiple active tasks. Which do you want to continue?"
-   -> On user selection: `echo '{selected_name}' > .furrow/.focused`
-   -> Continue the selected unit (go to Continuation below).
+**Prime the driver** after spawn:
+```
+SendMessage(
+  to=agent_id,
+  body=<bundle from: furrow context for-step {step} --target driver --json>
+)
+```
 
-## Continuation
+**Persist driver handoff artifact**:
+```sh
+furrow handoff render --target driver:{step} --row <row> --step <step> --write
+```
+Artifact written to `.furrow/rows/<row>/handoffs/{step}-to-driver.md`.
 
-1. Read `.furrow/rows/{name}/state.json`.
-2. Display: task name, step, step_status, deliverable progress.
-3. Run `rws load-step "{name}"` to inject current skill.
-4. If step_status is "completed": run `rws transition "{name}"`.
-5. If step_status is "not_started": set to "in_progress", load skill.
-6. After any transition: run `frw run-gate` (gate enforcement, including step ordering and pending user actions, happens inside `rws transition` itself).
-7. Continue execution within the current step.
+**On driver return**: receive phase EOS-report via `SendMessage` from driver.
+Present to user per `skills/shared/presentation-protocol.md` (D6).
+Confirm gate with user. Call `rws transition <row> pass manual "<evidence>"`.
 
-## Step Routing After Transition
+**Experimental teams flag**: if `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` ≠ `1`,
+warn the user — multi-agent dispatch requires this flag.
 
-After `rws transition` advances the step:
-1. Run `frw run-gate` for evaluator confirmation (pre-step evaluation is handled internally by `rws transition`).
-2. If the step is trivially resolvable (prechecked), repeat until a non-trivial step is reached.
-3. Load the new step's skill and begin.
+---
+
+## Step 3 — Driver→Engine Context
+
+When the driver dispatches engines, it uses:
+
+```sh
+furrow context for-step <step> --target specialist:{id} --json
+```
+
+Replace `{id}` with the specialist identifier (e.g., `go-specialist`).
+The specialist brief at `specialists/{id}.md` must exist or the command exits 3
+with blocker code `context_input_missing`. The driver curates the bundle before
+passing it to the engine handoff — engines receive no Furrow internals.
+
+---
+
+## Step 4 — Presentation
+
+Present all phase results to the user using `skills/shared/presentation-protocol.md` (D6).
+
+Use section markers: `<!-- {step}:section:{name} -->` before each artifact block.
+Never dump raw file contents without markers.
+
+---
+
+## Caching
+
+The CLI caches bundles under `.furrow/cache/context-bundles/`. The cache
+invalidates automatically when `state.json` changes or any input file is modified.
+Pass `--no-cache` to bypass caching.

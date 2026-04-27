@@ -128,6 +128,27 @@ if [ -d "$FURROW_ROOT/cmd/furrow" ]; then
   fi
 fi
 
+# --- Render runtime-specific adapter files ---
+# `furrow render adapters` produces .claude/agents/driver-{step}.md (Claude
+# subagent definitions consumed by the Agent tool) + commands/work.md
+# (operator skill, runtime-branched from commands/work.md.tmpl). Without this,
+# the orchestration/delegation contract ships non-functional on Claude — the
+# operator's `Agent(subagent_type=driver:{step}, ...)` invocation can't dispatch
+# because the subagent definitions aren't on disk.
+#
+# Default to claude. Pi users re-run with --runtime=pi after install, or set
+# FURROW_RUNTIME=pi in the environment before invoking install.sh.
+_runtime="${FURROW_RUNTIME:-claude}"
+if command -v furrow >/dev/null 2>&1; then
+  if (cd "$FURROW_ROOT" && furrow render adapters --runtime="$_runtime" --write >/dev/null 2>&1); then
+    echo "  [RENDER ADAPTERS] runtime=$_runtime — wrote .claude/agents/* + commands/work.md"
+  else
+    echo "  [WARN] 'furrow render adapters --runtime=$_runtime --write' failed; layered dispatch may be non-functional."
+  fi
+else
+  echo "  [WARN] furrow binary not on PATH; skipping 'furrow render adapters' — layered dispatch will not work until rendered."
+fi
+
 # --- Delegate to frw install ---
 # bin/frw.d/install.sh is the sole producer of the 22
 # .claude/commands/specialist:*.md symlinks (glob-discovery loop at

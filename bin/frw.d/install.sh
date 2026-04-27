@@ -787,6 +787,20 @@ Run \`/furrow:doctor\` to check health. Run \`install.sh --check\` to verify ins
     fi
   fi
 
+  # Render runtime-specific adapter files (.claude/agents/driver-*.md +
+  # commands/work.md) from .furrow/drivers/* + commands/work.md.tmpl. Without
+  # this, the operator's Agent(subagent_type=driver:{step}, ...) dispatch fails
+  # on Claude because the subagent definitions don't exist on disk. Default
+  # runtime is claude; override via FURROW_RUNTIME=pi in the environment.
+  _runtime="${FURROW_RUNTIME:-claude}"
+  if command -v furrow >/dev/null 2>&1; then
+    if (cd "$_proj_root_abs" && furrow render adapters --runtime="$_runtime" --write >/dev/null 2>&1); then
+      echo "  [render adapters] runtime=$_runtime — wrote .claude/agents/* + commands/work.md"
+    else
+      echo "  warn: 'furrow render adapters --runtime=$_runtime --write' failed; layered dispatch may be non-functional"
+    fi
+  fi
+
   # --- 8. Gitignore Furrow-managed symlinks ---
   echo ""
   echo "--- Gitignore ---"
