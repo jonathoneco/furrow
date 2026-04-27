@@ -80,7 +80,6 @@ func (s *ResearchStrategy) Apply(b ctx.Builder, src ctx.ContextSource) error {
 		Learnings:       learnings,
 	})
 
-	b.SetMetadata("topic_count", len(summary))
 
 	return nil
 }

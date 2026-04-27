@@ -420,27 +420,3 @@ func TestChainOrdering_DifferentTargetsDifferentSkills(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// R1 — SetMetadata via Builder interface (conformance).
-// ---------------------------------------------------------------------------
-
-// TestBuilderInterface_SetMetadata verifies that fakeBuilder (which now
-// implements SetMetadata) satisfies the Builder interface and stores metadata.
-func TestBuilderInterface_SetMetadata(t *testing.T) {
-	b := newFakeBuilder()
-	b.SetMetadata("key", "value")
-	b.SetMetadata("count", 42)
-	bundle, err := b.Build()
-	if err != nil {
-		t.Fatalf("Build: %v", err)
-	}
-	if bundle.StepStrategyMetadata == nil {
-		t.Fatal("StepStrategyMetadata must not be nil after SetMetadata calls")
-	}
-	if bundle.StepStrategyMetadata["key"] != "value" {
-		t.Errorf("key: want %q got %v", "value", bundle.StepStrategyMetadata["key"])
-	}
-	if bundle.StepStrategyMetadata["count"] != 42 {
-		t.Errorf("count: want 42 got %v", bundle.StepStrategyMetadata["count"])
-	}
-}

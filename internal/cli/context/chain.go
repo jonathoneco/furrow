@@ -32,9 +32,6 @@ func (n *DefaultsNode) Next() ChainNode { return n.next }
 func (n *DefaultsNode) Apply(b Builder, src ContextSource) error {
 	// Defaults are implicit in BundleBuilder's zero state; nothing to do here
 	// except ensure metadata carries the source triple.
-	b.SetMetadata("row", src.Row())
-	b.SetMetadata("step", src.Step())
-	b.SetMetadata("target", src.Target())
 	return nil
 }
 

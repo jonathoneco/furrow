@@ -79,13 +79,6 @@ func (s *SpecStrategy) Apply(b ctx.Builder, src ctx.ContextSource) error {
 		Learnings:       learnings,
 	})
 
-	deliverableCount := 0
-	if deliverables, ok := state["deliverables"].(map[string]any); ok {
-		deliverableCount = len(deliverables)
-	}
-
-	b.SetMetadata("deliverable_count", deliverableCount)
-
 	return nil
 }
 

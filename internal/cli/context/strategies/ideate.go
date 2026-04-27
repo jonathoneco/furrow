@@ -62,7 +62,6 @@ func (s *IdeateStrategy) Apply(b ctx.Builder, src ctx.ContextSource) error {
 		Learnings:       []ctx.Learning{},
 	})
 
-	b.SetMetadata("is_first_step", true)
 
 	return nil
 }

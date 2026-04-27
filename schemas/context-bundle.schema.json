@@ -5,7 +5,7 @@
   "description": "Context bundle produced by `furrow context for-step` (D4). Contains skills, references, prior artifacts, decisions, and step-strategy metadata for a given row/step/target triple.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["row", "step", "target", "skills", "references", "prior_artifacts", "decisions", "step_strategy_metadata"],
+  "required": ["row", "step", "target", "skills", "references", "prior_artifacts", "decisions"],
   "properties": {
     "row": {
       "type": "string",
@@ -143,24 +143,6 @@
             "description": "First-occurrence position for de-dup last-wins semantics."
           }
         }
-      }
-    },
-    "step_strategy_metadata": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Step-strategy-specific metadata. Keys and value shapes are defined per step: ideate={is_first_step:bool}; research={topic_count:int}; plan={has_research:bool}; spec={deliverable_count:int}; decompose={spec_count:int}; implement={wave:int,deliverables:[string]}; review={review_round:int}. The row/step/target triple is injected by the defaults node for all steps.",
-      "properties": {
-        "row":             { "type": "string" },
-        "step":            { "type": "string" },
-        "target":          { "type": "string" },
-        "is_first_step":   { "type": "boolean" },
-        "topic_count":     { "type": "integer" },
-        "has_research":    { "type": "boolean" },
-        "deliverable_count": { "type": "integer" },
-        "spec_count":      { "type": "integer" },
-        "wave":            { "type": "integer" },
-        "deliverables":    { "type": "array", "items": { "type": "string" } },
-        "review_round":    { "type": "integer" }
       }
     }
   }
