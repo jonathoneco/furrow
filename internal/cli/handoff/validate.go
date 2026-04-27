@@ -226,6 +226,18 @@ func ValidateDriverJSON(data []byte, path string) (*Envelope, error) {
 		}, nil
 	}
 
+	// R3: Verify the return_format ID resolves to a known schema file.
+	if err := ResolveReturnFormat(h.ReturnFormat); err != nil {
+		return &Envelope{
+			Code:             CodeHandoffSchemaInvalid,
+			Category:         "handoff",
+			Severity:         "error",
+			Message:          fmt.Sprintf("%s: return_format %q is not a known schema (templates/handoffs/return-formats/%s.json not found)", path, h.ReturnFormat, h.ReturnFormat),
+			RemediationHint:  "return_format must be a known schema ID; known schemas: phase-eos-report, engine-eos-report",
+			ConfirmationPath: "block",
+		}, nil
+	}
+
 	return nil, nil
 }
 
@@ -407,16 +419,30 @@ func ValidateEngineJSON(data []byte, path string) (*Envelope, error) {
 		}, nil
 	}
 
+	// R3: Verify the return_format ID resolves to a known schema file.
+	if err := ResolveReturnFormat(h.ReturnFormat); err != nil {
+		return &Envelope{
+			Code:             CodeHandoffSchemaInvalid,
+			Category:         "handoff",
+			Severity:         "error",
+			Message:          fmt.Sprintf("%s: return_format %q is not a known schema (templates/handoffs/return-formats/%s.json not found)", path, h.ReturnFormat, h.ReturnFormat),
+			RemediationHint:  "return_format must be a known schema ID; known schemas: phase-eos-report, engine-eos-report",
+			ConfirmationPath: "block",
+		}, nil
+	}
+
 	return nil, nil
 }
 
 // validateDriverMarkdown parses the driver handoff markdown and validates it.
-// For rendered markdown, we reconstruct a minimal JSON for validation.
-// This is a structural/content check; full round-trip JSON would require
-// a complete parser. For CLI validate, we re-derive fields from sections.
+//
+// R2 fix: after checking for required section markers, we parse the markdown
+// back into a DriverHandoff struct via ParseDriverMarkdown and re-run the
+// existing ValidateDriverJSON path. This unifies markdown and JSON validation
+// to a single source of truth — ValidateDriverJSON — rather than duplicating
+// checks in ad-hoc form here.
 func validateDriverMarkdown(content, path string) (*Envelope, error) {
-	// Extract JSON block if present (for validate of JSON-embedded handoffs).
-	// If not, do a structural check by looking for required section markers.
+	// Structural check: section markers must be present before we attempt parse.
 	markers := []string{
 		"<!-- driver-handoff:section:target -->",
 		"<!-- driver-handoff:section:objective -->",
@@ -436,10 +462,38 @@ func validateDriverMarkdown(content, path string) (*Envelope, error) {
 			}, nil
 		}
 	}
-	return nil, nil
+
+	// Parse markdown → DriverHandoff → JSON → ValidateDriverJSON.
+	// This ensures field-level validation (step enum, kebab-case row, return_format
+	// resolution, etc.) is applied uniformly to both JSON and markdown inputs.
+	parsed, err := ParseDriverMarkdown(content)
+	if err != nil {
+		return &Envelope{
+			Code:             CodeHandoffSchemaInvalid,
+			Category:         "handoff",
+			Severity:         "error",
+			Message:          fmt.Sprintf("%s: failed to parse driver handoff markdown: %v", path, err),
+			RemediationHint:  "Use 'furrow handoff render' to produce a well-formed handoff document",
+			ConfirmationPath: "block",
+		}, nil
+	}
+
+	data, merr := marshalDriverHandoff(parsed)
+	if merr != nil {
+		return nil, fmt.Errorf("validate driver markdown: marshal: %w", merr)
+	}
+	return ValidateDriverJSON(data, path)
 }
 
 // validateEngineMarkdown parses the engine handoff markdown and validates it.
+//
+// R2 fix: after checking required section markers, we parse the markdown
+// back into an EngineHandoff struct via ParseEngineMarkdown and re-run
+// ValidateEngineJSON. This provides field-level validation (target pattern,
+// Furrow vocab, return_format resolution) without duplicating rules here.
+//
+// The Furrow vocab leakage check is preserved as a pre-parse gate to produce
+// a clear error message; ValidateEngineJSON also checks per-field vocab.
 func validateEngineMarkdown(content, path string) (*Envelope, error) {
 	markers := []string{
 		"<!-- engine-handoff:section:target -->",
@@ -462,7 +516,9 @@ func validateEngineMarkdown(content, path string) (*Envelope, error) {
 		}
 	}
 
-	// Check for Furrow vocab leakage in engine handoff markdown.
+	// Full-document Furrow vocab gate: reject any engine handoff markdown that
+	// contains Furrow vocabulary anywhere in the document (not just in parsed fields).
+	// This catches injected content that falls outside structured sections.
 	if ContainsFurrowVocab(content) {
 		return &Envelope{
 			Code:             CodeHandoffSchemaInvalid,
@@ -473,5 +529,23 @@ func validateEngineMarkdown(content, path string) (*Envelope, error) {
 			ConfirmationPath: "block",
 		}, nil
 	}
-	return nil, nil
+
+	// Parse markdown → EngineHandoff → JSON → ValidateEngineJSON.
+	parsed, err := ParseEngineMarkdown(content)
+	if err != nil {
+		return &Envelope{
+			Code:             CodeHandoffSchemaInvalid,
+			Category:         "handoff",
+			Severity:         "error",
+			Message:          fmt.Sprintf("%s: failed to parse engine handoff markdown: %v", path, err),
+			RemediationHint:  "Use 'furrow handoff render' to produce a well-formed handoff document",
+			ConfirmationPath: "block",
+		}, nil
+	}
+
+	data, merr := marshalEngineHandoff(parsed)
+	if merr != nil {
+		return nil, fmt.Errorf("validate engine markdown: marshal: %w", merr)
+	}
+	return ValidateEngineJSON(data, path)
 }
