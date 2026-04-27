@@ -3,7 +3,12 @@ version: "1"
 # Pattern source: D2 driver-{step} naming + D1 engine:{specialist-id} convention.
 # Unknown agent_type → engine (fail-closed default; see policy.go LookupLayer).
 agent_type_map:
-  operator:           operator
+  operator:                 operator
+  team-lead:                operator
+  conflict-cartographer:    operator
+  integration-architect:    operator
+  integration-architect-2:  operator
+  harness-integrity-reviewer: operator
   driver:ideate:      driver
   driver:research:    driver
   driver:plan:        driver
