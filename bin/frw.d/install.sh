@@ -771,6 +771,22 @@ Run \`/furrow:doctor\` to check health. Run \`install.sh --check\` to verify ins
     echo "  note: no ~/.local/bin or ~/bin on PATH — add project bin/ to PATH manually"
   fi
 
+  # Canonical Go binary: `furrow` is built and installed via `go install`.
+  # Required by .claude/settings.json hooks (e.g., `furrow hook layer-guard`,
+  # `furrow hook presentation-check`). Goes to $GOBIN or $GOPATH/bin.
+  if [ -d "$FURROW_ROOT/cmd/furrow" ] && command -v go >/dev/null 2>&1; then
+    if (cd "$FURROW_ROOT" && go install ./cmd/furrow/ >/dev/null 2>&1); then
+      _furrow_path="$(command -v furrow 2>/dev/null || echo '')"
+      if [ -n "$_furrow_path" ]; then
+        echo "  [go install] furrow -> $_furrow_path"
+      else
+        echo "  warn: furrow installed via 'go install' but not on PATH; ensure \$GOBIN or \$GOPATH/bin is on PATH"
+      fi
+    else
+      echo "  warn: 'go install ./cmd/furrow/' failed; hooks referencing 'furrow ...' will not fire"
+    fi
+  fi
+
   # --- 8. Gitignore Furrow-managed symlinks ---
   echo ""
   echo "--- Gitignore ---"
