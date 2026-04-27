@@ -66,10 +66,13 @@ layers:
       - Edit
       - Write
       - Bash
-    tools_deny:
       - SendMessage
-      - Agent
       - TaskCreate
+      - TaskGet
+      - TaskList
+      - TaskUpdate
+    tools_deny:
+      - Agent
     path_deny:
       - ".furrow/"
       - "schemas/blocker-taxonomy.yaml"
