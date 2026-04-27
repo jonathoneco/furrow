@@ -1,0 +1,42 @@
+{
+  "deliverable": "context-routing-cli",
+  "phase_a": "pass",
+  "phase_b": "pass-after-correction",
+  "overall": "pass-after-correction",
+  "reviewers": [
+    {
+      "id": "fresh-claude-sonnet",
+      "verdict": "concern",
+      "ship_blockers": [],
+      "key_concerns": [
+        "TargetFilterNode type-asserts *BundleBuilder; harness builders skip filtering silently (chain.go:140-145)",
+        "cachePath uses key[:8] for both dir and filename, losing row-isolation (cache.go:33-35) — low-prob collision",
+        "IdeateStrategy.Apply overwrites ArtifactNode work (ideate.go:58-63); intentional but confusing",
+        "Integration test passes vacuously when fixture row absent (test-context-routing.sh:119-139)",
+        "commands/work.md.tmpl Step 1 lacks runtime-branch guard (work.md.tmpl:29,40)"
+      ]
+    }
+  ],
+  "phase_a_evidence": {
+    "files_present": "all 18 D4 files present",
+    "d5_conformance": "7/7 strategies pass TestStrategyConformance",
+    "decisions_parser": "T3 regex exact match; de-dup last-wins with first-occurrence ordinal; 7 entries from pre-write-validation-go-first fixture",
+    "schema_struct_parity": "Decision shape {source, from_step, to_step, outcome, rationale, ordinal} consistent across schema + Go struct",
+    "no_top_level_learnings": "verified — only prior_artifacts.learnings",
+    "caching": "deterministic; mtime invalidation tested; --no-cache works",
+    "go_test": "internal/cli/context: ok"
+  },
+  "correction_count": 1,
+  "correction_outcome": "ship blockers fixed; all integration tests green; full suite passes including new strict bundle-assembly assertions",
+  "rerun_verdict": "pass",
+  "rerun_method": "fresh-claude-sonnet-rerun on corrected commit",
+  "rerun_evidence_caveat": "layer-guard blocks engine-layer agent CLI invocations (expected); empirical CLI verification done by operator (orchestrator) where applicable",
+  "r6_runtime_confirmed_by_operator": {
+    "operator_skills_count": 14,
+    "driver_skills_count": 19,
+    "specialist_skills_count": 14,
+    "operator_eq_driver": false,
+    "driver_eq_specialist": false,
+    "verdict": "R6 fixed; layered context routing functional at runtime"
+  }
+}

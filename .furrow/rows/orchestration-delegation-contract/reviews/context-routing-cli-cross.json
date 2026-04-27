@@ -1,0 +1,78 @@
+{
+  "deliverable": "context-routing-cli",
+  "phase_a": {
+    "artifacts_present": true,
+    "acceptance_criteria": [],
+    "plan_completion": {
+      "planned_files_touched": true,
+      "unplanned_changes": []
+    },
+    "verdict": "pass"
+  },
+  "phase_b": {
+    "dimensions": [
+      {
+        "name": "correctness",
+        "verdict": "fail",
+        "evidence": "The assembled bundle does not meet the spec: `runForStep` walks `Defaults -> Artifact -> TargetFilter` before `strategy.Apply` adds skills/references/learnings (`internal/cli/context/cmd.go:192-203`), so target filtering is never applied to the final bundle; in a layer-tagged sandbox, `--target operator`, `driver`, and `specialist:go-specialist` all returned the same unfiltered skill set and no specialist brief."
+      },
+      {
+        "name": "test-coverage",
+        "verdict": "fail",
+        "evidence": "The new tests miss the main failure path: `tests/integration/test-context-routing.sh:117-139` treats a `skill_layer_unset` blocker as success instead of validating a real bundle, so there is no test covering successful `runForStep` assembly, target filtering, or specialist-brief inclusion where the ordering bug lives."
+      },
+      {
+        "name": "spec-compliance",
+        "verdict": "fail",
+        "evidence": "Several contract points differ from the spec: the chain is only `DefaultsNode -> ArtifactNode -> TargetFilterNode` (`internal/cli/context/chain.go:206-215`) instead of `defaults -> step strategy -> row overrides -> target filter`; `step_strategy_metadata` is left open without `additionalProperties:false` (`schemas/context-bundle.schema.json:148-150`); and `ListSkills` only scans top-level `skills/*.md` (`internal/cli/context/source.go:175-201`), omitting `skills/shared/*` and never injecting `specialists/{id}.md`."
+      },
+      {
+        "name": "unplanned-changes",
+        "verdict": "pass",
+        "evidence": "The touched files are confined to the context CLI surface, schema, fixture, integration test, `commands/work.md.tmpl`, and `internal/cli/app.go`, and those additions are explicitly documented in the commit message as part of the deliverable."
+      },
+      {
+        "name": "code-quality",
+        "verdict": "pass",
+        "evidence": "The snapshot is gofmt-clean and `go test ./...` passes in the exported D4 tree, with project conventions such as wrapped errors and colocated tests generally followed despite the functional/spec gaps."
+      }
+    ],
+    "verdict": "fail"
+  },
+  "overall": "fail",
+  "corrections": 0,
+  "reviewer": "codex",
+  "cross_model": true,
+  "diff_scope": {
+    "base": "08f08f8f28b758917e20347da9d991761c27e189",
+    "commits": [
+      "bb64f753fa752f500f7be4977237d9704fbf2076",
+      "cd5b0221e5e6dc117d2b2cc825c61524d9884ec6",
+      "f17efb20e671926ff973a7c4223f75a0f254fc59",
+      "89aed6b4ab6f80c34d115db18c821d0b30c27c72",
+      "95a2b44d56d2a773072d7d20f564814953069834"
+    ],
+    "files_matched": [
+      "commands/work.md.tmpl",
+      "internal/cli/app.go",
+      "internal/cli/context/builder.go",
+      "internal/cli/context/builder_test.go",
+      "internal/cli/context/chain.go",
+      "internal/cli/context/chain_test.go",
+      "internal/cli/context/cmd.go",
+      "internal/cli/context/registry.go",
+      "internal/cli/context/strategies/decompose.go",
+      "internal/cli/context/strategies/ideate.go",
+      "internal/cli/context/strategies/implement.go",
+      "internal/cli/context/strategies/plan.go",
+      "internal/cli/context/strategies/research.go",
+      "internal/cli/context/strategies/review.go",
+      "internal/cli/context/strategies/spec.go",
+      "internal/cli/context/strategies_test.go",
+      "schemas/context-bundle.schema.json",
+      "tests/integration/test-context-routing.sh"
+    ]
+  },
+  "unplanned_changes": "absent",
+  "timestamp": "2026-04-27T15:10:00Z"
+}

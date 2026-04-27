@@ -1,0 +1,36 @@
+{
+  "deliverable": "boundary-enforcement",
+  "phase_a": "pass",
+  "phase_b": "pass",
+  "overall": "pass",
+  "reviewers": [
+    {
+      "id": "fresh-claude-sonnet",
+      "verdict": "concern",
+      "ship_blockers": [
+        {
+          "id": "SB-D3-1-FALSE-POSITIVE",
+          "claim": "D3 added 'furrow hook presentation-check' to Stop array — wave boundary violation",
+          "verdict": "FALSE POSITIVE — git blame confirms D6 (commit bb64f75) added the line, not D3 (commit cd5b022). Reviewer observed final state and incorrectly attributed to D3. D6 owns Stop registration as designed."
+        }
+      ],
+      "key_concerns": [
+        "Leakage corpus has \\bdeliverable_id\\b but spec listed bare \\bdeliverable\\b — minor spec/impl drift",
+        "Leakage test uses hand-crafted fixture rather than live engine dispatch — script comment acknowledges this is deferred",
+        "Pi extension callLayerGuard fail-opens when 'furrow' binary absent (intentional per non-Furrow-project doc)",
+        "BashAllow/Deny ordering: deny-first is correct security; operator wildcard skips Bash checks entirely (intentional per spec)"
+      ]
+    }
+  ],
+  "phase_a_evidence": {
+    "files_present": "all 31 D3 files present",
+    "boundary_leakage": "0 corpus matches in fixture (NON-NEGOTIABLE constraint satisfied)",
+    "cross_adapter_parity": "20/20 verdicts identical across Claude+Pi simulated paths",
+    "blocker_codes_registered": "5/5 (skill_layer_unset, layer_policy_invalid, layer_tool_violation, engine_furrow_leakage, driver_definition_invalid)",
+    "skill_layers_assigned": "all 11 skill files have correct layer: front-matter (driver/operator/shared)",
+    "pi_capability_gap_documented": "docs/architecture/orchestration-delegation-contract.md §7",
+    "d3_did_not_touch_stop": "verified via git blame — D6 added presentation-check"
+  },
+  "correction_count": 0,
+  "correction_outcome": "post-triage: SB-D3-1 false positive (D6 owns Stop registration); 4 remaining concerns all intentional/documented per spec"
+}

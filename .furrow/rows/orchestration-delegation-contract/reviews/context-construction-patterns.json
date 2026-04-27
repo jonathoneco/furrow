@@ -1,0 +1,35 @@
+{
+  "deliverable": "context-construction-patterns",
+  "phase_a": "pass",
+  "phase_b": "pass-after-correction",
+  "overall": "pass-after-correction",
+  "reviewers": [
+    {
+      "id": "fresh-claude-sonnet",
+      "verdict": "concern",
+      "ship_blockers": [
+        {
+          "id": "SB-D5-1-FALSE-POSITIVE",
+          "claim": "strategies/ has zero _test.go files; harness never invoked",
+          "verdict": "FALSE POSITIVE — strategies_test.go uses package context_test (external test pkg) and lives at internal/cli/context/strategies_test.go:9-49. It calls TestStrategyConformance for all 7 strategies. Reviewer looked in strategies/ subdirectory and missed the parent-package test."
+        },
+        {
+          "id": "SB-D5-2",
+          "claim": "Concrete type assertion b.(*ctx.BundleBuilder) in 5 strategy files breaks Builder interface contract; harnessBuilder/fakeBuilder silently skips SetMetadata",
+          "verdict": "REAL — Builder interface has no SetMetadata method; strategies bypass via type assertion (ideate.go:65, research.go:83, plan.go:91, implement.go:99, review.go:98). Conformance harness running against harnessBuilder cannot exercise SetMetadata path. Genuine D5↔D4 contract gap."
+        }
+      ]
+    }
+  ],
+  "phase_a_evidence": {
+    "files_present": "all 4 D5 files present (contracts.go, contracts_test.go, structure_test.go, docs/architecture/context-construction-patterns.md)",
+    "go_test": "internal/cli/context: ok",
+    "go_vet": "clean",
+    "structure_test_strict_mode_works": "verified via t.Setenv sub-test"
+  },
+  "correction_count": 1,
+  "correction_outcome": "ship blockers fixed; all integration tests green; full suite passes including new strict bundle-assembly assertions",
+  "rerun_verdict": "pass",
+  "rerun_method": "fresh-claude-sonnet-rerun on corrected commit",
+  "rerun_evidence_caveat": "layer-guard blocks engine-layer agent CLI invocations (expected); empirical CLI verification done by operator (orchestrator) where applicable"
+}
