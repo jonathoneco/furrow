@@ -80,9 +80,7 @@ func (s *ResearchStrategy) Apply(b ctx.Builder, src ctx.ContextSource) error {
 		Learnings:       learnings,
 	})
 
-	if bb, ok := b.(*ctx.BundleBuilder); ok {
-		bb.SetMetadata("topic_count", len(summary))
-	}
+	b.SetMetadata("topic_count", len(summary))
 
 	return nil
 }

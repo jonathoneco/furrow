@@ -88,9 +88,7 @@ func (s *PlanStrategy) Apply(b ctx.Builder, src ctx.ContextSource) error {
 		hasResearch = true
 	}
 
-	if bb, ok := b.(*ctx.BundleBuilder); ok {
-		bb.SetMetadata("has_research", hasResearch)
-	}
+	b.SetMetadata("has_research", hasResearch)
 
 	return nil
 }

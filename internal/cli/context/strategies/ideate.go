@@ -62,9 +62,7 @@ func (s *IdeateStrategy) Apply(b ctx.Builder, src ctx.ContextSource) error {
 		Learnings:       []ctx.Learning{},
 	})
 
-	if bb, ok := b.(*ctx.BundleBuilder); ok {
-		bb.SetMetadata("is_first_step", true)
-	}
+	b.SetMetadata("is_first_step", true)
 
 	return nil
 }

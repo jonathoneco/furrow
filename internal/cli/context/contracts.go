@@ -170,6 +170,11 @@ type Builder interface {
 	AddDecision(d Decision)
 	// AddLearning appends a Learning to the bundle's PriorArtifacts.Learnings slice.
 	AddLearning(l Learning)
+	// SetMetadata stores a step-strategy-specific metadata key/value pair.
+	// Metadata is for data that doesn't fit Skill/Reference/Artifact shapes
+	// (e.g. is_first_step, wave index, deliverable count). Keys are merged;
+	// later calls for the same key overwrite earlier ones.
+	SetMetadata(key string, val any)
 	// Build assembles and returns the Bundle. Returns ErrBuilderConsumed if
 	// called again before Reset.
 	Build() (Bundle, error)
@@ -491,6 +496,7 @@ type harnessBuilder struct {
 	references []Reference
 	artifact   Artifact
 	decisions  []Decision
+	metadata   map[string]any
 }
 
 func (b *harnessBuilder) Reset() {
@@ -499,6 +505,7 @@ func (b *harnessBuilder) Reset() {
 	b.references = nil
 	b.artifact = Artifact{}
 	b.decisions = nil
+	b.metadata = nil
 }
 
 func (b *harnessBuilder) AddSkill(s Skill)         { b.skills = append(b.skills, s) }
@@ -508,6 +515,12 @@ func (b *harnessBuilder) AddDecision(d Decision)   { b.decisions = append(b.deci
 func (b *harnessBuilder) AddLearning(l Learning) {
 	b.artifact.Learnings = append(b.artifact.Learnings, l)
 }
+func (b *harnessBuilder) SetMetadata(key string, val any) {
+	if b.metadata == nil {
+		b.metadata = map[string]any{}
+	}
+	b.metadata[key] = val
+}
 
 func (b *harnessBuilder) Build() (Bundle, error) {
 	if b.consumed {
@@ -515,10 +528,11 @@ func (b *harnessBuilder) Build() (Bundle, error) {
 	}
 	b.consumed = true
 	return Bundle{
-		Skills:         b.skills,
-		References:     b.references,
-		PriorArtifacts: b.artifact,
-		Decisions:      b.decisions,
+		Skills:               b.skills,
+		References:           b.references,
+		PriorArtifacts:       b.artifact,
+		Decisions:            b.decisions,
+		StepStrategyMetadata: b.metadata,
 	}, nil
 }
 
@@ -526,9 +540,9 @@ func (b *harnessBuilder) Build() (Bundle, error) {
 // Used by the conformance harness to test Apply robustness on empty input.
 type emptyContextSource struct{}
 
-func (e *emptyContextSource) Row() string                                { return "" }
-func (e *emptyContextSource) Step() string                               { return "" }
-func (e *emptyContextSource) Target() string                             { return "" }
+func (e *emptyContextSource) Row() string                               { return "" }
+func (e *emptyContextSource) Step() string                              { return "" }
+func (e *emptyContextSource) Target() string                            { return "" }
 func (e *emptyContextSource) ReadState() (map[string]any, error)        { return nil, nil }
 func (e *emptyContextSource) ReadSummary() (map[string]any, error)      { return nil, nil }
 func (e *emptyContextSource) ReadGateEvidence() (map[string]any, error) { return nil, nil }

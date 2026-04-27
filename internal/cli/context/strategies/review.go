@@ -95,9 +95,7 @@ func (s *ReviewStrategy) Apply(b ctx.Builder, src ctx.ContextSource) error {
 		}
 	}
 
-	if bb, ok := b.(*ctx.BundleBuilder); ok {
-		bb.SetMetadata("review_round", reviewRound)
-	}
+	b.SetMetadata("review_round", reviewRound)
 
 	return nil
 }

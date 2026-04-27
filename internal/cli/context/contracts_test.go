@@ -24,6 +24,7 @@ type fakeBuilder struct {
 	references []ctx.Reference
 	artifact   ctx.Artifact
 	decisions  []ctx.Decision
+	metadata   map[string]any
 }
 
 func newFakeBuilder() ctx.Builder { return &fakeBuilder{} }
@@ -34,6 +35,7 @@ func (b *fakeBuilder) Reset() {
 	b.references = nil
 	b.artifact = ctx.Artifact{}
 	b.decisions = nil
+	b.metadata = nil
 }
 
 func (b *fakeBuilder) AddSkill(s ctx.Skill)         { b.skills = append(b.skills, s) }
@@ -43,6 +45,12 @@ func (b *fakeBuilder) AddDecision(d ctx.Decision)   { b.decisions = append(b.dec
 func (b *fakeBuilder) AddLearning(l ctx.Learning) {
 	b.artifact.Learnings = append(b.artifact.Learnings, l)
 }
+func (b *fakeBuilder) SetMetadata(key string, val any) {
+	if b.metadata == nil {
+		b.metadata = map[string]any{}
+	}
+	b.metadata[key] = val
+}
 
 func (b *fakeBuilder) Build() (ctx.Bundle, error) {
 	if b.consumed {
@@ -50,10 +58,11 @@ func (b *fakeBuilder) Build() (ctx.Bundle, error) {
 	}
 	b.consumed = true
 	return ctx.Bundle{
-		Skills:         b.skills,
-		References:     b.references,
-		PriorArtifacts: b.artifact,
-		Decisions:      b.decisions,
+		Skills:               b.skills,
+		References:           b.references,
+		PriorArtifacts:       b.artifact,
+		Decisions:            b.decisions,
+		StepStrategyMetadata: b.metadata,
 	}, nil
 }
 
