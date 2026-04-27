@@ -84,9 +84,7 @@ func (s *SpecStrategy) Apply(b ctx.Builder, src ctx.ContextSource) error {
 		deliverableCount = len(deliverables)
 	}
 
-	if bb, ok := b.(*ctx.BundleBuilder); ok {
-		bb.SetMetadata("deliverable_count", deliverableCount)
-	}
+	b.SetMetadata("deliverable_count", deliverableCount)
 
 	return nil
 }

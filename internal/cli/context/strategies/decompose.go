@@ -83,9 +83,7 @@ func (s *DecomposeStrategy) Apply(b ctx.Builder, src ctx.ContextSource) error {
 		Learnings:       learnings,
 	})
 
-	if bb, ok := b.(*ctx.BundleBuilder); ok {
-		bb.SetMetadata("spec_count", specCount)
-	}
+	b.SetMetadata("spec_count", specCount)
 
 	return nil
 }

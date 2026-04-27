@@ -32,11 +32,9 @@ func (n *DefaultsNode) Next() ChainNode { return n.next }
 func (n *DefaultsNode) Apply(b Builder, src ContextSource) error {
 	// Defaults are implicit in BundleBuilder's zero state; nothing to do here
 	// except ensure metadata carries the source triple.
-	if bb, ok := b.(*BundleBuilder); ok {
-		bb.SetMetadata("row", src.Row())
-		bb.SetMetadata("step", src.Step())
-		bb.SetMetadata("target", src.Target())
-	}
+	b.SetMetadata("row", src.Row())
+	b.SetMetadata("step", src.Step())
+	b.SetMetadata("target", src.Target())
 	return nil
 }
 
@@ -200,17 +198,63 @@ func targetLayers(target string) map[string]bool {
 }
 
 // ---------------------------------------------------------------------------
-// BuildChain assembles the standard four-node chain.
+// StrategyNode — Chain of Responsibility: wraps a Strategy as a ChainNode.
 // ---------------------------------------------------------------------------
 
-// BuildChain constructs the standard chain:
+// StrategyNode adapts a Strategy into the ChainNode interface so it can be
+// slotted between ArtifactNode and TargetFilterNode in the assembly chain.
+// This ensures target filtering always runs AFTER strategy skills/references
+// have been added to the builder.
+type StrategyNode struct {
+	strategy Strategy
+	next     ChainNode
+}
+
+// NewStrategyNode constructs a StrategyNode that delegates to strategy.Apply
+// then passes to next.
+func NewStrategyNode(strategy Strategy, next ChainNode) *StrategyNode {
+	return &StrategyNode{strategy: strategy, next: next}
+}
+
+// Next returns the following ChainNode.
+func (n *StrategyNode) Next() ChainNode { return n.next }
+
+// Apply calls the wrapped Strategy's Apply method.
+func (n *StrategyNode) Apply(b Builder, src ContextSource) error {
+	return n.strategy.Apply(b, src)
+}
+
+// ---------------------------------------------------------------------------
+// BuildChain assembles the standard chain.
+// ---------------------------------------------------------------------------
+
+// BuildChain constructs the standard pre-strategy chain:
 //
 //	DefaultsNode → ArtifactNode → TargetFilterNode (terminal)
 //
-// The caller walks the chain by calling each node's Apply then Next.
+// Prefer BuildChainWithStrategy which inserts the step strategy between
+// ArtifactNode and TargetFilterNode so target filtering runs after skills load.
+//
+// Deprecated: Use BuildChainWithStrategy for correct ordering.
 func BuildChain() ChainNode {
 	target := NewTargetFilterNode()
 	artifact := NewArtifactNode(target)
+	defaults := NewDefaultsNode(artifact)
+	return defaults
+}
+
+// BuildChainWithStrategy constructs the full assembly chain with correct ordering:
+//
+//	DefaultsNode → ArtifactNode → StrategyNode → TargetFilterNode (terminal)
+//
+// The spec-required order is: defaults → step strategy → target filter.
+// Strategy must run AFTER artifacts are loaded (strategies may consult them)
+// and BEFORE target filtering so skills added by the strategy are included
+// in the filter pass.
+func BuildChainWithStrategy(strategy Strategy) ChainNode {
+	target := NewTargetFilterNode()
+	stratNode := NewStrategyNode(strategy, target)
+	artifact := NewArtifactNode(stratNode)
 	defaults := NewDefaultsNode(artifact)
 	return defaults
 }

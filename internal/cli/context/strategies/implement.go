@@ -96,10 +96,8 @@ func (s *ImplementStrategy) Apply(b ctx.Builder, src ctx.ContextSource) error {
 		}
 	}
 
-	if bb, ok := b.(*ctx.BundleBuilder); ok {
-		bb.SetMetadata("wave", wave)
-		bb.SetMetadata("deliverables", deliverableNames)
-	}
+	b.SetMetadata("wave", wave)
+	b.SetMetadata("deliverables", deliverableNames)
 
 	return nil
 }
