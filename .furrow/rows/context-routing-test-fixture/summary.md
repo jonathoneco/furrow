@@ -16,3 +16,10 @@ Step: plan | Status: in_progress
 
 ## Open Questions
 - None for fixture.
+
+## Artifact Paths
+- definition.yaml: .furrow/rows/context-routing-test-fixture/definition.yaml
+- state.json: .furrow/rows/context-routing-test-fixture/state.json
+
+## Recommendations
+_(populated when row reaches review step)_
