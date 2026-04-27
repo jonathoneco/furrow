@@ -192,9 +192,9 @@
     - adapters/claude-code/progressive-loading.yaml
     - docs/skill-injection-order.md
   source_type: brain-dump
-  status: active
+  status: done
   title: Context construction driven by design pattern thinking
-  updated_at: "2026-04-02T00:00:00Z"
+  updated_at: "2026-04-27T17:08:19Z"
   urgency: low
   work_needed: |
     - Audit current context loading for pattern conformance
@@ -3290,12 +3290,12 @@
     THIS IS ONE FACE OF THE ORCHESTRATION/DELEGATION CONTRACT. Sibling todos: handoff-prompt-artifact-template defines the artifact schema that crosses the layer boundary; delegation-boundary-enforcement defines what is allowed to cross and what is not. The three together form one contract; they ship in the same row (work/orchestration-delegation-contract).
   work_needed: 'Design a layered architecture: furrow-aware skills/agents own Furrow-specific work; furrow-unaware skills/agents handle the underlying domain work without Furrow leakage. The delegation contract IS the handoff-prompt-artifact-template schema (the 7 fields are the layer interface). Boundary enforcement (delegation-boundary-enforcement) prevents leakage. Investigate via prototype on a non-Furrow project.'
   source_type: manual
-  status: active
+  status: done
   created_at: "2026-04-24T21:14:27-04:00"
   urgency: medium
   impact: high
   effort: large
-  updated_at: "2026-04-24T21:14:27-04:00"
+  updated_at: "2026-04-27T17:08:19Z"
   source_work_unit: migration-state-of-the-union
 - id: pi-session-resume-reground
   title: Pi session-resume reground
@@ -3318,12 +3318,12 @@
   context: 'User reports inconsistencies in how artifacts are presented in conversation: sometimes whole-file dump, sometimes section-by-section, sometimes just summary. Need a presentation contract so agents and users both know what to expect.'
   work_needed: 'Define a standard rule: when to show full file, when to show sections (with markers), when to show summary + link. Codify in skills/shared/ and enforce in stop-hook or a new presentation-protocol hook.'
   source_type: manual
-  status: active
+  status: done
   created_at: "2026-04-24T21:14:27-04:00"
   urgency: low
   impact: medium
   effort: small
-  updated_at: "2026-04-24T21:14:27-04:00"
+  updated_at: "2026-04-27T17:08:19Z"
   source_work_unit: migration-state-of-the-union
 - id: archive-implications-propagation
   title: Archive implications propagation
@@ -3360,12 +3360,12 @@
     THIS IS THE LAYER INTERFACE OF THE ORCHESTRATION/DELEGATION CONTRACT. The 7 fields are exactly what crosses from the furrow-aware layer (orchestrator) to the furrow-unaware layer (specialist) and back. Sibling todos: furrow-context-isolation-layer defines the layer split; delegation-boundary-enforcement constrains what flows across. The three together form one contract; they ship in the same row (work/orchestration-delegation-contract).
   work_needed: Define handoff.md schema covering all 7 fields. Generate from definition.yaml + state.json + plan.json + previous-step artifacts. /furrow:next consumes it. Stops being ad-hoc prose; becomes a contract. Schema doubles as the layer-interface-API for furrow-context-isolation-layer.
   source_type: manual
-  status: active
+  status: done
   created_at: "2026-04-24T21:14:39-04:00"
   urgency: medium
   impact: high
   effort: medium
-  updated_at: "2026-04-24T21:14:39-04:00"
+  updated_at: "2026-04-27T17:08:19Z"
   references:
     - skills/shared/specialist-delegation.md
   source_work_unit: migration-state-of-the-union
@@ -3706,12 +3706,12 @@
   context: Per docs/architecture/workflow-power-preservation.md:131-142 'Context routing must remain intentional — load right context for right stage or actor, not relying on model to remember everything'. design-pattern-context-construction (active) is meta-level; need actionable infrastructure decomposition.
   work_needed: 'Define context-loading rules per step: which skills, references, prior artifacts, and tools are loaded. Backend exposes furrow context for-step <step> --json returning the contract. Both adapters consume it: Claude via skill injection; Pi via system-prompt shaping at before_agent_start. Replaces ad-hoc loading in commands/work.md.'
   source_type: manual
-  status: active
+  status: done
   created_at: "2026-04-24T21:37:34-04:00"
   urgency: medium
   impact: high
   effort: large
-  updated_at: "2026-04-24T21:37:34-04:00"
+  updated_at: "2026-04-27T17:08:19Z"
   references:
     - docs/architecture/workflow-power-preservation.md
     - skills/work-context.md
@@ -3965,12 +3965,12 @@
   context: 'Sibling to handoff-prompt-artifact-template and furrow-context-isolation-layer; together they form the orchestration/delegation contract. Without explicit enforcement, the layer split is a convention not a constraint: the furrow-unaware specialist could read .furrow/ state, the orchestrator could leak internal context downward, and the boundary erodes silently. The handoff schema (7 fields) defines what crosses; this todo enforces that nothing else does.'
   work_needed: 'Define what crosses the layer boundary in each direction: (a) furrow-aware → furrow-unaware: only the 7 handoff fields; no row state, almanac, .furrow/ details; (b) furrow-unaware → furrow-aware: only EOS-report-shaped output; no leakage of internal reasoning or scratch artifacts; (c) hook/CLI access: only the furrow-aware layer may invoke rws/alm/sds/frw or read .furrow/. Mechanism options: (1) prompt-level scoping (skill files only loaded for the layer that needs them), (2) tool-permission scoping (Pi extension restricts tool access by skill), (3) test-driven boundary check (run a furrow-unaware specialist on a non-Furrow project, assert zero Furrow leakage in artifacts produced). Probably all three, layered.'
   source_type: manual
-  status: active
+  status: done
   created_at: "2026-04-24T23:41:44-04:00"
   urgency: medium
   impact: high
   effort: medium
-  updated_at: "2026-04-24T23:41:44-04:00"
+  updated_at: "2026-04-27T17:08:19Z"
   references:
     - docs/architecture/workflow-power-preservation.md
     - skills/shared/specialist-delegation.md
@@ -4043,6 +4043,18 @@
   files_touched:
     - internal/cli/row.go
     - internal/cli/row_workflow.go
+- id: pi-adapter-binary-caching
+  title: Pi adapter binary caching
+  context: adapters/pi/furrow.ts:322 invokes 'go run ./cmd/furrow' on every runFurrowJson call. After pre-write-validation-go-first ships, two of those fire on every Write/Edit (D4 validate-definition + D5 ownership-warn). Cold-start latency compounds and is a real UX regression risk per cross-model review of the ideation.
+  work_needed: 'Pre-build the Go binary at Pi adapter init (or first invocation, cached for the session) and exec the binary path instead of go run. Update runFurrowJson at adapters/pi/furrow.ts:313-346 to resolve the binary path once and reuse. Acceptance: latency benchmark on a Write/Edit hot path shows <50ms median per validate call (down from go-run cold start ~hundreds of ms); cache invalidation handled when binary is rebuilt during dev.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T02:19:29-04:00"
+  updated_at: "2026-04-25T02:19:29-04:00"
+  references:
+    - adapters/pi/furrow.ts
+    - docs/architecture/pi-native-capability-leverage.md
+  source_work_unit: pre-write-validation-go-first
 - id: remove-bin-rws-shell-entrypoint
   title: Remove bin/rws shell entrypoint
   context: bin/rws is a 2000+ line shell CLI that cli-architecture-overhaul-slice-2 ports to Go (furrow row, furrow seeds, etc.). The slice work leaves bin/rws as a 'thin delegation shim' but never gates its full removal. Per clean-swap discipline (no indefinite hybrid states), the shell entrypoint should be deleted once Go parity is proven, not left lingering. Today bin/rws contains parallel implementations that drift from the Go path (see deprecate-bin-rws-1958-rws-archive-shell-implement for one already-identified case).
@@ -4165,6 +4177,19 @@
     - bin/frw
     - bin/frw.d/scripts/
     - install.sh
+- id: sweeping-schema-audit-and-shrink
+  title: Sweeping schema audit and shrink
+  context: 'Review-step on pre-write-validation-go-first surfaced that schemas/definition.schema.json carries optional/edge-case rules that the hand-coded validator (D1) chased across 7 review rounds. Empirical usage audit (44 rows): per-deliverable gate=0 used, supersedes=1 used, source_todo singular=10 (redundant with source_todos plural), context_pointers symbols=5 used. Each unused/under-used optional field expands D1''s validator surface and gives reviewers more rules to cite. The pain isn''t a validator bug — it''s a schema-breadth signal. Generalize beyond definition.schema.json: state.schema.json, plan.schema.json, learning.schema.json, repair-deliverables-manifest.schema.json, reintegration.schema.json, review-result.schema.json, merge-policy.schema.json, promotion-targets.schema.yaml all likely have similar accumulated breadth.'
+  work_needed: 'Run a sweeping schema audit across schemas/. For each schema: (1) measure actual usage of each optional field across .furrow/rows/*/, (2) identify dead fields (zero use), under-used fields (<10% use), and redundant forms (singular+plural pairs); (3) propose a shrink plan with migration cost; (4) ship the shrink with the necessary row migrations. Concrete D1-validator-pain candidates already evidenced: per-deliverable gate (drop), supersedes (move to archive.json), source_todo singular (drop, fold into source_todos), context_pointers.symbols (drop). Acceptance: validators drop measurable LOC; schemas tighter; row migrations applied with checksum verification.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-25T12:53:55-04:00"
+  updated_at: "2026-04-25T12:53:55-04:00"
+  references:
+    - schemas/definition.schema.json
+    - internal/cli/validate_definition.go
+    - .furrow/rows/pre-write-validation-go-first/reviews/
+  source_work_unit: pre-write-validation-go-first
 - id: define-adapters-audit-pass-fail-rubric
   title: Define adapters-audit pass/fail rubric
   context: 'adapters-audit (todos.yaml:914) is marked active with work_needed: ''check for atrophy, modularization decay, internal consistency''. There is no scoring rubric, no threshold, no defined block-on-failure. The audit is therefore not a gate — it cannot meaningfully block Phase 8 parity validation if it surfaces drift. Without measurable criteria, an open audit becomes performative.'
@@ -4283,28 +4308,147 @@
   files_touched:
     - adapters/pi/furrow.ts
     - docs/architecture/pi-tool-call-schema.md
-- id: pi-adapter-binary-caching
-  title: Pi adapter binary caching
-  context: adapters/pi/furrow.ts:322 invokes 'go run ./cmd/furrow' on every runFurrowJson call. After pre-write-validation-go-first ships, two of those fire on every Write/Edit (D4 validate-definition + D5 ownership-warn). Cold-start latency compounds and is a real UX regression risk per cross-model review of the ideation.
-  work_needed: 'Pre-build the Go binary at Pi adapter init (or first invocation, cached for the session) and exec the binary path instead of go run. Update runFurrowJson at adapters/pi/furrow.ts:313-346 to resolve the binary path once and reuse. Acceptance: latency benchmark on a Write/Edit hot path shows <50ms median per validate call (down from go-run cold start ~hundreds of ms); cache invalidation handled when binary is rebuilt during dev.'
+- id: add-rws-update-title-cli-for-row-title-changes
+  title: Add rws update-title CLI for row title changes
+  context: Surfaced during orchestration-delegation-contract row when row title needed changing without direct state.json edit
+  work_needed: Add CLI subcommand to bin/rws or internal/cli/row.go for atomic title updates following the rws update-summary pattern
   source_type: manual
   status: active
-  created_at: "2026-04-25T02:19:29-04:00"
-  updated_at: "2026-04-25T02:19:29-04:00"
-  references:
-    - adapters/pi/furrow.ts
-    - docs/architecture/pi-native-capability-leverage.md
-  source_work_unit: pre-write-validation-go-first
-- id: sweeping-schema-audit-and-shrink
-  title: Sweeping schema audit and shrink
-  context: 'Review-step on pre-write-validation-go-first surfaced that schemas/definition.schema.json carries optional/edge-case rules that the hand-coded validator (D1) chased across 7 review rounds. Empirical usage audit (44 rows): per-deliverable gate=0 used, supersedes=1 used, source_todo singular=10 (redundant with source_todos plural), context_pointers symbols=5 used. Each unused/under-used optional field expands D1''s validator surface and gives reviewers more rules to cite. The pain isn''t a validator bug — it''s a schema-breadth signal. Generalize beyond definition.schema.json: state.schema.json, plan.schema.json, learning.schema.json, repair-deliverables-manifest.schema.json, reintegration.schema.json, review-result.schema.json, merge-policy.schema.json, promotion-targets.schema.yaml all likely have similar accumulated breadth.'
-  work_needed: 'Run a sweeping schema audit across schemas/. For each schema: (1) measure actual usage of each optional field across .furrow/rows/*/, (2) identify dead fields (zero use), under-used fields (<10% use), and redundant forms (singular+plural pairs); (3) propose a shrink plan with migration cost; (4) ship the shrink with the necessary row migrations. Concrete D1-validator-pain candidates already evidenced: per-deliverable gate (drop), supersedes (move to archive.json), source_todo singular (drop, fold into source_todos), context_pointers.symbols (drop). Acceptance: validators drop measurable LOC; schemas tighter; row migrations applied with checksum verification.'
+  created_at: "2026-04-27T13:07:41-04:00"
+  updated_at: "2026-04-27T13:07:41-04:00"
+  source_work_unit: orchestration-delegation-contract
+- id: pi-adapter-binary-caching-for-performance
+  title: Pi adapter binary caching for performance
+  context: Carried from upstream — exec-on-every-tool-call has overhead; binary caching reduces
+  work_needed: Implement caching layer in adapters/pi/extension/index.ts for furrow hook layer-guard verdicts
   source_type: manual
   status: active
-  created_at: "2026-04-25T12:53:55-04:00"
-  updated_at: "2026-04-25T12:53:55-04:00"
-  references:
-    - schemas/definition.schema.json
-    - internal/cli/validate_definition.go
-    - .furrow/rows/pre-write-validation-go-first/reviews/
-  source_work_unit: pre-write-validation-go-first
+  created_at: "2026-04-27T13:07:41-04:00"
+  updated_at: "2026-04-27T13:07:41-04:00"
+  source_work_unit: orchestration-delegation-contract
+- id: pi-parity-audit-if-upstream-exposes-agent-identity
+  title: Pi parity audit if upstream exposes agent identity in subagent context
+  context: 'Pi subagent layer enforcement gap: parent hook bus blind to subprocess subagent tool calls. If @tintinweb/pi-subagents adds agent_type to ctx, Pi-side enforcement parity becomes possible'
+  work_needed: Watch upstream releases; when ctx exposes agent identity, wire layer-guard into subagent tool_call event
+  source_type: manual
+  status: active
+  created_at: "2026-04-27T13:07:41-04:00"
+  updated_at: "2026-04-27T13:07:41-04:00"
+  source_work_unit: orchestration-delegation-contract
+- id: retire-skills-shared-decision-format-md-canonical
+  title: Retire skills/shared/decision-format.md canonical-block prescription
+  context: 'T3 research found 0/8 rows use the canonical ## Decision: block format; de-facto format is gate-transition shape (49/49 conformance)'
+  work_needed: Update skills/shared/decision-format.md to drop the canonical-block prescription and make gate-transition shape primary; or remove file entirely
+  source_type: manual
+  status: active
+  created_at: "2026-04-27T13:07:41-04:00"
+  updated_at: "2026-04-27T13:07:41-04:00"
+  source_work_unit: orchestration-delegation-contract
+- id: audit-commands-work-md-tmpl-rendering-at-install-t
+  title: Audit commands/work.md.tmpl rendering at install time
+  context: Install.sh now invokes furrow render adapters; verify rendering quality across runtime contexts (claude, pi)
+  work_needed: Add install-time validation that rendered commands/work.md is well-formed for the target runtime
+  source_type: manual
+  status: active
+  created_at: "2026-04-27T13:07:42-04:00"
+  updated_at: "2026-04-27T13:07:42-04:00"
+  source_work_unit: orchestration-delegation-contract
+- id: confirm-frw-doctor-experimental-flag-check-works-e
+  title: Confirm frw doctor experimental flag check works end-to-end
+  context: D2 added CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 check to doctor; verify it actually triggers in real environments
+  work_needed: Test frw doctor with flag set/unset; ensure warning surfaces correctly
+  source_type: manual
+  status: active
+  created_at: "2026-04-27T13:07:42-04:00"
+  updated_at: "2026-04-27T13:07:42-04:00"
+  source_work_unit: orchestration-delegation-contract
+- id: document-pi-subagent-layer-enforcement-capability
+  title: Document Pi subagent layer enforcement capability gap as known limitation in user-facing docs
+  context: Currently documented in docs/architecture/orchestration-delegation-contract.md §7 (architectural). Should also surface in user-facing Pi adapter setup docs
+  work_needed: Add limitation note to adapters/pi/README + furrow doctor output
+  source_type: manual
+  status: active
+  created_at: "2026-04-27T13:07:42-04:00"
+  updated_at: "2026-04-27T13:07:42-04:00"
+  source_work_unit: orchestration-delegation-contract
+- id: document-tintinweb-pi-subagents-api-churn-risk-and
+  title: Document @tintinweb/pi-subagents API churn risk and pin maintenance cadence
+  context: Pinned 0.6.1 exact; package is small (196 stars) with potential API churn
+  work_needed: Add maintenance schedule + alerting for upstream changes; document in adapters/pi/README
+  source_type: manual
+  status: active
+  created_at: "2026-04-27T13:07:42-04:00"
+  updated_at: "2026-04-27T13:07:42-04:00"
+  source_work_unit: orchestration-delegation-contract
+- id: add-d1-cmd-handler-unit-tests
+  title: Add D1 cmd handler unit tests
+  context: 'Cross-model flagged: cmd.go Handler.Run, runRenderDriver, runRenderEngine, runValidate, parseRenderFlags lack unit coverage. Integration covers happy path; unit tests would catch flag-parsing edge cases'
+  work_needed: Add table-driven tests in internal/cli/handoff/cmd_test.go covering all flag combinations + error paths
+  source_type: manual
+  status: active
+  created_at: "2026-04-27T13:07:43-04:00"
+  updated_at: "2026-04-27T13:07:43-04:00"
+  source_work_unit: orchestration-delegation-contract
+- id: cross-adapter-parity-test-framework-as-reusable-ha
+  title: Cross-adapter parity test framework as reusable harness for future adapter additions
+  context: Current parity test is fixture-based; reusable framework would simplify adding new adapters
+  work_needed: Extract test-layer-policy-parity.sh into a reusable framework that takes adapter name + fixtures
+  source_type: manual
+  status: active
+  created_at: "2026-04-27T13:07:43-04:00"
+  updated_at: "2026-04-27T13:07:43-04:00"
+  source_work_unit: orchestration-delegation-contract
+- id: extend-furrow-render-adapters-runtime-output-valid
+  title: Extend furrow render adapters runtime output validity tests
+  context: internal/cli/render/adapters_test.go covers structural assertions; deeper validity tests would catch runtime-specific output issues
+  work_needed: Add tests asserting rendered .claude/agents/*.md parse correctly per Claude Code subagent schema; add Pi-specific output tests
+  source_type: manual
+  status: active
+  created_at: "2026-04-27T13:07:43-04:00"
+  updated_at: "2026-04-27T13:07:43-04:00"
+  source_work_unit: orchestration-delegation-contract
+- id: replay-d2-d3-cross-model-review-with-smaller-promp
+  title: Replay D2/D3 cross-model review with smaller prompts (codex argv overflow)
+  context: frw cross-model-review failed for D2 + D3 with 'Argument list too long' — codex CLI argv limit. Prompts saved to .furrow/rows/orchestration-delegation-contract/prompts/
+  work_needed: Either chunk the codex review (per-AC instead of per-deliverable) or pipe via stdin; replay D2 + D3 reviews
+  source_type: manual
+  status: active
+  created_at: "2026-04-27T13:07:43-04:00"
+  updated_at: "2026-04-27T13:07:43-04:00"
+  source_work_unit: orchestration-delegation-contract
+- id: cleanup-d6-skill-retrofit-placement-shared-referen
+  title: Cleanup D6 skill retrofit placement (Shared References vs Supervised Transition Protocol)
+  context: D6 added presentation-protocol references to Shared References section; spec said Supervised Transition Protocol section. Cosmetic placement deviation
+  work_needed: Move references in skills/{plan,spec,review}.md to the prescribed section
+  source_type: manual
+  status: active
+  created_at: "2026-04-27T13:07:44-04:00"
+  updated_at: "2026-04-27T13:07:44-04:00"
+  source_work_unit: orchestration-delegation-contract
+- id: convert-d1-validate-go-from-drift-test-to-schema-a
+  title: Convert D1 validate.go from drift-test to schema-as-source-of-truth
+  context: R4 fix scope-bounded to drift-test approach (TestSchemaRequiredFieldsParity). Full refactor would have validate.go consume the JSON Schema files at runtime; current code duplicates schema rules in Go
+  work_needed: Wire JSON Schema interpretation in internal/cli/handoff/validate.go (no new external deps; hand-write minimal interpreter)
+  source_type: manual
+  status: active
+  created_at: "2026-04-27T13:07:44-04:00"
+  updated_at: "2026-04-27T13:07:44-04:00"
+  source_work_unit: orchestration-delegation-contract
+- id: convert-d3-leakage-test-from-hand-crafted-fixture
+  title: Convert D3 leakage test from hand-crafted fixture to live engine dispatch
+  context: Current test-boundary-leakage.sh uses static handoff fixture rather than dispatching a live engine LLM. Acceptable but live dispatch would prove engine-as-LLM isolation
+  work_needed: Add live-engine variant that requires CLAUDE_API_KEY/PI_API_KEY env; gate on env presence; falls back to fixture in CI
+  source_type: manual
+  status: active
+  created_at: "2026-04-27T13:07:44-04:00"
+  updated_at: "2026-04-27T13:07:44-04:00"
+  source_work_unit: orchestration-delegation-contract
+- id: harmonize-d6-work-md-tmpl-step-vs-phase-terminolog
+  title: Harmonize D6 work.md.tmpl {step} vs {phase} terminology
+  context: commands/work.md.tmpl uses {step} in Presentation section; protocol doc uses {phase}. Functionally equivalent in most contexts but terminology drift
+  work_needed: Update work.md.tmpl to use {phase} consistently with protocol doc
+  source_type: manual
+  status: active
+  created_at: "2026-04-27T13:07:44-04:00"
+  updated_at: "2026-04-27T13:07:44-04:00"
+  source_work_unit: orchestration-delegation-contract
