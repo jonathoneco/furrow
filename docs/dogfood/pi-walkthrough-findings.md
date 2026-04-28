@@ -19,7 +19,23 @@ Live log. Sections appear in execution order, not plan order. Each entry:
 ### 0.3 bun install — WORKS
 - 252 packages resolved in 3.66s. Pi peer deps + subagents installed.
 
-### 0.4 bun test — pending (in progress after LG-1 unbrick)
+### 0.4 bun test — WORKS
+- 41 pass / 0 fail / 102 expect() calls across 2 files.
+- furrow.test.ts: 37 pass, 90 expect()
+- dispatch.test.ts: 4 pass (R5 shell-injection-safety regressions), 12 expect()
+- test-driver-blocker-parity.ts is a test-driver, not a suite — run via tests/integration/test-blocker-parity.sh, deferred to Section 4.
+
+### 0.5 backend buildable — WORKS
+- `furrow help` returns full subcommand surface: row, gate, review, almanac, seeds, validate, context, handoff, render, hook, merge, doctor, guard, init.
+
+### 0.6 Pi smoke launch — WORKS
+- `pi --no-extensions -e ./adapters/pi/furrow.ts --no-session -p "/furrow-overview"`
+- Returns formatted overview: Focused row=`pre-write-validation-go-first`, Total=49, Active=1, Archived=48.
+- The Go backend is reached, envelope is parsed, `formatOverview` renders correctly.
+
+---
+
+## Section 1 — Pi install & startup with the Furrow adapter loaded
 
 ---
 

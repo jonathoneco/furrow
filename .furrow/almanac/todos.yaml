@@ -4588,3 +4588,75 @@
     - internal/cli/hook/
     - adapters/pi/
     - schemas/layer-policy.schema.json
+- id: layer-guard-policy-path-resolution-must-be-cwd-ind
+  title: layer-guard policy-path resolution must be cwd-independent
+  context: furrow hook layer-guard resolved .furrow/layer-policy.yaml relative to the binary's cwd. When a tool call fired from any subdirectory of the repo (e.g., adapters/pi/ after 'cd adapters/pi && bun install'), os.ReadFile errored, RunLayerGuard fail-closed, and every subsequent PreToolUse hook (Edit included) was blocked — self-bricking the agent session. Discovered during pi-dogfood-guide walkthrough 2026-04-28; required out-of-band team-lead intervention to patch and rebuild the binary.
+  work_needed: 'DONE in commit c068625 (2026-04-28): use findFurrowRoot() walk-up at internal/cli/app.go runHook(''layer-guard''); keep FURROW_LAYER_POLICY_PATH env override; retain cwd-relative fallback for back-compat. Two regression tests added: TestRunHook_LayerGuard_PolicyResolvesFromSubdirectory and TestRunHook_LayerGuard_PolicyPathEnvOverride. Marked as a closed/done dogfood finding for completeness; fix is already in main.'
+  source_type: manual
+  status: done
+  done_at: "2026-04-28T15:30:00-04:00"
+  done_evidence: "Fixed in commit c068625 (fix(layer-guard): resolve policy path via walk-up to prevent self-brick). Verified: go test ./internal/cli/ -count=1 green; manual test from adapters/pi/ exit 0."
+  created_at: "2026-04-28T11:21:57-04:00"
+  updated_at: "2026-04-28T11:21:57-04:00"
+  references:
+    - internal/cli/app.go
+    - internal/cli/app_test.go
+    - internal/cli/util.go
+    - docs/dogfood/pi-walkthrough-findings.md
+  source_work_unit: furrow-pi-dogfood
+  files_touched:
+    - internal/cli/app.go
+    - internal/cli/app_test.go
+- id: layer-guard-verdict-reason-should-also-write-to-st
+  title: layer-guard verdict reason should also write to stderr
+  context: 'Claude Code PreToolUse hook protocol surfaces block reasons from stderr. internal/cli/hook/layer_guard.go emit() writes the JSON verdict envelope {block, reason} to stdout only. When the hook fail-closes, the harness reports ''No stderr output'' — the actual reason (e.g., layer_policy_invalid: open .furrow/layer-policy.yaml: no such file or directory) is invisible to the operator. Hid the LG-1 cwd-bug root cause for ~30 minutes during the pi-dogfood-guide self-brick on 2026-04-28. Independent of LG-1 fix.'
+  work_needed: Mirror the reason text to stderr on block (keep stdout JSON intact for adapters that parse it as canonical envelope). Verify against schemas/blocker-event.schema.json that the addition is non-breaking. Add a test asserting both streams are populated on block verdicts.
+  source_type: manual
+  status: active
+  created_at: "2026-04-28T11:21:57-04:00"
+  updated_at: "2026-04-28T11:21:57-04:00"
+  references:
+    - internal/cli/hook/layer_guard.go
+    - internal/cli/hook/layer_guard_test.go
+    - schemas/blocker-event.schema.json
+    - docs/dogfood/pi-walkthrough-findings.md
+  source_work_unit: furrow-pi-dogfood
+  files_touched:
+    - internal/cli/hook/layer_guard.go
+    - internal/cli/hook/layer_guard_test.go
+- id: engine-bash-deny-substrings-is-trivially-bypassed
+  title: engine bash_deny_substrings is trivially bypassed by string concatenation
+  context: 'engine layer''s bash_deny_substrings list (.furrow/layer-policy.yaml: ''furrow '', ''rws '', ''alm '', ''sds '', ''.furrow/'') is matched as literal substrings of the bash command string. Trivially defeated by shell concatenation: $(echo fur)row passes the deny check while still invoking the furrow CLI; same pattern applies to .furrow/ and the others. Discovered during pi-dogfood-guide self-brick recovery on 2026-04-28 when the agent needed to communicate around the policy lock. Defense-in-depth gap, not a primary security boundary — engine isolation is also enforced by path_deny on file writes — but worth tightening.'
+  work_needed: 'Replace literal substring matching with command-tokenization-aware matching that resolves shell expansions before evaluating the command string. Approaches: (a) parse the bash command via shellparse.go (already exists in internal/cli/), expand command substitutions, and check the resolved argv[0] + path arguments; (b) require the matcher to evaluate the post-expansion form. Trade-off: shell expansion can be turing-complete; bound the parser. Likely belongs alongside the LG-3 hook-chain-self-brick-recovery work since both touch the layer-guard verdict logic.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-28T11:21:58-04:00"
+  updated_at: "2026-04-28T11:21:58-04:00"
+  references:
+    - .furrow/layer-policy.yaml
+    - internal/cli/hook/layer_guard.go
+    - internal/cli/shellparse.go
+  source_work_unit: furrow-pi-dogfood
+  files_touched:
+    - internal/cli/hook/layer_guard.go
+    - internal/cli/shellparse.go
+    - .furrow/layer-policy.yaml
+- id: hook-chain-must-allow-edit-on-recovery-paths-when
+  title: Hook chain must allow Edit on recovery paths when load-failure detected
+  context: 'When any PreToolUse hook fail-closes (e.g., policy load failure, missing config, schema parse error), every subsequent hook including Edit also fails — leaving the agent unable to patch the broken component. Required out-of-band human intervention to unbrick the pi-dogfood-guide session on 2026-04-28. Class-level reliability gap: any future fail-closed-and-not-fixable-in-place bug will reproduce this self-brick pattern.'
+  work_needed: 'Distinguish policy-load-failure (config/state error — non-adversarial) from policy-decision-block (genuine layer violation) in the verdict envelope. On load-failure verdict only, allow Edit on a narrow set of recovery paths: internal/cli/**, schemas/**, .furrow/layer-policy.yaml. Threat model: load-failure must be authentic — bound the rescue allow to a session-local kill-switch (e.g., counter resets to off after one Edit) so it cannot be exploited by user-provoked load failures. Coordinate with the existing layer-guard-policy-path-resolution-must-be-cwd-ind (cwd self-brick — done) and layer-guard-silent-rejection-on-top-layer-integrat — all three are in the same self-brick cluster.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-28T11:22:09-04:00"
+  updated_at: "2026-04-28T11:22:09-04:00"
+  references:
+    - internal/cli/hook/layer_guard.go
+    - internal/cli/layer/policy.go
+    - .claude/settings.json
+    - docs/dogfood/pi-walkthrough-findings.md
+  source_work_unit: furrow-pi-dogfood
+  depends_on:
+    - layer-guard-policy-path-resolution-must-be-cwd-ind
+  files_touched:
+    - internal/cli/hook/
+    - internal/cli/layer/
