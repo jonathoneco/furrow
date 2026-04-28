@@ -14,6 +14,9 @@ Evaluate implementation against spec and audit plan completion.
 ## What This Step Produces
 - `reviews/{deliverable}.json` per deliverable (Phase A + Phase B results)
 - Gate record in `state.json` with overall verdict
+- For rows using completion-evidence gates, `test-plan.md`,
+  `completion-check.md`, and classified row-local follow-ups before archive
+  readiness.
 
 ## Model Default
 model_default: sonnet
@@ -28,6 +31,18 @@ model_default: sonnet
 - `overall` is `pass` only when both phases pass.
 - Load context bundle from operator prime message.
 - Read `references/review-methodology.md` and `references/eval-dimensions.md`.
+- Every completion-evidence review artifact must include
+  `harness_process_risks` (or "Harness Process Risks") covering modularization
+  drift, duplicate algorithms, optionality/surface spread, runtime-loaded
+  entrypoint mismatch, and mistaken treatment of specialists as registered
+  agent types instead of skills.
+- Do not let a captured TODO satisfy a truth-critical gap. Classify every
+  follow-up as `outside_scope`, `discovered_adjacent`, or `required_for_truth`
+  with truth impact, affected claim, defer reason, and graduation trigger.
+- Treat parity as claim-surface equivalence, not a project-specific checklist:
+  if two surfaces claim the same behavior, both need evidence from their real
+  loaded/runtime path. A skipped, missing, mocked-only, or structurally-present
+  surface is not a pass unless the claim is explicitly downgraded.
 
 ## Engine Dispatch
 
@@ -56,6 +71,7 @@ After all deliverable reviews complete:
 4. Assemble phase EOS-report (see below).
 
 ## Shared References
+- `docs/architecture/completion-evidence-and-claim-surfaces.md` — for completion evidence and claim-surface rules
 - `skills/shared/red-flags.md` — before any verdict
 - `skills/shared/eval-protocol.md` — evaluator guidelines
 - `skills/shared/git-conventions.md` — when reviewing commit quality

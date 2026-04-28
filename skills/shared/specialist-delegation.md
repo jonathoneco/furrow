@@ -36,6 +36,10 @@ Composition guidelines:
 
 ## Dispatch Primitive
 
+Specialists are skill briefs, not registered agent types. The runtime agent type
+is `engine` (or the adapter's engine equivalent); `specialist:{id}` selects the
+skill/brief used to prime that engine.
+
 Build and dispatch an engine handoff:
 
 ```sh
@@ -51,7 +55,7 @@ value (objective, deliverables, constraints, grounding) via stdin or args. D1's 
 enforces that no `.furrow/` paths and no Furrow vocab appear in the output.
 
 Runtime spawn primitive receives the rendered markdown as the engine's input:
-- Claude: `Agent(subagent_type="engine:specialist:{id}", prompt=<rendered-handoff>)`
+- Claude: `Agent(subagent_type="engine", prompt=<rendered-handoff plus specialist skill brief>)`
 - Pi: `pi-subagents spawn({name: "engine:{id}", systemPrompt: <specialist-brief>, tools: <allowlist>})`
   then `pi-subagents sendMessage(handle, <rendered-handoff>)`
 

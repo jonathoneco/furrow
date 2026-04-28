@@ -12,6 +12,10 @@ Explore the problem space. Produce a validated `definition.yaml` as the work con
 
 ## What This Step Produces
 - `.furrow/rows/{name}/definition.yaml` (validated against schema)
+- `.furrow/rows/{name}/ask-analysis.md` for rows using completion-evidence
+  gates: literal ask, real ask, implied obligations, non-deferrable work,
+  deferrable work, runtime surfaces affected, and a spirit-of-law completion
+  statement.
 
 ## Model Default
 model_default: sonnet
@@ -31,6 +35,10 @@ Run the 6-part ceremony in order:
 3. **Questions before research** — surface design decisions as named options
    (Option A/B/C) with a stated lean. Return these to the operator for user response.
    Emit `<!-- ideation:section:{name} -->` before each decision block.
+   Options must be materially different approaches, not slight variants designed
+   to steer the user toward the lean. If the space is broad or unknown, use
+   scout/dive: scout widely for candidates and tradeoffs first, then dive on
+   selected candidates.
 4. **Section-by-section approval** — build `definition.yaml` incrementally. Produce
    each section individually: objective, each deliverable, context pointers,
    constraints, gate policy. Emit section markers before each.
@@ -47,6 +55,11 @@ Run the 6-part ceremony in order:
    Collect EOS-reports. Synthesize findings. Record in gate evidence. Revise definition if needed.
 6. **Hard gate** — validate definition with `frw validate-definition`.
    Gate record required before returning phase result to operator.
+
+For rows using completion-evidence gates, archive honesty starts here: before
+completing ideate, write `ask-analysis.md` and answer whether the user's real
+ask can honestly be complete if each proposed deferral remains deferred. If not,
+it is remaining work, not a TODO.
 
 ## Collaboration Protocol
 
@@ -70,6 +83,7 @@ Engine dispatch for dual outside voice (step 5):
 
 ## Shared References
 Read these when relevant to your current action:
+- `docs/architecture/completion-evidence-and-claim-surfaces.md` — before writing ask analysis
 - `skills/shared/red-flags.md` — before finalizing definition
 - `skills/shared/learnings-protocol.md` — when capturing learnings
 - `skills/shared/git-conventions.md` — before any commit

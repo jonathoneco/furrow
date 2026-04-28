@@ -15,8 +15,6 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
-const scaffoldMarker = "FURROW-SCAFFOLD-INCOMPLETE"
-
 type rowInitOptions struct {
 	Title      string
 	Mode       string
@@ -272,6 +270,7 @@ func initRow(root, rowName string, opts rowInitOptions) (map[string]any, error) 
 		"archived_at":          nil,
 		"source_todo":          nilIfEmpty(opts.SourceTodo),
 		"gate_policy_init":     gatePolicy,
+		"truth_gates_version":  1,
 		"pending_user_actions": []any{},
 	}
 	if err := writeJSONMapAtomic(filepath.Join(rowDir, "state.json"), state); err != nil {
@@ -723,154 +722,59 @@ func reviewArtifactFileName(name string) string {
 func reviewArtifactsForRow(root, rowName string, state map[string]any) []map[string]any {
 	rowDir := rowDirFor(root, rowName)
 	deliverableNames := rowDeliverableNames(root, rowName, state)
-	artifacts := []struct {
-		ID                string
-		Label             string
-		Path              string
-		Required          bool
-		ScaffoldSupported bool
-	}{}
+	artifacts := []rowArtifactSpec{}
 	if len(deliverableNames) == 0 {
-		artifacts = append(artifacts, struct {
-			ID                string
-			Label             string
-			Path              string
-			Required          bool
-			ScaffoldSupported bool
-		}{ID: "review:all-deliverables", Label: "reviews/all-deliverables.json", Path: filepath.Join(rowDir, "reviews", "all-deliverables.json"), Required: true, ScaffoldSupported: false})
+		artifacts = append(artifacts, artifactSpec(rowDir, "review:all-deliverables", "reviews/all-deliverables.json", true, false))
 	} else {
 		for _, deliverableName := range deliverableNames {
 			fileName := reviewArtifactFileName(deliverableName)
-			artifacts = append(artifacts, struct {
-				ID                string
-				Label             string
-				Path              string
-				Required          bool
-				ScaffoldSupported bool
-			}{ID: "review:" + deliverableName, Label: filepath.Join("reviews", fileName), Path: filepath.Join(rowDir, "reviews", fileName), Required: true, ScaffoldSupported: false})
+			artifacts = append(artifacts, artifactSpec(rowDir, "review:"+deliverableName, filepath.Join("reviews", fileName), true, false))
 		}
 	}
 
-	result := make([]map[string]any, 0, len(artifacts))
-	for _, artifact := range artifacts {
-		exists := fileExists(artifact.Path)
-		entry := map[string]any{
-			"id":                 artifact.ID,
-			"label":              artifact.Label,
-			"path":               artifact.Path,
-			"required":           artifact.Required,
-			"exists":             exists,
-			"scaffold_supported": artifact.ScaffoldSupported,
-			"incomplete":         exists && fileContains(artifact.Path, scaffoldMarker),
-		}
-		entry["validation"] = validateArtifact(state, entry)
-		result = append(result, entry)
-	}
-	return result
+	return materializeRowArtifacts(state, artifacts)
 }
 
 func currentStepArtifacts(root, rowName string, state map[string]any) []map[string]any {
 	rowDir := rowDirFor(root, rowName)
 	step := getStringDefault(state, "step", "")
-	artifacts := []struct {
-		ID                string
-		Label             string
-		Path              string
-		Required          bool
-		ScaffoldSupported bool
-	}{}
+	artifacts := []rowArtifactSpec{}
 
 	switch step {
 	case "ideate":
-		artifacts = append(artifacts, struct {
-			ID                string
-			Label             string
-			Path              string
-			Required          bool
-			ScaffoldSupported bool
-		}{ID: "definition", Label: "definition.yaml", Path: filepath.Join(rowDir, "definition.yaml"), Required: true, ScaffoldSupported: true})
+		artifacts = append(artifacts, artifactSpec(rowDir, "definition", "definition.yaml", true, true))
+		if rowTruthGatesRequired(state) {
+			artifacts = append(artifacts, artifactSpec(rowDir, "ask-analysis", "ask-analysis.md", true, true))
+		}
 	case "research":
-		artifacts = append(artifacts, struct {
-			ID                string
-			Label             string
-			Path              string
-			Required          bool
-			ScaffoldSupported bool
-		}{ID: "research", Label: "research.md", Path: filepath.Join(rowDir, "research.md"), Required: true, ScaffoldSupported: true})
+		artifacts = append(artifacts, artifactSpec(rowDir, "research", "research.md", true, true))
 	case "plan":
-		artifacts = append(artifacts, struct {
-			ID                string
-			Label             string
-			Path              string
-			Required          bool
-			ScaffoldSupported bool
-		}{ID: "implementation-plan", Label: "implementation-plan.md", Path: filepath.Join(rowDir, "implementation-plan.md"), Required: true, ScaffoldSupported: true})
+		artifacts = append(artifacts, artifactSpec(rowDir, "implementation-plan", "implementation-plan.md", true, true))
 	case "spec":
-		artifacts = append(artifacts, struct {
-			ID                string
-			Label             string
-			Path              string
-			Required          bool
-			ScaffoldSupported bool
-		}{ID: "spec", Label: "spec.md", Path: filepath.Join(rowDir, "spec.md"), Required: true, ScaffoldSupported: true})
+		artifacts = append(artifacts, artifactSpec(rowDir, "spec", "spec.md", true, true))
 	case "decompose":
 		artifacts = append(artifacts,
-			struct {
-				ID                string
-				Label             string
-				Path              string
-				Required          bool
-				ScaffoldSupported bool
-			}{ID: "plan", Label: "plan.json", Path: filepath.Join(rowDir, "plan.json"), Required: true, ScaffoldSupported: true},
-			struct {
-				ID                string
-				Label             string
-				Path              string
-				Required          bool
-				ScaffoldSupported bool
-			}{ID: "team-plan", Label: "team-plan.md", Path: filepath.Join(rowDir, "team-plan.md"), Required: true, ScaffoldSupported: true},
+			artifactSpec(rowDir, "plan", "plan.json", true, true),
+			artifactSpec(rowDir, "team-plan", "team-plan.md", true, true),
 		)
 	case "implement":
 		deliverableNames := rowDeliverableNames(root, rowName, state)
 		requireCoordinationArtifacts := len(deliverableNames) > 1 || fileExists(filepath.Join(rowDir, "plan.json")) || fileExists(filepath.Join(rowDir, "team-plan.md"))
 		if requireCoordinationArtifacts {
 			artifacts = append(artifacts,
-				struct {
-					ID                string
-					Label             string
-					Path              string
-					Required          bool
-					ScaffoldSupported bool
-				}{ID: "plan", Label: "plan.json", Path: filepath.Join(rowDir, "plan.json"), Required: true, ScaffoldSupported: false},
-				struct {
-					ID                string
-					Label             string
-					Path              string
-					Required          bool
-					ScaffoldSupported bool
-				}{ID: "team-plan", Label: "team-plan.md", Path: filepath.Join(rowDir, "team-plan.md"), Required: true, ScaffoldSupported: false},
+				artifactSpec(rowDir, "plan", "plan.json", true, false),
+				artifactSpec(rowDir, "team-plan", "team-plan.md", true, false),
 			)
 		}
 	case "review":
-		return reviewArtifactsForRow(root, rowName, state)
+		reviewArtifacts := reviewArtifactsForRow(root, rowName, state)
+		if rowTruthGatesRequired(state) {
+			reviewArtifacts = append(reviewArtifacts, truthGateArtifactsForRow(root, rowName, state)...)
+		}
+		return reviewArtifacts
 	}
 
-	result := make([]map[string]any, 0, len(artifacts))
-	for _, artifact := range artifacts {
-		exists := fileExists(artifact.Path)
-		entry := map[string]any{
-			"id":                 artifact.ID,
-			"label":              artifact.Label,
-			"path":               artifact.Path,
-			"required":           artifact.Required,
-			"exists":             exists,
-			"scaffold_supported": artifact.ScaffoldSupported,
-			"incomplete":         exists && fileContains(artifact.Path, scaffoldMarker),
-		}
-		entry["validation"] = validateArtifact(state, entry)
-		result = append(result, entry)
-	}
-	return result
+	return materializeRowArtifacts(state, artifacts)
 }
 
 func scaffoldMissingCurrentStepArtifacts(root, rowName string, state map[string]any, artifacts []map[string]any) ([]map[string]any, error) {
@@ -893,44 +797,6 @@ func scaffoldMissingCurrentStepArtifacts(root, rowName string, state map[string]
 		created = append(created, map[string]any{"id": artifact["id"], "label": artifact["label"], "path": path})
 	}
 	return created, nil
-}
-
-func scaffoldTemplateForArtifact(state map[string]any, artifact map[string]any) (string, bool) {
-	id, _ := artifact["id"].(string)
-	gatePolicy := getStringDefault(state, "gate_policy_init", "supervised")
-	switch id {
-	case "definition":
-		return fmt.Sprintf("# %s\nobjective: \"TODO: replace this incomplete scaffold with the row objective\"\ndeliverables:\n  - name: \"todo-deliverable\"\n    acceptance_criteria:\n      - \"TODO: replace this incomplete scaffold with real acceptance criteria\"\ncontext_pointers: []\nconstraints: []\ngate_policy: %s\n", scaffoldMarker, gatePolicy), true
-	case "research":
-		return fmt.Sprintf("# Research\n\n> %s — replace this placeholder research scaffold before completing the step.\n\n## Questions\n- TODO: list the research questions this step must answer\n\n## Findings\n- TODO: replace with researched findings\n\n## Sources Consulted\n- TODO: source (tier) — contribution\n", scaffoldMarker), true
-	case "implementation-plan":
-		return fmt.Sprintf("# Implementation Plan\n\n> %s — replace this placeholder plan scaffold before completing the step.\n\n## Objective\n- TODO: describe the boundary-hardening objective for this slice\n\n## Planned work\n1. TODO: list the backend changes\n2. TODO: list the adapter-consuming validation surfaces\n\n## Validation\n- TODO: list the concrete commands and scenarios to validate\n", scaffoldMarker), true
-	case "spec":
-		return fmt.Sprintf("# Spec\n\n> %s — replace this placeholder spec scaffold before completing the step.\n\n## Scope\n- TODO: define what will be built\n\n## Acceptance Criteria\n- TODO: replace with concrete, testable criteria\n\n## Verification\n- TODO: document how the work will be verified\n", scaffoldMarker), true
-	case "plan":
-		payload := map[string]any{
-			"_furrow_scaffold": scaffoldMarker,
-			"notes": []string{
-				"Replace this incomplete scaffold with real waves, assignments, and rationale before completing decompose.",
-			},
-			"waves":       []any{},
-			"assignments": map[string]any{},
-		}
-		blob, _ := json.MarshalIndent(payload, "", "  ")
-		return string(blob) + "\n", true
-	case "team-plan":
-		return fmt.Sprintf("# Team Plan\n\n> %s — replace this placeholder team plan before completing the step.\n\n## Scope Analysis\n- TODO\n\n## Team Composition\n- TODO\n\n## Task Assignment\n- TODO\n\n## Coordination\n- TODO\n\n## Skills\n- TODO\n", scaffoldMarker), true
-	default:
-		return "", false
-	}
-}
-
-func fileContains(path, needle string) bool {
-	payload, err := os.ReadFile(path)
-	if err != nil {
-		return false
-	}
-	return strings.Contains(string(payload), needle)
 }
 
 func rowSeedSurface(root string, state map[string]any) map[string]any {
@@ -1109,6 +975,11 @@ func rowBlockers(state map[string]any, seed map[string]any, artifacts []map[stri
 		}
 	}
 	if getStringDefault(state, "step", "") == "review" && getStringDefault(state, "step_status", "") == "completed" {
+		for _, blockerEntry := range truthGateBlockers(state, artifacts) {
+			blockers = append(blockers, blocker(tx, "truth_gate_blocked",
+				map[string]string{"reason": getStringDefault(blockerEntry, "reason", "truth gate blocked")},
+				blockerEntry))
+		}
 		if _, ok := latestPassingReviewGate(state); !ok {
 			blockers = append(blockers, blocker(tx, "archive_requires_review_gate", nil, nil))
 		}

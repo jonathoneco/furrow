@@ -834,6 +834,88 @@ func TestRowInitFocusAndScaffoldJSON(t *testing.T) {
 		}
 	})
 
+	t.Run("completion-evidence archive blocks missing evidence artifacts", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "evidence-missing", completionEvidenceReviewState("evidence-missing"))
+		writeReviewArtifact(t, root, "evidence-missing", "one", passingCompletionEvidenceReviewJSON())
+
+		code, payload, _ := runJSONCommand(t, root, []string{"row", "archive", "evidence-missing", "--json"})
+		if code != 2 {
+			t.Fatalf("expected archive blocked with exit 2, got %d", code)
+		}
+		if !jsonContains(payload, "missing_required_artifact") || !jsonContains(payload, "ask-analysis") || !jsonContains(payload, "completion-check") {
+			t.Fatalf("expected missing completion evidence artifact blockers, got %s", mustJSONPayload(t, payload))
+		}
+	})
+
+	t.Run("completion-evidence archive blocks claim-blocking follow-up", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "claim-blocked", completionEvidenceReviewState("claim-blocked"))
+		writeReviewArtifact(t, root, "claim-blocked", "one", passingCompletionEvidenceReviewJSON())
+		writeCompletionEvidenceArtifacts(t, root, "claim-blocked", "complete")
+		mustWrite(t, filepath.Join(root, ".furrow", "rows", "claim-blocked", "follow-ups.yaml"), `
+follow_ups:
+  - claim_affected: "archive honestly represents the real ask"
+    deferral_class: required_for_truth
+    truth_impact: blocks_claim
+    defer_reason: "critical behavior remains unimplemented"
+    graduation_trigger: "implement the missing runtime path"
+`)
+
+		code, payload, _ := runJSONCommand(t, root, []string{"row", "archive", "claim-blocked", "--json"})
+		if code != 2 {
+			t.Fatalf("expected archive blocked with exit 2, got %d", code)
+		}
+		if !jsonContains(payload, "truth_gate_blocked") || !jsonContains(payload, "expand work, downgrade claim, or mark row incomplete") {
+			t.Fatalf("expected claim-blocking deferral blocker, got %s", mustJSONPayload(t, payload))
+		}
+	})
+
+	t.Run("completion-evidence archive blocks claim-surface skip counted as pass", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "claim-surface-skip", completionEvidenceReviewState("claim-surface-skip"))
+		writeReviewArtifact(t, root, "claim-surface-skip", "one", passingCompletionEvidenceReviewJSON())
+		writeCompletionEvidenceArtifacts(t, root, "claim-surface-skip", "complete")
+		mustWrite(t, filepath.Join(root, ".furrow", "rows", "claim-surface-skip", "test-plan.md"), validCompletionEvidenceTestPlan("Skipped adapter parity test counts as pass."))
+
+		code, payload, _ := runJSONCommand(t, root, []string{"row", "archive", "claim-surface-skip", "--json"})
+		if code != 2 {
+			t.Fatalf("expected archive blocked with exit 2, got %d", code)
+		}
+		if !jsonContains(payload, "claim_surface_parity_skip_as_pass") {
+			t.Fatalf("expected claim-surface parity blocker, got %s", mustJSONPayload(t, payload))
+		}
+	})
+
+	t.Run("completion-evidence archive allows outside-scope follow-up and surfaces PR prep", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "evidence-allowed", completionEvidenceReviewState("evidence-allowed"))
+		writeReviewArtifact(t, root, "evidence-allowed", "one", passingCompletionEvidenceReviewJSON())
+		writeCompletionEvidenceArtifacts(t, root, "evidence-allowed", "complete")
+		mustWrite(t, filepath.Join(root, ".furrow", "rows", "evidence-allowed", "follow-ups.yaml"), `
+follow_ups:
+  - claim_affected: "future polish"
+    deferral_class: outside_scope
+    truth_impact: none
+    defer_reason: "not part of the real ask"
+    graduation_trigger: "user requests polish"
+`)
+
+		code, payload, stderr := runJSONCommand(t, root, []string{"row", "archive", "evidence-allowed", "--json"})
+		if code != 0 {
+			t.Fatalf("expected archive success, got %d stderr=%s payload=%s", code, stderr, mustJSONPayload(t, payload))
+		}
+		data := payload["data"].(map[string]any)
+		archiveCeremony := data["archive_ceremony"].(map[string]any)
+		if _, ok := archiveCeremony["pr_prep"].(map[string]any); !ok {
+			t.Fatalf("expected pr_prep in archive ceremony, got %s", mustJSONPayload(t, payload))
+		}
+	})
+
 	t.Run("archive blocked without passing review gate", func(t *testing.T) {
 		root := setupFurrowRoot(t)
 		writeValidAlmanac(t, root)
@@ -1218,6 +1300,112 @@ func writeReviewArtifact(t *testing.T, root, rowName, deliverable, content strin
 	t.Helper()
 	mustMkdirAll(t, filepath.Join(root, ".furrow", "rows", rowName, "reviews"))
 	mustWrite(t, filepath.Join(root, ".furrow", "rows", rowName, "reviews", deliverable+".json"), content)
+}
+
+func completionEvidenceReviewState(rowName string) map[string]any {
+	return map[string]any{
+		"name":                rowName,
+		"title":               "Completion Evidence",
+		"step":                "review",
+		"step_status":         "completed",
+		"updated_at":          "2026-04-24T18:00:00Z",
+		"archived_at":         nil,
+		"truth_gates_version": float64(1),
+		"deliverables": map[string]any{
+			"one": map[string]any{"status": "completed"},
+		},
+		"gates": []any{
+			map[string]any{"boundary": "implement->review", "outcome": "pass", "decided_by": "manual", "timestamp": "2026-04-24T17:59:00Z"},
+		},
+	}
+}
+
+func passingCompletionEvidenceReviewJSON() string {
+	return `{"deliverable":"one","phase_a":{"verdict":"pass"},"phase_b":{"verdict":"pass"},"overall":"pass","timestamp":"2026-04-24T18:01:00Z","harness_process_risks":["modularization drift checked","duplicate algorithms checked","optionality spread checked","runtime-loaded entrypoint mismatch checked","specialists are skills, not registered agent types"]}`
+}
+
+func writeCompletionEvidenceArtifacts(t *testing.T, root, rowName, verdict string) {
+	t.Helper()
+	rowDir := filepath.Join(root, ".furrow", "rows", rowName)
+	mustWrite(t, filepath.Join(rowDir, "ask-analysis.md"), `# Ask Analysis
+
+## Literal Ask
+Add customer-facing export support.
+
+## Real Ask
+Users can export the claimed dataset through the real CLI path.
+
+## Implied Obligations
+Completion evidence and archive blockers must cover the real ask.
+
+## Non-Deferrable Work
+Claim-blocking work cannot be hidden in follow-up items.
+
+## Deferrable Work
+Outside-scope polish can remain deferred.
+
+## Runtime Surfaces Affected
+CLI export command and generated file contents.
+
+## Spirit-Of-Law Completion Statement
+Archive is honest only when required-for-truth work is complete or claims are downgraded.
+`)
+	mustWrite(t, filepath.Join(rowDir, "test-plan.md"), validCompletionEvidenceTestPlan("Claim surfaces with equivalent behavior must execute claimed paths."))
+	mustWrite(t, filepath.Join(rowDir, "completion-check.md"), `# Completion Check
+
+## Original Real Ask
+Users can export the claimed dataset through the real CLI path.
+
+## What Is Now True
+go test ./internal/cli/... verifies completion evidence archive gates.
+
+## What Is Only Structurally Present
+No structural-only claim is treated as complete.
+
+## Deferred Work
+No known residual risks for this fixture.
+
+## Does Any Deferral Block The Real Ask?
+No.
+
+## Adapter/Backend Boundary Check
+Backend owns archive blockers.
+
+## Help/Docs/Reference Truth Check
+Prompt guidance references the rule.
+
+## Final Verdict
+`+verdict+`
+`)
+}
+
+func validCompletionEvidenceTestPlan(parityLine string) string {
+	return `# Test Plan
+
+## Claims Under Test
+CLI archive readiness blocks completion claims without evidence.
+
+## Unit Tests
+go test ./internal/cli/...
+
+## Integration Tests
+row archive fixture coverage.
+
+## Runtime-Loaded Entrypoint Tests
+CLI archive command against loaded row files.
+
+## Negative Tests
+Claim-blocking deferrals fail archive.
+
+## Parity Tests
+` + parityLine + `
+
+## Skips And Why They Do Not Weaken The Claim
+No skips.
+
+## Manual Dogfood Path
+Run row status then archive.
+`
 }
 
 func readJSONFile(t *testing.T, path string) map[string]any {

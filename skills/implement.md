@@ -19,6 +19,9 @@ model_default: sonnet
 
 ## Step Ceremony
 
+- Exploration and planning may happen on `main`; implementation belongs in a
+  worktree. If implementation happens on `main`, record it as a process
+  deviation in `completion-check.md`.
 - Each engine works within its `file_ownership` boundaries.
 - All acceptance criteria from `definition.yaml` must be addressed.
 - Load context bundle from operator prime message (includes wave assignments from plan.json).

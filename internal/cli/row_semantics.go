@@ -152,9 +152,15 @@ func artifactSpecificFindings(state map[string]any, artifact map[string]any, con
 			"Coordination":     "coordination plan",
 			"Skills":           "skills plan",
 		})
+	case "ask-analysis":
+		return validateAskAnalysisArtifact(content)
+	case "test-plan":
+		return validateTestPlanArtifact(content)
+	case "completion-check":
+		return validateCompletionCheckArtifact(content)
 	default:
 		if strings.HasPrefix(id, "review:") {
-			return validateReviewArtifact(content, strings.TrimPrefix(id, "review:"))
+			return validateReviewArtifact(state, content, strings.TrimPrefix(id, "review:"))
 		}
 		return nil
 	}
@@ -230,7 +236,7 @@ func validatePlanJSONArtifact(content string) []artifactValidationFinding {
 	return findings
 }
 
-func validateReviewArtifact(content string, expectedDeliverable string) []artifactValidationFinding {
+func validateReviewArtifact(state map[string]any, content string, expectedDeliverable string) []artifactValidationFinding {
 	details, err := reviewArtifactDetailsFromContent(content, expectedDeliverable)
 	if err != nil {
 		return []artifactValidationFinding{{Code: "review_json_invalid", Severity: "error", Message: "review artifact is not valid JSON"}}
@@ -311,7 +317,38 @@ func validateReviewArtifact(content string, expectedDeliverable string) []artifa
 	if timestamp, _ := details["timestamp"].(string); strings.TrimSpace(timestamp) == "" {
 		findings = append(findings, artifactValidationFinding{Code: "review_timestamp_missing", Severity: "warning", Message: "review artifact does not record a timestamp"})
 	}
+	if rowTruthGatesRequired(state) && !reviewHasHarnessProcessRisks(content) {
+		findings = append(findings, artifactValidationFinding{
+			Code:     "review_harness_process_risks_missing",
+			Severity: "error",
+			Message:  "review artifact must include Harness Process Risks covering modularization, duplication, optionality spread, runtime-loaded entrypoint mismatch, and specialist-as-skill dispatch",
+		})
+	}
 	return findings
+}
+
+func reviewHasHarnessProcessRisks(content string) bool {
+	lower := strings.ToLower(content)
+	if strings.Contains(lower, "harness process risks") {
+		return true
+	}
+	var doc map[string]any
+	if err := json.Unmarshal([]byte(content), &doc); err != nil {
+		return false
+	}
+	for _, key := range []string{"harness_process_risks", "process_risks"} {
+		if raw, ok := doc[key]; ok {
+			switch typed := raw.(type) {
+			case []any:
+				return len(typed) > 0
+			case map[string]any:
+				return len(typed) > 0
+			case string:
+				return isSubstantiveText(typed)
+			}
+		}
+	}
+	return false
 }
 
 func hasReviewTimestamp(doc map[string]any) bool {
@@ -661,6 +698,7 @@ func archiveCeremonySurface(root, rowName string, state map[string]any, artifact
 	return map[string]any{
 		"review":      review,
 		"follow_ups":  followUps,
+		"pr_prep":     archivePRPrepSurface(root, rowName, state, artifacts),
 		"source_todo": sourceTodoSurface(root, state),
 		"learnings": map[string]any{
 			"path":    learningsPath,
@@ -668,6 +706,73 @@ func archiveCeremonySurface(root, rowName string, state map[string]any, artifact
 			"count":   countNonEmptyLines(learningsPath),
 		},
 	}
+}
+
+func archivePRPrepSurface(root, rowName string, state map[string]any, artifacts []map[string]any) map[string]any {
+	branch := gitCurrentBranch(root)
+	if branch == "" {
+		branch = gitOutputAt(root, "branch", "--show-current")
+	}
+	changedFiles := strings.Fields(gitOutputAt(root, "diff", "--name-only", "HEAD"))
+	testCommands := []string{}
+	knownRisks := []string{}
+	if artifact := findArtifactByID(artifacts, "completion-check"); artifact != nil {
+		if payload, err := os.ReadFile(getStringDefault(artifact, "path", "")); err == nil {
+			sections := markdownSections(string(payload))
+			testCommands = substantiveSectionLines(sections["What Is Now True"], "test")
+			knownRisks = substantiveSectionLines(sections["Deferred Work"], "")
+		}
+	}
+	title := strings.TrimSpace(getStringDefault(state, "title", rowName))
+	return map[string]any{
+		"branch_worktree": map[string]any{
+			"branch":                 nilIfEmpty(branch),
+			"worktree":               root,
+			"implementation_on_main": branch == "main" || branch == "master",
+		},
+		"changed_files_by_category": categorizeChangedFiles(changedFiles),
+		"test_commands_run":         testCommands,
+		"known_residual_risks":      knownRisks,
+		"follow_ups":                truthBlockingFollowUps(filepath.Join(rowDirFor(root, rowName), "follow-ups.yaml")),
+		"suggested_title":           "feat: " + title,
+	}
+}
+
+func categorizeChangedFiles(paths []string) map[string][]string {
+	categories := map[string][]string{"code": {}, "tests": {}, "docs": {}, "row_artifacts": {}, "schemas": {}, "other": {}}
+	for _, path := range paths {
+		switch {
+		case strings.HasPrefix(path, ".furrow/rows/"):
+			categories["row_artifacts"] = append(categories["row_artifacts"], path)
+		case strings.HasPrefix(path, "tests/") || strings.HasSuffix(path, "_test.go"):
+			categories["tests"] = append(categories["tests"], path)
+		case strings.HasPrefix(path, "docs/") || strings.HasSuffix(path, ".md"):
+			categories["docs"] = append(categories["docs"], path)
+		case strings.HasPrefix(path, "schemas/"):
+			categories["schemas"] = append(categories["schemas"], path)
+		case strings.HasSuffix(path, ".go") || strings.HasPrefix(path, "cmd/") || strings.HasPrefix(path, "internal/") || strings.HasPrefix(path, "bin/"):
+			categories["code"] = append(categories["code"], path)
+		default:
+			categories["other"] = append(categories["other"], path)
+		}
+	}
+	return categories
+}
+
+func substantiveSectionLines(body, mustContain string) []string {
+	lines := []string{}
+	mustContain = strings.ToLower(strings.TrimSpace(mustContain))
+	for _, line := range strings.Split(body, "\n") {
+		trimmed := strings.TrimSpace(strings.TrimLeft(line, "-*0123456789.> "))
+		if !isSubstantiveText(trimmed) {
+			continue
+		}
+		if mustContain != "" && !strings.Contains(strings.ToLower(trimmed), mustContain) {
+			continue
+		}
+		lines = append(lines, trimmed)
+	}
+	return lines
 }
 
 func latestGateEvidenceSurface(state map[string]any) map[string]any {

@@ -381,3 +381,11 @@ blockers:
     remediation_hint: "Wrap each artifact section with <!-- {phase}:section:{name} --> per skills/shared/presentation-protocol.md"
     confirmation_path: silent
     applicable_steps: []
+
+  - code: truth_gate_blocked
+    category: archive
+    severity: block
+    message_template: "row truth gate blocked archive: {reason}"
+    remediation_hint: "Resolve the required-for-truth work, downgrade the claim in row artifacts/docs, or mark the row incomplete before archiving."
+    confirmation_path: block
+    applicable_steps: ["review"]

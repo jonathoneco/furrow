@@ -22,6 +22,11 @@ model_default: opus
 
 - All questions from ideation must be addressed or explicitly deferred.
 - Research must reference `definition.yaml` deliverables by name.
+- Options must represent materially different approaches. Do not manufacture
+  slight variants to make the lean look inevitable.
+- For broad unknown spaces, use scout/dive:
+  - Scout: wide scan, candidate list, ranked tradeoffs.
+  - Dive: focused research per candidate selected from the scout.
 - Load context bundle from operator prime message (includes `prior_artifacts.summary_sections` from ideation).
 - Source hierarchy: primary (official docs, source code, changelogs, `--help`) >
   secondary (blogs, tutorials, StackOverflow) > tertiary (training data).

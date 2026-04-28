@@ -83,6 +83,7 @@ var expectedInitialCodes = []string{
 	"artifact_scaffold_incomplete",
 	"artifact_validation_failed",
 	"archive_requires_review_gate",
+	"truth_gate_blocked",
 }
 
 // testInterpKeys returns a placeholder map with every {key} the registry
@@ -122,6 +123,7 @@ func testInterpKeys() map[string]string {
 		"confirmed_row":    "predecessor-row",
 		"artifact_id":      "definition",
 		"count":            "1",
+		"reason":           "fixture reason",
 	}
 }
 
