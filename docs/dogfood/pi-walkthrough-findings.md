@@ -37,6 +37,102 @@ Live log. Sections appear in execution order, not plan order. Each entry:
 
 ## Section 1 — Pi install & startup with the Furrow adapter loaded
 
+### 1.1 Headless one-shot via `-e ./adapters/pi/furrow.ts` — WORKS
+- (covered by 0.6 above) `/furrow-overview` returns formatted output.
+
+### 1.2 `/furrow-next` — WORKS
+- Returns rich, well-formatted output: Row, Title, Resolution=`latest_active`,
+  Step, Step status, Deliverables, Blockers (with category/severity/code),
+  Seed (missing seed linkage surfaced), Current-step artifacts,
+  Checkpoint, Doctor summary, Row warnings, Recommended next action.
+- Two warnings surface correctly (and identify a separate finding RM-1 below):
+  - `focused_row: focused row "pre-write-validation-go-first" is archived`
+  - `[fail] almanac_validation: almanac validation found errors`
+
+### 1.3 Auto-discovery via `.pi/extensions/furrow.ts` shim — WORKS
+- `pi --no-session -p "/furrow-overview"` returns identical output to the
+  explicit `-e` form. Shim re-export confirmed end-to-end.
+
+### 1.4 Interactive TUI launch — DEFERRED (visual confirmation, can't script)
+
+Section 1 verdict: **WORKS**. Pi loads the adapter, registers the five
+commands, reaches the Go backend, parses the canonical envelope, and
+formats it correctly.
+
+---
+
+## Adjacent findings surfaced during Section 1
+
+### RM-1 — VAPORWARE: roadmap.yaml has 14 dangling validation errors
+
+**Verdict**: VAPORWARE (almanac integrity gap; main ships with a failing
+`furrow doctor`).
+
+**Surface**: `furrow almanac validate` reports
+`/home/jonco/src/furrow/.furrow/almanac/roadmap.yaml: fail (14 findings)`:
+- 11 edge dangling references to nodes that don't exist:
+  `parallel-agent-orchestration-adoption`, `cli-architecture-overhaul`
+  (×4), `default-supervised-gating` (×2), `install-architecture-overhaul`
+  (×2), `go-cli-contract-v1`, `migration-operating-mode`.
+- 3 roadmap-TODO sync gaps for nodes that exist in roadmap.yaml but have
+  no matching todos.yaml entry: `archive-pi-adapter-foundation-as-superseded`,
+  `pi-step-ceremony-deliverables-backfill` (referenced 2×).
+
+**Likely cause**: Phase reshuffling commits (35e3369, 18a82cc, 2cb51d0)
+renamed/absorbed phase nodes (e.g., `cli-architecture-overhaul` →
+`cli-architecture-overhaul-slice-2`) but didn't update the edge targets
+or the TODO sync.
+
+**Distinct from `frw doctor` parallel-batch invariant**: that check
+passes (`Roadmap phasing (parallel-batch invariant): PASS`). RM-1 is the
+*Go* `furrow almanac validate` integrity check, which `furrow doctor`
+inherits as `almanac_validation: fail`. The two checks are independent.
+
+**Disposition**: TODO needed (operator-only — engine layer cannot mutate
+`.furrow/`). Two probable patch options:
+- (a) Fix edges to point to renamed targets (e.g., `cli-architecture-overhaul`
+  → `cli-architecture-overhaul-slice-2`).
+- (b) Add the missing nodes back if they represent real future work.
+- For the missing TODOs: either add the entries to `todos.yaml` or remove
+  the roadmap references that orphan-link them.
+
+Without intent context, this is operator/team-lead's call. Not patching
+from this session.
+
+**Draft TODO entry** (for team-lead to add to `.furrow/almanac/todos.yaml`):
+
+```yaml
+- id: roadmap-yaml-dangling-edges-and-orphan-refs
+  title: roadmap.yaml has 14 validation errors after phase reshuffling
+  status: active
+  source_type: dogfood-finding
+  urgency: medium
+  impact: medium
+  effort: small
+  context: |
+    `furrow almanac validate` reports 14 findings on
+    .furrow/almanac/roadmap.yaml: 11 edges referencing missing nodes
+    (cli-architecture-overhaul, parallel-agent-orchestration-adoption,
+    default-supervised-gating, install-architecture-overhaul,
+    go-cli-contract-v1, migration-operating-mode) plus 3 roadmap nodes
+    referencing missing TODOs (archive-pi-adapter-foundation-as-superseded,
+    pi-step-ceremony-deliverables-backfill). `furrow doctor` rolls these
+    up as a single `almanac_validation: fail` check. Likely from phase
+    reshuffling in 35e3369, 18a82cc, 2cb51d0 where nodes were renamed
+    but edges/TODOs not updated.
+  files_touched:
+    - .furrow/almanac/roadmap.yaml
+    - .furrow/almanac/todos.yaml
+  work_needed: |
+    For each dangling edge: confirm whether the target was renamed
+    (e.g., to *-slice-2) and update the edge, or add the missing
+    node if it represents real future work, or remove the edge if
+    cruft. For each missing TODO: add the entry or remove the
+    roadmap reference. After: `furrow almanac validate` should
+    return pass.
+```
+
+
 ---
 
 ## Findings
