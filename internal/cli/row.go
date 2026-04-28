@@ -198,7 +198,7 @@ func (a *App) runRowTransition(args []string) int {
 
 	artifacts := currentStepArtifacts(root, rowName, state)
 	seed := rowSeedSurface(root, state)
-	blockers := rowBlockers(state, seed, artifacts, rowBlockersOpts{})
+	blockers := rowBlockers(state, seed, artifacts, rowBlockersOpts{Root: root, RowName: rowName})
 	if len(blockers) > 0 {
 		return a.fail("furrow row transition", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("row %q is blocked from advancing", rowName), details: map[string]any{"blockers": blockers, "artifact_validation": summarizeArtifactValidation(artifacts)}}, flags.json)
 	}
@@ -433,6 +433,8 @@ func (a *App) runRowArchive(args []string) int {
 	artifacts := currentStepArtifacts(root, rowName, state)
 	seed := rowSeedSurface(root, state)
 	archiveOpts := rowBlockersOpts{
+		Root:                 root,
+		RowName:              rowName,
 		SupersedesConfirmed:  flags.values["supersedes-confirmed"],
 		DefinitionSupersedes: definitionSupersedes(root, rowName),
 	}
@@ -607,7 +609,7 @@ func buildRowStatusData(root, rowName string, state map[string]any, resolution, 
 	nextTransitions := nextValidTransitions(state, steps)
 	seed := rowSeedSurface(root, state)
 	artifacts := currentStepArtifacts(root, rowName, state)
-	blockers := rowBlockers(state, seed, artifacts, rowBlockersOpts{})
+	blockers := rowBlockers(state, seed, artifacts, rowBlockersOpts{Root: root, RowName: rowName})
 	checkpoint := rowCheckpointSurface(root, rowName, state, blockers, seed, artifacts)
 	rowWarnings := append([]map[string]any{}, warnings...)
 	if seedState, _ := seed["state"].(string); seedState == "missing" {

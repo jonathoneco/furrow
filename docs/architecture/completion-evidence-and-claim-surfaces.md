@@ -19,6 +19,7 @@ For new rows this evidence is captured in:
 
 - `ask-analysis.md`
 - `test-plan.md`
+- `claim-surfaces.yaml`
 - `completion-check.md`
 - optional classified `follow-ups.yaml`
 
@@ -44,6 +45,16 @@ the row must expand the work, downgrade the claim, or mark the row incomplete.
 When surfaces claim equivalent behavior, skipped, missing, mocked-only, or
 structurally-present evidence does not count as pass unless the completion claim
 is explicitly downgraded.
+
+For truth-gated rows, `claim-surfaces.yaml` is the structured claim surface
+index. Each claim lists the concrete surfaces, their status, evidence type, and
+evidence path. Equivalent behavior claims must pass every claimed surface or
+the claim must be explicitly downgraded.
+
+If `completion-check.md` ends with `complete-with-downgraded-claim`, archive
+readiness requires a same-changeset wording update to `summary.md`, roadmap/todo
+planning surfaces, or docs. Downgrading only inside completion evidence is not
+enough because the stale claim would remain visible to future operators.
 
 ## Harness Boundary
 

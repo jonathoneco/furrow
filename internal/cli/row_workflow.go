@@ -860,6 +860,8 @@ func rowSeedSurface(root string, state map[string]any) map[string]any {
 // rowBlockersOpts carries optional context beyond state/seed/artifacts.
 // The zero value (rowBlockersOpts{}) is safe for all existing callers.
 type rowBlockersOpts struct {
+	Root    string
+	RowName string
 	// SupersedesConfirmed is the raw "--supersedes-confirmed <commit>:<row>" value.
 	// Empty string means the flag was not passed.
 	SupersedesConfirmed string
@@ -951,12 +953,12 @@ func rowBlockers(state map[string]any, seed map[string]any, artifacts []map[stri
 	}
 	for _, artifact := range artifacts {
 		required, _ := artifact["required"].(bool)
-		if !required {
-			continue
-		}
 		artifactID := fmt.Sprintf("%v", artifact["id"])
 		artifactPath := fmt.Sprintf("%v", artifact["path"])
 		if exists, _ := artifact["exists"].(bool); !exists {
+			if !required {
+				continue
+			}
 			blockers = append(blockers, blocker(tx, "missing_required_artifact",
 				map[string]string{"artifact_id": artifactID, "path": artifactPath},
 				map[string]any{"path": artifact["path"], "artifact_id": artifact["id"]}))
@@ -975,7 +977,7 @@ func rowBlockers(state map[string]any, seed map[string]any, artifacts []map[stri
 		}
 	}
 	if getStringDefault(state, "step", "") == "review" && getStringDefault(state, "step_status", "") == "completed" {
-		for _, blockerEntry := range truthGateBlockers(state, artifacts) {
+		for _, blockerEntry := range truthGateBlockers(opts.Root, opts.RowName, state, artifacts) {
 			blockers = append(blockers, blocker(tx, "truth_gate_blocked",
 				map[string]string{"reason": getStringDefault(blockerEntry, "reason", "truth gate blocked")},
 				blockerEntry))

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 )
@@ -849,6 +850,21 @@ func TestRowInitFocusAndScaffoldJSON(t *testing.T) {
 		}
 	})
 
+	t.Run("completion-evidence scaffold creates claim surfaces and follow-ups artifacts", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "truth-scaffold", completionEvidenceReviewState("truth-scaffold"))
+		writeReviewArtifact(t, root, "truth-scaffold", "one", passingCompletionEvidenceReviewJSON())
+
+		code, payload, stderr := runJSONCommand(t, root, []string{"row", "scaffold", "truth-scaffold", "--json"})
+		if code != 0 {
+			t.Fatalf("expected scaffold success, got %d stderr=%s payload=%s", code, stderr, mustJSONPayload(t, payload))
+		}
+		if !jsonContains(payload, "claim-surfaces") || !jsonContains(payload, "follow-ups") {
+			t.Fatalf("expected claim-surfaces and follow-ups scaffolds, got %s", mustJSONPayload(t, payload))
+		}
+	})
+
 	t.Run("completion-evidence archive blocks claim-blocking follow-up", func(t *testing.T) {
 		root := setupFurrowRoot(t)
 		writeValidAlmanac(t, root)
@@ -887,6 +903,89 @@ follow_ups:
 		}
 		if !jsonContains(payload, "claim_surface_parity_skip_as_pass") {
 			t.Fatalf("expected claim-surface parity blocker, got %s", mustJSONPayload(t, payload))
+		}
+	})
+
+	t.Run("completion-evidence archive blocks structured claim surface bypass", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "claim-surface-structured", completionEvidenceReviewState("claim-surface-structured"))
+		writeReviewArtifact(t, root, "claim-surface-structured", "one", passingCompletionEvidenceReviewJSON())
+		writeCompletionEvidenceArtifacts(t, root, "claim-surface-structured", "complete")
+		mustWrite(t, filepath.Join(root, ".furrow", "rows", "claim-surface-structured", "claim-surfaces.yaml"), `
+claim_surfaces:
+  - name: adapter parity
+    claim: Claude and Pi expose equivalent archive behavior.
+    equivalence_claim: true
+    surfaces:
+      - name: Claude command
+        status: passed
+        evidence_type: integration
+        evidence_path: tests/integration/claude-archive.sh
+      - name: Pi command
+        status: missing
+        evidence_type: runtime-loaded-entrypoint
+        evidence_path: adapters/pi/furrow.test.ts
+`)
+
+		code, payload, _ := runJSONCommand(t, root, []string{"row", "archive", "claim-surface-structured", "--json"})
+		if code != 2 {
+			t.Fatalf("expected archive blocked with exit 2, got %d", code)
+		}
+		if !jsonContains(payload, "claim_surface_not_evidence") || !jsonContains(payload, "claim_surface_equivalence_not_proven") {
+			t.Fatalf("expected structured claim-surface blockers, got %s", mustJSONPayload(t, payload))
+		}
+	})
+
+	t.Run("completion-evidence archive blocks invalid row-local follow-ups artifact", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "follow-ups-invalid", completionEvidenceReviewState("follow-ups-invalid"))
+		writeReviewArtifact(t, root, "follow-ups-invalid", "one", passingCompletionEvidenceReviewJSON())
+		writeCompletionEvidenceArtifacts(t, root, "follow-ups-invalid", "complete")
+		mustWrite(t, filepath.Join(root, ".furrow", "rows", "follow-ups-invalid", "follow-ups.yaml"), `
+follow_ups:
+  - claim_affected: "archive honestly represents the real ask"
+`)
+
+		code, payload, _ := runJSONCommand(t, root, []string{"row", "archive", "follow-ups-invalid", "--json"})
+		if code != 2 {
+			t.Fatalf("expected archive blocked with exit 2, got %d", code)
+		}
+		if !jsonContains(payload, "follow_up_classification_incomplete") {
+			t.Fatalf("expected follow-up classification blocker, got %s", mustJSONPayload(t, payload))
+		}
+	})
+
+	t.Run("completion-evidence archive blocks downgraded claim without wording change", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "downgrade-no-wording", completionEvidenceReviewState("downgrade-no-wording"))
+		writeReviewArtifact(t, root, "downgrade-no-wording", "one", passingCompletionEvidenceReviewJSON())
+		writeCompletionEvidenceArtifacts(t, root, "downgrade-no-wording", "complete-with-downgraded-claim")
+		initGitRepo(t, root)
+
+		code, payload, _ := runJSONCommand(t, root, []string{"row", "archive", "downgrade-no-wording", "--json"})
+		if code != 2 {
+			t.Fatalf("expected archive blocked with exit 2, got %d", code)
+		}
+		if !jsonContains(payload, "requires summary, roadmap, or docs wording changes") {
+			t.Fatalf("expected downgraded wording-change blocker, got %s", mustJSONPayload(t, payload))
+		}
+	})
+
+	t.Run("completion-evidence archive allows downgraded claim with summary wording change", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "downgrade-with-summary", completionEvidenceReviewState("downgrade-with-summary"))
+		writeReviewArtifact(t, root, "downgrade-with-summary", "one", passingCompletionEvidenceReviewJSON())
+		writeCompletionEvidenceArtifacts(t, root, "downgrade-with-summary", "complete-with-downgraded-claim")
+		initGitRepo(t, root)
+		mustWrite(t, filepath.Join(root, ".furrow", "rows", "downgrade-with-summary", "summary.md"), "Claim downgraded: runtime parity is not claimed.\n")
+
+		code, payload, stderr := runJSONCommand(t, root, []string{"row", "archive", "downgrade-with-summary", "--json"})
+		if code != 0 {
+			t.Fatalf("expected archive success, got %d stderr=%s payload=%s", code, stderr, mustJSONPayload(t, payload))
 		}
 	})
 
@@ -1190,6 +1289,23 @@ func setupFurrowRoot(t *testing.T) string {
 	return root
 }
 
+func initGitRepo(t *testing.T, root string) {
+	t.Helper()
+	for _, args := range [][]string{
+		{"init"},
+		{"config", "user.email", "furrow@example.invalid"},
+		{"config", "user.name", "Furrow Test"},
+		{"add", "."},
+		{"commit", "-m", "baseline"},
+	} {
+		cmd := exec.Command("git", args...)
+		cmd.Dir = root
+		if output, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("git %v failed: %v\n%s", args, err, string(output))
+		}
+	}
+}
+
 func writeValidAlmanac(t *testing.T, root string) {
 	t.Helper()
 	mustWrite(t, filepath.Join(root, ".furrow", "almanac", "todos.yaml"), `
@@ -1351,6 +1467,17 @@ CLI export command and generated file contents.
 Archive is honest only when required-for-truth work is complete or claims are downgraded.
 `)
 	mustWrite(t, filepath.Join(rowDir, "test-plan.md"), validCompletionEvidenceTestPlan("Claim surfaces with equivalent behavior must execute claimed paths."))
+	mustWrite(t, filepath.Join(rowDir, "claim-surfaces.yaml"), `
+claim_surfaces:
+  - name: cli export behavior
+    claim: Users can export the claimed dataset through the real CLI path.
+    equivalence_claim: false
+    surfaces:
+      - name: Go CLI
+        status: passed
+        evidence_type: unit
+        evidence_path: internal/cli/app_test.go
+`)
 	mustWrite(t, filepath.Join(rowDir, "completion-check.md"), `# Completion Check
 
 ## Original Real Ask

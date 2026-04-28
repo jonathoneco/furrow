@@ -156,8 +156,12 @@ func artifactSpecificFindings(state map[string]any, artifact map[string]any, con
 		return validateAskAnalysisArtifact(content)
 	case "test-plan":
 		return validateTestPlanArtifact(content)
+	case "claim-surfaces":
+		return validateClaimSurfacesArtifact(content)
 	case "completion-check":
 		return validateCompletionCheckArtifact(content)
+	case "follow-ups":
+		return validateFollowUpsArtifact(content)
 	default:
 		if strings.HasPrefix(id, "review:") {
 			return validateReviewArtifact(state, content, strings.TrimPrefix(id, "review:"))

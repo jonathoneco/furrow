@@ -56,7 +56,9 @@ If not found: error with message indicating what is blocking archive.
      as separate explicit steps, outside /archive.
    - If no observations activate, prints a single line and moves on.
 
-9. Run `rws archive "{name}"` to set `state.json.archived_at` to current ISO 8601 timestamp.
+9. Run `furrow row archive "{name}"` to set `state.json.archived_at` through the
+   Go archive-readiness gate. Do not use `rws archive` for gated rows; it does
+   not own completion-evidence truth checks.
 10. Regenerate final `summary.md` via `rws regenerate-summary "{name}"`.
 11. Git commit with message: `chore: archive {name}`.
 

@@ -9,7 +9,7 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
-func truthGateBlockers(state map[string]any, artifacts []map[string]any) []map[string]any {
+func truthGateBlockers(root, rowName string, state map[string]any, artifacts []map[string]any) []map[string]any {
 	if !rowTruthGatesRequired(state) {
 		return nil
 	}
@@ -27,6 +27,13 @@ func truthGateBlockers(state map[string]any, artifacts []map[string]any) []map[s
 		if completionVerdict(string(payload)) == "incomplete" {
 			blockers = append(blockers, map[string]any{"reason": "completion-check final verdict is incomplete", "artifact_id": id, "path": path})
 		}
+		if completionVerdict(string(payload)) == "complete-with-downgraded-claim" && !hasDowngradedClaimWordingChange(root, rowName) {
+			blockers = append(blockers, map[string]any{
+				"reason":      "complete-with-downgraded-claim requires summary, roadmap, or docs wording changes in the same changeset",
+				"artifact_id": id,
+				"path":        path,
+			})
+		}
 	}
 	rowDir := filepath.Dir(getStringDefault(findArtifactByID(artifacts, "completion-check"), "path", ""))
 	if rowDir == "." || rowDir == "" {
@@ -36,6 +43,28 @@ func truthGateBlockers(state map[string]any, artifacts []map[string]any) []map[s
 		blockers = append(blockers, followUp)
 	}
 	return blockers
+}
+
+func hasDowngradedClaimWordingChange(root, rowName string) bool {
+	if root == "" {
+		return false
+	}
+	changed := strings.Fields(gitOutputAt(root, "diff", "--name-only", "HEAD"))
+	changed = append(changed, strings.Fields(gitOutputAt(root, "diff", "--cached", "--name-only", "HEAD"))...)
+	changed = append(changed, strings.Fields(gitOutputAt(root, "ls-files", "--others", "--exclude-standard"))...)
+	rowSummary := filepath.ToSlash(filepath.Join(".furrow", "rows", rowName, "summary.md"))
+	for _, path := range changed {
+		path = filepath.ToSlash(path)
+		switch {
+		case path == rowSummary:
+			return true
+		case path == ".furrow/almanac/roadmap.yaml" || path == ".furrow/almanac/roadmap.md" || path == ".furrow/almanac/todos.yaml":
+			return true
+		case strings.HasPrefix(path, "docs/"):
+			return true
+		}
+	}
+	return false
 }
 
 func truthBlockingFollowUps(path string) []map[string]any {

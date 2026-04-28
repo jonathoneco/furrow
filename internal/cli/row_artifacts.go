@@ -76,7 +76,7 @@ func scaffoldTemplateForArtifact(state map[string]any, artifact map[string]any) 
 
 func renderScaffoldTemplate(id string, data map[string]any) (string, bool) {
 	ext := "md"
-	if id == "definition" {
+	if id == "definition" || id == "claim-surfaces" || id == "follow-ups" {
 		ext = "yaml"
 	}
 	tmplPath := filepath.Join("scaffolds", id+"."+ext+".tmpl")
