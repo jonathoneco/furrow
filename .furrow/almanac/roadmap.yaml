@@ -2,7 +2,7 @@ schema_version: '1.0'
 metadata:
   project: furrow
   generated_at: '2026-04-25T02:30:00Z'
-  total_phases: 13
+  total_phases: 15
   completed_phases: 4
   curated: true
   curation_source: .furrow/rows/migration-state-of-the-union/research.md §11
@@ -3001,9 +3001,9 @@ phases:
     conflict_risk: high
     completed_at: null
 - number: 9
-  title: Review / specialists / row-variants (parallel wave)
+  title: Review + specialists (parallel wave)
   status: planned
-  rationale: 'Was Phase 6 in the prior layout — three rows already had no intra-phase deps, so the phase carries over unchanged. Deepen review execution; formalize specialist registration; introduce lightweight row variants; strengthen planning UX.'
+  rationale: 'Two parallel rows: review execution + specialist registration. Originally bundled with row-variants-and-planning-ux as a 3-way parallel wave, but row-variants was deferred to Phase 10 because it would have collided with both rows here on commands/, skills/, and todos.yaml — same shape as Phase 4''s blocker-taxonomy + orchestration overlap that required a manual integration team to resolve.'
   rows:
   - index: 1
     branch: work/review-and-evaluator-orchestration
@@ -3037,9 +3037,14 @@ phases:
     - bin/frw.d/scripts/
     conflict_risk: low
     completed_at: null
-  - index: 3
+- number: 10
+  title: Row variants + planning UX (single row)
+  status: planned
+  rationale: 'Was Phase 9 row 3 in the prior layout. Deferred to its own phase because the row touches commands/, skills/, bin/rws, and bin/alm broadly — same surfaces the Phase 9 review and specialists rows reshape, and the same shape that collided in Phase 4. Deferring eliminates a 3-way parallel collision and gives the row a stable foundation post-Phase-9.'
+  rows:
+  - index: 1
     branch: work/row-variants-and-planning-ux
-    description: Patch-row + spike-row + brain-dump-triage-command + sprint planning + sharded todos + user-actions + post-merge-watch + ambient-context-promotion.
+    description: Patch-row + spike-row + brain-dump-triage-command + sprint planning + sharded todos + user-actions + post-merge-watch + ambient-context-promotion. Cohesion is loose; row owner may decide to land this as multiple sequential commits or split mid-row if a vertical-slice cleavage emerges.
     todos:
     - patch-row-concept
     - spike-row-mode
@@ -3051,6 +3056,8 @@ phases:
     - ambient-context-promotion
     depends_on:
     - work/orchestration-delegation-contract
+    - work/review-and-evaluator-orchestration
+    - work/specialists-and-agents
     key_files:
     - commands/
     - skills/
@@ -3058,14 +3065,14 @@ phases:
     - bin/alm
     conflict_risk: medium
     completed_at: null
-- number: 10
-  title: CLI introspection + meta/archive (parallel wave)
+- number: 11
+  title: CLI introspection + history (single row)
   status: planned
-  rationale: 'Was Phase 7 wave 1 in the prior layout (rows 1 and 4). Both depend on work/blocker-taxonomy-foundation and not on each other — true parallel-batch. CLI introspection foundational for the rest of Migration A; meta/archive flow improvements decouple from CLI rewrite.'
+  rationale: 'Single-row phase: cli-architecture-overhaul-slice-2 reshapes internal/cli/ broadly. Originally paired with meta-and-archive-flow-improvements as a parallel wave, but meta-archive was deferred to Phase 12 because both touch internal/cli/ + bin/rws and meta-archive needs the reshaped CLI structure to slot its archive flow improvements — same shape as Phase 4 blocker + orchestration overlap.'
   rows:
   - index: 1
     branch: work/cli-introspection-and-history
-    description: Tier 1+2+3 introspection commands as Go-first first-class citizens. Foundational for Phase 10. Also closes the dispatch-enforcement observation now that 3+ multi-deliverable rows have archived.
+    description: Tier 1+2+3 introspection commands as Go-first first-class citizens. Foundational for Phase 12 (meta-archive) and Phase 13 (worktree + install). Also closes the dispatch-enforcement observation now that 3+ multi-deliverable rows have archived.
     todos:
     - cli-introspection-suite
     - cli-architecture-overhaul-slice-2
@@ -3081,7 +3088,12 @@ phases:
     - bin/sds
     conflict_risk: high
     completed_at: null
-  - index: 2
+- number: 12
+  title: Meta + archive flow improvements (single row)
+  status: planned
+  rationale: 'Was Phase 10 row 2 in the prior layout. Deferred to its own phase because both meta-archive and cli-introspection-and-history touch internal/cli/, cmd/furrow/, and bin/rws; meta-archive needs the reshaped CLI structure cli-introspection-slice-2 produces — same shape as the Phase 4 blocker-taxonomy + orchestration-delegation collision.'
+  rows:
+  - index: 1
     branch: work/meta-and-archive-flow-improvements
     description: Supervised decision surfaces + archive implications propagation + furrow meta folds into roadmap.
     todos:
@@ -3089,14 +3101,14 @@ phases:
     - archive-implications-propagation
     - furrow-meta-folds-into-roadmap
     depends_on:
-    - work/blocker-taxonomy-foundation
+    - work/cli-introspection-and-history
     key_files:
     - commands/archive.md
     - commands/meta.md
     - bin/rws
     conflict_risk: low
     completed_at: null
-- number: 11
+- number: 13
   title: Worktree + install pipelines (parallel wave)
   status: planned
   rationale: 'Was Phase 7 wave 2 in the prior layout (rows 2 and 3). Both depend on work/cli-introspection-and-history and not on each other — true parallel-batch.'
@@ -3136,7 +3148,7 @@ phases:
     - docs/architecture/self-hosting.md
     conflict_risk: medium
     completed_at: null
-- number: 12
+- number: 14
   title: Dual-runtime parity + docs/research (parallel wave)
   status: planned
   rationale: 'Was Phase 8 wave 1 in the prior layout (rows 1 and 3). Parity validation has many cross-phase deps; docs-and-research has none — both run in parallel as the integration milestone.'
@@ -3184,7 +3196,7 @@ phases:
     - references/
     conflict_risk: none
     completed_at: null
-- number: 13
+- number: 15
   title: Pi-native leverage + legacy shell cutoff (parallel wave)
   status: planned
   rationale: 'Was Phase 8 wave 2 in the prior layout (rows 2 and 4). Both depend on work/dual-runtime-parity-validation and not on each other — true parallel-batch. The shell cutoff is the clean-swap milestone: every shell entrypoint, hook, script, and todos.yaml itself is removed here.'
