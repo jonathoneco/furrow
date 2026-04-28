@@ -235,10 +235,18 @@ assert_not_empty() {
 }
 
 # assert_output_contains <description> <output> <pattern>
+#
+# NOTE: uses `grep >/dev/null` (NOT `grep -q`) so grep reads its full stdin.
+# `grep -q` exits on first match, which races with the upstream `printf '%s\n'
+# "$_output"` writing a large variable: when grep wins the race, printf gets
+# SIGPIPE, and `set -o pipefail` (commonly set in tests sourcing this helper)
+# turns the SIGPIPE into a pipeline failure — yielding non-deterministic
+# false-FAILs on assertions where the match is found early in the output.
+# Reading full stdin via plain `grep ... >/dev/null` avoids the SIGPIPE entirely.
 assert_output_contains() {
   _desc="$1"; _output="$2"; _pattern="$3"
   TESTS_RUN=$((TESTS_RUN + 1))
-  if printf '%s\n' "$_output" | grep -q "$_pattern" 2>/dev/null; then
+  if printf '%s\n' "$_output" | grep -F "$_pattern" >/dev/null 2>&1; then
     printf "  PASS: %s\n" "$_desc"
     TESTS_PASSED=$((TESTS_PASSED + 1))
     return 0
