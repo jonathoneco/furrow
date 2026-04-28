@@ -132,6 +132,182 @@ from this session.
     return pass.
 ```
 
+---
+
+## Sections 4-6 — Blocker taxonomy / Context routing / Handoff render
+
+### 4 Blocker taxonomy & canonical envelope — WORKS (with one stale doc)
+
+- `furrow guard <event-type>` is wired for all 10 event types in
+  `schemas/blocker-event.yaml`: pre_write_state_json, pre_write_verdict,
+  pre_write_correction_limit, pre_bash_internal_script,
+  pre_commit_bakfiles, pre_commit_typechange, pre_commit_script_modes,
+  stop_ideation_completeness, stop_summary_validation, stop_work_check.
+- Each event correctly validates required payload keys per the schema
+  (e.g., `pre_bash_internal_script` errors with `missing required
+  payload key "command"`).
+- `pre_write_state_json` with a real `.furrow/...state.json` path emits
+  the canonical 6-field envelope: code=state_json_direct_write,
+  category=state-mutation, severity=block, message, remediation_hint,
+  confirmation_path=block. ✓
+
+**Minor finding G-1**: `furrow guard --help` claims only one event type
+(pre_bash_internal_script). The other 9 work but aren't documented.
+Stale `--help` text. Low priority — file as a docs TODO.
+
+### 5 Context routing (`furrow context for-step`) — PARTIAL → PATCHED (focused-row), one VAPORWARE remains
+
+- `furrow context for-step <step> --row <name> --json` returns a 7-field
+  bundle conforming to `schemas/context-bundle.schema.json`: row, step,
+  target, skills, references, prior_artifacts, decisions. WORKS.
+- 61.5KB output for a real ideate-step bundle (skills inlined as
+  full content, references resolved). Substantial.
+
+#### C-1 — VAPORWARE → PATCHED in this session: focused-row file lookup used wrong filename
+
+`internal/cli/context/cmd.go:271` read `.furrow/focus` (no leading dot).
+The canonical filename is `.furrow/.focused` (with leading dot) — used
+correctly by `internal/cli/util.go:38`, `internal/cli/row_workflow.go:105`,
+and `adapters/pi/furrow.ts:380` (`isCanonicalStatePath`).
+
+Result: every `furrow context for-step <step>` invocation without an
+explicit `--row` failed with `read focus file: open
+/home/jonco/src/furrow/.furrow/focus: no such file or directory`. Caller
+silently forced to always pass `--row`.
+
+**Patched in this session**:
+- `internal/cli/context/cmd.go` readFocusedRow → uses `.focused`.
+- New `internal/cli/context/focused_test.go` with 3 regression tests:
+  CanonicalFilename, RejectsLegacyFilename, EmptyFile.
+- Verified: `furrow context for-step ideate --json` (no --row) now
+  returns the bundle for the focused row.
+
+#### C-2 — VAPORWARE: context emitBlocker emits non-canonical envelope shape
+
+`internal/cli/context/cmd.go:235` (`emitBlocker`) emits this shape on
+blocker:
+
+```json
+{
+  "blocker": {
+    "code": "...",
+    "message": "...",
+    "context": null,
+    "confirmation_path": ".furrow/blockers/<code>.json"
+  }
+}
+```
+
+Compared to canonical (per `schemas/blocker-event.schema.json` and what
+`furrow guard` produces):
+
+- Wraps in extra `{blocker: ...}` envelope. Canonical is unwrapped.
+- Missing `category`, `severity`, `remediation_hint`.
+- `confirmation_path` is a *file path*, not the canonical enum
+  (block / warn-with-confirm / silent).
+
+The Pi adapter (`adapters/pi/furrow.ts:411-419`) explicitly comments:
+"`confirmation_path` is the enum token (block/warn-with-confirm/silent)
+— useful for UX decoration but NOT a sentence to interpolate as prose."
+This implementation directly contradicts that contract.
+
+**Disposition**: NEW TODO. Patch is non-trivial — requires importing/
+reusing the canonical envelope construction shared between `furrow guard`
+and the validate-* paths. Not patching from this session because:
+- Phase 5 owns `pi-tool-call-canonical-schema-and-surface-audit`, which
+  may already cover the cross-CLI envelope-shape audit. Risk of churn.
+- Engine layer can't probe live conflict in Phase 5 worktree.
+
+#### D-1 — DUPLICATE: `findFurrowRoot()` re-implemented in context package
+
+`internal/cli/context/cmd.go:250-267` reimplements walk-up search that
+already exists in `internal/cli/util.go:17`. Same algorithm, same
+behavior. Different package; needs an export to share, or a small
+shared package. Low-priority cleanup — file as TODO.
+
+### 6 Handoff schemas (`furrow handoff render`) — WORKS (one UX papercut)
+
+- Driver target: `furrow handoff render --target driver:plan --row ...
+  --step plan --json` returns object with all 7 schema-required fields:
+  target, step, row, objective, grounding, constraints, return_format. ✓
+- Engine target: requires JSON payload on stdin (per
+  `internal/cli/handoff/cmd.go:179` "For engine targets, read
+  EngineHandoff JSON from stdin"). When invoked without piped input,
+  fails with `<stdin>: invalid JSON: unexpected end of JSON input` —
+  surfaces the canonical 6-field envelope correctly, but the message is
+  cryptic for a CLI user. Working as designed; UX papercut only.
+
+**Minor finding H-1**: `furrow handoff render --help` (or its absence)
+should make explicit that engine targets require stdin. Low priority.
+
+---
+
+## Draft TODOs to file (consolidated)
+
+For team-lead to paste into `.furrow/almanac/todos.yaml`. The first three
+are from the LG- series (Section above). These are new since:
+
+```yaml
+- id: roadmap-yaml-dangling-edges-and-orphan-refs            # see RM-1 above
+  # ... (full block above)
+
+- id: furrow-context-cmd-non-canonical-blocker-shape
+  title: furrow context cmd emits non-canonical blocker envelope
+  status: active
+  source_type: dogfood-finding
+  urgency: low
+  impact: medium
+  effort: small
+  related:
+    - pi-tool-call-canonical-schema-and-surface-audit       # Phase 5 — may absorb
+  context: |
+    internal/cli/context/cmd.go emitBlocker wraps the verdict in
+    {blocker: ...}, omits category/severity/remediation_hint, and
+    misuses confirmation_path as a file path instead of the canonical
+    enum (block/warn-with-confirm/silent). Diverges from `furrow guard`
+    output and from the contract Pi adapter expects (adapters/pi/furrow.ts
+    formatBlockers comment). Found 2026-04-28 dogfood.
+  files_touched:
+    - internal/cli/context/cmd.go
+  work_needed: |
+    Reuse the canonical envelope construction from internal/cli/guard.go
+    (or factor a shared helper). Drop the {blocker: ...} wrapper. Emit
+    all 6 canonical fields. Confirm against schemas/blocker-event.schema.json.
+
+- id: findFurrowRoot-duplicated-across-packages
+  title: findFurrowRoot reimplemented in context package
+  status: active
+  source_type: dogfood-finding
+  urgency: low
+  impact: low
+  effort: small
+  context: |
+    internal/cli/context/cmd.go:250-267 duplicates the walk-up logic
+    from internal/cli/util.go:17. The Pi adapter has a third
+    implementation (TS) at adapters/pi/furrow.ts:324 — that one is
+    unavoidable (different language). The two Go implementations should
+    converge. Either export from internal/cli or factor into a shared
+    pkg. Found 2026-04-28 dogfood.
+  files_touched:
+    - internal/cli/context/cmd.go
+    - internal/cli/util.go
+
+- id: furrow-guard-help-text-stale
+  title: `furrow guard --help` only documents 1 of 10 event types
+  status: active
+  source_type: dogfood-finding
+  urgency: low
+  impact: low
+  effort: small
+  context: |
+    `furrow guard --help` shows "Event types: pre_bash_internal_script"
+    but the binary handles 10 event types per schemas/blocker-event.yaml.
+    Found 2026-04-28 dogfood.
+  files_touched:
+    - internal/cli/guard.go (or wherever --help is rendered)
+```
+
+
 
 ---
 

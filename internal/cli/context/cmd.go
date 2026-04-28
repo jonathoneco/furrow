@@ -266,16 +266,21 @@ func findFurrowRoot() (string, error) {
 	}
 }
 
-// readFocusedRow reads .furrow/focus to get the currently focused row name.
+// readFocusedRow reads .furrow/.focused to get the currently focused row
+// name. The canonical filename is `.focused` (with the leading dot) — see
+// internal/cli/util.go readFocusedRowName, internal/cli/row_workflow.go,
+// and adapters/pi/furrow.ts isCanonicalStatePath. This helper previously
+// looked at `.furrow/focus` (no dot) and silently failed on every focused
+// invocation; the bug was caught during dogfood walkthrough 2026-04-28.
 func readFocusedRow(root string) (string, error) {
-	focusPath := filepath.Join(root, ".furrow", "focus")
+	focusPath := filepath.Join(root, ".furrow", ".focused")
 	data, err := os.ReadFile(focusPath)
 	if err != nil {
-		return "", fmt.Errorf("read focus file: %w", err)
+		return "", fmt.Errorf("read focused-row file: %w", err)
 	}
 	name := strings.TrimSpace(string(data))
 	if name == "" {
-		return "", fmt.Errorf("focus file is empty")
+		return "", fmt.Errorf(".focused file is empty")
 	}
 	return name, nil
 }
