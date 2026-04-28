@@ -252,7 +252,7 @@ func (a *App) runLayer(args []string) int {
 			hook.EmitLayerVerdict(a.stdout, true, "layer_decide: malformed tool event: "+err.Error())
 			return 2
 		}
-		return hook.RunLayerDecide(context.Background(), resolveLayerPolicyPath(), ev, a.stdout)
+		return hook.RunLayerDecide(context.Background(), resolveLayerPolicyPath(), ev, a.stdout, a.stderr)
 	case "help", "-h", "--help":
 		_, _ = fmt.Fprintln(a.stdout, "furrow layer\n\nAvailable subcommands: decide")
 		return 0
@@ -282,7 +282,7 @@ func (a *App) runHook(args []string) int {
 		// find .furrow/ relatively, which then bricks every subsequent tool
 		// call (Edit included) — discovered when pi-dogfood-guide self-bricked
 		// after `cd adapters/pi && bun install`.
-		return hook.RunLayerGuard(context.Background(), resolveLayerPolicyPath(), a.stdin, a.stdout)
+		return hook.RunLayerGuard(context.Background(), resolveLayerPolicyPath(), a.stdin, a.stdout, a.stderr)
 	case "presentation-check":
 		return hook.RunPresentationCheck(context.Background(), a.stdin, a.stdout)
 	case "help", "-h", "--help":

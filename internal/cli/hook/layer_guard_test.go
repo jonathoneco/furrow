@@ -12,6 +12,13 @@ import (
 	"github.com/jonathoneco/furrow/internal/cli/hook"
 )
 
+type verdictEnvelope struct {
+	Block         bool   `json:"block"`
+	Reason        string `json:"reason"`
+	Code          string `json:"code"`
+	VerdictSource string `json:"verdict_source"`
+}
+
 // writePolicy writes a layer-policy.yaml to a temp dir and returns the path.
 func writePolicy(t *testing.T, content string) string {
 	t.Helper()
@@ -269,21 +276,34 @@ func TestRunLayerGuard(t *testing.T) {
 			payload := buildPayload(tc.agentType, tc.toolName, tc.toolInput)
 			in := strings.NewReader(payload)
 			var out bytes.Buffer
-			got := hook.RunLayerGuard(context.Background(), policyPath, in, &out)
+			var stderr bytes.Buffer
+			got := hook.RunLayerGuard(context.Background(), policyPath, in, &out, &stderr)
 			if got != tc.wantExit {
-				t.Errorf("RunLayerGuard exit = %d; want %d\n  payload: %s\n  stdout: %s",
-					got, tc.wantExit, payload, out.String())
+				t.Errorf("RunLayerGuard exit = %d; want %d\n  payload: %s\n  stdout: %s\n  stderr: %s",
+					got, tc.wantExit, payload, out.String(), stderr.String())
 			}
 			if got == 2 {
 				// Verify the block envelope is valid JSON with block=true.
-				var env map[string]any
+				var env verdictEnvelope
 				if err := json.Unmarshal(out.Bytes(), &env); err != nil {
 					t.Errorf("exit 2 but stdout is not valid JSON: %v\nstdout: %s", err, out.String())
 					return
 				}
-				if env["block"] != true {
+				if !env.Block {
 					t.Errorf("exit 2 but block field is not true: %v", env)
 				}
+				if env.Code != "layer_tool_violation" {
+					t.Errorf("exit 2 policy block code = %q; want layer_tool_violation", env.Code)
+				}
+				if env.VerdictSource != "policy-decision-block" {
+					t.Errorf("exit 2 policy block source = %q; want policy-decision-block", env.VerdictSource)
+				}
+				if env.Reason == "" || !strings.Contains(stderr.String(), env.Reason) {
+					t.Errorf("stderr should contain the JSON reason; reason=%q stderr=%q", env.Reason, stderr.String())
+				}
+			}
+			if got == 0 && out.Len() != 0 {
+				t.Errorf("allow verdict should keep stdout empty; got %q", out.String())
 			}
 		})
 	}
@@ -297,20 +317,115 @@ func TestRunLayerGuard_MalformedPayload(t *testing.T) {
 	policyPath := writePolicy(t, testPolicy)
 	in := strings.NewReader("not json at all {{{")
 	var out bytes.Buffer
-	exit := hook.RunLayerGuard(context.Background(), policyPath, in, &out)
+	var stderr bytes.Buffer
+	exit := hook.RunLayerGuard(context.Background(), policyPath, in, &out, &stderr)
 	if exit != 2 {
 		t.Errorf("malformed payload should exit 2; got %d", exit)
+	}
+	if !strings.Contains(stderr.String(), "malformed hook payload") {
+		t.Errorf("stderr should expose malformed payload reason; got: %s", stderr.String())
 	}
 }
 
 func TestRunLayerGuard_MissingPolicyFile(t *testing.T) {
 	in := strings.NewReader(buildPayload("driver:plan", "Write", map[string]string{"file_path": "x"}))
 	var out bytes.Buffer
-	exit := hook.RunLayerGuard(context.Background(), "/nonexistent/.furrow/layer-policy.yaml", in, &out)
+	var stderr bytes.Buffer
+	exit := hook.RunLayerGuard(context.Background(), "/nonexistent/.furrow/layer-policy.yaml", in, &out, &stderr)
 	if exit != 2 {
 		t.Errorf("missing policy should exit 2; got %d", exit)
 	}
-	if !strings.Contains(out.String(), "layer_policy_invalid") {
-		t.Errorf("expected layer_policy_invalid in output; got: %s", out.String())
+	var env verdictEnvelope
+	if err := json.Unmarshal(out.Bytes(), &env); err != nil {
+		t.Fatalf("stdout is not valid JSON: %v\nstdout: %s", err, out.String())
+	}
+	if env.Code != "layer_policy_invalid" {
+		t.Errorf("code = %q; want layer_policy_invalid", env.Code)
+	}
+	if env.VerdictSource != "policy-load-failure" {
+		t.Errorf("verdict_source = %q; want policy-load-failure", env.VerdictSource)
+	}
+	if !strings.Contains(stderr.String(), "layer_policy_invalid") {
+		t.Errorf("expected layer_policy_invalid in stderr; got: %s", stderr.String())
+	}
+}
+
+func TestRunLayerGuard_PolicyLoadFailureRecoveryEdit(t *testing.T) {
+	recoveryRoot := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(recoveryRoot, ".furrow"), 0o755); err != nil {
+		t.Fatalf("mkdir .furrow: %v", err)
+	}
+	missingPolicyPath := filepath.Join(recoveryRoot, ".furrow", "layer-policy.yaml")
+
+	tests := []struct {
+		name      string
+		toolName  string
+		toolInput any
+		wantExit  int
+	}{
+		{
+			name:      "edit_internal_cli_allowed",
+			toolName:  "Edit",
+			toolInput: map[string]string{"file_path": "internal/cli/hook/layer_guard.go"},
+			wantExit:  0,
+		},
+		{
+			name:      "absolute_edit_internal_cli_allowed",
+			toolName:  "Edit",
+			toolInput: map[string]string{"file_path": filepath.Join(recoveryRoot, "internal", "cli", "hook", "layer_guard.go")},
+			wantExit:  0,
+		},
+		{
+			name:      "edit_schema_allowed",
+			toolName:  "Edit",
+			toolInput: map[string]string{"file_path": "schemas/blocker-taxonomy.yaml"},
+			wantExit:  0,
+		},
+		{
+			name:      "edit_policy_allowed",
+			toolName:  "Edit",
+			toolInput: map[string]string{"file_path": ".furrow/layer-policy.yaml"},
+			wantExit:  0,
+		},
+		{
+			name:      "write_recovery_path_still_blocked",
+			toolName:  "Write",
+			toolInput: map[string]string{"file_path": "internal/cli/hook/layer_guard.go"},
+			wantExit:  2,
+		},
+		{
+			name:      "edit_unrelated_path_still_blocked",
+			toolName:  "Edit",
+			toolInput: map[string]string{"file_path": "docs/notes.md"},
+			wantExit:  2,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			in := strings.NewReader(buildPayload("driver:plan", tc.toolName, tc.toolInput))
+			var out bytes.Buffer
+			var stderr bytes.Buffer
+			exit := hook.RunLayerGuard(context.Background(), missingPolicyPath, in, &out, &stderr)
+			if exit != tc.wantExit {
+				t.Fatalf("exit = %d; want %d\nstdout=%q\nstderr=%q", exit, tc.wantExit, out.String(), stderr.String())
+			}
+			if tc.wantExit == 0 {
+				if out.Len() != 0 {
+					t.Fatalf("recovery allow should keep stdout empty; got %q", out.String())
+				}
+				if !strings.Contains(stderr.String(), "layer-guard recovery allow: layer_policy_invalid") {
+					t.Fatalf("recovery allow should explain load failure on stderr; got %q", stderr.String())
+				}
+				return
+			}
+			var env verdictEnvelope
+			if err := json.Unmarshal(out.Bytes(), &env); err != nil {
+				t.Fatalf("stdout is not valid JSON: %v\nstdout=%q", err, out.String())
+			}
+			if env.Code != "layer_policy_invalid" || env.VerdictSource != "policy-load-failure" {
+				t.Fatalf("unexpected load-failure envelope: %+v", env)
+			}
+		})
 	}
 }

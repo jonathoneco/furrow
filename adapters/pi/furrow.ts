@@ -320,6 +320,8 @@ type ToolEvent = {
 type LayerVerdict = {
 	block: boolean;
 	reason: string;
+	code?: string;
+	verdict_source?: string;
 };
 
 type PiToolCallEvent = {

@@ -2909,7 +2909,7 @@ phases:
     - adapters/pi/furrow.ts
     - .claude/settings.json
     conflict_risk: low
-    completed_at: null
+    completed_at: '2026-04-28T18:58:33-04:00'
   - index: 4
     branch: work/source-field-vocabulary-collapse
     description: Collapse duplicate row vocabulary by canonicalizing source_todos and one backend branch field; keep compatibility reads only as migration fallback.

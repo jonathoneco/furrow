@@ -26,11 +26,19 @@ fi
 export FURROW_BIN
 
 claude_payload='{"session_id":"test","hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":".furrow/rows/x/state.json"},"agent_id":"engine-1","agent_type":"engine:specialist:go-specialist"}'
-if printf '%s' "$claude_payload" | "$FURROW_BIN" hook layer-guard >/dev/null 2>&1; then
+stderr_file="${TMPDIR:-/tmp}/furrow_layer_policy_parity_stderr_$$"
+trap 'rm -f "$FURROW_BIN" "$stderr_file"' EXIT
+if printf '%s' "$claude_payload" | "$FURROW_BIN" hook layer-guard >/dev/null 2>"$stderr_file"; then
   printf "FAIL: Claude hook allowed engine .furrow write\n" >&2
   exit 1
 fi
 printf "PASS: Claude hook blocks engine .furrow write\n"
+if grep -q "layer_tool_violation" "$stderr_file"; then
+  printf "PASS: Claude hook exposes layer rejection reason on stderr\n"
+else
+  printf "FAIL: Claude hook did not expose layer rejection reason on stderr\n" >&2
+  exit 1
+fi
 
 if (cd "$PROJECT_ROOT/adapters/pi" && bun test furrow.test.ts -t "loaded Pi entrypoint layer guard"); then
   printf "PASS: loaded Pi entrypoint layer guard test passed\n"

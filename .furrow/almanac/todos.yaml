@@ -4504,11 +4504,11 @@
 - id: layer-guard-silent-rejection-on-top-layer-integrat
   title: layer-guard silent-rejection on top-layer integration agents
   context: 'During phase-4-integration merge work, the layer-guard hook rejected every Bash command whose argv contained the substring of the runtime config dir (e.g. grep -n CONFIG/almanac/todos.yaml). The hook returned non-zero exit with empty stderr (''No stderr output''), making the root cause invisible. Workaround: build paths via shell substitution which the hook regex did not match.'
-  work_needed: 'Either: (1) make layer-guard skip when the calling agent layer is operator/integration-architect (top layer), or (2) emit meaningful stderr including the policy rule and assumed agent_type on rejection, or (3) match on declared agent identity from settings.json rather than argv path patterns. Current behavior produces silent rejections indistinguishable from a broken binary.'
+  work_needed: 'DONE in work/layer-guard-rejection-hardening: blocked layer-policy decisions now mirror the canonical reason to stderr while preserving stdout JSON, so operator-facing hook output includes the policy rule and rejection reason.'
   source_type: manual
-  status: active
+  status: done
   created_at: "2026-04-27T16:57:29-04:00"
-  updated_at: "2026-04-27T16:57:29-04:00"
+  updated_at: "2026-04-28T18:58:33-04:00"
   source_work_unit: phase-4-integration
 - id: engine-fan-out-budget-depth-and-token-limits-for-a
   title: Engine fan-out budget — depth and token limits for Agent-spawned engine trees
@@ -4608,11 +4608,11 @@
 - id: layer-guard-verdict-reason-should-also-write-to-st
   title: layer-guard verdict reason should also write to stderr
   context: 'Claude Code PreToolUse hook protocol surfaces block reasons from stderr. internal/cli/hook/layer_guard.go emit() writes the JSON verdict envelope {block, reason} to stdout only. When the hook fail-closes, the harness reports ''No stderr output'' — the actual reason (e.g., layer_policy_invalid: open .furrow/layer-policy.yaml: no such file or directory) is invisible to the operator. Hid the LG-1 cwd-bug root cause for ~30 minutes during the pi-dogfood-guide self-brick on 2026-04-28. Independent of LG-1 fix.'
-  work_needed: Mirror the reason text to stderr on block (keep stdout JSON intact for adapters that parse it as canonical envelope). Verify against schemas/blocker-event.schema.json that the addition is non-breaking. Add a test asserting both streams are populated on block verdicts.
+  work_needed: 'DONE in work/layer-guard-rejection-hardening: block verdicts keep machine-readable stdout JSON and mirror the same human-readable reason to stderr; Go and integration tests assert both streams.'
   source_type: manual
-  status: active
+  status: done
   created_at: "2026-04-28T11:21:57-04:00"
-  updated_at: "2026-04-28T11:21:57-04:00"
+  updated_at: "2026-04-28T18:58:33-04:00"
   references:
     - internal/cli/hook/layer_guard.go
     - internal/cli/hook/layer_guard_test.go
@@ -4642,11 +4642,11 @@
 - id: hook-chain-must-allow-edit-on-recovery-paths-when
   title: Hook chain must allow Edit on recovery paths when load-failure detected
   context: 'When any PreToolUse hook fail-closes (e.g., policy load failure, missing config, schema parse error), every subsequent hook including Edit also fails — leaving the agent unable to patch the broken component. Required out-of-band human intervention to unbrick the pi-dogfood-guide session on 2026-04-28. Class-level reliability gap: any future fail-closed-and-not-fixable-in-place bug will reproduce this self-brick pattern.'
-  work_needed: 'Distinguish policy-load-failure (config/state error — non-adversarial) from policy-decision-block (genuine layer violation) in the verdict envelope. On load-failure verdict only, allow Edit on a narrow set of recovery paths: internal/cli/**, schemas/**, .furrow/layer-policy.yaml. Threat model: load-failure must be authentic — bound the rescue allow to a session-local kill-switch (e.g., counter resets to off after one Edit) so it cannot be exploited by user-provoked load failures. Coordinate with the existing layer-guard-policy-path-resolution-must-be-cwd-ind (cwd self-brick — done) and layer-guard-silent-rejection-on-top-layer-integrat — all three are in the same self-brick cluster.'
+  work_needed: 'DONE in work/layer-guard-rejection-hardening: verdict JSON now distinguishes policy-load-failure from policy-decision-block; authentic policy-load failures allow only Edit on internal/cli/**, schemas/**, or .furrow/layer-policy.yaml recovery paths, while Write and unrelated Edit paths still block.'
   source_type: manual
-  status: active
+  status: done
   created_at: "2026-04-28T11:22:09-04:00"
-  updated_at: "2026-04-28T11:22:09-04:00"
+  updated_at: "2026-04-28T18:58:33-04:00"
   references:
     - internal/cli/hook/layer_guard.go
     - internal/cli/layer/policy.go

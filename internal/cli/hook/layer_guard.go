@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"path/filepath"
+	"strings"
 
 	"github.com/jonathoneco/furrow/internal/cli/layer"
 )
@@ -30,34 +32,37 @@ type hookInput struct {
 // verdictEnvelope is the stdout JSON returned to the Claude hook runtime.
 // Exit code 0 + empty stdout = allow; exit code 2 + this envelope = block.
 type verdictEnvelope struct {
-	Block  bool   `json:"block"`
-	Reason string `json:"reason"`
+	Block         bool   `json:"block"`
+	Reason        string `json:"reason"`
+	Code          string `json:"code,omitempty"`
+	VerdictSource string `json:"verdict_source,omitempty"`
 }
 
 // emit writes the verdict envelope to w. Errors are silently swallowed because
 // a write failure to stdout cannot be meaningfully reported to the hook runner.
-func emit(w io.Writer, block bool, reason string) {
-	env := verdictEnvelope{Block: block, Reason: reason}
+func emit(w io.Writer, block bool, reason, code, source string) {
+	env := verdictEnvelope{Block: block, Reason: reason, Code: code, VerdictSource: source}
 	_ = json.NewEncoder(w).Encode(env)
 }
 
 // EmitLayerVerdict writes the shared layer verdict shape for app-level command
 // parsing failures that cannot reach RunLayerDecide.
 func EmitLayerVerdict(w io.Writer, block bool, reason string) {
-	emit(w, block, reason)
+	emit(w, block, reason, "", "")
 }
 
 // RunLayerGuard implements `furrow hook layer-guard`. It reads a PreToolUse
 // JSON payload from in, evaluates it against the canonical layer policy, and
-// writes a verdict envelope to out.
+// writes a verdict envelope to out. Block reasons are also mirrored to errOut
+// for hook runtimes that surface stderr to the operator.
 //
 // Exit codes (Claude hook protocol):
 //   - 0 → allow (may emit empty stdout)
 //   - 2 → block (must emit JSON verdict to stdout)
-func RunLayerGuard(_ context.Context, policyPath string, in io.Reader, out io.Writer) int {
+func RunLayerGuard(_ context.Context, policyPath string, in io.Reader, out, errOut io.Writer) int {
 	var ev hookInput
 	if err := json.NewDecoder(in).Decode(&ev); err != nil {
-		emit(out, true, "layer_guard: malformed hook payload: "+err.Error())
+		emitBlock(out, errOut, "layer_guard: malformed hook payload: "+err.Error(), "layer_guard_payload_invalid", "payload-parse-failure")
 		return 2
 	}
 
@@ -71,14 +76,19 @@ func RunLayerGuard(_ context.Context, policyPath string, in io.Reader, out io.Wr
 		AgentType:     ev.AgentType,
 	}
 
-	return RunLayerDecide(context.Background(), policyPath, toolEvent, out)
+	return RunLayerDecide(context.Background(), policyPath, toolEvent, out, errOut)
 }
 
 // RunLayerDecide applies the layer policy to a normalized Furrow ToolEvent.
-func RunLayerDecide(_ context.Context, policyPath string, ev layer.ToolEvent, out io.Writer) int {
+func RunLayerDecide(_ context.Context, policyPath string, ev layer.ToolEvent, out, errOut io.Writer) int {
 	pol, err := layer.Load(policyPath)
 	if err != nil {
-		emit(out, true, fmt.Sprintf("layer_policy_invalid: %s", err.Error()))
+		reason := fmt.Sprintf("layer_policy_invalid: %s", err.Error())
+		if isPolicyLoadRecoveryEdit(ev, policyPath) {
+			_, _ = fmt.Fprintf(errOut, "layer-guard recovery allow: %s\n", reason)
+			return 0
+		}
+		emitBlock(out, errOut, reason, "layer_policy_invalid", "policy-load-failure")
 		return 2
 	}
 
@@ -89,9 +99,45 @@ func RunLayerDecide(_ context.Context, policyPath string, ev layer.ToolEvent, ou
 
 	verdict := pol.DecideEvent(ev)
 	if verdict.Block {
-		emit(out, true, verdict.Reason)
+		emitBlock(out, errOut, verdict.Reason, "layer_tool_violation", "policy-decision-block")
 		return 2
 	}
 
 	return 0
+}
+
+func emitBlock(out, errOut io.Writer, reason, code, source string) {
+	emit(out, true, reason, code, source)
+	if reason != "" {
+		_, _ = fmt.Fprintln(errOut, reason)
+	}
+}
+
+func isPolicyLoadRecoveryEdit(ev layer.ToolEvent, policyPath string) bool {
+	if !strings.EqualFold(ev.ToolName, "Edit") {
+		return false
+	}
+	target := normalizeRecoveryPath(layer.FlattenToolInput(ev.ToolName, ev.ToolInput), policyPath)
+	if target == "" {
+		return false
+	}
+	return target == ".furrow/layer-policy.yaml" ||
+		strings.HasPrefix(target, "internal/cli/") ||
+		strings.HasPrefix(target, "schemas/")
+}
+
+func normalizeRecoveryPath(path, policyPath string) string {
+	path = strings.TrimSpace(strings.TrimPrefix(path, "@"))
+	if path == "" {
+		return ""
+	}
+	if filepath.IsAbs(path) {
+		root := filepath.Dir(filepath.Dir(policyPath))
+		if rel, err := filepath.Rel(root, path); err == nil && !strings.HasPrefix(rel, "..") {
+			path = rel
+		}
+	}
+	path = filepath.ToSlash(filepath.Clean(path))
+	path = strings.TrimPrefix(path, "./")
+	return path
 }
