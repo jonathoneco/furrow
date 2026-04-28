@@ -50,8 +50,8 @@ layers:
     bash_allow_prefixes: []
     bash_deny_substrings: []
   driver:
-    tools_allow: ["Read", "Grep", "Glob", "Bash", "SendMessage", "Agent", "TaskCreate", "TaskGet", "TaskList", "TaskUpdate"]
-    tools_deny: ["Edit", "Write", "NotebookEdit"]
+    tools_allow: ["Read", "Grep", "Glob", "Bash", "SendMessage", "Agent", "TaskCreate", "TaskGet", "TaskList", "TaskUpdate", "Edit", "Write", "NotebookEdit"]
+    tools_deny: []
     path_deny: []
     bash_allow_prefixes:
       - "rws "
@@ -118,13 +118,13 @@ func TestRunLayerGuard(t *testing.T) {
 			toolInput: map[string]string{"file_path": "definition.yaml"},
 			wantExit:  0,
 		},
-		// Parity fixture 2: driver:plan Write → block (tools_deny)
+		// Parity fixture 2: driver:plan Write → allow (drivers write row artifacts)
 		{
-			name:      "fixture2_driver_write_block",
+			name:      "fixture2_driver_write_allow",
 			agentType: "driver:plan",
 			toolName:  "Write",
-			toolInput: map[string]string{"file_path": "plan.json"},
-			wantExit:  2,
+			toolInput: map[string]string{"file_path": ".furrow/rows/example/definition.yaml"},
+			wantExit:  0,
 		},
 		// Parity fixture 3: driver:plan Bash rws status → allow
 		{
@@ -206,13 +206,13 @@ func TestRunLayerGuard(t *testing.T) {
 			toolInput: map[string]string{"file_path": "src/foo.go"},
 			wantExit:  0,
 		},
-		// Extra: driver Edit → block
+		// Extra: driver Edit → allow (drivers revise row artifacts)
 		{
-			name:      "driver_edit_block",
+			name:      "driver_edit_allow",
 			agentType: "driver:research",
 			toolName:  "Edit",
-			toolInput: map[string]string{"file_path": "src/foo.go"},
-			wantExit:  2,
+			toolInput: map[string]string{"file_path": ".furrow/rows/example/research.md"},
+			wantExit:  0,
 		},
 		// Extra: engine Bash rws → block
 		{

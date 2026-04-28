@@ -74,11 +74,11 @@ assert_layer_guard "operator can Read"   "operator" "Read"  '{"file_path":".furr
 assert_layer_guard "operator can Bash"   "operator" "Bash"  '{"command":"go test ./..."}' "0"
 
 # ---------------------------------------------------------------------------
-# Phase 2: Driver layer — Write/Edit blocked; allowed Bash commands pass
+# Phase 2: Driver layer — artifact writes pass; Bash guardrails remain
 # ---------------------------------------------------------------------------
 printf "\n=== Phase 2: Driver layer (driver:plan) ===\n"
-assert_layer_guard "driver Write is blocked"     "driver:plan" "Write" '{"file_path":"plan.json"}' "2"
-assert_layer_guard "driver Edit is blocked"      "driver:plan" "Edit"  '{"file_path":"src/foo.go","old_string":"x","new_string":"y"}' "2"
+assert_layer_guard "driver Write is allowed"     "driver:plan" "Write" '{"file_path":".furrow/rows/example/definition.yaml"}' "0"
+assert_layer_guard "driver Edit is allowed"      "driver:plan" "Edit"  '{"file_path":".furrow/rows/example/definition.yaml","old_string":"x","new_string":"y"}' "0"
 assert_layer_guard "driver Bash rws allowed"     "driver:plan" "Bash"  '{"command":"rws status"}' "0"
 assert_layer_guard "driver Bash furrow context"  "driver:plan" "Bash"  '{"command":"furrow context for-step plan"}' "0"
 assert_layer_guard "driver Bash rm blocked"      "driver:plan" "Bash"  '{"command":"rm -rf /tmp/x"}' "2"

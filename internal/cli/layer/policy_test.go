@@ -26,8 +26,8 @@ layers:
     bash_allow_prefixes: []
     bash_deny_substrings: []
   driver:
-    tools_allow: ["Read", "Grep", "Glob", "Bash", "SendMessage", "Agent"]
-    tools_deny:  ["Edit", "Write"]
+    tools_allow: ["Read", "Grep", "Glob", "Bash", "SendMessage", "Agent", "Edit", "Write", "NotebookEdit"]
+    tools_deny:  []
     path_deny: []
     bash_allow_prefixes:
       - "rws "
@@ -181,8 +181,8 @@ func TestDecide_ParityFixtures(t *testing.T) {
 	}{
 		// Fixture 1: operator Write anything → allow
 		{"operator_write_allow", "operator", "Write", "definition.yaml", true},
-		// Fixture 2: driver Write → block (tools_deny)
-		{"driver_write_block", "driver:plan", "Write", "plan.json", false},
+		// Fixture 2: driver Write → allow (drivers write row artifacts)
+		{"driver_write_allow", "driver:plan", "Write", ".furrow/rows/example/definition.yaml", true},
 		// Fixture 3: driver Bash rws status → allow
 		{"driver_bash_rws_allow", "driver:plan", "Bash", "rws status", true},
 		// Fixture 4: driver Bash rm -rf → block (bash_deny_substrings)

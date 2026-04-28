@@ -24,8 +24,8 @@ layers:
     bash_allow_prefixes: []
     bash_deny_substrings: []
   driver:
-    tools_allow: ["Read", "Bash"]
-    tools_deny: ["Edit", "Write"]
+    tools_allow: ["Read", "Bash", "Edit", "Write"]
+    tools_deny: []
     path_deny: []
     bash_allow_prefixes: ["rws "]
     bash_deny_substrings: ["rm -"]

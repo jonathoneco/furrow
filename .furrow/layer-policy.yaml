@@ -39,11 +39,11 @@ layers:
       - TaskGet
       - TaskList
       - TaskUpdate
-      - Bash
-    tools_deny:
       - Edit
       - Write
       - NotebookEdit
+      - Bash
+    tools_deny: []
     path_deny: []
     bash_allow_prefixes:
       - "rws "

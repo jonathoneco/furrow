@@ -86,8 +86,8 @@ check_parity() {
 # Fixture 1: operator Write → allow
 check_parity "F1" "operator" "Write" '{"file_path":"definition.yaml"}' "allow"
 
-# Fixture 2: driver:plan Write → block (tools_deny)
-check_parity "F2" "driver:plan" "Write" '{"file_path":"plan.json"}' "block"
+# Fixture 2: driver:plan Write → allow (drivers write row artifacts)
+check_parity "F2" "driver:plan" "Write" '{"file_path":".furrow/rows/example/definition.yaml"}' "allow"
 
 # Fixture 3: driver:plan Bash rws status → allow
 check_parity "F3" "driver:plan" "Bash" '{"command":"rws status"}' "allow"
