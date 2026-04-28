@@ -602,9 +602,19 @@
   source_type: brain-dump
   status: active
   title: Seeds as the task management primitive — unified work graph, in-row tracking, gating, and alm delegation
-  updated_at: "2026-04-23T00:00:00Z"
-  urgency: medium
+  updated_at: "2026-04-28T00:00:00Z"
+  urgency: high
   work_needed: |
+    REFRAME (2026-04-28, post phase-4-integration): seeds are not just a planning
+    primitive — they are the cross-layer orchestration mechanism that operator,
+    driver, and engine layers all read from and write to. A seed carries which
+    layer owns a unit of work, which context-routing strategy applies, what
+    handoff state has been produced, and which gates must pass before the next
+    layer takes over. The data model below MUST include layer ownership,
+    routing-strategy reference, and handoff-state tracking as first-class fields
+    — not as later additions. This makes seeds the load-bearing connective
+    tissue between Phase 4's layer model + handoff schemas and the rest of the
+    harness.
     - Define the seed data model: id, title, type, status, priority, edges, metadata
     - Define typed graph nodes across multiple scopes: initiative/epic, row-backing seed, decomposed work unit, deliverable, follow-up, watch/deferred work
     - Design edge types: blocks, depends-on, informs, produces, supersedes
@@ -2776,9 +2786,15 @@
   source_type: manual
   status: active
   title: Build Pi's seed-backed almanac and planning surfaces
-  updated_at: "2026-04-23T20:30:00Z"
+  updated_at: "2026-04-28T00:00:00Z"
   urgency: high
   work_needed: |
+    NOTE (2026-04-28, post phase-4-integration): the authoring doc
+    `docs/architecture/pi-almanac-operating-model.md` and Pi adapter
+    scaffolding (`adapters/pi/{package.json,tsconfig.json,furrow.test.ts,validate-actions.ts}`)
+    shipped via the orchestration-delegation-contract row. Remaining scope is the
+    seed-backed planning surfaces themselves; bullets below should be checked against
+    that already-landed foundation rather than re-implemented.
     - Use `docs/architecture/pi-almanac-operating-model.md` as the authority for Pi planning behavior
     - Keep `/work` primary, but add explicit secondary planning surfaces for roadmap browse, work-item/seed browse, create, triage, and next-work recommendation
     - Make planning surfaces seed-backed rather than long-term TODO-backed
@@ -4531,3 +4547,44 @@
     - commands/
     - schemas/
     - internal/cli/
+- id: update-workflow-power-preservation-md-to-reflect-p
+  title: Update workflow-power-preservation.md to reflect post-Phase-4 engine model
+  context: 'docs/architecture/workflow-power-preservation.md predates Phase 4 and operates on the assumption that the engine layer is read-only / Furrow-unaware. Phase 4 + the integration boundary decision changed that: engine layer''s tools_deny is now [] (Agent and SendMessage allowed); the only remaining engine constraints are path_deny (.furrow/, schemas/blocker-taxonomy.yaml, schemas/definition.schema.json) and bash_deny_substrings (furrow/rws/alm/sds CLIs). The doc as written misrepresents the live boundary model and will mislead future architectural decisions. Multiple Phase 12 TODOs (workflow-power-preservation umbrella, docs-cleanup-pass) reference it as authoritative.'
+  work_needed: 'Audit docs/architecture/workflow-power-preservation.md for any sentence asserting engine isolation, engine read-only, engine cannot coordinate, engine cannot spawn, or similar. For each: rewrite to match the live model — engine''s boundary is no harness state mutation (path_deny) and no harness CLI invocation (bash_deny_substrings); coordination and Agent spawning are allowed because no signal justified more isolation. Add a Decision record subsection citing the phase-4 integration (commit ee88956, docs/integration/phase-4-integrity-report.md) as the rationale change. Update any tables, diagrams, or example flows that show engine as a leaf with no outgoing edges.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-27T22:45:37-04:00"
+  updated_at: "2026-04-27T22:45:37-04:00"
+  references:
+    - docs/architecture/workflow-power-preservation.md
+    - docs/integration/phase-4-integrity-report.md
+    - .furrow/layer-policy.yaml
+    - .furrow/rows/orchestration-delegation-contract/specs/boundary-enforcement.md
+  source_work_unit: phase-4-integration
+  depends_on:
+    - workflow-power-preservation
+  files_touched:
+    - docs/architecture/workflow-power-preservation.md
+- id: decouple-layer-policy-from-claude-adapter-make-it
+  title: Decouple layer-policy from Claude adapter — make it canonical, have adapters translate
+  context: 'Phase 4''s orchestration row shipped .furrow/layer-policy.yaml as the canonical 3-layer model and internal/cli/hook/layer_guard.go as the enforcement hook. The current implementation is Claude-coupled in two ways: (1) layer-guard.go''s stdin parser expects Claude PreToolUse JSON shape (agent_type, tool_name, tool_input fields); (2) the agent_type values in the policy''s agent_type_map are Claude-specific subagent_type strings. Pi adapter translates its tool_call events into Claude-shaped JSON to reuse the same Go binary, but that''s adapter-shaped translation rather than the policy being adapter-neutral. As more adapters / runtimes integrate (Pi, Codex, future), the layer model itself should be the canonical orchestration primitive and each adapter should translate from its native event shape into a layer-policy decision request.'
+  work_needed: 'Refactor in two passes: (1) Define a canonical, adapter-neutral ''LayerDecisionRequest'' type (Go struct + JSON Schema) with fields like {agent_id, agent_type_native, agent_type_canonical, tool_name, tool_args, tool_intent} where canonical types are the policy''s vocabulary (operator, driver:{step}, engine:specialist:{id}, etc.). (2) Have adapters/pi/, .claude/ hooks, and any future adapters translate their native events into LayerDecisionRequest, then call furrow layer decide (or equivalent Go subcommand) for the verdict. layer_guard.go becomes a thin Claude-shape adapter; the canonical decision logic moves to internal/cli/layer/decide.go. Update layer-policy.yaml schema if needed to reflect the canonical agent_type vocabulary as the source of truth. Acceptance: a non-Claude adapter (Pi, Codex stub, or a synthetic test adapter) can call furrow layer decide directly with canonical-shape input and get the same verdicts the Claude path does.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-27T22:45:38-04:00"
+  updated_at: "2026-04-27T22:45:38-04:00"
+  references:
+    - .furrow/layer-policy.yaml
+    - internal/cli/hook/layer_guard.go
+    - internal/cli/layer/policy.go
+    - adapters/pi/furrow.ts
+    - schemas/layer-policy.schema.json
+    - docs/architecture/core-adapter-boundary.md
+  source_work_unit: phase-4-integration
+  depends_on:
+    - delegation-boundary-enforcement
+  files_touched:
+    - internal/cli/layer/
+    - internal/cli/hook/
+    - adapters/pi/
+    - schemas/layer-policy.schema.json
