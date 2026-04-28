@@ -82,6 +82,7 @@ frw_doctor() {
   _read_missing=0
   for _skill in "$ROOT"/skills/*.md "$ROOT"/skills/shared/*.md; do
     [ -f "$_skill" ] || continue
+    # shellcheck disable=SC2016 # regex deliberately matches literal Markdown backticks
     _refs=$(grep -oE '`[a-z][^`]*\.(md|yaml|json)`' "$_skill" | tr -d '`' || true)
     for _ref in $_refs; do
       # Skip template variables like {step}.md or {artifact-type}.yaml
@@ -108,6 +109,9 @@ frw_doctor() {
     [ -f "$_hook" ] || continue
     # Skip validation scripts that aren't lifecycle hooks (they take args, not stdin JSON)
     grep -q '^# Hook:' "$_hook" 2>/dev/null || continue
+    if grep -q '^# Hook: git pre-commit dispatcher' "$_hook" 2>/dev/null; then
+      continue
+    fi
     _hook_name="$(basename "$_hook" .sh)"
     if ! grep -q "frw hook ${_hook_name}" "$ROOT/.claude/settings.json" 2>/dev/null; then
       check_fail "hook not registered in settings.json: frw hook ${_hook_name}"
@@ -369,7 +373,8 @@ frw_doctor() {
 
     _sd() {
       _id="$1"; _desc="$2"; shift 2
-      if eval "$@" > /dev/null 2>&1; then
+      _cmd="$1"
+      if sh -c "$_cmd" > /dev/null 2>&1; then
         check_pass "SD-$_id: $_desc"
       else
         check_fail "SD-$_id: $_desc"
