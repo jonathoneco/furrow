@@ -104,8 +104,14 @@ check_parity "F6" "engine:specialist:go-specialist" "Write" '{"file_path":".furr
 # Fixture 7: engine Bash furrow context → block (bash_deny_substrings)
 check_parity "F7" "engine:specialist:go-specialist" "Bash" '{"command":"furrow context for-step plan"}' "block"
 
-# Fixture 8: engine SendMessage → block (tools_deny)
-check_parity "F8" "engine:specialist:go-specialist" "SendMessage" '{"to":"subagent_1","body":"hello"}' "block"
+# Fixture 7b: engine Bash furrow row archive → block (real harness-CLI boundary)
+check_parity "F7b" "engine:specialist:go-specialist" "Bash" '{"command":"furrow row archive foo"}' "block"
+
+# Fixture 8: engine SendMessage → allow (no signal justifies isolation)
+check_parity "F8" "engine:specialist:go-specialist" "SendMessage" '{"to":"subagent_1","body":"hello"}' "allow"
+
+# Fixture 8b: engine Agent → allow (fan-out budget tracked separately)
+check_parity "F8b" "engine:specialist:go-specialist" "Agent" '{"subagent_type":"go-specialist","task":"do stuff"}' "allow"
 
 # Fixture 9: engine:freeform Read → allow
 check_parity "F9" "engine:freeform" "Read" '{"file_path":"src/foo.go"}' "allow"

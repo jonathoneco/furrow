@@ -95,9 +95,16 @@ assert_layer_guard "engine Write .furrow blocked" "engine:specialist:go-speciali
 assert_layer_guard "engine Edit .furrow blocked" "engine:specialist:go-specialist" "Edit"  '{"file_path":".furrow/definition.yaml","old_string":"x","new_string":"y"}' "2"
 assert_layer_guard "engine Bash furrow blocked"  "engine:specialist:go-specialist" "Bash"  '{"command":"furrow context for-step plan"}' "2"
 assert_layer_guard "engine Bash rws blocked"     "engine:specialist:go-specialist" "Bash"  '{"command":"rws transition row plan pass auto {}"}' "2"
-assert_layer_guard "engine SendMessage blocked"  "engine:specialist:go-specialist" "SendMessage" '{"to":"subagent","body":"help"}' "2"
-assert_layer_guard "engine Agent blocked"        "engine:specialist:go-specialist" "Agent"  '{"task":"do stuff"}' "2"
+assert_layer_guard "engine SendMessage allowed" "engine:specialist:go-specialist" "SendMessage" '{"to":"subagent","body":"help"}' "0"
+assert_layer_guard "engine Agent allowed"        "engine:specialist:go-specialist" "Agent"  '{"task":"do stuff"}' "0"
 assert_layer_guard "engine Read allowed"         "engine:specialist:go-specialist" "Read"  '{"file_path":"src/foo.go"}' "0"
+
+# Positive boundary cases: exercise the real engine invariants
+# (cannot mutate Furrow state, cannot invoke harness CLIs).
+assert_layer_guard "engine Bash furrow CLI blocked" "engine:specialist:go-specialist" "Bash" '{"command":"furrow row status foo"}' "2"
+assert_layer_guard "engine Bash rws CLI blocked"    "engine:specialist:go-specialist" "Bash" '{"command":"rws transition foo plan pass auto {}"}' "2"
+assert_layer_guard "engine Write .furrow/ blocked"  "engine:specialist:go-specialist" "Write" '{"file_path":".furrow/learnings.jsonl"}' "2"
+assert_layer_guard "engine Write src/ allowed"      "engine:specialist:go-specialist" "Write" '{"file_path":"src/foo.go"}' "0"
 
 # ---------------------------------------------------------------------------
 # Phase 4: validate commands

@@ -67,8 +67,8 @@ layers:
       - "rm -"
       - "git commit"
   engine:
-    tools_allow: ["Read", "Grep", "Glob", "Edit", "Write", "Bash"]
-    tools_deny: ["SendMessage", "Agent", "TaskCreate"]
+    tools_allow: ["Read", "Grep", "Glob", "Edit", "Write", "Bash", "SendMessage", "Agent", "TaskCreate", "TaskGet", "TaskList", "TaskUpdate"]
+    tools_deny: []
     path_deny:
       - ".furrow/"
       - "schemas/blocker-taxonomy.yaml"
@@ -166,12 +166,28 @@ func TestRunLayerGuard(t *testing.T) {
 			toolInput: map[string]string{"command": "furrow context for-step plan"},
 			wantExit:  2,
 		},
-		// Parity fixture 8: engine SendMessage → block (tools_deny)
+		// Parity fixture 8: engine SendMessage → allow (no signal justifies isolation)
 		{
-			name:      "fixture8_engine_sendmessage_block",
+			name:      "fixture8_engine_sendmessage_allow",
 			agentType: "engine:specialist:go-specialist",
 			toolName:  "SendMessage",
 			toolInput: map[string]string{"to": "subagent_1", "body": "hello"},
+			wantExit:  0,
+		},
+		// Parity fixture 8b: engine Agent → allow (fan-out budget tracked separately)
+		{
+			name:      "fixture8b_engine_agent_allow",
+			agentType: "engine:specialist:go-specialist",
+			toolName:  "Agent",
+			toolInput: map[string]string{"subagent_type": "go-specialist", "task": "do stuff"},
+			wantExit:  0,
+		},
+		// Parity fixture 8c: engine Bash harness CLI → block (real boundary)
+		{
+			name:      "fixture8c_engine_bash_harness_cli_block",
+			agentType: "engine:specialist:go-specialist",
+			toolName:  "Bash",
+			toolInput: map[string]string{"command": "furrow row archive foo"},
 			wantExit:  2,
 		},
 		// Parity fixture 9: engine:freeform Read → allow

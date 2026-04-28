@@ -36,14 +36,15 @@ layers:
       - " > "
       - "rm -"
   engine:
-    tools_allow: ["Read", "Grep", "Glob", "Edit", "Write", "Bash"]
-    tools_deny:  ["SendMessage", "Agent"]
+    tools_allow: ["Read", "Grep", "Glob", "Edit", "Write", "Bash", "SendMessage", "Agent", "TaskCreate", "TaskGet", "TaskList", "TaskUpdate"]
+    tools_deny:  []
     path_deny:
       - ".furrow/"
     bash_allow_prefixes: []
     bash_deny_substrings:
       - "furrow "
       - "rws "
+      - ".furrow/"
 `
 }
 
@@ -192,8 +193,12 @@ func TestDecide_ParityFixtures(t *testing.T) {
 		{"engine_write_furrow_block", "engine:specialist:go-specialist", "Write", ".furrow/learnings.jsonl", false},
 		// Fixture 7: engine Bash furrow context → block (bash_deny_substrings)
 		{"engine_bash_furrow_block", "engine:specialist:go-specialist", "Bash", "furrow context for-step plan", false},
-		// Fixture 8: engine SendMessage → block (tools_deny)
-		{"engine_sendmessage_block", "engine:specialist:go-specialist", "SendMessage", "to: subagent_1", false},
+		// Fixture 8: engine SendMessage → allow (no signal justifies isolation)
+		{"engine_sendmessage_allow", "engine:specialist:go-specialist", "SendMessage", "to: subagent_1", true},
+		// Fixture 8b: engine Agent → allow (fan-out budget tracked separately)
+		{"engine_agent_allow", "engine:specialist:go-specialist", "Agent", "subagent_type: foo", true},
+		// Fixture 8c: engine Bash harness CLI → block (real boundary)
+		{"engine_bash_harness_cli_block", "engine:specialist:go-specialist", "Bash", "furrow row archive foo", false},
 		// Fixture 9: engine:freeform Read → allow
 		{"engine_freeform_read_allow", "engine:freeform", "Read", "src/foo.go", true},
 		// Fixture 10: missing agent_type (main-thread) Write → allow (operator default)
