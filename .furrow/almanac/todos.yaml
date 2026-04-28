@@ -4494,3 +4494,11 @@
   created_at: "2026-04-27T16:57:29-04:00"
   updated_at: "2026-04-27T16:57:29-04:00"
   source_work_unit: phase-4-integration
+- id: engine-fan-out-budget-depth-and-token-limits-for-a
+  title: Engine fan-out budget — depth and token limits for Agent-spawned engine trees
+  context: Phase-4 integration dropped Agent from the engine layer's tools_deny list (commit d1a92f5, refactor toward evidence-driven boundary). The previous denial implicitly capped recursive engine spawning. Now that engines can invoke Agent, an engine can spawn another engine, which can spawn another. Token cost compounds geometrically with no hard ceiling. The mitigation cannot live in layer-policy (per-tool, no notion of call depth or aggregate spend) and must instead live in the dispatch layer.
+  work_needed: Define and enforce a max-depth (e.g., 3 levels below operator/driver) and a per-team aggregate token budget for Agent invocations originating below the operator/driver tier. Implementation should sit in TeamCreate/Agent dispatch path, surfacing a blocker code (engine_fanout_budget_exceeded or similar) when limits are hit. Also document the chosen budget shape in boundary-enforcement.md so future audits can verify it exists.
+  source_type: manual
+  status: active
+  created_at: "2026-04-27T22:09:50-04:00"
+  updated_at: "2026-04-27T22:09:50-04:00"
