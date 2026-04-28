@@ -4,7 +4,8 @@ Initialize Furrow in the current project. Called automatically by `/work` when n
 
 ## Implementation
 
-Run `frw init` (with any flags passed through) and report the results.
+Go `furrow init` is reserved and unimplemented. This slash command currently
+uses the legacy `frw init` compatibility wrapper and reports the results.
 
 ```sh
 frw init [--prefix <name>]
@@ -22,7 +23,7 @@ The project needs initialization if any of these are true:
 
 1. **Seeds**: If `.furrow/seeds/seeds.jsonl` does not exist:
    - Derive prefix from directory name (lowercase, non-alphanumeric → dash).
-   - Run `sds init --prefix "{prefix}"`.
+   - Run the legacy compatibility wrapper `sds init --prefix "{prefix}"`.
 
 2. **Config**: If `.furrow/furrow.yaml` does not exist:
    - Detect stack from project files:

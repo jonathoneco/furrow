@@ -1,5 +1,9 @@
 # /furrow:merge
 
+Reserved command design. This slash command and `furrow merge` are not
+implemented in the Go CLI; this document is retained as historical planning
+material, not live operator procedure.
+
 Five-phase worktree merge command. Brings a completed worktree branch into main
 with a human-approved resolution plan, machine-readable artifacts, and
 post-merge invariant verification.
@@ -43,7 +47,8 @@ post-merge invariant verification.
 **Output**: `merge-state/{merge-id}/audit.json`
 **Stdout**: `merge_id=<uuid>` on success.
 
-The audit phase calls `rws get-reintegration-json <row>` and embeds the result
+The audit phase calls the legacy `rws get-reintegration-json <row>`
+compatibility wrapper and embeds the result
 verbatim in `audit.json.reintegration_json`. All downstream scripts read commit
 classifications from `audit.json.reintegration_json.commits[].install_artifact_risk`
 — they never parse `summary.md` prose.
@@ -151,7 +156,8 @@ Post-merge checklist (exits 7 if any check fails):
 1. `frw doctor` exits 0.
 2. No `bin/*` path was deleted by the merge (git-diff against `base_sha`).
 3. All shell files under `bin/frw.d/` parse cleanly (`sh -n`).
-4. `seeds.jsonl` and `todos.yaml` satisfy sort invariant (`rws validate-sort-invariant`).
+4. `seeds.jsonl` and `todos.yaml` satisfy sort invariant through the legacy
+   `rws validate-sort-invariant` compatibility wrapper.
 5. `rescue.sh` is callable: `sh -n` passes AND invoking `rescue.sh` without
    `--apply` returns exit 0 or 1 (existence check only — rescue is out-of-band).
 6. `common-minimal.sh` matches `rescue.sh`'s bundled baseline (`rescue.sh --baseline-check`

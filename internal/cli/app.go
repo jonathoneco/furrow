@@ -176,7 +176,12 @@ func (a *App) runRow(args []string) int {
 
 func (a *App) runAlmanac(args []string) int {
 	if len(args) == 0 {
-		_, _ = fmt.Fprintf(a.stdout, "furrow almanac\n\nAvailable subcommands: %s\n", strings.Join([]string{"validate", "todos", "roadmap", "rationale"}, ", "))
+		_, _ = fmt.Fprintln(a.stdout, `furrow almanac
+
+Available subcommands: validate
+
+Reserved almanac subcommands:
+  todos, roadmap, rationale are compatibility names only; unimplemented in the Go CLI.`)
 		return 0
 	}
 
@@ -184,7 +189,12 @@ func (a *App) runAlmanac(args []string) int {
 	case "validate":
 		return a.runAlmanacValidate(args[1:])
 	case "help", "-h", "--help":
-		_, _ = fmt.Fprintf(a.stdout, "furrow almanac\n\nAvailable subcommands: %s\n", strings.Join([]string{"validate", "todos", "roadmap", "rationale"}, ", "))
+		_, _ = fmt.Fprintln(a.stdout, `furrow almanac
+
+Available subcommands: validate
+
+Reserved almanac subcommands:
+  todos, roadmap, rationale are compatibility names only; unimplemented in the Go CLI.`)
 		return 0
 	default:
 		return a.runStubLeaf("furrow almanac "+args[0], args[1:])
@@ -226,7 +236,7 @@ func (a *App) runRender(args []string) int {
 
 func (a *App) runStubGroup(command string, args []string, children []string) int {
 	if len(args) == 0 {
-		_, _ = fmt.Fprintf(a.stdout, "%s\n\nAvailable subcommands: %s\n", command, strings.Join(children, ", "))
+		_, _ = fmt.Fprintf(a.stdout, "%s\n\nReserved command group: unimplemented in the Go CLI. Compatibility name only; no subcommands are supported yet.\nReserved subcommand names: %s\n", command, strings.Join(children, ", "))
 		return 0
 	}
 	return a.runStubLeaf(command+" "+args[0], args[1:])
@@ -347,10 +357,8 @@ Usage:
 
 Commands:
   row       Row lifecycle contract surface
-  gate      Gate orchestration contract surface
   review    Review orchestration contract surface
   almanac   Planning and knowledge contract surface
-  seeds     Seed/task primitive contract surface
   validate  Schema and policy validation (definition, layer-policy, skill-layers, driver-definitions)
   context   Context bundle assembly (for-step)
   handoff   Handoff render and validate contract surface
@@ -358,12 +366,16 @@ Commands:
   layer     Runtime-neutral layer policy decisions
   presentation Runtime-neutral presentation scans
   hook      Runtime adapter hooks (layer-guard, presentation-check)
-  merge     Merge pipeline contract surface
   doctor    Environment and adapter readiness checks
   guard     Translate normalized blocker events into canonical envelopes
-  init      Repo bootstrap and migration entrypoint
   version   Print CLI contract version
   help      Show this help
+
+Reserved command names:
+  gate      Reserved for future gate orchestration; unimplemented
+  seeds     Reserved for future seed/task primitives; unimplemented
+  merge     Reserved for future merge pipeline; unimplemented
+  init      Reserved for repo bootstrap and migration; unimplemented
 
 Use "furrow <command> help" for command-specific help.`)
 }
@@ -380,9 +392,9 @@ Usage:
   furrow row init <row-name> [--title <title>] [--mode <code|research>] [--gate-policy <policy>] [--source-todo <id>] [--seed-id <id>] [--json]
   furrow row focus [row-name|--clear] [--json]
   furrow row scaffold <row-name> [--current-step] [--json]
-  furrow row checkpoint ...
-  furrow row summary ...
-  furrow row validate ...`)
+
+Reserved row subcommands:
+  checkpoint, summary, validate are compatibility names only; unimplemented in the Go CLI.`)
 }
 
 func (a *App) printReviewHelp() {
@@ -391,8 +403,9 @@ func (a *App) printReviewHelp() {
 Usage:
   furrow review status [row-name] [--json]
   furrow review validate [row-name] [--json]
-  furrow review run ...
-  furrow review cross-model ...`)
+
+Reserved review subcommands:
+  run, cross-model are compatibility names only; unimplemented in the Go CLI.`)
 }
 
 type parsedFlags struct {

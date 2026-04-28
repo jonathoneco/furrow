@@ -23,6 +23,98 @@ func TestRootHelp(t *testing.T) {
 	}
 }
 
+func TestHelpLabelsReservedStubSurfaces(t *testing.T) {
+	tests := []struct {
+		name    string
+		args    []string
+		want    []string
+		mustNot []string
+	}{
+		{
+			name: "root",
+			args: nil,
+			want: []string{
+				"Reserved command names:",
+				"gate      Reserved for future gate orchestration; unimplemented",
+				"seeds     Reserved for future seed/task primitives; unimplemented",
+				"merge     Reserved for future merge pipeline; unimplemented",
+			},
+			mustNot: []string{
+				"gate      Gate orchestration contract surface",
+				"seeds     Seed/task primitive contract surface",
+				"merge     Merge pipeline contract surface",
+			},
+		},
+		{
+			name: "stub group",
+			args: []string{"gate"},
+			want: []string{
+				"Reserved command group: unimplemented in the Go CLI",
+				"Reserved subcommand names: run, evaluate, status, list",
+			},
+		},
+		{
+			name: "row",
+			args: []string{"row", "help"},
+			want: []string{
+				"Reserved row subcommands:",
+				"checkpoint, summary, validate are compatibility names only",
+			},
+			mustNot: []string{
+				"furrow row checkpoint ...",
+				"furrow row summary ...",
+				"furrow row validate ...",
+			},
+		},
+		{
+			name: "review",
+			args: []string{"review", "help"},
+			want: []string{
+				"Reserved review subcommands:",
+				"run, cross-model are compatibility names only",
+			},
+			mustNot: []string{
+				"furrow review run ...",
+				"furrow review cross-model ...",
+			},
+		},
+		{
+			name: "almanac",
+			args: []string{"almanac", "help"},
+			want: []string{
+				"Available subcommands: validate",
+				"Reserved almanac subcommands:",
+				"todos, roadmap, rationale are compatibility names only",
+			},
+			mustNot: []string{
+				"Available subcommands: validate, todos, roadmap, rationale",
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			var stdout bytes.Buffer
+			var stderr bytes.Buffer
+			app := New(&stdout, &stderr)
+			code := app.Run(tc.args)
+			if code != 0 {
+				t.Fatalf("expected exit 0, got %d stderr=%s", code, stderr.String())
+			}
+			for _, want := range tc.want {
+				if !bytes.Contains(stdout.Bytes(), []byte(want)) {
+					t.Fatalf("expected help to contain %q, got:\n%s", want, stdout.String())
+				}
+			}
+			for _, forbidden := range tc.mustNot {
+				if bytes.Contains(stdout.Bytes(), []byte(forbidden)) {
+					t.Fatalf("help advertises stub as live with %q:\n%s", forbidden, stdout.String())
+				}
+			}
+		})
+	}
+}
+
 func TestAlmanacValidateJSON(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
 		root := setupFurrowRoot(t)

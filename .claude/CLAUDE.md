@@ -42,7 +42,7 @@ Conventional commits: feat:, fix:, chore:, docs:, refactor:, test:, infra:
 | Eval dimensions | `references/eval-dimensions.md`, `evals/` |
 | Review process | `references/review-methodology.md` |
 | Specialist templates | `references/specialist-template.md`, `specialists/` |
-| CLI tools | `bin/frw` (harness), `bin/rws` (rows), `bin/alm` (almanac), `bin/sds` (seeds) |
+| CLI tools | `furrow` / `frw`; legacy `bin/rws`, `bin/alm`, and `bin/sds` are compatibility wrappers only |
 | Architecture docs | `docs/architecture/` |
 | Context loading | `docs/skill-injection-order.md` |
 | Research guidance | `references/research-mode.md` |

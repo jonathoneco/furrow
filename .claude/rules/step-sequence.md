@@ -11,9 +11,10 @@ advancing automatically — but the step is still recorded in state.json.
 
 ## Enforcement
 
-- `rws transition` validates step ordering; out-of-order transitions fail
-- `rws transition` blocks (exit 1) when uncompleted user actions exist
-- `state.json.step` tracks current position; only `rws` commands may modify it
+- `furrow row transition <row> --step <next-step>` validates step ordering; out-of-order transitions fail
+- `furrow row transition <row> --step <next-step>` blocks when uncompleted user actions exist
+- `state.json.step` tracks current position; only Furrow CLI commands may modify it
 
 **Violation**: Attempting to skip or reorder steps results in a blocked transition.
-Pending user actions also block transitions — complete them with `rws complete-user-action`.
+Pending user actions also block transitions — complete them with the legacy
+`rws complete-user-action` compatibility wrapper until a Go command exists.

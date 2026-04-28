@@ -20,7 +20,7 @@ Flags are mutually exclusive. Error if both provided.
 ### 1. Resolve Row
 
 - If `name` provided: verify `.furrow/rows/{name}/` exists. Error if not.
-- If no `name`: run `rws status`. Error if no active task.
+- If no `name`: run `furrow row status`. Error if no active task.
 
 ### 2. Run Extraction
 
@@ -28,7 +28,9 @@ Flags are mutually exclusive. Error if both provided.
 alm extract "{name}"
 ```
 
-Outputs JSON array of candidates with `source`, `title`, `context`, `raw_content`, `source_file`.
+This is a legacy compatibility wrapper; no Go-backed TODO extraction command is
+canonical yet. Outputs JSON array of candidates with `source`, `title`,
+`context`, `raw_content`, `source_file`.
 
 If empty array: "No TODO candidates found in {name}." — exit.
 
@@ -102,7 +104,7 @@ Re-display changed proposals before writing.
 
 ### 8. Validate
 
-Run `alm validate`. If fails, report error, do not commit, ask user to review.
+Run `furrow almanac validate`. If fails, report error, do not commit, ask user to review.
 
 ### 9. Commit
 
@@ -162,7 +164,7 @@ Options:
 
 ### 5. Validate
 
-Run `alm validate`.
+Run `furrow almanac validate`.
 
 ### 6. Commit
 

@@ -8,7 +8,7 @@ Record a failed approach and redirect work to a new approach within the current 
 
 ## Behavior
 
-1. Find active task via `rws status`.
+1. Find active task via `furrow row status`.
 2. Read `state.json` for current step.
 
 3. Record redirect as a fail gate entry in `state.json.gates[]`:

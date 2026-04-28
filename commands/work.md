@@ -63,7 +63,8 @@ Artifact written to `.furrow/rows/<row>/handoffs/{step}-to-driver.md`.
 
 **On driver return**: receive phase EOS-report via `SendMessage` from driver.
 Present to user per `skills/shared/presentation-protocol.md` (D6).
-Confirm gate with user. Call `rws transition <row> pass manual "<evidence>"`.
+Confirm gate with user. Mark the step complete with `furrow row complete <row>`,
+then advance with `furrow row transition <row> --step <next-step>`.
 
 **Experimental teams flag**: if `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` ≠ `1`,
 warn the user — multi-agent dispatch requires this flag.

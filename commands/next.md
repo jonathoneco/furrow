@@ -47,7 +47,7 @@ Include all resolved ids in the handoff prompt (see step 5).
 
 ### 4. Check for Active Rows
 
-Run `rws list` to find any active `.furrow/rows/*/state.json`.
+Run `furrow row list --active` to find any active `.furrow/rows/*/state.json`.
 If active rows exist that match a row in this phase, note them as "in progress".
 
 ### 5. Generate Handoff Prompt(s)

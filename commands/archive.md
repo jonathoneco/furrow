@@ -14,7 +14,7 @@ If not found: error with message indicating what is blocking archive.
 
 ## Behavior
 
-1. Find task via `rws status` or by `name` argument.
+1. Find task via `furrow row status` or by `name` argument.
 2. Read `state.json`. Verify review gate passed.
 3. If review not passed:
    - Error: "Cannot archive: review step has not passed."
@@ -29,7 +29,7 @@ If not found: error with message indicating what is blocking archive.
    - Ask user which to promote.
 
 6. **TODO extraction**: Run the extract mode of `/work-todos --extract {name}`.
-   - Runs `alm extract "{name}"` to harvest candidates
+   - Uses the legacy `alm extract "{name}"` compatibility wrapper to harvest candidates
      from summary.md open questions, learnings.jsonl unpromoted pitfalls,
      and reviews/*.json failed dimensions.
    - Agent deduplicates candidates against existing `.furrow/almanac/todos.yaml` entries.
@@ -47,19 +47,22 @@ If not found: error with message indicating what is blocking archive.
    - If `source_todo` is not set or `.furrow/almanac/todos.yaml` has no matching entry, skip.
    - Validate `.furrow/almanac/todos.yaml` after any changes.
 
-8. **Observations surface**: Run `alm observe on-archive "{name}"`.
+8. **Observations surface**: Run the legacy `alm observe on-archive "{name}"`
+   compatibility wrapper.
    - Displays any observations whose activation became `active` as a result
      of this row's archival (e.g., row_archived triggers whose `row` matches,
      or rows_since triggers whose count threshold just crossed).
    - **Surface only** — does NOT auto-resolve or auto-dismiss. Users handle
-     each with `alm observe resolve <id> ...` or `alm observe dismiss <id> ...`
-     as separate explicit steps, outside /archive.
+     each with legacy `alm observe resolve <id> ...` or
+     `alm observe dismiss <id> ...` compatibility wrappers as separate explicit
+     steps, outside /archive.
    - If no observations activate, prints a single line and moves on.
 
 9. Run `furrow row archive "{name}"` to set `state.json.archived_at` through the
    Go archive-readiness gate. Do not use `rws archive` for gated rows; it does
    not own completion-evidence truth checks.
-10. Regenerate final `summary.md` via `rws regenerate-summary "{name}"`.
+10. Regenerate final `summary.md` through the legacy `rws regenerate-summary "{name}"`
+    compatibility wrapper until a Go-backed summary command exists.
 11. Git commit with message: `chore: archive {name}`.
 
 ## Output

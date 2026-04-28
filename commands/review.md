@@ -15,7 +15,7 @@ If current step is not `"review"`:
 
 ## Behavior
 
-1. Find active task via `rws status`.
+1. Find active task via `furrow row status`.
 2. Read `state.json`, `definition.yaml`, and `plan.json`.
 3. If `--re-review`: increment `state.json.deliverables[name].corrections`.
 

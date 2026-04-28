@@ -16,7 +16,7 @@ Generate or update `.furrow/almanac/roadmap.yaml` (and optional `.furrow/almanac
 ### 1. Validate Inputs
 
 - Check `.furrow/almanac/todos.yaml` exists. Error if not: "No .furrow/almanac/todos.yaml found. Create TODOs first with `/work-todos --new`."
-- Run `alm validate`. If invalid, show errors and abort.
+- Run `furrow almanac validate`. If invalid, show errors and abort.
 
 ### 2. Resolve Template
 
@@ -35,7 +35,8 @@ If no template found: error "No roadmap template found. Expected at templates/ro
 alm triage
 ```
 
-Parse JSON output containing:
+This is a legacy compatibility wrapper; no Go-backed triage command is
+canonical yet. Parse JSON output containing:
 - `todos`: array of active TODOs with triage metadata
 - `graph`: topological order and wave assignments
 - `conflicts`: file overlap pairs within same wave
@@ -229,7 +230,7 @@ After confirmation:
 1. Update triage fields in `.furrow/almanac/todos.yaml`: write `depends_on`, `files_touched`, `urgency`, `impact`, `effort`, `status` for each active TODO. Bump `updated_at`.
 2. Write `.furrow/almanac/roadmap.yaml` (primary, machine-readable — atomic: write to temp file, then move).
 3. Optionally write `.furrow/almanac/roadmap.md` (human-readable companion — same content, markdown format).
-4. Run `alm validate`. If invalid, revert .furrow/almanac/todos.yaml and error.
+4. Run `furrow almanac validate`. If invalid, revert .furrow/almanac/todos.yaml and error.
 
 ### 10. Commit
 
