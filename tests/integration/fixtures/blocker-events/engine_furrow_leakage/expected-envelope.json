@@ -1,0 +1,8 @@
+{
+  "code": "engine_furrow_leakage",
+  "category": "layer",
+  "severity": "block",
+  "message": "engine artifact /tmp/engine-eos-report.md contains Furrow vocabulary or path: .furrow/learnings.jsonl",
+  "remediation_hint": "Driver must strip Furrow vocab from EngineHandoff grounding/objective; see D1 EngineHandoff content discipline and schemas/handoff-engine.schema.json",
+  "confirmation_path": "block"
+}

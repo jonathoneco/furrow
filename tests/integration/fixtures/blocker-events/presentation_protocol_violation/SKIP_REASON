@@ -1,0 +1,1 @@
+presentation_protocol_violation is emitted by internal/cli/hook/presentation_check.go on the Stop hook (advisory, severity warn, confirmation_path silent) — never blocks. The emit path is the Stop hook itself rather than the furrow guard event-type catalog. Per-code coverage is enforced via internal/cli/hook/presentation_check_test.go.

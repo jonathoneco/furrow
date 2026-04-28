@@ -1,0 +1,1 @@
+layer_tool_violation is emitted by internal/cli/hook/layer_guard.go on Claude PreToolUse and the Pi tool_call extension; the emit path is the hook itself rather than a furrow guard event-type. Per-code coverage is enforced via internal/cli/hook/layer_guard_test.go and tests/integration/test-layered-dispatch-e2e.sh.

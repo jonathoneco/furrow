@@ -1,0 +1,8 @@
+{
+  "code": "layer_tool_violation",
+  "category": "layer",
+  "severity": "block",
+  "message": "agent_type=engine:specialist:go-specialist layer=engine: tool Bash denied: bash command contains denied substring \"furrow \" for layer \"engine\"",
+  "remediation_hint": "Either invoke the tool from the appropriate layer, or revisit .furrow/layer-policy.yaml if the policy is wrong",
+  "confirmation_path": "block"
+}

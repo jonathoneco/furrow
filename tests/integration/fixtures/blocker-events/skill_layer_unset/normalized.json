@@ -1,0 +1,7 @@
+{
+  "version": "1",
+  "event_type": "validate_skill_layers",
+  "payload": {
+    "path": "skills/shared/example-no-frontmatter.md"
+  }
+}

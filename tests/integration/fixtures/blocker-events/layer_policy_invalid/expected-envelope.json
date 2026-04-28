@@ -1,0 +1,8 @@
+{
+  "code": "layer_policy_invalid",
+  "category": "layer",
+  "severity": "block",
+  "message": "/tmp/bad-policy/layer-policy.yaml: layer policy failed schema validation: missing required field 'version'",
+  "remediation_hint": "Validate against schemas/layer-policy.schema.json; ensure required keys version/agent_type_map/layers are present and all three layer definitions (operator, driver, engine) exist",
+  "confirmation_path": "block"
+}

@@ -1,0 +1,8 @@
+{
+  "version": "1",
+  "event_type": "validate_layer_policy",
+  "payload": {
+    "path": "/tmp/bad-policy/layer-policy.yaml",
+    "detail": "missing required field 'version'"
+  }
+}

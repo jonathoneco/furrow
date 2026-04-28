@@ -1,0 +1,15 @@
+{
+  "toolName": "read",
+  "input": {
+    "path": "skills/shared/example-no-frontmatter.md"
+  },
+  "_driver_branch": "validate",
+  "_driver_event_type": "validate_skill_layers",
+  "_driver_normalized": {
+    "version": "1",
+    "event_type": "validate_skill_layers",
+    "payload": {
+      "path": "skills/shared/example-no-frontmatter.md"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "toolName": "bash",
+  "input": {
+    "command": "furrow validate layer-policy --policy /tmp/bad-policy/layer-policy.yaml"
+  },
+  "_driver_branch": "validate",
+  "_driver_event_type": "validate_layer_policy",
+  "_driver_normalized": {
+    "version": "1",
+    "event_type": "validate_layer_policy",
+    "payload": {
+      "path": "/tmp/bad-policy/layer-policy.yaml",
+      "detail": "missing required field 'version'"
+    }
+  }
+}

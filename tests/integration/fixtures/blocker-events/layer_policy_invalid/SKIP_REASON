@@ -1,0 +1,1 @@
+layer_policy_invalid is emitted by internal/cli/validate_layer_policy.go and internal/cli/layer/policy.go Load(); reachable via furrow validate layer-policy and the layer-guard hook on policy load failure, not through the furrow guard event-type catalog. Per-code coverage is enforced via internal/cli/validate_layer_policy_test.go and internal/cli/hook/layer_guard_test.go.

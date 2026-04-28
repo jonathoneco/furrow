@@ -1,0 +1,8 @@
+{
+  "version": "1",
+  "event_type": "validate_handoff",
+  "payload": {
+    "path": "/tmp/handoff/engine.json",
+    "field": "return_format"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "event_type": "validate_handoff",
+  "payload": {
+    "path": "/tmp/handoff/engine.json",
+    "schema": "schemas/handoff-engine.schema.json",
+    "detail": "doc.deliverables: array required, found object"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "code": "handoff_schema_invalid",
+  "category": "handoff",
+  "severity": "block",
+  "message": "/tmp/handoff/engine.json: handoff failed schema validation: doc.deliverables: array required, found object",
+  "remediation_hint": "Inspect the handoff structure against schemas/handoff-driver.schema.json or schemas/handoff-engine.schema.json; ensure the target prefix matches the schema used",
+  "confirmation_path": "block"
+}

@@ -1,0 +1,8 @@
+{
+  "version": "1",
+  "event_type": "validate_driver_definitions",
+  "payload": {
+    "path": ".furrow/drivers/plan.yaml",
+    "detail": "missing required field 'tools_allowlist'"
+  }
+}

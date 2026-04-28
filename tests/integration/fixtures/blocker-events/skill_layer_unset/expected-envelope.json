@@ -1,0 +1,8 @@
+{
+  "code": "skill_layer_unset",
+  "category": "layer",
+  "severity": "block",
+  "message": "skills/shared/example-no-frontmatter.md: skill missing required 'layer:' front-matter field",
+  "remediation_hint": "Add 'layer: operator|driver|engine|shared' to the YAML frontmatter at the top of the file; see skills/shared/skill-template.md",
+  "confirmation_path": "block"
+}

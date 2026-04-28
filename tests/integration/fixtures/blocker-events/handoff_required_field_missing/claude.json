@@ -1,0 +1,1 @@
+{"hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":"/tmp/handoff/engine.json","content":"{\"target\":\"engine:specialist:go-specialist\",\"objective\":\"Add a function\",\"deliverables\":[{\"name\":\"d1\",\"acceptance_criteria\":[\"x\"],\"file_ownership\":[\"a.go\"]}],\"constraints\":[],\"grounding\":[]}"}}

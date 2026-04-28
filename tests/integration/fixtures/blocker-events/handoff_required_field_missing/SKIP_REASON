@@ -1,0 +1,1 @@
+handoff_required_field_missing is emitted by internal/cli/handoff/validate.go during furrow handoff render and not reachable through the furrow guard event-type catalog; per-code coverage is enforced via internal/cli/handoff/*_test.go. Promote to integration coverage if a guard event-type is added in a future row.

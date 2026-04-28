@@ -1,0 +1,1 @@
+driver_definition_invalid is emitted by internal/cli/validate_driver_definitions.go and reachable via furrow validate driver-definitions, not through the furrow guard event-type catalog. Per-code coverage is enforced via internal/cli/validate_driver_definitions_test.go.

@@ -1,0 +1,8 @@
+{
+  "code": "handoff_unknown_field",
+  "category": "handoff",
+  "severity": "block",
+  "message": "/tmp/handoff/engine.json: handoff contains unknown field 'blocker_envelope' (additionalProperties:false)",
+  "remediation_hint": "Remove the unknown field; only fields declared in the handoff schema are permitted",
+  "confirmation_path": "block"
+}

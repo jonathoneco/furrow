@@ -1,0 +1,1 @@
+{"session_id":"s1","hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"furrow row archive foo"},"agent_id":"a1","agent_type":"engine:specialist:go-specialist"}

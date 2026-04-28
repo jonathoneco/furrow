@@ -1,0 +1,8 @@
+{
+  "code": "driver_definition_invalid",
+  "category": "definition",
+  "severity": "block",
+  "message": ".furrow/drivers/plan.yaml: driver definition failed schema validation: missing required field 'tools_allowlist'",
+  "remediation_hint": "Validate against schemas/driver-definition.schema.json; required keys: name (driver:{step}), step, tools_allowlist, model",
+  "confirmation_path": "block"
+}

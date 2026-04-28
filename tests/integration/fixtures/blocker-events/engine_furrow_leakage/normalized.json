@@ -1,0 +1,8 @@
+{
+  "version": "1",
+  "event_type": "boundary_leakage_check",
+  "payload": {
+    "artifact_path": "/tmp/engine-eos-report.md",
+    "match": ".furrow/learnings.jsonl"
+  }
+}

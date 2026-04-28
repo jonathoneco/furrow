@@ -1,0 +1,16 @@
+{
+  "toolName": "write",
+  "input": {
+    "path": "/tmp/handoff/engine.json"
+  },
+  "_driver_branch": "validate",
+  "_driver_event_type": "validate_handoff",
+  "_driver_normalized": {
+    "version": "1",
+    "event_type": "validate_handoff",
+    "payload": {
+      "path": "/tmp/handoff/engine.json",
+      "field": "blocker_envelope"
+    }
+  }
+}

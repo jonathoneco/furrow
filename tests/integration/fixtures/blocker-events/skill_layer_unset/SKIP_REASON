@@ -1,0 +1,1 @@
+skill_layer_unset is emitted by internal/cli/validate_skill_layers.go (and internal/cli/context/cmd.go on context resolution); not reachable through the furrow guard event-type catalog. Per-code coverage is enforced via internal/cli/validate_skill_layers_test.go. Promote to integration coverage if a guard event-type is added.

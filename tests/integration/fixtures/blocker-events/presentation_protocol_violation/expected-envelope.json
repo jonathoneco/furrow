@@ -1,0 +1,8 @@
+{
+  "code": "presentation_protocol_violation",
+  "category": "presentation",
+  "severity": "warn",
+  "message": "/tmp/session/transcript.jsonl: artifact-shaped content lacks section markers (no <!-- {phase}:section:* --> markers found in last assistant turn (turn @ line 412))",
+  "remediation_hint": "Wrap each artifact section with <!-- {phase}:section:{name} --> per skills/shared/presentation-protocol.md",
+  "confirmation_path": "silent"
+}

@@ -1,0 +1,1 @@
+engine_furrow_leakage is emitted by tests/integration/test-boundary-leakage.sh (post-hoc smoke alarm using fixtures/leakage-corpus.regex) and not reachable through the furrow guard event-type catalog. Per-code coverage is enforced via that integration test plus the regex set authored in tests/integration/fixtures/leakage-corpus.regex.

@@ -1,0 +1,17 @@
+{
+  "toolName": "stop",
+  "input": {
+    "transcript_path": "/tmp/session/transcript.jsonl"
+  },
+  "_driver_branch": "guard",
+  "_driver_event_type": "stop_presentation_check",
+  "_driver_normalized": {
+    "version": "1",
+    "event_type": "stop_presentation_check",
+    "payload": {
+      "transcript_path": "/tmp/session/transcript.jsonl",
+      "agent_type": "operator",
+      "detail": "no <!-- {phase}:section:* --> markers found in last assistant turn (turn @ line 412)"
+    }
+  }
+}

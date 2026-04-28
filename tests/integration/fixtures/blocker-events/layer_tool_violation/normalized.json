@@ -1,0 +1,10 @@
+{
+  "version": "1",
+  "event_type": "layer_guard_pretooluse",
+  "payload": {
+    "agent_type": "engine:specialist:go-specialist",
+    "layer": "engine",
+    "tool_name": "Bash",
+    "detail": "bash command contains denied substring \"furrow \" for layer \"engine\""
+  }
+}

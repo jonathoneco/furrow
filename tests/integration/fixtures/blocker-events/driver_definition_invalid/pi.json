@@ -1,0 +1,16 @@
+{
+  "toolName": "bash",
+  "input": {
+    "command": "furrow validate driver-definitions"
+  },
+  "_driver_branch": "validate",
+  "_driver_event_type": "validate_driver_definitions",
+  "_driver_normalized": {
+    "version": "1",
+    "event_type": "validate_driver_definitions",
+    "payload": {
+      "path": ".furrow/drivers/plan.yaml",
+      "detail": "missing required field 'tools_allowlist'"
+    }
+  }
+}

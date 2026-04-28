@@ -1,0 +1,8 @@
+{
+  "code": "handoff_required_field_missing",
+  "category": "handoff",
+  "severity": "block",
+  "message": "/tmp/handoff/engine.json: handoff is missing required field 'return_format'",
+  "remediation_hint": "Add the missing field to the handoff; use 'furrow handoff render' to produce a complete handoff",
+  "confirmation_path": "block"
+}

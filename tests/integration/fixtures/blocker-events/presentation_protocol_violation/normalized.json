@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "event_type": "stop_presentation_check",
+  "payload": {
+    "transcript_path": "/tmp/session/transcript.jsonl",
+    "agent_type": "operator",
+    "detail": "no <!-- {phase}:section:* --> markers found in last assistant turn (turn @ line 412)"
+  }
+}
