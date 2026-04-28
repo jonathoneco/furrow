@@ -23,6 +23,19 @@ type stopInput struct {
 	AgentType      string `json:"agent_type,omitempty"`
 }
 
+// PresentationEvent is Furrow's runtime-neutral presentation scan event.
+// Runtime adapters own transcript/message extraction and pass only the text
+// that the backend scanner should evaluate.
+type PresentationEvent struct {
+	SchemaVersion string `json:"schema_version,omitempty"`
+	Runtime       string `json:"runtime,omitempty"`
+	EventName     string `json:"event_name,omitempty"`
+	AgentID       string `json:"agent_id,omitempty"`
+	AgentType     string `json:"agent_type,omitempty"`
+	Text          string `json:"text"`
+	Source        string `json:"source,omitempty"`
+}
+
 // transcriptLine is a single JSONL line from the Claude transcript.
 type transcriptLine struct {
 	Type    string `json:"type"`
@@ -83,17 +96,6 @@ func RunPresentationCheck(_ context.Context, in io.Reader, out io.Writer) int {
 		"transcript_path", ev.TranscriptPath,
 	)
 
-	// Skip engine turns — engines are Furrow-unaware, their output is unrestricted.
-	if strings.HasPrefix(ev.AgentType, "engine:") {
-		return 0
-	}
-
-	// Only scan operator and driver:* turns.
-	if ev.AgentType != "operator" && !strings.HasPrefix(ev.AgentType, "driver:") && ev.AgentType != "" {
-		slog.Debug("presentation-check: skipping non-operator/driver agent type", "agent_type", ev.AgentType)
-		return 0
-	}
-
 	if ev.TranscriptPath == "" {
 		slog.Debug("presentation-check: no transcript_path, skipping")
 		return 0
@@ -109,13 +111,38 @@ func RunPresentationCheck(_ context.Context, in io.Reader, out io.Writer) int {
 		return 0
 	}
 
-	violationLine := detectViolation(body, lineNo)
+	return RunPresentationScan(context.Background(), PresentationEvent{
+		SchemaVersion: "presentation_event.v1",
+		Runtime:       "claude",
+		EventName:     ev.HookEventName,
+		AgentID:       ev.AgentID,
+		AgentType:     ev.AgentType,
+		Text:          body,
+		Source:        ev.TranscriptPath,
+	}, lineNo, out)
+}
+
+// RunPresentationScan scans a normalized presentation event. It never blocks
+// and returns exit code 0 for both clean and advisory-warning outcomes.
+func RunPresentationScan(_ context.Context, ev PresentationEvent, lineOffset int, out io.Writer) int {
+	if strings.HasPrefix(ev.AgentType, "engine:") {
+		return 0
+	}
+	if ev.AgentType != "operator" && !strings.HasPrefix(ev.AgentType, "driver:") && ev.AgentType != "" {
+		slog.Debug("presentation-scan: skipping non-operator/driver agent type", "agent_type", ev.AgentType)
+		return 0
+	}
+	if ev.Text == "" {
+		return 0
+	}
+
+	violationLine := detectViolation(ev.Text, lineOffset)
 	if violationLine < 0 {
 		return 0
 	}
 
 	detail := fmt.Sprintf("artifact-shaped content at line %d lacks <!-- {phase}:section:{name} --> marker", violationLine)
-	emitPresentationViolation(out, ev.TranscriptPath, detail)
+	emitPresentationViolation(out, ev.Source, detail)
 	return 0
 }
 

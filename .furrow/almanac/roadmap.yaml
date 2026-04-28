@@ -2787,10 +2787,11 @@ phases:
     conflict_risk: none
     completed_at: '2026-04-24T19:24:51Z'
 - number: 3
-  title: Pi enforcement parity
+  title: Pi enforcement foundations (loaded-path corrected)
   status: done
   rationale: 'Close operator-experience gaps surfaced by migration-state-of-the-union research: Pi tool_call interceptor exists for state mutations, adjacent guards (definition/ownership/post-compact)
-    missing. Two sequential rows shipped Go-first validators + Pi event wiring; cleanup row added furrow row repair-deliverables CLI. Note: this phase pre-dates the parallel-batch phasing rule — rows ran sequentially because row 2 depended on row 1.'
+    missing. Two sequential rows shipped Go-first validators + Pi event wiring; cleanup row added furrow row repair-deliverables CLI. Session 2 correction wires the auto-discovered
+    .pi/extensions/furrow.ts entrypoint through normalized furrow layer decide for currently claimed main-thread layer guards; Pi subprocess subagent hook blindness remains a documented limitation, so this phase no longer claims full Pi parity. Note: this phase pre-dates the parallel-batch phasing rule — rows ran sequentially because row 2 depended on row 1.'
   rows:
   - index: 1
     branch: work/pi-row-audit-cleanup
@@ -2819,9 +2820,9 @@ phases:
     conflict_risk: low
     completed_at: '2026-04-25T16:56:20Z'
 - number: 4
-  title: Blocker taxonomy + delegation contract (parallel wave)
+  title: Blocker taxonomy + delegation contract (corrected claim surface)
   status: done
-  rationale: 'Two parallel rows: shared blocker taxonomy + Claude parity, and the orchestration/delegation contract. Both reshape hook + backend + skills surfaces that downstream rows build on; running them first prevents rework. State-and-correction-guards (formerly Phase 4 row 2) was moved to Phase 5 because it builds directly on the hook contract this phase establishes.'
+  rationale: 'Two parallel rows: shared blocker taxonomy + Claude parity, and the orchestration/delegation contract. Both reshape hook + backend + skills surfaces that downstream rows build on; running them first prevents rework. Session 2 corrected the boundary by adding normalized ToolEvent and PresentationEvent backend inputs while keeping Claude hooks as adapter shims. Blocker parity is claimed only for live adapter handlers; fixture inventory for absent Pi handlers is not counted as parity. State-and-correction-guards (formerly Phase 4 row 2) was moved to Phase 5 because it builds directly on the hook contract this phase establishes.'
   rows:
   - index: 1
     branch: work/blocker-taxonomy-foundation
@@ -2904,7 +2905,7 @@ phases:
 - number: 7
   title: Seeds foundation
   status: planned
-  rationale: 'Was Phase 5 row 1 in the prior layout. Single-row phase: typed nodes + Go furrow seeds command group + row-binding contract + umbrellas. Replaces todos.yaml as canonical planning primitive per pi-almanac-operating-model.md:148-159.'
+  rationale: 'Was Phase 5 row 1 in the prior layout. Single-row phase: typed nodes + Go furrow seeds command group + row-binding contract + umbrellas. Introduces seeds.jsonl as the future canonical planning primitive while todos.yaml remains canonical until the Phase 8 cutover row completes.'
   rows:
   - index: 1
     branch: work/seeds-foundation
@@ -2926,7 +2927,7 @@ phases:
 - number: 8
   title: Seeds graph cutover + Pi surfaces
   status: planned
-  rationale: 'Was Phase 5 row 2 in the prior layout — depends on work/seeds-foundation so it cannot share a phase with it. Graph queries + follow-up promotion + roadmap-from-seeds + cutover migration + Pi seed surfaces + post-retirement alm scope.'
+  rationale: 'Was Phase 5 row 2 in the prior layout — depends on work/seeds-foundation so it cannot share a phase with it. Graph queries + follow-up promotion + roadmap-from-seeds + cutover migration + Pi seed surfaces + post-retirement alm scope. This row performs the canonical-source cutover: seeds.jsonl becomes authoritative, roadmap/todos views become derived, and todos.yaml is frozen until Phase 15 removal.'
   rows:
   - index: 1
     branch: work/seeds-graph-cutover-and-pi-surfaces
@@ -2970,8 +2971,8 @@ phases:
     conflict_risk: low
     completed_at: null
   - index: 2
-    branch: work/specialists-and-agents
-    description: Sub-agent normalization + specialist quality + template warning + effort-selection-with-model + engine-fan-out budget enforcement (depth/token limits for recursive Agent invocations now that engine layer no longer denies Agent).
+    branch: work/specialist-skills-and-engine-briefs
+    description: Specialist skills + adapter-rendered engine briefs + specialist quality + template warning + effort-selection-with-model + engine-fan-out budget enforcement. Specialists are skills loaded into general agents; runtime-specific agent files are rendered by adapters, not treated as backend-owned registered agent types.
     todos:
     - sub-agent-normalization
     - specialist-quality-validation
@@ -2981,8 +2982,8 @@ phases:
     depends_on: []
     key_files:
     - specialists/
-    - .claude/agents/
-    - bin/frw.d/scripts/
+    - skills/shared/
+    - adapters/
     conflict_risk: low
     completed_at: null
 - number: 10
@@ -3005,7 +3006,7 @@ phases:
     depends_on:
     - work/orchestration-delegation-contract
     - work/review-and-evaluator-orchestration
-    - work/specialists-and-agents
+    - work/specialist-skills-and-engine-briefs
     key_files:
     - commands/
     - skills/

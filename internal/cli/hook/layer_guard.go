@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"strings"
 
 	"github.com/jonathoneco/furrow/internal/cli/layer"
 )
@@ -42,6 +41,12 @@ func emit(w io.Writer, block bool, reason string) {
 	_ = json.NewEncoder(w).Encode(env)
 }
 
+// EmitLayerVerdict writes the shared layer verdict shape for app-level command
+// parsing failures that cannot reach RunLayerDecide.
+func EmitLayerVerdict(w io.Writer, block bool, reason string) {
+	emit(w, block, reason)
+}
+
 // RunLayerGuard implements `furrow hook layer-guard`. It reads a PreToolUse
 // JSON payload from in, evaluates it against the canonical layer policy, and
 // writes a verdict envelope to out.
@@ -56,86 +61,37 @@ func RunLayerGuard(_ context.Context, policyPath string, in io.Reader, out io.Wr
 		return 2
 	}
 
+	toolEvent := layer.ToolEvent{
+		SchemaVersion: "tool_event.v1",
+		Runtime:       "claude",
+		EventName:     ev.HookEventName,
+		ToolName:      ev.ToolName,
+		ToolInput:     ev.ToolInput,
+		AgentID:       ev.AgentID,
+		AgentType:     ev.AgentType,
+	}
+
+	return RunLayerDecide(context.Background(), policyPath, toolEvent, out)
+}
+
+// RunLayerDecide applies the layer policy to a normalized Furrow ToolEvent.
+func RunLayerDecide(_ context.Context, policyPath string, ev layer.ToolEvent, out io.Writer) int {
 	pol, err := layer.Load(policyPath)
 	if err != nil {
 		emit(out, true, fmt.Sprintf("layer_policy_invalid: %s", err.Error()))
 		return 2
 	}
 
-	lyr := pol.LookupLayer(ev.AgentType)
-
-	// Flatten tool_input to a string for substring/prefix checks.
-	flat := flattenToolInput(ev.ToolName, ev.ToolInput)
-
 	slog.Debug("layer-guard decision",
 		"agent_type", ev.AgentType,
-		"layer", string(lyr),
 		"tool_name", ev.ToolName,
-		"flattened_input", flat,
 	)
 
-	allow, reason := pol.Decide(lyr, ev.ToolName, flat)
-	if !allow {
-		msg := fmt.Sprintf("layer_tool_violation: %s in layer %s: %s",
-			ev.ToolName, string(lyr), reason)
-		emit(out, true, msg)
+	verdict := pol.DecideEvent(ev)
+	if verdict.Block {
+		emit(out, true, verdict.Reason)
 		return 2
 	}
 
-	// Allow: exit 0, no output required (Claude interprets empty stdout as allow).
 	return 0
-}
-
-// flattenToolInput extracts the key value from tool_input that is most relevant
-// for policy checks. Different tools embed their target in different fields:
-//
-//   - Edit/Write/Read  → file_path
-//   - Bash             → command
-//   - SendMessage      → body (or full JSON if not found)
-//   - Others           → full JSON string
-//
-// The flattened string is used only for substring/prefix matching, so
-// over-inclusion is safe (may cause more false positives but never false negatives).
-func flattenToolInput(toolName string, raw json.RawMessage) string {
-	if len(raw) == 0 {
-		return ""
-	}
-
-	var m map[string]json.RawMessage
-	if err := json.Unmarshal(raw, &m); err != nil {
-		// Not an object — return raw bytes as string.
-		return string(raw)
-	}
-
-	switch strings.ToLower(toolName) {
-	case "edit", "write", "read", "multiedit":
-		if fp, ok := m["file_path"]; ok {
-			return unquoteJSONString(fp)
-		}
-	case "bash", "mcp__bash__run_command":
-		if cmd, ok := m["command"]; ok {
-			return unquoteJSONString(cmd)
-		}
-	case "sendmessage":
-		if body, ok := m["body"]; ok {
-			return unquoteJSONString(body)
-		}
-	}
-
-	// Fallback: join all string-valued fields.
-	var parts []string
-	for _, v := range m {
-		parts = append(parts, unquoteJSONString(v))
-	}
-	return strings.Join(parts, " ")
-}
-
-// unquoteJSONString strips surrounding JSON quotes from a raw JSON value.
-// If the value is not a JSON string, the raw bytes are returned as-is.
-func unquoteJSONString(raw json.RawMessage) string {
-	var s string
-	if err := json.Unmarshal(raw, &s); err == nil {
-		return s
-	}
-	return string(raw)
 }

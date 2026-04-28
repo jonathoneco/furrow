@@ -1,14 +1,15 @@
 // Canonical repo-owned Pi adapter for Furrow.
 // Keep this file thin and backend-driven: Pi owns runtime UX integration,
 // while the Go CLI remains semantic authority over canonical .furrow state.
-import { execFile } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
 import { promisify } from "node:util";
 import { existsSync } from "node:fs";
 import { join, resolve, dirname, sep } from "node:path";
+import { createRequire } from "node:module";
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
-import { Text } from "@mariozechner/pi-tui";
 
 const execFileAsync = promisify(execFile);
+const require = createRequire(import.meta.url);
 const KNOWN_STEPS = new Set(["ideate", "research", "plan", "spec", "decompose", "implement", "review"]);
 
 
@@ -306,6 +307,36 @@ type CliResult<T = any> = {
 	envelope?: Envelope<T>;
 };
 
+type ToolEvent = {
+	schema_version: "tool_event.v1";
+	runtime: "pi";
+	event_name: "tool_call";
+	tool_name: string;
+	tool_input: unknown;
+	agent_id?: string;
+	agent_type: string;
+};
+
+type LayerVerdict = {
+	block: boolean;
+	reason: string;
+};
+
+type PiToolCallEvent = {
+	toolName?: string;
+	tool_name?: string;
+	input?: unknown;
+	tool_input?: unknown;
+};
+
+class FallbackText {
+	constructor(
+		public text: string,
+		public x: number,
+		public y: number,
+	) {}
+}
+
 type ParsedTransitionArgs = {
 	row?: string;
 	step?: string;
@@ -366,6 +397,57 @@ async function runFurrowJson<T>(root: string, args: string[], signal?: AbortSign
 	}
 
 	return { exitCode, stdout, stderr, envelope };
+}
+
+function furrowBinary(): string {
+	return process.env.FURROW_BIN || "furrow";
+}
+
+export function normalizePiToolEvent(event: PiToolCallEvent, ctx: Record<string, any>): ToolEvent {
+	return {
+		schema_version: "tool_event.v1",
+		runtime: "pi",
+		event_name: "tool_call",
+		tool_name: event.toolName ?? event.tool_name ?? "",
+		tool_input: event.input ?? event.tool_input ?? {},
+		agent_id: String(ctx.agentId ?? ctx.agent_id ?? ""),
+		agent_type: String(ctx.agentName ?? ctx.agent_type ?? ctx.agentType ?? "operator"),
+	};
+}
+
+export async function runLayerDecisionForPi(event: PiToolCallEvent, ctx: Record<string, any>): Promise<LayerVerdict | undefined> {
+	const root = findFurrowRoot(ctx.cwd ?? process.cwd());
+	if (!root) return undefined;
+	const toolEvent = normalizePiToolEvent(event, ctx);
+	const input = JSON.stringify(toolEvent);
+
+	try {
+		const stdout = execFileSync(furrowBinary(), ["layer", "decide"], {
+			cwd: root,
+			input,
+			encoding: "utf-8",
+			timeout: 2000,
+		});
+		const trimmed = String(stdout ?? "").trim();
+		if (!trimmed) return { block: false, reason: "" };
+		return JSON.parse(trimmed) as LayerVerdict;
+	} catch (error: any) {
+		if (error?.code === 2 || error?.status === 2) {
+			const stdout = String(error?.stdout ?? "").trim();
+			if (stdout) return JSON.parse(stdout) as LayerVerdict;
+			return { block: true, reason: "layer_tool_violation: layer decide exited 2" };
+		}
+		return undefined;
+	}
+}
+
+export async function decidePiLayerAction(event: PiToolCallEvent, ctx: Record<string, any>) {
+	const verdict = await runLayerDecisionForPi(event, ctx);
+	if (verdict?.block) {
+		if (ctx.hasUI) ctx.ui?.notify?.(verdict.reason, "warning");
+		return { block: true, reason: verdict.reason };
+	}
+	return undefined;
 }
 
 function normalizePathArg(pathArg: unknown, cwd: string): string | undefined {
@@ -897,15 +979,25 @@ async function refreshStatus(pi: ExtensionAPI, ctx: ExtensionContext) {
 
 export default function furrowExtension(pi: ExtensionAPI) {
 	pi.registerMessageRenderer("furrow", (message, options, theme) => {
+		let TextCtor: typeof FallbackText = FallbackText;
+		try {
+			TextCtor = require("@mariozechner/pi-tui").Text ?? FallbackText;
+		} catch {
+			TextCtor = FallbackText;
+		}
 		let text = `${theme.fg("accent", theme.bold("[furrow]"))}\n${String(message.content ?? "")}`;
 		if (options.expanded && message.details) {
 			text += `\n\n${theme.fg("dim", JSON.stringify(message.details, null, 2))}`;
 		}
-		return new Text(text, 0, 0);
+		return new TextCtor(text, 0, 0);
 	});
 
 	pi.on("session_start", async (_event, ctx) => {
 		await refreshStatus(pi, ctx);
+	});
+
+	pi.on("tool_call", async (event, ctx) => {
+		return decidePiLayerAction(event, ctx as unknown as Record<string, any>);
 	});
 
 	pi.on("tool_call", async (event, ctx) => {

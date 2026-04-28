@@ -13,6 +13,7 @@ import (
 	ctx "github.com/jonathoneco/furrow/internal/cli/context"
 	"github.com/jonathoneco/furrow/internal/cli/handoff"
 	"github.com/jonathoneco/furrow/internal/cli/hook"
+	"github.com/jonathoneco/furrow/internal/cli/layer"
 	"github.com/jonathoneco/furrow/internal/cli/render"
 
 	// Blank-import triggers init() registration of all 7 step strategies.
@@ -99,6 +100,10 @@ func (a *App) Run(args []string) int {
 		return a.runRender(args[1:])
 	case "hook":
 		return a.runHook(args[1:])
+	case "layer":
+		return a.runLayer(args[1:])
+	case "presentation":
+		return a.runPresentation(args[1:])
 	case "merge":
 		return a.runStubGroup("furrow merge", args[1:], []string{"plan", "run", "validate"})
 	case "doctor":
@@ -107,6 +112,30 @@ func (a *App) Run(args []string) int {
 		return a.runInit(args[1:])
 	default:
 		return a.fail("furrow", &cliError{exit: 1, code: "usage", message: fmt.Sprintf("unknown command %q", args[0])}, false)
+	}
+}
+
+func (a *App) runPresentation(args []string) int {
+	if len(args) == 0 {
+		_, _ = fmt.Fprintln(a.stdout, "furrow presentation\n\nAvailable subcommands: scan")
+		return 0
+	}
+	switch args[0] {
+	case "scan":
+		var ev hook.PresentationEvent
+		if err := json.NewDecoder(a.stdin).Decode(&ev); err != nil {
+			return a.fail("furrow presentation scan", &cliError{exit: 2, code: "presentation_event_invalid", message: "malformed presentation event: " + err.Error()}, false)
+		}
+		return hook.RunPresentationScan(context.Background(), ev, 0, a.stdout)
+	case "help", "-h", "--help":
+		_, _ = fmt.Fprintln(a.stdout, "furrow presentation\n\nAvailable subcommands: scan")
+		return 0
+	default:
+		return a.fail("furrow presentation", &cliError{
+			exit:    1,
+			code:    "usage",
+			message: fmt.Sprintf("unknown presentation subcommand %q", args[0]),
+		}, false)
 	}
 }
 
@@ -211,6 +240,31 @@ func (a *App) runStubLeaf(command string, args []string) int {
 	return a.fail(command, &cliError{exit: 4, code: "not_implemented", message: command + " is not implemented in the Go CLI draft yet"}, flags.json)
 }
 
+func (a *App) runLayer(args []string) int {
+	if len(args) == 0 {
+		_, _ = fmt.Fprintln(a.stdout, "furrow layer\n\nAvailable subcommands: decide")
+		return 0
+	}
+	switch args[0] {
+	case "decide":
+		var ev layer.ToolEvent
+		if err := json.NewDecoder(a.stdin).Decode(&ev); err != nil {
+			hook.EmitLayerVerdict(a.stdout, true, "layer_decide: malformed tool event: "+err.Error())
+			return 2
+		}
+		return hook.RunLayerDecide(context.Background(), resolveLayerPolicyPath(), ev, a.stdout)
+	case "help", "-h", "--help":
+		_, _ = fmt.Fprintln(a.stdout, "furrow layer\n\nAvailable subcommands: decide")
+		return 0
+	default:
+		return a.fail("furrow layer", &cliError{
+			exit:    1,
+			code:    "usage",
+			message: fmt.Sprintf("unknown layer subcommand %q", args[0]),
+		}, false)
+	}
+}
+
 // runHook dispatches `furrow hook <subcommand>` — runtime adapter hooks.
 //
 // D3 ships: layer-guard (PreToolUse boundary enforcement).
@@ -228,15 +282,7 @@ func (a *App) runHook(args []string) int {
 		// find .furrow/ relatively, which then bricks every subsequent tool
 		// call (Edit included) — discovered when pi-dogfood-guide self-bricked
 		// after `cd adapters/pi && bun install`.
-		var policyPath string
-		if override := os.Getenv("FURROW_LAYER_POLICY_PATH"); override != "" {
-			policyPath = override
-		} else if root, err := findFurrowRoot(); err == nil {
-			policyPath = filepath.Join(root, ".furrow", "layer-policy.yaml")
-		} else {
-			policyPath = filepath.Join(".furrow", "layer-policy.yaml")
-		}
-		return hook.RunLayerGuard(context.Background(), policyPath, a.stdin, a.stdout)
+		return hook.RunLayerGuard(context.Background(), resolveLayerPolicyPath(), a.stdin, a.stdout)
 	case "presentation-check":
 		return hook.RunPresentationCheck(context.Background(), a.stdin, a.stdout)
 	case "help", "-h", "--help":
@@ -249,6 +295,16 @@ func (a *App) runHook(args []string) int {
 			message: fmt.Sprintf("unknown hook subcommand %q", args[0]),
 		}, false)
 	}
+}
+
+func resolveLayerPolicyPath() string {
+	if override := os.Getenv("FURROW_LAYER_POLICY_PATH"); override != "" {
+		return override
+	}
+	if root, err := findFurrowRoot(); err == nil {
+		return filepath.Join(root, ".furrow", "layer-policy.yaml")
+	}
+	return filepath.Join(".furrow", "layer-policy.yaml")
 }
 
 func (a *App) okJSON(command string, data any) int {
@@ -299,6 +355,8 @@ Commands:
   context   Context bundle assembly (for-step)
   handoff   Handoff render and validate contract surface
   render    Render runtime-specific files from definitions
+  layer     Runtime-neutral layer policy decisions
+  presentation Runtime-neutral presentation scans
   hook      Runtime adapter hooks (layer-guard, presentation-check)
   merge     Merge pipeline contract surface
   doctor    Environment and adapter readiness checks

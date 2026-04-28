@@ -23,6 +23,7 @@ import {
 	runDefinitionValidationHandler,
 	runOwnershipWarnHandler,
 } from "./validate-actions.ts";
+import furrowExtension, { normalizePiToolEvent } from "../../.pi/extensions/furrow.ts";
 
 const execFileAsync = promisify(execFile);
 
@@ -122,6 +123,62 @@ describe("runDefinitionValidationHandler (D4 end-to-end)", () => {
 			},
 		);
 		expect(captured).toEqual(["validate", "definition", "--path", "/abs/.furrow/rows/x/definition.yaml", "--json"]);
+	});
+});
+
+describe("loaded Pi entrypoint layer guard", () => {
+	test("auto-discovered .pi extension blocks an engine .furrow write through furrow layer decide", async () => {
+		const bin = await buildFurrowBinary();
+		const previousBin = process.env.FURROW_BIN;
+		process.env.FURROW_BIN = bin;
+		const handlers: Array<(event: any, ctx: any) => Promise<any>> = [];
+		const pi = {
+			registerMessageRenderer: () => {},
+			on: (name: string, handler: any) => {
+				if (name === "tool_call") handlers.push(handler);
+			},
+			registerCommand: () => {},
+		};
+
+		try {
+			furrowExtension(pi as any);
+			expect(handlers.length).toBeGreaterThan(0);
+			let blocked: any;
+			for (const handler of handlers) {
+				const result = await handler(
+					{ toolName: "Write", input: { path: ".furrow/rows/x/state.json" } },
+					{ cwd: projectRoot, agentName: "engine:specialist:go-specialist", agentId: "engine-1", hasUI: false },
+				);
+				if (result?.block) {
+					blocked = result;
+					break;
+				}
+			}
+			expect(blocked?.block).toBe(true);
+			expect(blocked.reason).toContain("layer_tool_violation");
+		} finally {
+			if (previousBin === undefined) {
+				delete process.env.FURROW_BIN;
+			} else {
+				process.env.FURROW_BIN = previousBin;
+			}
+		}
+	});
+
+	test("normalizes Pi tool_call input to Furrow-native ToolEvent shape", () => {
+		const normalized = normalizePiToolEvent(
+			{ toolName: "Bash", input: { command: "furrow row archive x" } },
+			{ agentName: "engine:specialist:go-specialist", agentId: "engine-1" },
+		);
+		expect(normalized).toEqual({
+			schema_version: "tool_event.v1",
+			runtime: "pi",
+			event_name: "tool_call",
+			tool_name: "Bash",
+			tool_input: { command: "furrow row archive x" },
+			agent_id: "engine-1",
+			agent_type: "engine:specialist:go-specialist",
+		});
 	});
 });
 

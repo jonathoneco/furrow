@@ -18,10 +18,8 @@
 # {claude.json, pi.json, expected-envelope.json}. Adding a new shim
 # without per-code fixtures fails this gate. (Per AC-5, AC-10.)
 #
-# Pi-handler-absent skip rule (per shared-contracts §C7): for codes
-# whose Pi-side handler does not exist in adapters/pi/validate-actions.ts,
-# the parity invocation skips with a logged reason naming follow-up TODO
-# pi-tool-call-canonical-schema-and-surface-audit.
+# Pi coverage note: only codes with a live Pi handler are claimed as parity
+# surfaces. Codes without a handler remain inventory coverage, not parity pass.
 #
 # Auto-discovered by tests/integration/run-all.sh's test-*.sh glob.
 
@@ -71,12 +69,8 @@ work-check.sh
 
 # Pi-handler presence: handlers exported from adapters/pi/validate-actions.ts.
 # Only definition_* and ownership_outside_scope have native Pi handlers
-# today. All other codes parity-invoke through the test driver's
-# direct-furrow-guard branch (still proves Pi-shape -> normalized event ->
-# Go envelope round-trips), but the *handler-absent* skip gate logs them
-# explicitly per the shared-contracts §C7 rule. Per the spec note: "for
-# codes whose Pi-side `tool_call` shape isn't yet defined", the pi.json
-# fixture is a stub and parity SKIPs with the named follow-up TODO.
+# today. All other codes are fixture inventory only until their Pi handler is
+# implemented. They must not be counted as Pi parity passes.
 PI_HANDLER_PRESENT_CODES="
 definition_yaml_invalid
 definition_objective_missing
@@ -90,13 +84,9 @@ definition_acceptance_criteria_placeholder
 definition_unknown_keys
 ownership_outside_scope
 "
-# Note: those 11 codes are NOT emitted by any of the 10 migrated shims —
-# they flow through validate-definition.sh / ownership-warn.sh (already
-# canonical, out of D3 migration scope). So in practice every per-(shim,
-# code) parity test in this row hits the handler-absent skip path. The
-# skip rule is preserved verbatim because (a) it's the contract specified
-# in shared-contracts §C7, and (b) it documents the precise follow-up
-# work left for pi-tool-call-canonical-schema-and-surface-audit.
+# Note: those 11 codes are NOT emitted by any of the 10 migrated shims. The
+# migrated-shim loop below therefore currently performs inventory coverage for
+# non-claimed Pi surfaces and does not count them as parity passes.
 
 # --- Pre-test asserts ---------------------------------------------------
 if [ ! -d "$HOOK_DIR" ]; then
@@ -237,7 +227,7 @@ parity_replay() {
   esac
 
   if ! pi_handler_for_code_present "$_code"; then
-    printf "  SKIP: %s parity (Pi handler not yet implemented for %s — see follow-up TODO pi-tool-call-canonical-schema-and-surface-audit)\n" \
+    printf "  NOTE: %s inventory only (no claimed Pi handler for %s; not counted as parity)\n" \
       "$_code" "$_code"
     return 0
   fi
