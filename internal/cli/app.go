@@ -222,10 +222,19 @@ func (a *App) runHook(args []string) int {
 	}
 	switch args[0] {
 	case "layer-guard":
-		policyPath := filepath.Join(".furrow", "layer-policy.yaml")
-		// Allow override via env for testing.
+		// Resolve policy path with cwd-independent walk-up so the hook works
+		// from any subdirectory of the repo. Without this, a tool call that
+		// runs after `cd <subdir>` fails-closed because os.ReadFile cannot
+		// find .furrow/ relatively, which then bricks every subsequent tool
+		// call (Edit included) — discovered when pi-dogfood-guide self-bricked
+		// after `cd adapters/pi && bun install`.
+		var policyPath string
 		if override := os.Getenv("FURROW_LAYER_POLICY_PATH"); override != "" {
 			policyPath = override
+		} else if root, err := findFurrowRoot(); err == nil {
+			policyPath = filepath.Join(root, ".furrow", "layer-policy.yaml")
+		} else {
+			policyPath = filepath.Join(".furrow", "layer-policy.yaml")
 		}
 		return hook.RunLayerGuard(context.Background(), policyPath, a.stdin, a.stdout)
 	case "presentation-check":

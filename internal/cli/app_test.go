@@ -1260,3 +1260,137 @@ func mustWrite(t *testing.T, path string, content string) {
 		t.Fatal(err)
 	}
 }
+
+// TestRunHook_LayerGuard_PolicyResolvesFromSubdirectory is a regression test
+// for the cwd-relative policy lookup brick. Before the walk-up fix, running
+// `furrow hook layer-guard` from any subdirectory failed-closed because
+// os.ReadFile(".furrow/layer-policy.yaml") errored. Once a single hook
+// invocation failed, every subsequent PreToolUse hook (Edit included) also
+// failed, leaving the agent unable to patch the bug. The fix resolves the
+// policy via findFurrowRoot() walk-up.
+func TestRunHook_LayerGuard_PolicyResolvesFromSubdirectory(t *testing.T) {
+	root := t.TempDir()
+	furrowDir := filepath.Join(root, ".furrow")
+	if err := os.MkdirAll(furrowDir, 0o755); err != nil {
+		t.Fatalf("mkdir .furrow: %v", err)
+	}
+	policy := `
+version: "1"
+agent_type_map:
+  operator: operator
+  engine:freeform: engine
+layers:
+  operator:
+    tools_allow: ["*"]
+    tools_deny: []
+    path_deny: []
+    bash_allow_prefixes: []
+    bash_deny_substrings: []
+  driver:
+    tools_allow: ["Read"]
+    tools_deny: []
+    path_deny: []
+    bash_allow_prefixes: []
+    bash_deny_substrings: []
+  engine:
+    tools_allow: ["Read", "Bash"]
+    tools_deny: []
+    path_deny: []
+    bash_allow_prefixes: []
+    bash_deny_substrings: []
+`
+	if err := os.WriteFile(filepath.Join(furrowDir, "layer-policy.yaml"), []byte(policy), 0o600); err != nil {
+		t.Fatalf("write policy: %v", err)
+	}
+
+	// Subdirectory of the Furrow root — mirrors the real-world brick condition
+	// (agent had cd'd into adapters/pi before the hook ran).
+	subdir := filepath.Join(root, "deep", "nested", "subdir")
+	if err := os.MkdirAll(subdir, 0o755); err != nil {
+		t.Fatalf("mkdir subdir: %v", err)
+	}
+
+	oldwd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = os.Chdir(oldwd) }()
+	if err := os.Chdir(subdir); err != nil {
+		t.Fatalf("chdir subdir: %v", err)
+	}
+
+	// Make sure no env override is leaking from the host environment.
+	t.Setenv("FURROW_LAYER_POLICY_PATH", "")
+
+	// Operator + Read of an arbitrary path should be allowed by the policy
+	// above. With cwd-relative lookup this fails-closed before the verdict
+	// even gets evaluated.
+	stdin := bytes.NewBufferString(`{"hook_event_name":"PreToolUse","tool_name":"Read","tool_input":{"file_path":"/tmp/anything"},"agent_id":"a","agent_type":"operator"}`)
+	var stdout, stderr bytes.Buffer
+	app := NewWithStdin(&stdout, &stderr, stdin)
+	code := app.Run([]string{"hook", "layer-guard"})
+
+	if code != 0 {
+		t.Fatalf("expected exit 0 (allow), got %d. stdout=%q stderr=%q", code, stdout.String(), stderr.String())
+	}
+	if bytes.Contains(stdout.Bytes(), []byte("layer_policy_invalid")) {
+		t.Fatalf("policy load failed despite walk-up; stdout=%q", stdout.String())
+	}
+}
+
+// TestRunHook_LayerGuard_PolicyPathEnvOverride confirms the env-var override
+// still wins over walk-up — useful for CI fixtures and explicit pinning.
+func TestRunHook_LayerGuard_PolicyPathEnvOverride(t *testing.T) {
+	tmp := t.TempDir()
+	overridePath := filepath.Join(tmp, "custom-policy.yaml")
+	policy := `
+version: "1"
+agent_type_map:
+  operator: operator
+layers:
+  operator:
+    tools_allow: ["*"]
+    tools_deny: []
+    path_deny: []
+    bash_allow_prefixes: []
+    bash_deny_substrings: []
+  driver:
+    tools_allow: []
+    tools_deny: []
+    path_deny: []
+    bash_allow_prefixes: []
+    bash_deny_substrings: []
+  engine:
+    tools_allow: []
+    tools_deny: []
+    path_deny: []
+    bash_allow_prefixes: []
+    bash_deny_substrings: []
+`
+	if err := os.WriteFile(overridePath, []byte(policy), 0o600); err != nil {
+		t.Fatalf("write override: %v", err)
+	}
+
+	// Run from a directory with no .furrow/ anywhere upstream, to prove the
+	// env var bypasses walk-up entirely.
+	isolated := t.TempDir()
+	oldwd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = os.Chdir(oldwd) }()
+	if err := os.Chdir(isolated); err != nil {
+		t.Fatalf("chdir isolated: %v", err)
+	}
+
+	t.Setenv("FURROW_LAYER_POLICY_PATH", overridePath)
+
+	stdin := bytes.NewBufferString(`{"hook_event_name":"PreToolUse","tool_name":"Read","tool_input":{"file_path":"/tmp/x"},"agent_id":"a","agent_type":"operator"}`)
+	var stdout, stderr bytes.Buffer
+	app := NewWithStdin(&stdout, &stderr, stdin)
+	code := app.Run([]string{"hook", "layer-guard"})
+
+	if code != 0 {
+		t.Fatalf("expected exit 0, got %d. stdout=%q stderr=%q", code, stdout.String(), stderr.String())
+	}
+}
