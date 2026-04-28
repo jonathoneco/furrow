@@ -234,14 +234,6 @@ dependency_graph:
     label: Post-install hygiene followup
     phase: 1
     status: active
-  - id: archive-pi-adapter-foundation-as-superseded
-    label: Archive pi-adapter-foundation as superseded
-    phase: 1
-    status: active
-  - id: pi-step-ceremony-deliverables-backfill
-    label: Pi-step-ceremony deliverables backfill
-    phase: 1
-    status: active
   - id: state-guard-rm-coverage
     label: State-guard rm coverage
     phase: 1
@@ -347,20 +339,8 @@ dependency_graph:
     phase: 2
     status: active
   edges:
-  - from: brain-dump-triage-command
-    to: parallel-agent-orchestration-adoption
-    kind: hard
-    reason: explicit depends_on
-  - from: seeds-concept
-    to: cli-architecture-overhaul
-    kind: hard
-    reason: explicit depends_on
   - from: work-folder-structure-and-cleanup
     to: brain-dump-triage-command
-    kind: hard
-    reason: explicit depends_on
-  - from: harness-lifecycle-ux
-    to: cli-architecture-overhaul
     kind: hard
     reason: explicit depends_on
   - from: low-finding-disposition-policy
@@ -373,18 +353,6 @@ dependency_graph:
     reason: explicit depends_on
   - from: tmux-sessionizer-integration
     to: artifact-writing-defaults
-    kind: hard
-    reason: explicit depends_on
-  - from: cli-introspection-suite
-    to: cli-architecture-overhaul
-    kind: hard
-    reason: explicit depends_on
-  - from: cli-architecture-overhaul-slice-2
-    to: go-cli-contract-v1
-    kind: hard
-    reason: explicit depends_on
-  - from: cli-architecture-overhaul-slice-2
-    to: migration-operating-mode
     kind: hard
     reason: explicit depends_on
   - from: seed-row-binding-contract
@@ -425,10 +393,6 @@ dependency_graph:
     reason: explicit depends_on
   - from: claude-blocker-enforcement-parity
     to: shared-blocker-taxonomy-spec
-    kind: hard
-    reason: explicit depends_on
-  - from: shared-blocker-taxonomy-spec
-    to: default-supervised-gating
     kind: hard
     reason: explicit depends_on
   - from: seeds-backend-surface-layer
@@ -479,10 +443,6 @@ dependency_graph:
     to: workflow-power-preservation
     kind: hard
     reason: explicit depends_on
-  - from: consumer-install-symlink-validation
-    to: install-architecture-overhaul
-    kind: hard
-    reason: explicit depends_on
   - from: doc-authority-class-enforcement
     to: docs-cleanup-pass
     kind: hard
@@ -491,16 +451,8 @@ dependency_graph:
     to: doc-authority-class-enforcement
     kind: hard
     reason: explicit depends_on
-  - from: xdg-state-isolation-audit-and-doc
-    to: install-architecture-overhaul
-    kind: hard
-    reason: explicit depends_on
   - from: supervised-decision-surface-spec
     to: shared-blocker-taxonomy-spec
-    kind: hard
-    reason: explicit depends_on
-  - from: supervised-decision-surface-spec
-    to: default-supervised-gating
     kind: hard
     reason: explicit depends_on
   - from: roadmap-row-cluster-machine-readable-representatio
@@ -514,7 +466,6 @@ dependency_graph:
     - ambient-context-promotion
     - apply-nate-jones-skill
     - archive-implications-propagation
-    - archive-pi-adapter-foundation-as-superseded
     - artifact-informed-handoffs-and-gate-prompts
     - artifact-writing-defaults
     - brain-dump-triage-command
@@ -551,7 +502,6 @@ dependency_graph:
     - pi-correction-limit-visibility
     - pi-native-capability-leverage
     - pi-session-resume-reground
-    - pi-step-ceremony-deliverables-backfill
     - post-install-hygiene-followup
     - post-merge-watch-list
     - research-documentation-detection
@@ -2846,8 +2796,6 @@ phases:
     branch: work/pi-row-audit-cleanup
     description: Audit cleanup + furrow row repair-deliverables Go CLI + alm-triage row-cluster preservation. Foundational; unblocks pre-write-validation and protects the conformed roadmap.yaml.
     todos:
-    - pi-step-ceremony-deliverables-backfill
-    - archive-pi-adapter-foundation-as-superseded
     - roadmap-row-cluster-machine-readable-representatio
     depends_on: []
     key_files:
