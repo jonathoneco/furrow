@@ -8,6 +8,7 @@ agent_type_map:
   conflict-cartographer:    operator
   integration-architect:    operator
   integration-architect-2:  operator
+  integration-architect-3:  operator
   harness-integrity-reviewer: operator
   driver:ideate:      driver
   driver:research:    driver
@@ -59,6 +60,11 @@ layers:
       - "git commit"
 
   engine:
+    # Engine boundary is evidence-driven: only signal-justified denies are
+    # (a) cannot mutate Furrow state (path_deny on .furrow/ + frozen schemas)
+    # and (b) cannot invoke harness CLIs (bash_deny_substrings).
+    # All other tool surface is unrestricted — speculative denies have been
+    # dropped pending a real incident or fan-out budget mechanism.
     tools_allow:
       - Read
       - Grep
@@ -67,12 +73,12 @@ layers:
       - Write
       - Bash
       - SendMessage
+      - Agent
       - TaskCreate
       - TaskGet
       - TaskList
       - TaskUpdate
-    tools_deny:
-      - Agent
+    tools_deny: []
     path_deny:
       - ".furrow/"
       - "schemas/blocker-taxonomy.yaml"

@@ -125,8 +125,25 @@ layers:
       - "git commit"
 
   engine:
-    tools_allow: ["Read", "Grep", "Glob", "Edit", "Write", "Bash"]
-    tools_deny:  ["SendMessage", "Agent", "TaskCreate"]
+    # Engine boundary is evidence-driven: only signal-justified denies are
+    # (a) cannot mutate Furrow state (path_deny on .furrow/ + frozen schemas)
+    # and (b) cannot invoke harness CLIs (bash_deny_substrings).
+    # All other tool surface is unrestricted — speculative denies have been
+    # dropped pending a real incident or fan-out budget mechanism.
+    tools_allow:
+      - Read
+      - Grep
+      - Glob
+      - Edit
+      - Write
+      - Bash
+      - SendMessage
+      - Agent
+      - TaskCreate
+      - TaskGet
+      - TaskList
+      - TaskUpdate
+    tools_deny: []
     path_deny:
       - ".furrow/"
       - "schemas/blocker-taxonomy.yaml"
@@ -139,6 +156,10 @@ layers:
       - "sds "
       - ".furrow/"
 ```
+
+### Engine boundary rationale (2026-04-27)
+
+Engines cannot **mutate Furrow state** (`path_deny` on `.furrow/` and frozen schemas) and cannot **invoke harness CLIs** (`bash_deny_substrings` for `furrow `, `rws `, `alm `, `sds `, `.furrow/`). Those are the only two signal-driven invariants. All other tool surface — including `SendMessage`, `Agent`, `TaskCreate`, and the rest of the team-coordination tools — is unrestricted at the engine layer because no incident has justified more isolation, and the previous denies (`SendMessage`/`Agent`/`TaskCreate`) were premature optimization that silently broke team coordination when an unmapped agent_type fell through to engine. Fan-out budget concerns from removing `Agent` from the deny list are tracked as a follow-up TODO; the mitigation belongs at team-dispatch, not at the per-tool layer policy.
 
 ACs covered: `Layer policy authority`, `Layer policy content`.
 
@@ -419,7 +440,9 @@ ACs covered: `Post-hoc boundary leakage test`.
 | 5 | engine:specialist:go-specialist             | Write       | `file_path: src/foo.go`                  | allow    |
 | 6 | engine:specialist:go-specialist             | Write       | `file_path: .furrow/learnings.jsonl`     | **block** (engine path_deny) |
 | 7 | engine:specialist:go-specialist             | Bash        | `command: furrow context for-step plan`  | **block** (engine bash_deny_substrings) |
-| 8 | engine:specialist:go-specialist             | SendMessage | `to: subagent_1, body: ...`              | **block** (engine tools_deny) |
+| 7b| engine:specialist:go-specialist             | Bash        | `command: furrow row archive foo`        | **block** (engine bash_deny_substrings — the real harness-CLI boundary) |
+| 8 | engine:specialist:go-specialist             | SendMessage | `to: subagent_1, body: ...`              | allow (no signal justifies isolation) |
+| 8b| engine:specialist:go-specialist             | Agent       | `subagent_type: ...`                     | allow (no signal justifies isolation; fan-out budget is a separate concern) |
 | 9 | engine:freeform                             | Read        | `file_path: src/foo.go`                  | allow    |
 | 10| (missing/main-thread)                       | Write       | `file_path: src/foo.go`                  | allow (operator default) |
 
@@ -515,6 +538,21 @@ ACs covered: `schemas/blocker-taxonomy.yaml gains: ...`.
 2. Pi subagent enforcement gap — file an explicit follow-up row for upstream patch to `@tintinweb/pi-subagents` exposing a parent-bus tool_call event.
 3. Bash deny-substring approach is coarse. If false positives become an issue, escalate to a token-aware shell parser (out of scope this row).
 4. `.claude/settings.json` `furrow` vs `frw` binary name — consolidate at canonical-Go port; until then, both names ship side-by-side.
+
+## Decision record
+
+**2026-04-27 — Engine boundary simplified to evidence-driven shape (phase-4 integration).**
+
+The orchestration-delegation-contract row originally shipped engine-layer denies for `SendMessage`, `Agent`, and `TaskCreate` under a generic "subagents must not coordinate horizontally" framing. The harness-integrity-reviewer's phase-4 audit (F1) flagged this as speculative — no incident drove the denies, and the first time the policy was exercised at the operator/engine boundary it broke team coordination silently (commit 8a8a847 had to re-allow them at engine).
+
+Decision: drop the speculative tool-level denies. Engine layer's only signal-driven invariants are now:
+
+1. **Cannot mutate Furrow state** — `path_deny` on `.furrow/`, `schemas/blocker-taxonomy.yaml`, `schemas/definition.schema.json`.
+2. **Cannot invoke harness CLIs** — `bash_deny_substrings` on `furrow `, `rws `, `alm `, `sds `, `.furrow/`.
+
+Everything else is permitted at the engine layer. The Agent-fan-out budget concern (recursive engine→engine→engine spawn could runaway tokens) is tracked as a follow-up TODO; mitigation belongs in team/dispatch-level depth and budget limits, not in the per-tool layer policy.
+
+Trade-off accepted: layer policy no longer guards against fan-out; the previous implicit budget gate from `Agent` denial is replaced by a separate, signal-driven mechanism to be designed and enforced at TeamCreate/Agent dispatch.
 
 ---
 
