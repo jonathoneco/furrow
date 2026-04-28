@@ -2,7 +2,7 @@ schema_version: '1.0'
 metadata:
   project: furrow
   generated_at: '2026-04-25T02:30:00Z'
-  total_phases: 15
+  total_phases: 5
   completed_phases: 4
   curated: true
   curation_source: .furrow/rows/migration-state-of-the-union/research.md §11
@@ -195,7 +195,7 @@ dependency_graph:
     phase: 1
     status: active
   - id: pi-correction-limit-visibility
-    label: Pi correction-limit visibility (footer widget)
+    label: Pi correction-limit visibility
     phase: 1
     status: active
   - id: furrow-context-isolation-layer
@@ -203,7 +203,7 @@ dependency_graph:
     phase: 1
     status: active
   - id: pi-session-resume-reground
-    label: Pi session-resume reground
+    label: Pi session resume context refresh
     phase: 1
     status: active
   - id: standardize-artifact-presentation
@@ -2858,336 +2858,279 @@ phases:
     conflict_risk: none
     completed_at: '2026-04-27T17:06:52Z'
 - number: 5
-  title: State + correction guards (single row)
+  title: Post-audit collapse
   status: planned
-  rationale: 'Was Phase 4 row 2 in the prior layout. Moved here because Phase 4''s blocker-taxonomy and orchestration-delegation rows reshape the hook + backend surfaces this row builds on — running them first prevents rework. Pi tool_call extends to bash rm/cp/mv + correction-budget footer + session-resume reground + canonical schema for all tool_call handlers.'
+  rationale: The audit found Furrow's truth protections worth keeping but the planning, command, shell, and adapter surfaces overgrown. This post-audit collapse phase narrows the next work to deletion/collapse rows before any new roadmap/TODO UX, Pi UX, or seed cutover work.
   rows:
   - index: 1
-    branch: work/state-and-correction-guards
-    description: Pi tool_call extends to bash rm/cp/mv + correction-budget footer + session-resume reground + canonical schema for all tool_call handlers (consolidates accreted handler shapes into one contract).
-    todos:
-    - state-guard-rm-coverage
-    - pi-correction-limit-visibility
-    - pi-session-resume-reground
-    - pi-tool-call-canonical-schema-and-surface-audit
-    - layer-guard-silent-rejection-on-top-layer-integrat
+    branch: work/post-audit-planning-collapse
+    description: Collapse the active roadmap to the next bounded execution rows, demote the large TODO graph to backlog input, and preserve row selection, dependency visibility, completion evidence, and validation without introducing new planning UX.
+    todos: []
     depends_on:
     - work/blocker-taxonomy-foundation
     - work/orchestration-delegation-contract
     key_files:
-    - adapters/pi/furrow.ts
-    - bin/frw.d/hooks/state-guard.sh
-    - bin/frw.d/hooks/script-guard.sh
-    conflict_risk: low
-    completed_at: null
-- number: 6
-  title: Artifact validation and continuation
-  status: planned
-  rationale: 'Single-row phase — depends on work/blocker-taxonomy-foundation so it cannot share a phase with it. Per-step validation schema + artifacts-as-inputs + stage-aware enforcement + writing defaults + handoff/gate informing.'
-  rows:
-  - index: 1
-    branch: work/artifact-validation-and-continuation
-    description: Per-step validation schema + artifacts-as-inputs + stage-aware enforcement + writing defaults + handoff/gate informing.
-    todos:
-    - artifact-validation-per-step-schema
-    - artifact-continuation-model
-    - stage-aware-ceremony-enforcement
-    - artifact-writing-defaults
-    - artifact-informed-handoffs-and-gate-prompts
-    depends_on:
-    - work/blocker-taxonomy-foundation
-    key_files:
-    - schemas/step-artifact-requirements.yaml
-    - internal/cli/row_workflow.go
-    - skills/
-    conflict_risk: medium
-    completed_at: null
-- number: 7
-  title: Seeds foundation
-  status: planned
-  rationale: 'Was Phase 5 row 1 in the prior layout. Single-row phase: typed nodes + Go furrow seeds command group + row-binding contract + umbrellas. Introduces seeds.jsonl as the future canonical planning primitive while todos.yaml remains canonical until the Phase 8 cutover row completes.'
-  rows:
-  - index: 1
-    branch: work/seeds-foundation
-    description: Typed nodes + Go furrow seeds command group + row-binding contract + umbrellas.
-    todos:
-    - seeds-typed-graph-nodes
-    - seeds-backend-surface-layer
-    - seed-row-binding-contract
-    - seeds-concept
-    - pi-almanac-operating-model
-    depends_on:
-    - work/artifact-validation-and-continuation
-    key_files:
-    - internal/cli/seeds.go
-    - schemas/seed.schema.json
-    - docs/architecture/pi-almanac-operating-model.md
-    conflict_risk: medium
-    completed_at: null
-- number: 8
-  title: Seeds graph cutover + Pi surfaces
-  status: planned
-  rationale: 'Was Phase 5 row 2 in the prior layout — depends on work/seeds-foundation so it cannot share a phase with it. Graph queries + follow-up promotion + roadmap-from-seeds + cutover migration + Pi seed surfaces + post-retirement alm scope. This row performs the canonical-source cutover: seeds.jsonl becomes authoritative, roadmap/todos views become derived, and todos.yaml is frozen until Phase 15 removal.'
-  rows:
-  - index: 1
-    branch: work/seeds-graph-cutover-and-pi-surfaces
-    description: Graph queries + follow-up promotion + roadmap-from-seeds + cutover migration + Pi seed surfaces + post-retirement alm scope.
-    todos:
-    - seeds-graph-queries
-    - seeds-follow-up-promotion
-    - roadmap-generation-from-seeds
-    - todo-to-seed-cutover-migration
-    - pi-seed-surfaces-in-work-loop
-    - almanac-scope-after-todo-retirement
-    - todo-context-references
-    depends_on:
-    - work/seeds-foundation
-    key_files:
-    - internal/cli/seeds.go
-    - adapters/pi/furrow.ts
-    - bin/alm
-    - .furrow/almanac/
-    conflict_risk: high
-    completed_at: null
-- number: 9
-  title: Review + specialists (parallel wave)
-  status: planned
-  rationale: 'Two parallel rows: review execution + specialist registration. Originally bundled with row-variants-and-planning-ux as a 3-way parallel wave, but row-variants was deferred to Phase 10 because it would have collided with both rows here on commands/, skills/, and todos.yaml — same shape as Phase 4''s blocker-taxonomy + orchestration overlap that required a manual integration team to resolve.'
-  rows:
-  - index: 1
-    branch: work/review-and-evaluator-orchestration
-    description: Evaluator isolation spec + unified review + gate-dim-dedup + collaborative surfaces.
-    todos:
-    - review-evaluator-isolation-spec
-    - unified-isolated-review
-    - gate-dimension-deduplication
-    - collaborative-surfaces
-    depends_on:
-    - work/blocker-taxonomy-foundation
-    key_files:
-    - commands/review.md
-    - schemas/review-result.schema.json
-    - bin/frw.d/scripts/cross-model-review.sh
+    - .furrow/almanac/roadmap.yaml
+    - .furrow/almanac/todos.yaml
+    - docs/integration/furrow-post-audit-action-plan.md
     conflict_risk: low
     completed_at: null
   - index: 2
-    branch: work/specialist-skills-and-engine-briefs
-    description: Specialist skills + adapter-rendered engine briefs + specialist quality + template warning + effort-selection-with-model + engine-fan-out budget enforcement. Specialists are skills loaded into general agents; runtime-specific agent files are rendered by adapters, not treated as backend-owned registered agent types.
-    todos:
-    - sub-agent-normalization
-    - specialist-quality-validation
-    - specialist-template-warning-escalation
-    - effort-selection-alongside-model
-    - engine-fan-out-budget-depth-and-token-limits-for-a
-    depends_on: []
-    key_files:
-    - specialists/
-    - skills/shared/
-    - adapters/
-    conflict_risk: low
-    completed_at: null
-- number: 10
-  title: Row variants + planning UX (single row)
-  status: planned
-  rationale: 'Was Phase 9 row 3 in the prior layout. Deferred to its own phase because the row touches commands/, skills/, bin/rws, and bin/alm broadly — same surfaces the Phase 9 review and specialists rows reshape, and the same shape that collided in Phase 4. Deferring eliminates a 3-way parallel collision and gives the row a stable foundation post-Phase-9.'
-  rows:
-  - index: 1
-    branch: work/row-variants-and-planning-ux
-    description: Patch-row + spike-row + brain-dump-triage-command + sprint planning + sharded todos + user-actions + post-merge-watch + ambient-context-promotion. Cohesion is loose; row owner may decide to land this as multiple sequential commits or split mid-row if a vertical-slice cleavage emerges.
-    todos:
-    - patch-row-concept
-    - spike-row-mode
-    - brain-dump-triage-command
-    - sprint-inspired-planning
-    - support-todos-sharding
-    - user-action-integration
-    - post-merge-watch-list
-    - ambient-context-promotion
+    branch: work/hide-vaporware-command-surface
+    description: Hide or label advertised Go and markdown command stubs before new command families are added; do not implement gate, seeds, merge, or roadmap/TODO UX in this row.
+    todos: []
     depends_on:
-    - work/orchestration-delegation-contract
-    - work/review-and-evaluator-orchestration
-    - work/specialist-skills-and-engine-briefs
-    key_files:
-    - commands/
-    - skills/
-    - bin/rws
-    - bin/alm
-    conflict_risk: medium
-    completed_at: null
-- number: 11
-  title: CLI introspection + history (single row)
-  status: planned
-  rationale: 'Single-row phase: cli-architecture-overhaul-slice-2 reshapes internal/cli/ broadly. Originally paired with meta-and-archive-flow-improvements as a parallel wave, but meta-archive was deferred to Phase 12 because both touch internal/cli/ + bin/rws and meta-archive needs the reshaped CLI structure to slot its archive flow improvements — same shape as Phase 4 blocker + orchestration overlap.'
-  rows:
-  - index: 1
-    branch: work/cli-introspection-and-history
-    description: Tier 1+2+3 introspection commands as Go-first first-class citizens. Foundational for Phase 12 (meta-archive) and Phase 13 (worktree + install). Also closes the dispatch-enforcement observation now that 3+ multi-deliverable rows have archived.
-    todos:
-    - cli-introspection-suite
-    - cli-architecture-overhaul-slice-2
-    - harness-parallel-dispatch-race
-    - close-re-evaluate-dispatch-enforcement-observation
-    depends_on:
-    - work/blocker-taxonomy-foundation
+    - work/post-audit-planning-collapse
     key_files:
     - internal/cli/
     - cmd/furrow/
-    - bin/rws
+    - commands/
+    - .claude/CLAUDE.md
+    conflict_risk: low
+    completed_at: null
+  - index: 3
+    branch: work/layer-guard-rejection-hardening
+    description: Make layer-guard rejections diagnosable and narrowly recoverable while preserving backend-owned layer protection and loaded-path adapter honesty.
+    todos:
+    - layer-guard-silent-rejection-on-top-layer-integrat
+    - layer-guard-verdict-reason-should-also-write-to-st
+    - hook-chain-must-allow-edit-on-recovery-paths-when
+    depends_on:
+    - work/blocker-taxonomy-foundation
+    - work/orchestration-delegation-contract
+    key_files:
+    - internal/cli/hook/
+    - internal/cli/layer/
+    - adapters/pi/furrow.ts
+    - .claude/settings.json
+    conflict_risk: low
+    completed_at: null
+  - index: 4
+    branch: work/source-field-vocabulary-collapse
+    description: Collapse duplicate row vocabulary by canonicalizing source_todos and one backend branch field; keep compatibility reads only as migration fallback.
+    todos: []
+    depends_on:
+    - work/post-audit-planning-collapse
+    key_files:
+    - schemas/
+    - internal/cli/
     - bin/alm
-    - bin/sds
+    - .furrow/rows/
     conflict_risk: high
     completed_at: null
-- number: 12
-  title: Meta + archive flow improvements (single row)
-  status: planned
-  rationale: 'Was Phase 10 row 2 in the prior layout. Deferred to its own phase because both meta-archive and cli-introspection-and-history touch internal/cli/, cmd/furrow/, and bin/rws; meta-archive needs the reshaped CLI structure cli-introspection-slice-2 produces — same shape as the Phase 4 blocker-taxonomy + orchestration-delegation collision.'
-  rows:
-  - index: 1
-    branch: work/meta-and-archive-flow-improvements
-    description: Supervised decision surfaces + archive implications propagation + furrow meta folds into roadmap.
-    todos:
-    - supervised-decision-surface-spec
-    - archive-implications-propagation
-    - furrow-meta-folds-into-roadmap
-    depends_on:
-    - work/cli-introspection-and-history
-    key_files:
-    - commands/archive.md
-    - commands/meta.md
-    - bin/rws
-    conflict_risk: low
-    completed_at: null
-- number: 13
-  title: Worktree + install pipelines (parallel wave)
-  status: planned
-  rationale: 'Was Phase 7 wave 2 in the prior layout (rows 2 and 3). Both depend on work/cli-introspection-and-history and not on each other — true parallel-batch.'
-  rows:
-  - index: 1
-    branch: work/worktree-and-merge-pipeline
-    description: Worktree integration + semantic merge + phase lifecycle + per-row merge process skill + team-orchestrated phase-integration capability (multi-row superset of merge-process-skill, modeled on the manual phase-4 integration team pattern).
-    todos:
-    - furrow-work-worktree-integration
-    - furrow-next-semantic-merge
-    - furrow-next-phase-lifecycle
-    - merge-process-skill
-    - formalize-team-orchestrated-phase-integration-as-a
-    depends_on:
-    - work/cli-introspection-and-history
-    key_files:
-    - bin/frw
-    - commands/merge.md
-    - commands/work.md
-    - bin/frw.d/scripts/merge-*.sh
-    conflict_risk: medium
-    completed_at: null
-  - index: 2
-    branch: work/install-and-symlink-hygiene
-    description: User-bin worktree pinning + consumer-install symlink validation + XDG isolation audit + post-install-hygiene-followup + lifecycle UX.
-    todos:
-    - install-user-bin-worktree-pinning
-    - consumer-install-symlink-validation
-    - xdg-state-isolation-audit-and-doc
-    - post-install-hygiene-followup
-    - harness-lifecycle-ux
-    depends_on:
-    - work/cli-introspection-and-history
-    key_files:
-    - install.sh
-    - bin/frw.d/install.sh
-    - docs/architecture/self-hosting.md
-    conflict_risk: medium
-    completed_at: null
-- number: 14
-  title: Dual-runtime parity + docs/research (parallel wave)
-  status: planned
-  rationale: 'Was Phase 8 wave 1 in the prior layout (rows 1 and 3). Parity validation has many cross-phase deps; docs-and-research has none — both run in parallel as the integration milestone.'
-  rows:
-  - index: 1
-    branch: work/dual-runtime-parity-validation
-    description: Adapters audit (with new pass/fail rubric) + Claude wrapper compat + Pi adapter package umbrella + parity validation gate + workflow-power-preservation umbrella close. The rubric todo is a hard precondition — adapters-audit cannot complete without measurable thresholds.
-    todos:
-    - adapters-audit
-    - define-adapters-audit-pass-fail-rubric
-    - claude-wrapper-compatibility
-    - pi-adapter-package
-    - dual-runtime-parity-validation
-    - workflow-power-preservation
-    depends_on:
-    - work/state-and-correction-guards
-    - work/orchestration-delegation-contract
-    - work/seeds-graph-cutover-and-pi-surfaces
-    - work/cli-introspection-and-history
-    key_files:
-    - tests/integration/
-    - adapters/
-    - bin/
-    conflict_risk: low
-    completed_at: null
-  - index: 2
-    branch: work/docs-and-research
-    description: 'Background row: docs cleanup + authority enforcement + residue archival + research streams (mine claude code, mine v1 harness, memetic algorithms, research methodology,
-      nate-jones skill) + terminal land-or-kill decisions on each research stream + transitional doc graduation. No research stream may stay open at row close — every output either lands as a follow-up TODO or is killed and archived.'
-    todos:
-    - docs-cleanup-pass
-    - doc-authority-class-enforcement
-    - migration-residue-archival
-    - mine-claude-code
-    - mine-v1-harness
-    - memetic-algorithms-research
-    - research-documentation-detection
-    - research-methodology-design
-    - apply-nate-jones-skill
-    - land-or-kill-decision-for-phase-8-research-streams
-    - finalize-transitional-architecture-docs-authority
-    depends_on: []
-    key_files:
-    - docs/
-    - references/
-    conflict_risk: none
-    completed_at: null
-- number: 15
-  title: Pi-native leverage + legacy shell cutoff (parallel wave)
-  status: planned
-  rationale: 'Was Phase 8 wave 2 in the prior layout (rows 2 and 4). Both depend on work/dual-runtime-parity-validation and not on each other — true parallel-batch. The shell cutoff is the clean-swap milestone: every shell entrypoint, hook, script, and todos.yaml itself is removed here.'
-  rows:
-  - index: 1
-    branch: work/pi-native-leverage-and-tui
-    description: Furrow-context isolation + TUI dashboard + self-update hook + pi-native-capability-leverage umbrella.
-    todos:
-    - furrow-tui-dashboard
-    - furrow-self-update-hook
-    - pi-native-capability-leverage
-    depends_on:
-    - work/dual-runtime-parity-validation
-    key_files:
-    - adapters/pi/furrow.ts
-    - adapters/pi/
-    conflict_risk: low
-    completed_at: null
-  - index: 2
-    branch: work/legacy-shell-cutoff-and-removal
-    description: 'Hard cutoff for the shell-era artifacts: remove bin/rws, bin/alm, bin/sds entrypoints; retire todos.yaml as canonical (seeds.jsonl wins, with one-sprint monitoring window for split-brain detection); remove Claude shell wrappers no longer protecting a real boundary; delete legacy shell hooks under bin/frw.d/hooks/; archive bin/frw.d/scripts/ tree. Single milestone gated on dual-runtime-parity-validation — clean swap, no indefinite hybrid.'
-    todos:
-    - remove-bin-rws-shell-entrypoint
-    - remove-bin-alm-shell-entrypoint
-    - remove-bin-sds-shell-entrypoint
-    - retire-todos-yaml-as-canonical-planning-primitive
-    - remove-legacy-shell-hooks-under-bin-frw-d-hooks
-    - archive-legacy-shell-scripts-tree
-    - remove-claude-shell-wrappers-after-dual-runtime-pa
-    depends_on:
-    - work/dual-runtime-parity-validation
-    key_files:
-    - bin/rws
-    - bin/alm
-    - bin/sds
-    - bin/frw.d/hooks/
-    - bin/frw.d/scripts/
-    - .furrow/almanac/todos.yaml
-    - install.sh
-    conflict_risk: medium
-    completed_at: null
-deferred: []
+post_collapse_backlog:
+  note: Later phases are provisional until planning source-of-truth simplification lands. Do not add almanac/TODO UX before that cutoff.
+  source_of_truth: todos.yaml remains canonical until an approved source-of-truth cutover row replaces it; no seed migration is approved by this Phase 5 collapse.
+  deferred_rows:
+  - branch: work/artifact-validation-and-continuation
+    disposition: preserved-backlog
+    reason: Truth protection remains relevant, but not before deletion/collapse rows finish.
+  - branch: work/seeds-foundation
+    disposition: preserved-backlog
+    reason: Seed/TODO cutover work remains discoverable through todos.yaml and is blocked until source-of-truth simplification is approved.
+  - branch: work/seeds-graph-cutover-and-pi-surfaces
+    disposition: preserved-backlog
+    reason: Cutover work is intentionally deferred; todos.yaml remains canonical.
+  - branch: work/review-and-evaluator-orchestration
+    disposition: preserved-backlog
+    reason: Review execution work is optional by risk and deferred behind collapse rows.
+  - branch: work/specialist-skills-and-engine-briefs
+    disposition: preserved-backlog
+    reason: Specialist/runtime output work is deferred until command and planning surfaces are smaller.
+  - branch: work/row-variants-and-planning-ux
+    disposition: preserved-backlog
+    blocked_by: work/post-audit-planning-collapse
+    reason: Roadmap/TODO UX is explicitly provisional until source-of-truth simplification lands.
+  - branch: work/cli-introspection-and-history
+    disposition: folded-into
+    target: work/hide-vaporware-command-surface
+    reason: Only the advertised-stub cleanup is immediate; broader introspection/history remains backlog.
+  - branch: work/meta-and-archive-flow-improvements
+    disposition: preserved-backlog
+    reason: Archive and meta flow improvements remain useful but are not part of the collapse row.
+  - branch: work/worktree-and-merge-pipeline
+    disposition: preserved-backlog
+    reason: Worktree and merge pipeline work remains discoverable through todos.yaml after collapse.
+  - branch: work/install-and-symlink-hygiene
+    disposition: preserved-backlog
+    reason: Install hygiene remains discoverable through todos.yaml after collapse.
+  - branch: work/dual-runtime-parity-validation
+    disposition: preserved-backlog
+    reason: Parity claims must be re-evaluated after command/planning collapse; live loaded-path evidence remains required.
+  - branch: work/docs-and-research
+    disposition: preserved-backlog
+    reason: Docs and research streams remain backlog and must land or kill concrete implementation decisions before row close.
+  - branch: work/pi-native-leverage-and-tui
+    disposition: preserved-backlog
+    reason: Pi-native UX is not immediate and remains blocked until backend truth and planning simplification are stable.
+  - branch: work/legacy-shell-cutoff-and-removal
+    disposition: preserved-backlog
+    reason: Shell cutoff remains relevant but depends on parity and command replacement evidence.
+deferred:
+- id: state-guard-rm-coverage
+  reason: Preserved backlog; bash rm/cp/mv state guard expansion is not immediate after the audit.
+- id: pi-correction-limit-visibility
+  reason: Preserved backlog; footer/widget Pi UX is explicitly deferred.
+- id: pi-session-resume-reground
+  reason: Preserved backlog; session reground UX is deferred behind collapse rows.
+- id: pi-tool-call-canonical-schema-and-surface-audit
+  reason: Preserved backlog; canonical Pi handler schema waits until handler scope is reduced.
+- id: artifact-validation-per-step-schema
+  reason: Preserved backlog under artifact validation and continuation.
+- id: artifact-continuation-model
+  reason: Preserved backlog under artifact validation and continuation.
+- id: stage-aware-ceremony-enforcement
+  reason: Preserved backlog under artifact validation and continuation.
+- id: artifact-writing-defaults
+  reason: Preserved backlog under artifact validation and continuation.
+- id: artifact-informed-handoffs-and-gate-prompts
+  reason: Preserved backlog under artifact validation and continuation.
+- id: seeds-typed-graph-nodes
+  reason: Preserved backlog under seeds foundation; blocked until source-of-truth simplification.
+- id: seeds-backend-surface-layer
+  reason: Preserved backlog under seeds foundation; blocked until source-of-truth simplification.
+- id: seed-row-binding-contract
+  reason: Preserved backlog under seeds foundation; blocked until source-of-truth simplification.
+- id: seeds-concept
+  reason: Preserved backlog under seeds foundation; todos.yaml remains canonical.
+- id: pi-almanac-operating-model
+  reason: Preserved backlog under seeds/Pi planning surfaces; no Pi planning UI before simplification.
+- id: seeds-graph-queries
+  reason: Preserved backlog under seeds graph cutover; no seed cutover in Phase 5.
+- id: seeds-follow-up-promotion
+  reason: Preserved backlog under seeds graph cutover; no seed cutover in Phase 5.
+- id: roadmap-generation-from-seeds
+  reason: Preserved backlog under seeds graph cutover; no roadmap/TODO derived UX before simplification.
+- id: todo-to-seed-cutover-migration
+  reason: Preserved backlog under seeds graph cutover; explicit cutover row still required.
+- id: pi-seed-surfaces-in-work-loop
+  reason: Preserved backlog under seeds graph cutover; Pi planning surfaces are deferred.
+- id: almanac-scope-after-todo-retirement
+  reason: Preserved backlog under seeds graph cutover; todos.yaml remains canonical until approved cutover.
+- id: todo-context-references
+  reason: Preserved backlog under seeds graph cutover; TODO graph remains backlog input.
+- id: review-evaluator-isolation-spec
+  reason: Preserved backlog under review/evaluator orchestration.
+- id: unified-isolated-review
+  reason: Preserved backlog under review/evaluator orchestration.
+- id: gate-dimension-deduplication
+  reason: Preserved backlog under review/evaluator orchestration.
+- id: collaborative-surfaces
+  reason: Preserved backlog under review/evaluator orchestration.
+- id: sub-agent-normalization
+  reason: Preserved backlog under specialist skills and engine briefs.
+- id: specialist-quality-validation
+  reason: Preserved backlog under specialist skills and engine briefs.
+- id: specialist-template-warning-escalation
+  reason: Preserved backlog under specialist skills and engine briefs.
+- id: effort-selection-alongside-model
+  reason: Preserved backlog under specialist skills and engine briefs.
+- id: engine-fan-out-budget-depth-and-token-limits-for-a
+  reason: Preserved backlog under specialist skills and engine briefs.
+- id: patch-row-concept
+  reason: Preserved backlog; row variants/planning UX blocked by work/post-audit-planning-collapse.
+- id: spike-row-mode
+  reason: Preserved backlog; row variants/planning UX blocked by work/post-audit-planning-collapse.
+- id: brain-dump-triage-command
+  reason: Preserved backlog; roadmap/TODO UX blocked by work/post-audit-planning-collapse.
+- id: sprint-inspired-planning
+  reason: Preserved backlog; roadmap/TODO UX blocked by work/post-audit-planning-collapse.
+- id: support-todos-sharding
+  reason: Preserved backlog; TODO storage changes blocked by source-of-truth simplification.
+- id: user-action-integration
+  reason: Preserved backlog; planning UX blocked by work/post-audit-planning-collapse.
+- id: post-merge-watch-list
+  reason: Preserved backlog; planning UX blocked by work/post-audit-planning-collapse.
+- id: ambient-context-promotion
+  reason: Preserved backlog; planning/context promotion UX blocked by work/post-audit-planning-collapse.
+- id: cli-introspection-suite
+  reason: Preserved backlog; only vaporware command hiding is immediate.
+- id: cli-architecture-overhaul-slice-2
+  reason: Preserved backlog; only advertised-stub cleanup folds into work/hide-vaporware-command-surface.
+- id: harness-parallel-dispatch-race
+  reason: Preserved backlog under CLI introspection/history.
+- id: close-re-evaluate-dispatch-enforcement-observation
+  reason: Preserved backlog under CLI introspection/history.
+- id: supervised-decision-surface-spec
+  reason: Preserved backlog under meta/archive flow improvements.
+- id: archive-implications-propagation
+  reason: Preserved backlog under meta/archive flow improvements.
+- id: furrow-meta-folds-into-roadmap
+  reason: Preserved backlog under meta/archive flow improvements.
+- id: furrow-work-worktree-integration
+  reason: Preserved backlog under worktree and merge pipeline.
+- id: furrow-next-semantic-merge
+  reason: Preserved backlog under worktree and merge pipeline.
+- id: furrow-next-phase-lifecycle
+  reason: Preserved backlog under worktree and merge pipeline.
+- id: merge-process-skill
+  reason: Preserved backlog under worktree and merge pipeline.
+- id: formalize-team-orchestrated-phase-integration-as-a
+  reason: Preserved backlog under worktree and merge pipeline.
+- id: install-user-bin-worktree-pinning
+  reason: Preserved backlog under install and symlink hygiene.
+- id: consumer-install-symlink-validation
+  reason: Preserved backlog under install and symlink hygiene.
+- id: xdg-state-isolation-audit-and-doc
+  reason: Preserved backlog under install and symlink hygiene.
+- id: post-install-hygiene-followup
+  reason: Preserved backlog under install and symlink hygiene.
+- id: harness-lifecycle-ux
+  reason: Preserved backlog under install and symlink hygiene.
+- id: adapters-audit
+  reason: Preserved backlog under dual-runtime parity validation; live loaded-path evidence required.
+- id: define-adapters-audit-pass-fail-rubric
+  reason: Preserved backlog under dual-runtime parity validation.
+- id: claude-wrapper-compatibility
+  reason: Preserved backlog under dual-runtime parity validation.
+- id: pi-adapter-package
+  reason: Preserved backlog under dual-runtime parity validation.
+- id: dual-runtime-parity-validation
+  reason: Preserved backlog under dual-runtime parity validation.
+- id: workflow-power-preservation
+  reason: Preserved backlog under dual-runtime parity validation.
+- id: docs-cleanup-pass
+  reason: Preserved backlog under docs and research.
+- id: doc-authority-class-enforcement
+  reason: Preserved backlog under docs and research.
+- id: migration-residue-archival
+  reason: Preserved backlog under docs and research.
+- id: mine-claude-code
+  reason: Preserved backlog under docs and research; research must land or kill concrete decisions.
+- id: mine-v1-harness
+  reason: Preserved backlog under docs and research; research must land or kill concrete decisions.
+- id: memetic-algorithms-research
+  reason: Preserved backlog under docs and research; research must land or kill concrete decisions.
+- id: research-documentation-detection
+  reason: Preserved backlog under docs and research.
+- id: research-methodology-design
+  reason: Preserved backlog under docs and research; research must land or kill concrete decisions.
+- id: apply-nate-jones-skill
+  reason: Preserved backlog under docs and research; research must land or kill concrete decisions.
+- id: land-or-kill-decision-for-phase-8-research-streams
+  reason: Preserved backlog under docs and research.
+- id: finalize-transitional-architecture-docs-authority
+  reason: Preserved backlog under docs and research.
+- id: furrow-tui-dashboard
+  reason: Preserved backlog under Pi-native leverage; no Pi UX before simplification.
+- id: furrow-self-update-hook
+  reason: Preserved backlog under Pi-native leverage.
+- id: pi-native-capability-leverage
+  reason: Preserved backlog under Pi-native leverage; no Pi UX before simplification.
+- id: remove-bin-rws-shell-entrypoint
+  reason: Preserved backlog under legacy shell cutoff.
+- id: remove-bin-alm-shell-entrypoint
+  reason: Preserved backlog under legacy shell cutoff.
+- id: remove-bin-sds-shell-entrypoint
+  reason: Preserved backlog under legacy shell cutoff.
+- id: retire-todos-yaml-as-canonical-planning-primitive
+  reason: Preserved backlog under legacy shell cutoff; todos.yaml remains canonical until approved cutover.
+- id: remove-legacy-shell-hooks-under-bin-frw-d-hooks
+  reason: Preserved backlog under legacy shell cutoff.
+- id: archive-legacy-shell-scripts-tree
+  reason: Preserved backlog under legacy shell cutoff.
+- id: remove-claude-shell-wrappers-after-dual-runtime-pa
+  reason: Preserved backlog under legacy shell cutoff.
 active_observations:
 - id: re-evaluate-dispatch-enforcement
   kind: decision-review
