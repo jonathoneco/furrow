@@ -4594,8 +4594,6 @@
   work_needed: 'DONE in commit c068625 (2026-04-28): use findFurrowRoot() walk-up at internal/cli/app.go runHook(''layer-guard''); keep FURROW_LAYER_POLICY_PATH env override; retain cwd-relative fallback for back-compat. Two regression tests added: TestRunHook_LayerGuard_PolicyResolvesFromSubdirectory and TestRunHook_LayerGuard_PolicyPathEnvOverride. Marked as a closed/done dogfood finding for completeness; fix is already in main.'
   source_type: manual
   status: done
-  done_at: "2026-04-28T15:30:00-04:00"
-  done_evidence: "Fixed in commit c068625 (fix(layer-guard): resolve policy path via walk-up to prevent self-brick). Verified: go test ./internal/cli/ -count=1 green; manual test from adapters/pi/ exit 0."
   created_at: "2026-04-28T11:21:57-04:00"
   updated_at: "2026-04-28T11:21:57-04:00"
   references:
