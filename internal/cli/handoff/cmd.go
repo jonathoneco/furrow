@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/jonathoneco/furrow/internal/cli/project"
 )
 
 // Handler is the top-level dispatcher for the `furrow handoff` command group.
@@ -55,6 +57,27 @@ Subcommands:
   validate  Validate a handoff artifact file against its schema`)
 }
 
+func (h *Handler) printRenderHelp() {
+	_, _ = fmt.Fprintln(h.stdout, `furrow handoff render
+
+Usage:
+  furrow handoff render --target driver:{step} --row <row> --step <step> [--write] [--json]
+  furrow handoff render --target engine:{id} [--row <row> --step <step> --write] [--json] < engine-handoff.json
+
+Driver targets synthesize the handoff from flags.
+Engine targets read an EngineHandoff JSON document from stdin before rendering.
+
+Flags:
+  --target         driver:{step} | engine:{specialist-id} | engine:freeform
+  --row            Row name; required for driver targets and engine --write
+  --step           Workflow step; required for driver targets and engine --write
+  --write          Write rendered markdown under .furrow/rows/{row}/handoffs/
+  --json           Emit JSON instead of markdown
+  --objective      Optional driver objective override
+  --grounding      Optional driver grounding override
+  --return-format  Optional driver return format override`)
+}
+
 // runRender implements `furrow handoff render`.
 //
 // Flags:
@@ -65,6 +88,13 @@ Subcommands:
 //	--write   write to .furrow/rows/{row}/handoffs/{step}-to-{target-slug}.md
 //	--json    emit JSON instead of markdown
 func (h *Handler) runRender(args []string) int {
+	if len(args) > 0 {
+		switch args[0] {
+		case "help", "-h", "--help":
+			h.printRenderHelp()
+			return 0
+		}
+	}
 	flags, remaining, err := parseRenderFlags(args)
 	if err != nil {
 		_, _ = fmt.Fprintf(h.stderr, "furrow handoff render: %v\n", err)
@@ -151,7 +181,7 @@ func (h *Handler) runRenderDriver(flags map[string]string) int {
 	}
 
 	if doWrite {
-		root, rerr := findFurrowRoot()
+		root, rerr := project.FindFurrowRoot()
 		if rerr != nil {
 			_, _ = fmt.Fprintf(h.stderr, "furrow handoff render: %v\n", rerr)
 			return 1
@@ -224,7 +254,7 @@ func (h *Handler) runRenderEngine(flags map[string]string) int {
 			_, _ = fmt.Fprintln(h.stderr, "furrow handoff render: --row and --step required with --write for engine targets")
 			return 1
 		}
-		root, findErr := findFurrowRoot()
+		root, findErr := project.FindFurrowRoot()
 		if findErr != nil {
 			_, _ = fmt.Fprintf(h.stderr, "furrow handoff render: %v\n", findErr)
 			return 1
@@ -377,24 +407,4 @@ func writeFileIdempotent(path string, data []byte) error {
 		return fmt.Errorf("close temp: %w", cerr)
 	}
 	return os.Rename(tmpPath, path)
-}
-
-// findFurrowRoot walks up from the current directory to find the .furrow root.
-func findFurrowRoot() (string, error) {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-	current := cwd
-	for {
-		candidate := filepath.Join(current, ".furrow")
-		if info, err := os.Stat(candidate); err == nil && info.IsDir() {
-			return current, nil
-		}
-		next := filepath.Dir(current)
-		if next == current {
-			return "", fmt.Errorf(".furrow root not found")
-		}
-		current = next
-	}
 }

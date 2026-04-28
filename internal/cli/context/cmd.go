@@ -16,6 +16,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/jonathoneco/furrow/internal/cli/project"
 )
 
 // Handler is the top-level dispatcher for `furrow context`.
@@ -118,7 +120,7 @@ func (h *Handler) runForStep(args []string) int {
 	}
 
 	// Find furrow root.
-	furrowRoot, err := findFurrowRoot()
+	furrowRoot, err := project.FindFurrowRoot()
 	if err != nil {
 		_, _ = fmt.Fprintf(h.stderr, "furrow context for-step: %v\n", err)
 		return 1
@@ -246,26 +248,6 @@ func (h *Handler) emitBlocker(code, message string, context map[string]any) {
 	})
 }
 
-// findFurrowRoot walks up from cwd looking for .furrow/.
-func findFurrowRoot() (string, error) {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-	current := cwd
-	for {
-		candidate := filepath.Join(current, ".furrow")
-		if info, err := os.Stat(candidate); err == nil && info.IsDir() {
-			return current, nil
-		}
-		next := filepath.Dir(current)
-		if next == current {
-			return "", fmt.Errorf(".furrow root not found")
-		}
-		current = next
-	}
-}
-
 // readFocusedRow reads .furrow/.focused to get the currently focused row
 // name. The canonical filename is `.focused` (with the leading dot) — see
 // internal/cli/util.go readFocusedRowName, internal/cli/row_workflow.go,
@@ -284,7 +266,6 @@ func readFocusedRow(root string) (string, error) {
 	}
 	return name, nil
 }
-
 
 // validTarget returns true if target is a valid --target value.
 func validTarget(t string) bool {

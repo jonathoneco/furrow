@@ -1,6 +1,7 @@
 package handoff
 
 import (
+	"bytes"
 	"encoding/json"
 	"os"
 	"strings"
@@ -40,6 +41,26 @@ func TestDriverHandoffShape(t *testing.T) {
 	}
 	if target, ok := raw["target"].(string); !ok || !strings.HasPrefix(target, "driver:") {
 		t.Errorf("target %q does not start with driver:", raw["target"])
+	}
+}
+
+func TestRenderHelpDocumentsEngineStdin(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	h := New(&stdout, &stderr)
+
+	exit := h.Run([]string{"render", "--help"})
+	if exit != 0 {
+		t.Fatalf("exit = %d; want 0; stderr: %s", exit, stderr.String())
+	}
+	out := stdout.String()
+	for _, want := range []string{
+		"furrow handoff render",
+		"< engine-handoff.json",
+		"Engine targets read an EngineHandoff JSON document from stdin",
+	} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("help output missing %q:\n%s", want, out)
+		}
 	}
 }
 
