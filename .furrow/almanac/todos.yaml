@@ -4502,3 +4502,32 @@
   status: active
   created_at: "2026-04-27T22:09:50-04:00"
   updated_at: "2026-04-27T22:09:50-04:00"
+- id: formalize-team-orchestrated-phase-integration-as-a
+  title: Formalize team-orchestrated phase integration as a first-class harness capability
+  context: 'The phase-4 integration on 2026-04-27 (work/blocker-taxonomy-foundation + work/orchestration-delegation-contract) was driven manually by a 3-agent team (conflict-cartographer/Explore, integration-architect/general-purpose, harness-integrity-reviewer/Reality Checker) with hand-rolled artifacts (docs/integration/phase-4-merge-map.md, docs/integration/phase-4-integrity-report.md). The process surfaced real architectural conflicts (engine-boundary speculative-isolation; missing fixtures for unioned schemas; SIGPIPE-induced flake) that a naive ''git merge'' would have silently rolled forward. It also surfaced 3 new follow-up TODOs that wouldn''t exist without the synthesis pass. This is reproducible value the harness should own, not ceremony to redo from scratch each phase. Adjacent prior art: the 5-phase ''frw merge-audit/classify/resolve-plan/execute/verify'' pipeline exists but lacks the team-orchestration layer; the merge-process-skill TODO covers single-row /furrow:merge mechanics but not multi-row phase integration.'
+  work_needed: 'Design and implement ''furrow phase merge'' (or ''/furrow:phase-merge'' skill) that formalizes the team-orchestrated synthesis pattern: (1) Auto-create a temporary phase-N-integration team via TeamCreate with 3 named roles (cartographer/Explore, architect/general-purpose, reviewer/Reality Checker) and pre-loaded prompts for each; (2) Wire a fresh integrate/phase-N branch from main and let the cartographer write docs/integration/phase-N-merge-map.md (per-file CLEAN/TRIVIAL_UNION/SEMANTIC_CONFLICT classification + cross-pollination opportunities + ranked-risk list + per-file synthesis recommendation); (3) Run the architect against the map with explicit synthesis-not-textual-union rules and the existing frw merge-audit/classify/resolve-plan/execute/verify pipeline as substrate where applicable; (4) Run the reviewer with default-to-NEEDS_WORK posture against an explicit checks list (deliverables present, docs unioned, schemas single-canonical, build/test green, integration tests green, todos preserved, learning entry written, decision-record subsections updated where architecture changed); (5) Block fast-forward of main until reviewer issues PASS with evidence; (6) Always file a learning entry to .furrow/almanac/learnings/phase-N-merge-integration.jsonl describing conflict surface and synthesis decisions; (7) Auto-discover and surface follow-up TODOs the synthesis exposed (e.g., test-coverage gaps for unioned schemas, agent-routing bugs, flake-root-causes). Schemas to define: phase-merge-map.schema.json, phase-integrity-report.schema.json. Audit trail: merge-map + integrity-report + commit messages should each cross-reference the others. Coordinate with merge-process-skill (single-row /furrow:merge) — this is the multi-row phase-integration superset. Should also reuse cartographer''s per-file zone classification across both modes.'
+  source_type: manual
+  status: active
+  created_at: "2026-04-27T22:30:05-04:00"
+  updated_at: "2026-04-27T22:30:05-04:00"
+  references:
+    - docs/integration/phase-4-merge-map.md
+    - docs/integration/phase-4-integrity-report.md
+    - .furrow/almanac/learnings/phase-4-merge-integration.jsonl
+    - bin/frw.d/scripts/merge-audit.sh
+    - bin/frw.d/scripts/merge-classify.sh
+    - bin/frw.d/scripts/merge-execute.sh
+    - bin/frw.d/scripts/merge-verify.sh
+    - merge-process-skill
+    - furrow-next-phase-lifecycle
+    - furrow-next-semantic-merge
+  source_work_unit: phase-4-integration
+  depends_on:
+    - merge-process-skill
+    - furrow-next-phase-lifecycle
+  files_touched:
+    - bin/frw
+    - bin/frw.d/scripts/
+    - commands/
+    - schemas/
+    - internal/cli/
