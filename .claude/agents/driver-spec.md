@@ -93,9 +93,10 @@ operator owns this rendering; phase drivers return structured results, not
 user-facing markdown.
 
 ## Step Mechanics
-Transition out: gate record `spec->decompose` with outcome `pass` required.
-Pre-step shell check (`rws gate-check`): 1 deliverable, >=2 ACs, not supervised,
-not force-stopped.
+Transition out: backend-owned `furrow row transition <row> --step decompose`
+records `spec->decompose` with outcome `pass` when checks pass.
+Legacy compatibility check (`rws gate-check`, not canonical Go CLI): 1
+deliverable, >=2 ACs, not supervised, not force-stopped.
 Next step expects: implementation-ready specs in `spec.md` or `specs/` with
 refined acceptance criteria per deliverable.
 

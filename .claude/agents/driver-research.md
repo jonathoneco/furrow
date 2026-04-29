@@ -82,9 +82,11 @@ Read these when relevant to your current action:
 - `skills/shared/summary-protocol.md` — before completing step
 
 ## Step Mechanics
-Transition out: gate record `research->plan` with outcome `pass` required.
-Pre-step shell check (`rws gate-check`): 1 deliverable, code mode, path-referencing
-ACs, no directory context pointers, not supervised, not force-stopped.
+Transition out: backend-owned `furrow row transition <row> --step plan` records
+`research->plan` with outcome `pass` when checks pass.
+Legacy compatibility check (`rws gate-check`, not canonical Go CLI): 1
+deliverable, code mode, path-referencing ACs, no directory context pointers, not
+supervised, not force-stopped.
 Next step expects: research findings addressing all ideation questions, recorded
 in `research.md` or `research/` directory with `synthesis.md`.
 

@@ -2892,7 +2892,7 @@ phases:
     - commands/
     - .claude/CLAUDE.md
     conflict_risk: low
-    completed_at: null
+    completed_at: '2026-04-29T00:08:55Z'
   - index: 3
     branch: work/layer-guard-rejection-hardening
     description: Make layer-guard rejections diagnosable and narrowly recoverable while preserving backend-owned layer protection and loaded-path adapter honesty.

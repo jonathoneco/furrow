@@ -87,7 +87,8 @@ After each wave, before launching next:
 3. **Curate context for next wave**: summarize wave N results; pass to wave N+1 engine
    prompts. Do not pass orchestrator's full conversation.
 
-After all waves: verify every deliverable addressed. Record via `rws complete-deliverable`.
+After all waves: verify every deliverable addressed. Record via
+`furrow row complete <row>`.
 
 ## Shared References
 - `skills/shared/red-flags.md` — before any file write

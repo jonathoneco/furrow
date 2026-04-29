@@ -105,9 +105,10 @@ operator owns this rendering; phase drivers return structured results, not
 user-facing markdown.
 
 ## Step Mechanics
-Transition out: gate record `plan->spec` with outcome `pass` required.
-Pre-step shell check (`rws gate-check`): 1 deliverable, no depends_on, not
-supervised, not force-stopped.
+Transition out: backend-owned `furrow row transition <row> --step spec` records
+`plan->spec` with outcome `pass` when checks pass.
+Legacy compatibility check (`rws gate-check`, not canonical Go CLI): 1
+deliverable, no depends_on, not supervised, not force-stopped.
 Next step expects: architecture decisions in `summary.md`, `plan.json` if
 parallel execution needed, and clear implementation path per deliverable.
 
