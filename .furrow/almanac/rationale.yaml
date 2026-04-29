@@ -403,11 +403,11 @@ components:
     delete_when: "Claude Code provides built-in review gate evaluation rubrics"
   # --- CLIs (beans-integration row) ---
   - path: bin/alm
-    exists_because: "Claude Code has no native almanac management with TODO triage, roadmap generation, and knowledge lifecycle"
-    delete_when: "Claude Code provides built-in knowledge management and planning UI"
+    exists_because: "Claude Code still depends on shell-semantic almanac TODO triage, extraction, observation, learning, rationale, docs, specialists, and history flows; no-arg validation is now a Go compatibility wrapper"
+    delete_when: "furrow almanac owns the remaining shell-semantic almanac flows or those flows are intentionally retired"
   - path: bin/rws
-    exists_because: "Temporary compatibility CLI for shell-owned row behavior; read/focus and repair aliases route to Go where live parity exists"
-    delete_when: "Claude Code provides built-in row lifecycle management with state safety"
+    exists_because: "Claude Code still depends on shell-semantic row summary, user-action, reintegration, sort-invariant, diff, archive/init side-effect, and legacy gate paths; status/list/focus/repair are now Go compatibility wrappers"
+    delete_when: "furrow row owns the remaining shell-semantic row flows or those flows are intentionally retired"
   - path: bin/sds
     exists_because: "Claude Code has no native seed tracking with JSONL registry and concurrent-safe file locking"
     delete_when: "Claude Code provides built-in seed registry with concurrent-safe mutation"

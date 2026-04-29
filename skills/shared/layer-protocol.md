@@ -45,8 +45,8 @@ Responsibilities:
 - Persist the driver handoff artifact via `furrow handoff render --target driver:{step} --write`.
 - Receive the phase result (EOS-report) from the driver.
 - Present phase results to user per `skills/shared/presentation-protocol.md`.
-- Request step transition via `furrow row transition <row> --step <next>` after
-  user approval.
+- Request step completion and transition via `furrow row complete` and
+  `furrow row transition` after user approval.
 
 Session-resume: **runtime concern**. Claude operator reads `~/.claude/teams/{row}/config.json`
 and re-spawns stale drivers via `Agent`. Pi operator: `@tintinweb/pi-subagents` handles
@@ -57,7 +57,7 @@ session-tree resume natively. Furrow backend has no session-id awareness.
 ## Phase Driver
 
 **Scope**: one step. **Session**: session-scoped (runtime-managed).
-**State**: read-only access to row state (via bundle); no direct `rws` writes.
+**State**: read-only access to row state (via bundle); no direct row-state writes.
 **Persona**: implicit — `skills/{step}.md` is the driver brief (D3 adds `layer: driver` front-matter in W5).
 
 Tools constrained by `.furrow/drivers/driver-{step}.yaml` `tools_allowlist`.

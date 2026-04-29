@@ -7,7 +7,9 @@ Shared git workflow conventions for implementation and review steps.
 
 ## Branch Naming
 Branch format: `work/{row-name}`. One branch per row.
-Created at decompose->implement boundary via `rws init` (with branch creation).
+Created before non-trivial implementation work; row state is created through
+`furrow row init`. Legacy `rws init` remains a temporary shell-semantic holdout
+only for older seed/worktree compatibility paths.
 Parallel specialists share the branch — file ownership prevents conflicts.
 
 ## Commit Format
@@ -27,10 +29,12 @@ Gate commits: `chore({name}): gate pass {from}->{to}`.
 
 ## Merge Policy
 - Within work branch: rebase onto main periodically.
-- Back to main: `git merge --no-ff` via `frw merge-to-main`.
+- Back to main: `git merge --no-ff` via the temporary shell-semantic holdout
+  `frw merge-to-main`.
   No squash — individual commits preserve deliverable traceability.
 - Merge requires archived row.
 
 ## Wave Boundaries
-Run `rws diff` before launching the next wave to check for conflicts.
+Run the temporary shell-semantic holdout `rws diff` before launching the next
+wave to check for conflicts.
 See `docs/git-conventions.md` for the full reference.

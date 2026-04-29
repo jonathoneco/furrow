@@ -6,9 +6,6 @@ tools_allowlist:
   - Glob
   - Agent
   - SendMessage
-  - Bash(rws:*)
-  - Bash(alm:*)
-  - Bash(sds:*)
   - Bash(furrow:context for-step:*)
   - Bash(furrow:handoff render:*)
 model: sonnet

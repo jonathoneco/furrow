@@ -1790,35 +1790,7 @@ rws_transition() {
 # ============================================================
 
 rws_status() {
-  _st_name="$(resolve_name "${1:-}")"
-  _st_state_file="$(require_state "$_st_name")"
-
-  _st_title="$(jq -r '.title // .name' "$_st_state_file")"
-  _st_step="$(jq -r '.step' "$_st_state_file")"
-  _st_step_status="$(jq -r '.step_status' "$_st_state_file")"
-  _st_mode="$(jq -r '.mode' "$_st_state_file")"
-  _st_branch="$(jq -r '.branch // "(none)"' "$_st_state_file")"
-  [ "$_st_branch" = "null" ] && _st_branch="(none)"
-  _st_created="$(jq -r '.created_at' "$_st_state_file")"
-  _st_updated="$(jq -r '.updated_at' "$_st_state_file")"
-  _st_gate_count="$(jq -r '.gates | length' "$_st_state_file")"
-
-  _st_total="$(jq -r '.deliverables | length' "$_st_state_file")"
-  _st_completed="$(jq -r '[.deliverables | to_entries[] | select(.value.status == "completed")] | length' "$_st_state_file")"
-
-  echo "Row: $_st_name"
-  echo "Title: $_st_title"
-  echo "Step: $_st_step | Status: $_st_step_status"
-  echo "Mode: $_st_mode"
-  echo "Branch: $_st_branch"
-  echo "Deliverables: $_st_completed/$_st_total"
-
-  # Print each deliverable
-  jq -r '.deliverables | to_entries[] | "  - \(.key): \(.value.status) (wave \(.value.wave), corrections \(.value.corrections))"' "$_st_state_file" 2>/dev/null || true
-
-  echo "Gates: $_st_gate_count recorded"
-  echo "Created: $_st_created"
-  echo "Updated: $_st_updated"
+  rws_exec_furrow row status "$@"
 }
 
 # ============================================================
@@ -1826,43 +1798,11 @@ rws_status() {
 # ============================================================
 
 rws_list() {
-  _ls_filter="active"
-
   case "${1:-}" in
-    --active)   _ls_filter="active" ;;
-    --archived) _ls_filter="archived" ;;
-    --all)      _ls_filter="all" ;;
-    "")         _ls_filter="active" ;;
-    *)          die "Unknown flag: $1. Use --active, --archived, or --all." ;;
+    "") rws_exec_furrow row list --active ;;
+    --active|--archived|--all|--json) rws_exec_furrow row list "$@" ;;
+    *) die "Unknown flag: $1. Use --active, --archived, --all, or --json." ;;
   esac
-
-  _ls_count=0
-  for _ls_state_file in ${ROWS_DIR}/*/state.json; do
-    [ -f "$_ls_state_file" ] || continue
-
-    _ls_archived="$(jq -r '.archived_at // "null"' "$_ls_state_file" 2>/dev/null)" || continue
-
-    case "$_ls_filter" in
-      active)
-        [ "$_ls_archived" = "null" ] || continue
-        ;;
-      archived)
-        [ "$_ls_archived" != "null" ] || continue
-        ;;
-      all)
-        ;;
-    esac
-
-    _ls_name="$(jq -r '.name // ""' "$_ls_state_file" 2>/dev/null)" || continue
-    _ls_step="$(jq -r '.step // ""' "$_ls_state_file" 2>/dev/null)" || _ls_step=""
-    _ls_status="$(jq -r '.step_status // ""' "$_ls_state_file" 2>/dev/null)" || _ls_status=""
-    _ls_mode="$(jq -r '.mode // ""' "$_ls_state_file" 2>/dev/null)" || _ls_mode=""
-
-    printf '%s\t%s\t%s\t%s\n' "$_ls_name" "$_ls_step" "$_ls_status" "$_ls_mode"
-    _ls_count=$((_ls_count + 1))
-  done
-
-  echo "$_ls_count row(s)" >&2
 }
 
 # ============================================================
@@ -2116,44 +2056,6 @@ rws_gate_check() {
 }
 
 # ============================================================
-#  Subcommand: load-step
-# ============================================================
-
-rws_load_step() {
-  _ls_name="$(resolve_name "${1:-}")"
-  _ls_state_file="$(require_state "$_ls_name")"
-  _ls_work_dir="$(resolve_row_dir "$_ls_name")"
-
-  _ls_step="$(jq -r '.step' "$_ls_state_file")"
-
-  # Locate skill file
-  _ls_skill_file="${FURROW_ROOT}/skills/${_ls_step}.md"
-  if [ ! -f "$_ls_skill_file" ]; then
-    echo "Skill file not found: skills/${_ls_step}.md" >&2
-    exit "$EXIT_VALIDATION"
-  fi
-
-  echo "Read and follow skills/${_ls_step}.md"
-  echo "Read ${_ls_work_dir}/summary.md for context from previous steps."
-
-  # Check for conditions from conditional pass
-  _ls_conditions="$(jq -r '
-    .gates | last |
-    if .outcome == "conditional" and .conditions != null then
-      .conditions | join("\n- ")
-    else
-      ""
-    end
-  ' "$_ls_state_file" 2>/dev/null)" || _ls_conditions=""
-
-  if [ -n "$_ls_conditions" ]; then
-    echo ""
-    echo "CONDITIONAL PASS: The following conditions must be addressed this step:"
-    echo "- $_ls_conditions"
-  fi
-}
-
-# ============================================================
 #  Subcommand: rewind
 # ============================================================
 
@@ -2226,45 +2128,7 @@ rws_diff() {
 # ============================================================
 
 rws_focus() {
-  case "${1:-}" in
-    --clear)
-      rm -f "$FOCUSED_FILE"
-      echo "Focus cleared."
-      ;;
-    "")
-      # Show current focus
-      if [ -f "$FOCUSED_FILE" ]; then
-        _fo_name="$(cat "$FOCUSED_FILE" 2>/dev/null)" || _fo_name=""
-        if [ -n "$_fo_name" ]; then
-          echo "$_fo_name"
-        else
-          echo "No focused row"
-        fi
-      else
-        echo "No focused row"
-      fi
-      ;;
-    *)
-      _fo_name="$1"
-      _fo_state_file="$(resolve_state_file "$_fo_name")"
-
-      if [ ! -f "$_fo_state_file" ]; then
-        echo "Cannot focus: $_fo_state_file not found" >&2
-        exit "$EXIT_USAGE"
-      fi
-
-      # Fail-closed: jq failure rejects the row
-      _fo_archived="$(jq -r '.archived_at // "null"' "$_fo_state_file" 2>/dev/null)" || _fo_archived=""
-      if [ "$_fo_archived" != "null" ]; then
-        echo "Cannot focus: row '$_fo_name' is archived" >&2
-        exit "$EXIT_USAGE"
-      fi
-
-      mkdir -p "$(dirname "$FOCUSED_FILE")"
-      printf '%s' "$_fo_name" > "$FOCUSED_FILE"
-      echo "Focused: $_fo_name"
-      ;;
-  esac
+  rws_exec_furrow row focus "$@"
 }
 
 # ============================================================
@@ -2908,10 +2772,9 @@ Commands:
 
   gate-check <step> <def_path> <state_path>
                                          Structural pre-filter for gate evaluation
-  load-step [name]                       Output skill loading instructions
   rewind <name> <target_step>            Rewind to a previous step
   diff [name]                            Show git diff since base commit
-  focus [name|--clear]                   Set, show, or clear focused row
+  focus [name|--clear]                   Compatibility wrapper for furrow row focus
   regenerate-summary [name]              Regenerate summary.md skeleton
   validate-summary [name] [--step S]     Validate summary.md sections
   update-summary [name] <section> [--replace]
@@ -2964,7 +2827,6 @@ case "$cmd" in
   list-user-actions)  rws_list_user_actions "$@" ;;
   archive)            rws_archive "$@" ;;
   gate-check)         rws_gate_check "$@" ;;
-  load-step)          rws_load_step "$@" ;;
   rewind)             rws_rewind "$@" ;;
   diff)               rws_diff "$@" ;;
   repair-deliverables)

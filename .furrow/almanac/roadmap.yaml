@@ -3007,6 +3007,22 @@ phases:
     - .furrow/almanac/roadmap.yaml
     conflict_risk: low
     completed_at: '2026-04-29T01:11:26-04:00'
+  - index: 11
+    branch: work/compat-wrapper-collapse-and-active-shell-thinning
+    description: Collapse safe compatibility wrappers where live Go parity exists, retire dead rws load-step, and thin active Claude driver/prompt references away from shell wrappers while leaving shell-semantic behavior intact.
+    todos: []
+    depends_on: []
+    key_files:
+    - bin/alm
+    - bin/rws
+    - .claude/agents/
+    - skills/shared/
+    - docs/integration/legacy-shell-cutoff-audit.md
+    - docs/architecture/go-cli-contract.md
+    - .furrow/almanac/rationale.yaml
+    - .furrow/almanac/roadmap.yaml
+    conflict_risk: medium
+    completed_at: '2026-04-29T01:35:00-04:00'
 post_collapse_backlog:
   note: Later phases are provisional until planning source-of-truth simplification lands. Do not add almanac/TODO UX before that cutoff.
   source_of_truth: todos.yaml remains canonical until an approved source-of-truth cutover row replaces it; no seed migration is approved by this Phase 5 collapse.

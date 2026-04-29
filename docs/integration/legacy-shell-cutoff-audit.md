@@ -1,7 +1,9 @@
 # Legacy Shell Cutoff Audit
 
 Date: 2026-04-29
-Row: `work/legacy-shell-cutoff-audit`
+Rows:
+- `work/legacy-shell-cutoff-audit`
+- `work/compat-wrapper-collapse-and-active-shell-thinning`
 
 ## Executive Verdict
 
@@ -30,8 +32,11 @@ Cutoff posture:
 - Defer deletion of shell code until the blocked removals below have Go parity
   or are intentionally retired.
 
-Recommended next row:
-`work/command-markdown-thin-adapter-collapse`.
+Post-audit correction bundle:
+`work/compat-wrapper-collapse-and-active-shell-thinning` collapsed the safe
+compatibility wrappers that had live Go parity, removed the dead
+`rws load-step` path after active-surface inventory found no callers, and
+thinned active Claude driver/prompt references away from broad shell CLIs.
 
 ## Removal/Routing Update: 2026-04-29
 
@@ -100,12 +105,12 @@ behavior.
 | `bin/frw merge-*`, `merge-sort-union`, `merge-to-main`, `rescue`, `launch-phase` | `shell-semantic` | Go `furrow merge` is reserved; command markdown still uses merge and launch shell flows. | Keep until merge/phase launch behavior is ported or retired. |
 | `bin/frw migrate-*`, `normalize-seeds`, `normalize-todos` | `shell-semantic` | Data migration and normalization are shell-only. | Keep as maintenance tools until replacement or one-time retirement. |
 | `bin/frw.d/lib/**` | mixed support code | Shared shell libraries support the remaining shell-semantic and hook paths. | Delete only after dependent shell paths are gone. |
-| `bin/rws` row lifecycle CLI | mixed: `compat-wrapper` plus `shell-semantic` | `status`, `list`, `focus`, and `repair-deliverables` route to Go; transition/archive/init/complete still retain shell-only compatibility semantics or incompatible flags; summary, user actions, reintegration, sort invariant, diff, worktree summary, and load-step remain shell-only. | Preserve shell-only commands until parity or retirement. |
-| `rws load-step` | `shell-semantic` | Active docs now prefer `furrow context for-step`, but this shell command still owns legacy skill loading. | Candidate for deletion after command markdown collapse verifies no active route uses it. |
+| `bin/rws` row lifecycle CLI | mixed: `compat-wrapper` plus `shell-semantic` | `status`, `list`, `focus`, and `repair-deliverables` now delegate to live `furrow row ...` commands. `transition`, `complete-step`, `archive`, `init`, summary, user actions, reintegration, sort invariant, diff, and worktree summary retain shell-specific semantics or side effects. | Keep only classified holdouts until parity exists or the behavior is intentionally retired. |
+| `rws load-step` | deleted compatibility path | Active inventory across `bin`, `.claude`, `commands`, `skills`, and the contract/audit docs found no runtime or prompt callers; `furrow context for-step` is the live context-loading path. | Deleted from `bin/rws`; do not restore unless a concrete legacy install needs a compatibility grace path. |
 | `rws regenerate-summary/validate-summary/update-summary` | `shell-semantic` | Go `row summary` is reserved; active checkpoint/archive docs still call these wrappers. | Must remain until Go summary command exists or summary mutation is retired. |
 | `rws add/complete/list-user-action` | `shell-semantic` | Step sequence rule explicitly says pending user actions use `rws complete-user-action` until Go command exists. | Must remain until Go user-action commands exist. |
 | `rws generate-reintegration/get-reintegration-json/validate-sort-invariant` | `shell-semantic` | Merge command markdown and shell merge pipeline consume these. | Must remain until merge pipeline is ported or retired. |
-| `bin/alm validate` | `compat-wrapper` candidate | Go `furrow almanac validate` owns validation. | Safe to route through Go later. |
+| `bin/alm validate` | `compat-wrapper` | No-argument and `--json` invocations route to `furrow almanac validate`; path-specific `alm validate <todos|observations>.yaml` remains shell-internal for `alm add`/`alm triage` rollback checks because the Go command validates the full live almanac only. | Keep the path-specific validator until Go exposes an equivalent targeted validation contract or shell writers are retired. |
 | `bin/alm add/extract/list/show/triage/next/render/learn/observe/rationale/docs/specialists/history` | `shell-semantic` | Go only implements `almanac validate`; active command docs still call `alm triage`, `alm extract`, and observations. | Must remain until almanac/TODO/observation behaviors are ported or removed. |
 | `bin/sds` seed CLI | `shell-semantic` | Go `furrow seeds` is reserved; row init and shell checks still create/read/update seeds. | Must remain until seed graph parity exists or seed paths are retired. |
 | `commands/work.md` and `commands/work.md.tmpl` | `go-canonical` adapter surface | Routes context, handoff, render, complete, and transition through Go. | Keep thin; remove remaining embedded workflow semantics in the next row. |
@@ -119,7 +124,7 @@ behavior.
 | `commands/doctor.md` | `compat-wrapper` | Calls `frw doctor`; Go doctor is narrower. | Keep until checks are split into Go doctor vs shell install doctor. |
 | `commands/lib/*.sh` | `shell-semantic` | Command-local shell helpers for learnings/components. | Keep until archive/learnings promotion flow is ported or retired. |
 | `.claude/settings.json` | mixed adapter surface | Calls both shell hooks and Go hooks. | Keep; future row should replace shell hooks individually as Go parity lands. |
-| `.claude/agents/driver-*.md` | mixed adapter surface | Mostly route to Go handoff/row commands, but still call `frw cross-model-review`, `frw validate-definition`, `rws gate-check`, `rws init`, and `alm observe`. | Next row should thin these to backend-owned truth and label shell fallbacks. |
+| `.claude/agents/driver-*.md` | go-canonical adapter surface | Driver allowlists now expose Go context/handoff commands and no broad `alm`, `rws`, or `sds` Bash access. Shell holdouts stay at operator/command surfaces where they are explicitly labeled. | Keep driver state access read-only through rendered bundles. |
 | `.claude/rules/cli-mediation.md` | mixed adapter rule | Correctly labels summary/deliverable commands as legacy compatibility wrappers. | Keep but update when Go summary/deliverable parity exists. |
 | `.claude/rules/step-sequence.md` | mixed adapter rule | Go transition is canonical; `rws complete-user-action` remains explicit until Go exists. | Keep until user-action parity exists. |
 | `.claude/CLAUDE.md` | `compat-wrapper` adapter rule | Says `furrow`/`frw` are CLI tools and legacy `bin/rws`, `bin/alm`, `bin/sds` are compatibility wrappers only. | Directionally correct, but overbroad because several shell paths still own semantics. |
@@ -130,18 +135,16 @@ behavior.
 
 Safe later deletions or wrapper conversions once the named blockers are closed:
 
-- Convert `alm validate` to `furrow almanac validate`.
-- Convert `rws transition`, `rws complete-step`, `rws archive`, and the row-state
-  portions of `rws init` to wrappers over `furrow row ...` only after their
-  shell-only flags, failure/conditional behavior, summary side effects, and
-  bootstrap side effects are either ported or retired. `rws status`, `rws list`,
-  `rws focus`, and `rws repair-deliverables` are already compatibility aliases
-  over Go.
+- Convert path-specific `alm validate <path>` only after the Go almanac surface
+  supports targeted validation or the shell writers are retired.
+- Convert remaining `rws transition`, `rws complete-step`, `rws archive`, and
+  `rws init` only after shell-only gate, summary, seed, focus-clearing, and
+  worktree side effects are either implemented in Go or intentionally retired.
 - Delete `bin/frw.d/hooks/validate-definition.sh` only if
   `.claude/settings.json` no longer registers the legacy
   `frw hook validate-definition` surface.
-- Retire `rws load-step` after active command markdown and driver prompts route
-  only through `furrow context for-step` and rendered handoffs.
+- `rws load-step` is retired; active command markdown and driver prompts route
+  through `furrow context for-step` and rendered handoffs.
 - Retire active references to `rws gate-check` where `furrow row transition`
   already enforces the relevant blocker.
 - Split `frw doctor` into Go backend readiness and shell install/compat checks;
@@ -183,7 +186,36 @@ Safe later deletions or wrapper conversions once the named blockers are closed:
 - `.claude/settings.json` cannot drop shell hooks until each hook's enforcement
   value is either ported to Go or intentionally removed.
 
-## Recommended Next Row
+## Active Shell Reference Inventory
+
+Inventory date: 2026-04-29.
+
+Targeted search covered `bin`, `.claude`, `commands`, `skills`,
+`docs/architecture/go-cli-contract.md`, and this audit document.
+
+| Active reference | Classification | Disposition |
+| --- | --- | --- |
+| `furrow row status/list/complete/transition/archive/init/focus/scaffold/repair-deliverables` | `go-canonical` | Backend-owned row state and lifecycle surfaces. |
+| `furrow almanac validate` | `go-canonical` | Backend-owned full live almanac validation. |
+| `furrow context for-step`, `furrow handoff render/validate`, `furrow render adapters`, `furrow hook layer-guard`, `furrow presentation scan`, `furrow layer decide` | `go-canonical` | Backend-owned adapter/runtime support paths. |
+| `alm validate` no-arg or `--json` | `compat-wrapper` | Routes to `furrow almanac validate`. |
+| `rws status`, `rws list`, `rws focus`, `rws repair-deliverables` | `compat-wrapper` | Route to matching `furrow row ...` commands; `rws list` preserves legacy default `--active`. |
+| `frw validate-definition` | `compat-wrapper` | Existing shim calls `furrow validate definition --path`. |
+| `frw doctor` | `shell-semantic` | Still covers shell-era install, hook, skill, and repo hygiene checks that Go doctor intentionally does not cover. |
+| `frw init`, `sds init`, and other `sds` calls | `shell-semantic` | Bootstrap and seed behavior are not part of this bundle. |
+| `frw measure-context` | `shell-semantic` | Context budget accounting is not Go-backed. |
+| `frw launch-phase` | `shell-semantic` | Phase launch behavior is shell-only; no `furrow launch` exists and `furrow merge` is reserved. |
+| `frw merge-*`, `frw merge-to-main`, `frw rescue`, `rws get-reintegration-json`, `rws validate-sort-invariant` | `shell-semantic` | Merge pipeline behavior is intentionally untouched. |
+| `rws transition`, `rws gate-check` | `shell-semantic` | Legacy gate pipeline still records fail/conditional outcomes, policy checks, and evaluator nonce paths not represented by the narrow Go transition wrapper. |
+| `rws complete-step`, `rws archive` | `shell-semantic` | Shell versions still differ on summary regeneration, deliverable/seed/focus side effects, or archive ceremony behavior. Active commands should use Go where canonical. |
+| `rws init`, `rws diff` | `shell-semantic` | Worktree/seed compatibility behavior remains a temporary holdout. |
+| `rws add-user-action`, `rws complete-user-action`, `rws list-user-actions` | `shell-semantic` | User action mutation/listing has no Go command yet. |
+| `rws regenerate-summary`, `rws validate-summary`, `rws update-summary`, and worktree-summary variants | `shell-semantic` | Go `furrow row summary` is reserved. |
+| `alm extract`, `alm triage`, `alm observe`, `alm learn`, `alm rationale`, `alm docs`, `alm specialists`, `alm history` | `shell-semantic` | Explicit hard-stop surfaces for this bundle; no Go parity claimed. |
+| `furrow gate`, `furrow merge`, `furrow seeds`, `furrow init`, `furrow row summary/checkpoint/validate`, `furrow review run/cross-model` | `reserved/vaporware` | Reserved or not implemented; active docs must not present them as live behavior. |
+| Archived docs, historical rows, and shell comments describing old paths | `historical` | Not edited unless they are active instructions or truth surfaces. |
+
+## Previous Recommended Row
 
 `work/command-markdown-thin-adapter-collapse`
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 # alm — almanac CLI for planning and knowledge management
-# Requires: yq, jq, python3 (for triage/validate), awk (POSIX)
+# Requires: yq, jq, python3 (for triage/path-specific validate), awk (POSIX)
 # No daemon, no database. Reads/writes YAML under .furrow/almanac/.
 set -eu
 
@@ -35,6 +35,17 @@ now_iso() {
 
 ensure_almanac_dir() {
   [ -d "$ALM_DIR" ] || mkdir -p "$ALM_DIR"
+}
+
+furrow_exec() {
+  if [ -n "${FURROW_BIN:-}" ]; then
+    exec "$FURROW_BIN" "$@"
+  fi
+  if command -v furrow >/dev/null 2>&1; then
+    exec furrow "$@"
+  fi
+  cd "${PROJECT_ROOT:-$(pwd)}" || exit 4
+  exec go run "$SCRIPT_DIR/../cmd/furrow" "$@"
 }
 
 todos_json() {
@@ -2469,15 +2480,24 @@ normalize_todos() {
   fi
 }
 
-# --- Dependency check ---
-
-require_cmd yq
-require_cmd jq
-
 # --- Dispatch ---
 
 cmd="${1:-help}"
 shift 2>/dev/null || true
+
+case "$cmd" in
+  validate)
+    case "${1:-}" in
+      ""|--json) furrow_exec almanac validate "$@" ;;
+      --help|-h) cmd_validate "$@"; exit $? ;;
+    esac
+    ;;
+esac
+
+# --- Dependency check ---
+
+require_cmd yq
+require_cmd jq
 
 case "$cmd" in
   add)         cmd_add "$@"; normalize_todos ;;

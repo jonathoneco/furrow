@@ -229,6 +229,23 @@ During migration, keep these wrappers as compatibility shims:
 They should translate legacy invocations to the canonical Go binary rather than
 preserve independent domain logic.
 
+Current compatibility-collapse status (2026-04-29):
+
+- `alm validate` with no path, plus `alm validate --json`, delegates to
+  `furrow almanac validate`. `alm validate <path>` remains shell-specific
+  because the Go command validates the full live almanac and does not expose a
+  targeted todos/observations file contract.
+- `rws status`, `rws list`, `rws focus`, and `rws repair-deliverables` delegate
+  to `furrow row status`, `furrow row list`, `furrow row focus`, and
+  `furrow row repair-deliverables`. The `rws list` shim preserves the legacy
+  no-argument default by adding `--active`.
+- `rws load-step` is retired. Runtime context loading is `furrow context
+  for-step`; rendered handoffs are `furrow handoff render`.
+- `rws transition`, `rws complete-step`, `rws archive`, and `rws init` are not
+  compatibility wrappers yet. Their shell implementations still carry
+  shell-semantic behavior around gate verdicts, summary mutation, seed/focus
+  side effects, or worktree compatibility.
+
 ## Transitional migration sequencing
 
 > Transitional sequencing note: this section is about migration order and current
