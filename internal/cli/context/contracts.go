@@ -51,13 +51,15 @@ var (
 // Field shape mirrors schemas/context-bundle.schema.json (D4-owned); D5 fixes
 // names only. Consumers should treat Bundle as read-only after Build returns.
 type Bundle struct {
-	Row                  string         `json:"row"`
-	Step           string      `json:"step"`
-	Target         string      `json:"target"`
-	Skills         []Skill     `json:"skills"`
-	References     []Reference `json:"references"`
-	PriorArtifacts Artifact    `json:"prior_artifacts"`
-	Decisions      []Decision  `json:"decisions"`
+	Row              string         `json:"row"`
+	Step             string         `json:"step"`
+	Target           string         `json:"target"`
+	Skills           []Skill        `json:"skills"`
+	References       []Reference    `json:"references"`
+	PriorArtifacts   Artifact       `json:"prior_artifacts"`
+	ArtifactContract map[string]any `json:"artifact_contract"`
+	Continuation     map[string]any `json:"continuation"`
+	Decisions        []Decision     `json:"decisions"`
 }
 
 // Skill is a loaded skill file delivered to the operator layer.

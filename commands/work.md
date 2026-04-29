@@ -19,6 +19,10 @@ furrow context for-step <step> --target operator --row <row> --json
 The bundle's `prior_artifacts.state` tells you the current step. The bundle's
 `prior_artifacts.summary_sections` gives synthesized context from prior steps.
 Skills filtered to `layer:operator|shared` are included in `skills[]`.
+The bundle's `artifact_contract` and `continuation` fields come from
+`furrow row status --json`; treat them as the backend-owned source for
+required current-step outputs, required continuation inputs, continuation
+blockers, and completion/archive checks.
 
 ---
 
@@ -60,6 +64,8 @@ SendMessage(
 furrow handoff render --target driver:{step} --row <row> --step <step> --write
 ```
 Artifact written to `.furrow/rows/<row>/handoffs/{step}-to-driver.md`.
+The rendered driver handoff translates the same backend row-status artifact
+contract into constraints; do not restate separate artifact rules in the prompt.
 
 **On driver return**: receive phase EOS-report via `SendMessage` from driver.
 Present to user per `skills/shared/presentation-protocol.md` (D6).

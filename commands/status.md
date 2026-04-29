@@ -37,6 +37,10 @@ Used when no `name` argument and no `--all` flag:
    - Mode (code/research)
    - Deliverable completion: {completed}/{total}
    - **Focused: yes/no** (whether this row matches `.furrow/.focused`)
+   - Artifact contract summary from `row.artifact_contract`: required
+     current-step outputs, required continuation inputs, completion checks, and
+     archive checks
+   - Continuation blockers from `row.continuation.blockers`
    - Gate history (last 3 entries)
 4. Suggest next action:
    - `step_status: "not_started"` -> "Run `/work` to begin {step} step."

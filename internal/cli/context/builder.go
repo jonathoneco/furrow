@@ -114,12 +114,14 @@ func (b *BundleBuilder) Build() (Bundle, error) {
 	artifact.Learnings = learnings
 
 	return Bundle{
-		Row:            b.row,
-		Step:           b.step,
-		Target:         b.target,
-		Skills:         skills,
-		References:     refs,
-		PriorArtifacts: artifact,
-		Decisions:      decs,
+		Row:              b.row,
+		Step:             b.step,
+		Target:           b.target,
+		Skills:           skills,
+		References:       refs,
+		PriorArtifacts:   artifact,
+		ArtifactContract: map[string]any{},
+		Continuation:     map[string]any{},
+		Decisions:        decs,
 	}, nil
 }

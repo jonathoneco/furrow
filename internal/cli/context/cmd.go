@@ -22,13 +22,24 @@ import (
 
 // Handler is the top-level dispatcher for `furrow context`.
 type Handler struct {
-	stdout io.Writer
-	stderr io.Writer
+	stdout    io.Writer
+	stderr    io.Writer
+	rowStatus RowStatusFunc
 }
+
+// RowStatusFunc returns the backend `furrow row status --json` data payload for
+// a row. The top-level CLI injects this so context surfaces translate row status
+// truth instead of rebuilding artifact rules locally.
+type RowStatusFunc func(root, row string) (map[string]any, error)
 
 // New returns a Handler.
 func New(stdout, stderr io.Writer) *Handler {
 	return &Handler{stdout: stdout, stderr: stderr}
+}
+
+// NewWithRowStatus returns a Handler that can consume backend row status data.
+func NewWithRowStatus(stdout, stderr io.Writer, rowStatus RowStatusFunc) *Handler {
+	return &Handler{stdout: stdout, stderr: stderr, rowStatus: rowStatus}
 }
 
 // Run dispatches `furrow context <subcommand> [args...]`.
@@ -198,8 +209,26 @@ func (h *Handler) runForStep(args []string) int {
 		_, _ = fmt.Fprintf(h.stderr, "furrow context for-step: build: %v\n", err)
 		return 1
 	}
+	if h.rowStatus != nil {
+		statusData, statusErr := h.rowStatus(furrowRoot, row)
+		if statusErr != nil {
+			_, _ = fmt.Fprintf(h.stderr, "furrow context for-step: row status: %v\n", statusErr)
+			return 1
+		}
+		applyArtifactContractFromStatus(&bundle, statusData)
+	}
 
 	return h.emitBundle(&bundle)
+}
+
+func applyArtifactContractFromStatus(bundle *Bundle, statusData map[string]any) {
+	rowData, _ := statusData["row"].(map[string]any)
+	if contract, ok := rowData["artifact_contract"].(map[string]any); ok {
+		bundle.ArtifactContract = contract
+	}
+	if continuation, ok := rowData["continuation"].(map[string]any); ok {
+		bundle.Continuation = continuation
+	}
 }
 
 func (h *Handler) emitBundle(b *Bundle) int {

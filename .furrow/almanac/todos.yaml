@@ -3080,14 +3080,18 @@
     - Treat broader lifecycle semantics (review/archive/gates) as separate follow-on work, not scope creep inside this slice
     - Use this result as the baseline for continued evolution of the existing Pi adapter and future parity work
 - context: |
-    Current artifacts inform direction implicitly, but they are not yet used as
-    explicit structured inputs to handoff prompts, stage transitions, or
-    orchestrator/delegation flows. This is a missed opportunity. Furrow already
-    produces useful state and artifact files (summary.md, plan.json,
-    review artifacts, gate evidence, learnings) that could be converted into
-    explicit context packets for:
+    Backend row status now exposes current-step outputs, continuation inputs,
+    continuation blockers, and completion/archive checks as an artifact
+    contract. `furrow context for-step` and driver `furrow handoff render`
+    consume that contract directly instead of restating prompt-side artifact
+    rules.
 
-    - handoff prompts between sessions/runtimes
+    Remaining work is to carry the same artifact-informed pattern into broader
+    stage-transition, orchestrator/delegation, and gate-prompt flows where those
+    surfaces still exist. Furrow already produces useful state and artifact
+    files (summary.md, plan.json, review artifacts, gate evidence, learnings)
+    that could be converted into explicit context packets for:
+
     - orchestrator -> specialist delegation
     - gate evaluation and transition prompts
     - review bootstrapping
@@ -3120,15 +3124,14 @@
   updated_at: "2026-04-24T23:50:00Z"
   urgency: medium
   work_needed: |
-    - Identify the canonical artifact set that should feed handoff/delegation/gate prompts
-    - Define structured handoff-context builders from row artifacts
+    - Keep context-bundle and driver-handoff artifact contract translation aligned with backend `furrow row status`
     - Define orchestrator-to-specialist context packets derived from plan/state/summary
     - Define gate-transition prompt inputs derived from step artifacts and prior evidence
     - Encode row-as-work-unit, ceremony-first, and continue-until-real-stop-condition defaults in generated execution/handoff prompts so operators do not need to restate those conventions manually every session
     - Include row/focus/current-step/checkpoint context plus explicit stop-reason reporting in generated broker/check-in prompts
     - Decide which parts belong in backend-generated prompt/context assembly vs skill guidance
-    - Update commands/next.md and relevant step/gate flows to consume these structured inputs
-    - Add tests or fixtures proving handoff/delegation prompts reference the intended artifacts and preserve the roadmap-row ↔ Furrow-row model
+    - Update commands/next.md and relevant step/gate flows to consume backend-derived structured inputs
+    - Add tests or fixtures proving delegation and gate prompts reference the intended artifacts and preserve the roadmap-row ↔ Furrow-row model
 - context: |
     Furrow's value is not limited to single-threaded row progression. It also
     includes the ability to coordinate parallel work within a row and across

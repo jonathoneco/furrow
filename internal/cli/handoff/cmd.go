@@ -15,13 +15,23 @@ import (
 // It is constructed via New and exposes a single Run(args) int entry point,
 // mirroring the shape of other command groups in the CLI.
 type Handler struct {
-	stdout io.Writer
-	stderr io.Writer
+	stdout    io.Writer
+	stderr    io.Writer
+	rowStatus RowStatusFunc
 }
+
+// RowStatusFunc returns the backend `furrow row status --json` data payload for
+// a row. Driver handoffs translate this data into existing handoff fields.
+type RowStatusFunc func(root, row string) (map[string]any, error)
 
 // New returns a Handler that writes output to stdout/stderr.
 func New(stdout, stderr io.Writer) *Handler {
 	return &Handler{stdout: stdout, stderr: stderr}
+}
+
+// NewWithRowStatus returns a Handler that can consume backend row status data.
+func NewWithRowStatus(stdout, stderr io.Writer, rowStatus RowStatusFunc) *Handler {
+	return &Handler{stdout: stdout, stderr: stderr, rowStatus: rowStatus}
 }
 
 // Run dispatches `furrow handoff <subcommand> [args...]`.
@@ -152,13 +162,28 @@ func (h *Handler) runRenderDriver(flags map[string]string) int {
 		returnFormat = "phase-eos-report"
 	}
 
+	constraints := []string{}
+	if h.rowStatus != nil {
+		root, findErr := project.FindFurrowRoot()
+		if findErr != nil {
+			_, _ = fmt.Fprintf(h.stderr, "furrow handoff render: %v\n", findErr)
+			return 1
+		}
+		statusData, statusErr := h.rowStatus(root, row)
+		if statusErr != nil {
+			_, _ = fmt.Fprintf(h.stderr, "furrow handoff render: row status: %v\n", statusErr)
+			return 1
+		}
+		constraints = append(constraints, artifactContractConstraints(statusData)...)
+	}
+
 	hd := DriverHandoff{
 		Target:       target,
 		Step:         step,
 		Row:          row,
 		Objective:    objective,
 		Grounding:    grounding,
-		Constraints:  []string{},
+		Constraints:  constraints,
 		ReturnFormat: returnFormat,
 	}
 
@@ -332,6 +357,110 @@ func (h *Handler) failEnvelope(env *Envelope, jsonOut bool) int {
 		_, _ = fmt.Fprintf(h.stderr, "  hint: %s\n", env.RemediationHint)
 	}
 	return 2
+}
+
+func artifactContractConstraints(statusData map[string]any) []string {
+	rowData, _ := statusData["row"].(map[string]any)
+	contract, _ := rowData["artifact_contract"].(map[string]any)
+	continuation, _ := rowData["continuation"].(map[string]any)
+
+	var constraints []string
+	if items := artifactLabels(contract["required_current_step_outputs"]); len(items) > 0 {
+		constraints = append(constraints, "Required current-step outputs from row status: "+strings.Join(items, "; "))
+	}
+	if items := artifactLabels(contract["required_continuation_inputs"]); len(items) > 0 {
+		constraints = append(constraints, "Required continuation inputs from row status: "+strings.Join(items, "; "))
+	}
+	if blockers := blockerLabels(continuation["blockers"]); len(blockers) > 0 {
+		constraints = append(constraints, "Continuation blockers from row status: "+strings.Join(blockers, "; "))
+	} else {
+		constraints = append(constraints, "Continuation blockers from row status: none")
+	}
+	if checks := checkLabels(contract["completion_checks"]); len(checks) > 0 {
+		constraints = append(constraints, "Completion checks from row status: "+strings.Join(checks, "; "))
+	}
+	if checks := checkLabels(contract["archive_checks"]); len(checks) > 0 {
+		constraints = append(constraints, "Archive checks from row status: "+strings.Join(checks, "; "))
+	}
+	return constraints
+}
+
+func artifactLabels(value any) []string {
+	items := mapItems(value)
+	labels := make([]string, 0, len(items))
+	for _, item := range items {
+		m := item
+		label, _ := m["label"].(string)
+		path, _ := m["path"].(string)
+		if label == "" {
+			label, _ = m["id"].(string)
+		}
+		if label == "" {
+			continue
+		}
+		if path != "" {
+			labels = append(labels, fmt.Sprintf("%s (%s)", label, path))
+			continue
+		}
+		labels = append(labels, label)
+	}
+	return labels
+}
+
+func blockerLabels(value any) []string {
+	items := mapItems(value)
+	labels := make([]string, 0, len(items))
+	for _, item := range items {
+		m := item
+		code, _ := m["code"].(string)
+		message, _ := m["message"].(string)
+		switch {
+		case code != "" && message != "":
+			labels = append(labels, code+": "+message)
+		case code != "":
+			labels = append(labels, code)
+		case message != "":
+			labels = append(labels, message)
+		}
+	}
+	return labels
+}
+
+func checkLabels(value any) []string {
+	items := mapItems(value)
+	labels := make([]string, 0, len(items))
+	for _, item := range items {
+		m := item
+		code, _ := m["code"].(string)
+		label, _ := m["label"].(string)
+		switch {
+		case code != "" && label != "":
+			labels = append(labels, code+"="+label)
+		case code != "":
+			labels = append(labels, code)
+		case label != "":
+			labels = append(labels, label)
+		}
+	}
+	return labels
+}
+
+func mapItems(value any) []map[string]any {
+	switch items := value.(type) {
+	case []map[string]any:
+		return items
+	case []any:
+		result := make([]map[string]any, 0, len(items))
+		for _, item := range items {
+			m, ok := item.(map[string]any)
+			if ok {
+				result = append(result, m)
+			}
+		}
+		return result
+	default:
+		return nil
+	}
 }
 
 // parseRenderFlags parses --key value flags for the render subcommand.

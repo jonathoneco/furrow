@@ -220,13 +220,26 @@ func (a *App) runInit(args []string) int {
 }
 
 func (a *App) runContext(args []string) int {
-	h := ctx.New(a.stdout, a.stderr)
+	h := ctx.NewWithRowStatus(a.stdout, a.stderr, a.rowStatusData)
 	return h.Run(args)
 }
 
 func (a *App) runHandoff(args []string) int {
-	h := handoff.New(a.stdout, a.stderr)
+	h := handoff.NewWithRowStatus(a.stdout, a.stderr, a.rowStatusData)
 	return h.Run(args)
+}
+
+func (a *App) rowStatusData(root, rowName string) (map[string]any, error) {
+	statePath := statePathForRow(root, rowName)
+	data, err := os.ReadFile(statePath)
+	if err != nil {
+		return nil, fmt.Errorf("read row state: %w", err)
+	}
+	var state map[string]any
+	if err := json.Unmarshal(data, &state); err != nil {
+		return nil, fmt.Errorf("parse row state: %w", err)
+	}
+	return buildRowStatusData(root, rowName, state, "explicit", "", nil), nil
 }
 
 func (a *App) runRender(args []string) int {

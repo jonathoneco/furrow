@@ -5,7 +5,7 @@
   "description": "Context bundle produced by `furrow context for-step` (D4). Contains skills, references, prior artifacts, decisions, and step-strategy metadata for a given row/step/target triple.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["row", "step", "target", "skills", "references", "prior_artifacts", "decisions"],
+  "required": ["row", "step", "target", "skills", "references", "prior_artifacts", "artifact_contract", "continuation", "decisions"],
   "properties": {
     "row": {
       "type": "string",
@@ -108,6 +108,14 @@
           }
         }
       }
+    },
+    "artifact_contract": {
+      "type": "object",
+      "description": "Backend row-status artifact contract for the current row. Context consumers translate this data; they do not re-declare artifact rules."
+    },
+    "continuation": {
+      "type": "object",
+      "description": "Backend row-status continuation inputs and continuation blockers for the current row."
     },
     "decisions": {
       "type": "array",

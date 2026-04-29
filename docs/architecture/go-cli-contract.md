@@ -240,7 +240,9 @@ Current compatibility-collapse status (2026-04-29):
   `furrow row repair-deliverables`. The `rws list` shim preserves the legacy
   no-argument default by adding `--active`.
 - `rws load-step` is retired. Runtime context loading is `furrow context
-  for-step`; rendered handoffs are `furrow handoff render`.
+  for-step`; rendered handoffs are `furrow handoff render`. Both consume the
+  backend artifact contract exposed by `furrow row status --json` instead of
+  carrying independent prompt-side artifact rules.
 - `rws transition`, `rws complete-step`, `rws archive`, and `rws init` are not
   compatibility wrappers yet. Their shell implementations still carry
   shell-semantic behavior around gate verdicts, summary mutation, seed/focus
@@ -373,6 +375,13 @@ Current returned data includes:
 - checkpoint / next-boundary surface, including action and evidence summary
 - latest gate evidence summary when a durable evidence file exists
 - archive-readiness ceremony summary when the current boundary is `review->archive`
+
+`furrow context for-step --json` includes the same row-status
+`artifact_contract` and `continuation` surfaces in the context bundle. Driver
+handoff rendering translates those fields into its existing `constraints`
+section so operators and drivers see required current-step outputs, required
+continuation inputs, continuation blockers, and completion/archive checks
+without duplicating artifact policy outside row status.
 - next valid transitions
 - warnings
 

@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -1254,6 +1255,70 @@ Local row artifacts.
 		}
 	})
 
+	t.Run("context and driver handoff consume row status artifact contract", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "artifact-contract-surface", map[string]any{
+			"name":        "artifact-contract-surface",
+			"title":       "Artifact Contract Surface",
+			"step":        "research",
+			"step_status": "in_progress",
+			"updated_at":  "2026-04-24T18:00:00Z",
+			"archived_at": nil,
+			"gates":       []any{},
+		})
+		mustWrite(t, filepath.Join(root, ".furrow", "rows", "artifact-contract-surface", "research.md"), `# Research
+
+## Questions
+Which status contract fields reach downstream surfaces?
+
+## Findings
+Context and handoff surfaces translate backend row status.
+
+## Sources Consulted
+furrow row status.
+`)
+
+		code, payload, stderr := runJSONCommand(t, root, []string{"context", "for-step", "research", "--row", "artifact-contract-surface", "--json"})
+		if code != 0 {
+			t.Fatalf("expected context exit 0, got %d stderr=%s payload=%s", code, stderr, mustJSONPayload(t, payload))
+		}
+		contract, ok := payload["artifact_contract"].(map[string]any)
+		if !ok {
+			t.Fatalf("expected artifact_contract in context payload, got %s", mustJSONPayload(t, payload))
+		}
+		if got := len(contract["required_current_step_outputs"].([]any)); got != 1 {
+			t.Fatalf("expected one current-step output, got %d in %s", got, mustJSONPayload(t, payload))
+		}
+		if got := len(contract["required_continuation_inputs"].([]any)); got != 1 {
+			t.Fatalf("expected one continuation input, got %d in %s", got, mustJSONPayload(t, payload))
+		}
+		continuation := payload["continuation"].(map[string]any)
+		if got := len(continuation["blockers"].([]any)); got != 1 {
+			t.Fatalf("expected one continuation blocker, got %d in %s", got, mustJSONPayload(t, payload))
+		}
+
+		code, payload, stderr = runJSONCommand(t, root, []string{"handoff", "render", "--target", "driver:research", "--row", "artifact-contract-surface", "--step", "research", "--json"})
+		if code != 0 {
+			t.Fatalf("expected handoff exit 0, got %d stderr=%s payload=%s", code, stderr, mustJSONPayload(t, payload))
+		}
+		constraints, ok := payload["constraints"].([]any)
+		if !ok {
+			t.Fatalf("expected constraints in handoff payload, got %s", mustJSONPayload(t, payload))
+		}
+		for _, want := range []string{
+			"Required current-step outputs from row status",
+			"Required continuation inputs from row status",
+			"Continuation blockers from row status",
+			"Completion checks from row status",
+			"Archive checks from row status",
+		} {
+			if !constraintContains(constraints, want) {
+				t.Fatalf("expected handoff constraint containing %q, got %s", want, mustJSONPayload(t, payload))
+			}
+		}
+	})
+
 	t.Run("review status blocks archive on failing review artifact", func(t *testing.T) {
 		root := setupFurrowRoot(t)
 		writeValidAlmanac(t, root)
@@ -1434,6 +1499,16 @@ func runJSONCommand(t *testing.T, dir string, args []string) (int, map[string]an
 		}
 	}
 	return code, payload, stderr.String()
+}
+
+func constraintContains(constraints []any, needle string) bool {
+	for _, constraint := range constraints {
+		text, ok := constraint.(string)
+		if ok && strings.Contains(text, needle) {
+			return true
+		}
+	}
+	return false
 }
 
 func setupFurrowRoot(t *testing.T) string {

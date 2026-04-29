@@ -60,7 +60,7 @@ demoted, or folded by `work/post-audit-planning-collapse`.
 | `artifact-continuation-model` | `preserved-backlog` | Deferred under artifact validation and continuation. |
 | `stage-aware-ceremony-enforcement` | `preserved-backlog` | Deferred under artifact validation and continuation. |
 | `artifact-writing-defaults` | `preserved-backlog` | Deferred under artifact validation and continuation. |
-| `artifact-informed-handoffs-and-gate-prompts` | `preserved-backlog` | Deferred under artifact validation and continuation. |
+| `artifact-informed-handoffs-and-gate-prompts` | `partially-landed` | Context bundles and driver handoffs now consume the backend `furrow row status` artifact contract; broader orchestration/gate-prompt work remains backlog. |
 | `seeds-typed-graph-nodes` | `preserved-backlog` | Deferred; no seed cutover in Phase 5. |
 | `seeds-backend-surface-layer` | `preserved-backlog` | Deferred; no seed command work in Phase 5. |
 | `seed-row-binding-contract` | `preserved-backlog` | Deferred until source-of-truth simplification. |
