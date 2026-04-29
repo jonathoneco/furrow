@@ -2942,6 +2942,7 @@ phases:
     - cmd/furrow/
     - docs/integration/legacy-shell-cutoff-audit.md
     conflict_risk: low
+    completed_at: '2026-04-29T02:51:37Z'
 post_collapse_backlog:
   note: Later phases are provisional until planning source-of-truth simplification lands. Do not add almanac/TODO UX before that cutoff.
   source_of_truth: todos.yaml remains canonical until an approved source-of-truth cutover row replaces it; no seed migration is approved by this Phase 5 collapse.
