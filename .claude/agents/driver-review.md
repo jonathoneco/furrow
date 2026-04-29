@@ -54,8 +54,11 @@ Dispatch reviewer engines per deliverable. Two parallel reviewers per deliverabl
    Excludes: summary.md, state.json, conversation history, CLAUDE.md.
    Engine returns: per-deliverable review verdict with dimension scores.
 
-2. **Cross-model reviewer** — run `frw cross-model-review {name} {deliverable}`.
-   Reads `cross_model.provider` from `furrow.yaml`. Skip if absent.
+2. **Cross-model reviewer** — temporary compatibility holdout:
+   run `frw cross-model-review {name} {deliverable}`. Go `furrow review run`
+   and `furrow review cross-model` are reserved, so this shell path remains
+   shell-semantic until review execution has Go parity. Reads
+   `cross_model.provider` from `furrow.yaml`. Skip if absent.
 
 After both engines return, **synthesize**: flag dimension disagreements,
 note unique findings, produce final `reviews/{deliverable}.json` with `reviewers` field.
@@ -68,7 +71,9 @@ After all deliverable reviews complete:
 1. Aggregate per-deliverable verdicts.
 2. Determine overall pass/fail (any Phase A or Phase B fail → overall fail).
 3. Surface any decisions conditional on post-ship evidence:
-   record via `alm observe add --kind decision-review ...`
+   record via the temporary compatibility holdout
+   `alm observe add --kind decision-review ...`; Go only owns
+   `furrow almanac validate`, not observation mutation.
 4. Assemble phase EOS-report (see below).
 
 ## Shared References

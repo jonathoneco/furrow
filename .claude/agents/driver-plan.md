@@ -84,8 +84,10 @@ Before returning phase result, dispatch both reviewers in parallel:
 1. **Fresh reviewer engine** — isolated context, receives: plan.json, definition.yaml.
    Excludes: summary.md, conversation history, state.json.
    Engine handoff via `furrow handoff render --target engine:specialist:reviewer`.
-2. **Cross-model reviewer** — `frw cross-model-review {name} --plan`
-   if `cross_model.provider` configured in `furrow.yaml`. Skip if absent.
+2. **Cross-model reviewer** — temporary compatibility holdout:
+   `frw cross-model-review {name} --plan` if `cross_model.provider`
+   configured in `furrow.yaml`. Go `furrow review run` and
+   `furrow review cross-model` are reserved. Skip if absent.
 Synthesize findings: flag disagreements, note unique findings, record
 both sources in gate evidence.
 
@@ -107,8 +109,9 @@ user-facing markdown.
 ## Step Mechanics
 Transition out: backend-owned `furrow row transition <row> --step spec` records
 `plan->spec` with outcome `pass` when checks pass.
-Legacy compatibility check (`rws gate-check`, not canonical Go CLI): 1
-deliverable, no depends_on, not supervised, not force-stopped.
+Temporary compatibility holdout (`rws gate-check`, shell-semantic and not
+canonical Go CLI): 1 deliverable, no depends_on, not supervised,
+not force-stopped.
 Next step expects: architecture decisions in `summary.md`, `plan.json` if
 parallel execution needed, and clear implementation path per deliverable.
 

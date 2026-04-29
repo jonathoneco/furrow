@@ -16,5 +16,5 @@ advancing automatically — but the step is still recorded in state.json.
 - `state.json.step` tracks current position; only Furrow CLI commands may modify it
 
 **Violation**: Attempting to skip or reorder steps results in a blocked transition.
-Pending user actions also block transitions — complete them with the legacy
-`rws complete-user-action` compatibility wrapper until a Go command exists.
+Pending user actions also block transitions — complete them with the temporary
+compatibility holdout `rws complete-user-action` until a Go command exists.

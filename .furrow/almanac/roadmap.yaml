@@ -2943,6 +2943,19 @@ phases:
     - docs/integration/legacy-shell-cutoff-audit.md
     conflict_risk: low
     completed_at: '2026-04-29T02:51:37Z'
+  - index: 6
+    branch: work/command-markdown-thin-adapter-collapse
+    description: Collapse active command markdown and Claude prompt surfaces into thin adapters over backend-owned truth, keeping shell calls only as labeled temporary compatibility holdouts where the legacy-shell audit found no Go parity.
+    todos: []
+    depends_on: []
+    key_files:
+    - commands/
+    - .claude/agents/
+    - .claude/rules/
+    - .claude/CLAUDE.md
+    - .furrow/almanac/roadmap.yaml
+    conflict_risk: low
+    completed_at: '2026-04-28T23:14:40-04:00'
 post_collapse_backlog:
   note: Later phases are provisional until planning source-of-truth simplification lands. Do not add almanac/TODO UX before that cutoff.
   source_of_truth: todos.yaml remains canonical until an approved source-of-truth cutover row replaces it; no seed migration is approved by this Phase 5 collapse.

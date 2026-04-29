@@ -22,7 +22,9 @@ context before making changes. See `.claude/rules/` for enforcement details.
 | Reference | ~600 lines | `references/` (on demand, NOT injected) |
 
 Total injected (ambient + work + step) must not exceed 350 lines.
-Each instruction appears in exactly one layer. Run `frw measure-context` to verify.
+Each instruction appears in exactly one layer. Run the temporary compatibility
+holdout `frw measure-context` to verify; context budget enforcement is not
+Go-backed yet.
 
 ## Component Rationale
 
@@ -42,7 +44,7 @@ Conventional commits: feat:, fix:, chore:, docs:, refactor:, test:, infra:
 | Eval dimensions | `references/eval-dimensions.md`, `evals/` |
 | Review process | `references/review-methodology.md` |
 | Specialist templates | `references/specialist-template.md`, `specialists/` |
-| CLI tools | `furrow` / `frw`; legacy `bin/rws`, `bin/alm`, and `bin/sds` are compatibility wrappers only |
+| CLI tools | `furrow` is canonical for implemented backend behavior. `frw`, `bin/rws`, `bin/alm`, and `bin/sds` are compatibility-only unless an active instruction labels a temporary shell-semantic holdout. |
 | Architecture docs | `docs/architecture/` |
 | Context loading | `docs/skill-injection-order.md` |
 | Research guidance | `references/research-mode.md` |

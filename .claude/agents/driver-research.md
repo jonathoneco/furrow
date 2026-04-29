@@ -84,9 +84,9 @@ Read these when relevant to your current action:
 ## Step Mechanics
 Transition out: backend-owned `furrow row transition <row> --step plan` records
 `research->plan` with outcome `pass` when checks pass.
-Legacy compatibility check (`rws gate-check`, not canonical Go CLI): 1
-deliverable, code mode, path-referencing ACs, no directory context pointers, not
-supervised, not force-stopped.
+Temporary compatibility holdout (`rws gate-check`, shell-semantic and not
+canonical Go CLI): 1 deliverable, code mode, path-referencing ACs, no directory
+context pointers, not supervised, not force-stopped.
 Next step expects: research findings addressing all ideation questions, recorded
 in `research.md` or `research/` directory with `synthesis.md`.
 

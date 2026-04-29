@@ -111,13 +111,14 @@ tmux detected. Launch parallel sessions? [y/N/yolo]
   N    — just display prompts (default)
 ```
 
-If the user accepts, run the launch script via Bash tool:
+If the user accepts, run the temporary compatibility holdout launch script via
+Bash tool; Go `furrow launch` does not exist and `furrow merge` is reserved:
 ```sh
 frw launch-phase --phase {N}        # for "y"
 frw launch-phase --phase {N} --yolo # for "yolo"
 ```
 
-**IMPORTANT**: Always delegate to `frw launch-phase`. Do NOT manually generate
+**IMPORTANT**: Always delegate to the holdout `frw launch-phase`. Do NOT manually generate
 `tmux send-keys`, `git worktree add`, or `claude` invocations. The script handles
 all orchestration correctly — worktree creation, prompt file writing, tmux session
 creation (named `{project_name}-{row_name}`), and launching **interactive** Claude

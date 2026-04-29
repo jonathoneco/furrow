@@ -28,8 +28,9 @@ Flags are mutually exclusive. Error if both provided.
 alm extract "{name}"
 ```
 
-This is a legacy compatibility wrapper; no Go-backed TODO extraction command is
-canonical yet. Outputs JSON array of candidates with `source`, `title`,
+This is a temporary compatibility holdout; no Go-backed TODO extraction command
+is canonical yet. `furrow almanac validate` remains the canonical validation
+surface. Outputs JSON array of candidates with `source`, `title`,
 `context`, `raw_content`, `source_file`.
 
 If empty array: "No TODO candidates found in {name}." — exit.

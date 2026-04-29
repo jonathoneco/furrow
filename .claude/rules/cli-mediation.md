@@ -9,15 +9,15 @@ All harness state mutations go through CLI commands, never direct file edits.
 | Read task state | `furrow row status [name]` |
 | Advance steps | `furrow row transition <name> --step <next-step>` |
 | Mark current step complete | `furrow row complete <name>` |
-| Update summary sections | Legacy compatibility wrapper: `rws update-summary [name] <section> [--replace]` (stdin) |
-| Complete deliverables | Legacy compatibility wrapper: `rws complete-deliverable [name] <deliverable>` |
-| Regenerate summary | Legacy compatibility wrapper: `rws regenerate-summary [name]` |
-| Validate summary | Legacy compatibility wrapper: `rws validate-summary [name]` |
+| Update summary sections | Temporary compatibility holdout: `rws update-summary [name] <section> [--replace]` (stdin); Go `furrow row summary` is reserved |
+| Complete deliverables | Temporary compatibility holdout: `rws complete-deliverable [name] <deliverable>`; no generic Go deliverable mutation command exists |
+| Regenerate summary | Temporary compatibility holdout: `rws regenerate-summary [name]`; Go `furrow row summary` is reserved |
+| Validate summary | Temporary compatibility holdout: `rws validate-summary [name]`; Go `furrow row summary` is reserved |
 
 ## Forbidden
 
 - Direct Edit/Write of `state.json` (enforced by state-guard hook)
-- Direct Edit/Write of `summary.md` agent sections — use the legacy `rws update-summary` compatibility wrapper
+- Direct Edit/Write of `summary.md` agent sections — use the temporary compatibility holdout `rws update-summary`
 - Using `jq`/`sed`/`awk` to mutate state files via Bash
 - Using `echo >>` or `cat >` to append to summary.md
 

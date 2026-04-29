@@ -73,8 +73,10 @@ Before returning phase result, dispatch both reviewers in parallel:
 1. **Fresh reviewer engine** — isolated context. Receives: spec.md or specs/ directory, definition.yaml.
    Excludes: summary.md, conversation history, state.json.
    Engine handoff via `furrow handoff render --target engine:specialist:reviewer`.
-2. **Cross-model reviewer** — `frw cross-model-review {name} --spec`
-   if `cross_model.provider` configured in `furrow.yaml`. Skip if absent.
+2. **Cross-model reviewer** — temporary compatibility holdout:
+   `frw cross-model-review {name} --spec` if `cross_model.provider`
+   configured in `furrow.yaml`. Go `furrow review run` and
+   `furrow review cross-model` are reserved. Skip if absent.
 Synthesize findings; address or explicitly reject all findings before returning phase result.
 
 ## Shared References
@@ -95,8 +97,8 @@ user-facing markdown.
 ## Step Mechanics
 Transition out: backend-owned `furrow row transition <row> --step decompose`
 records `spec->decompose` with outcome `pass` when checks pass.
-Legacy compatibility check (`rws gate-check`, not canonical Go CLI): 1
-deliverable, >=2 ACs, not supervised, not force-stopped.
+Temporary compatibility holdout (`rws gate-check`, shell-semantic and not
+canonical Go CLI): 1 deliverable, >=2 ACs, not supervised, not force-stopped.
 Next step expects: implementation-ready specs in `spec.md` or `specs/` with
 refined acceptance criteria per deliverable.
 

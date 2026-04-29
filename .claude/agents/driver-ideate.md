@@ -61,11 +61,14 @@ Run the 6-part ceremony in order:
    Compose engine handoff via `furrow handoff render --target engine:specialist:reviewer`.
    Dispatch:
    a. Fresh same-model engine (isolated context) for problem framing review.
-   b. Cross-model review engine via `frw cross-model-review --ideation <name>` if
-      `cross_model.provider` is configured in `furrow.yaml`. If absent, skip.
+   b. Cross-model review engine via the temporary compatibility holdout
+      `frw cross-model-review --ideation <name>` if `cross_model.provider`
+      is configured in `furrow.yaml`. Go `furrow review run` and
+      `furrow review cross-model` are reserved. If absent, skip.
    Collect EOS-reports. Synthesize findings. Record in gate evidence. Revise definition if needed.
-6. **Hard gate** — validate definition with `frw validate-definition`.
-   Gate record required before returning phase result to operator.
+6. **Hard gate** — validate definition with backend-owned
+   `furrow validate definition`. Gate record required before returning phase
+   result to operator.
 
 ## Collaboration Protocol
 

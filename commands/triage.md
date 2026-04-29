@@ -35,8 +35,9 @@ If no template found: error "No roadmap template found. Expected at templates/ro
 alm triage
 ```
 
-This is a legacy compatibility wrapper; no Go-backed triage command is
-canonical yet. Parse JSON output containing:
+This is a temporary compatibility holdout; no Go-backed triage command is
+canonical yet. `furrow almanac validate` remains the canonical validation
+surface. Parse JSON output containing:
 - `todos`: array of active TODOs with triage metadata
 - `graph`: topological order and wave assignments
 - `conflicts`: file overlap pairs within same wave
@@ -172,7 +173,9 @@ Observations whose triggers have fired — re-examination pending user action.
 
 - `{id}` (`{kind}`) — {title}
   - _Activation_: {activation_reason}
-  - Resolve: `alm observe resolve {id} ...` • Dismiss: `alm observe dismiss {id} ...`
+  - Resolve via temporary compatibility holdout:
+    `alm observe resolve {id} ...` • Dismiss:
+    `alm observe dismiss {id} ...`
 ```
 
 **phase** (required, repeating — one per phase):

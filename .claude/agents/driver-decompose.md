@@ -92,13 +92,13 @@ The implement driver composes actual engine teams at dispatch-time.
 ## Step Mechanics
 Transition out: backend-owned `furrow row transition <row> --step implement`
 records `decompose->implement` with `pass` when checks pass.
-Legacy compatibility check (`rws gate-check`, not canonical Go CLI): <=2
-deliverables, no depends_on, same specialist type, not supervised, not
-force-stopped.
+Temporary compatibility holdout (`rws gate-check`, shell-semantic and not
+canonical Go CLI): <=2 deliverables, no depends_on, same specialist type, not
+supervised, not force-stopped.
 Pre-step evaluator (`evals/gates/decompose.yaml`): wave-triviality — can all
 deliverables execute in a single wave without coordination?
-At this boundary, legacy compatibility wrapper `rws init` handles branch
-creation; Go `furrow init` is reserved and unimplemented.
+At this boundary, temporary compatibility holdout `rws init` handles branch
+creation side effects; Go `furrow init` is reserved and unimplemented.
 Next step expects: `plan.json` with waves.
 
 ## EOS-Report Assembly
