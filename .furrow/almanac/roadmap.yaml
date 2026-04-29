@@ -2923,6 +2923,25 @@ phases:
     - .furrow/rows/
     conflict_risk: high
     completed_at: '2026-04-28T20:43:25-04:00'
+  - index: 5
+    branch: work/legacy-shell-cutoff-audit
+    description: Classify legacy shell command surfaces and identify cutoff candidates, blocked removals, and the next command-markdown adapter collapse row without deleting broad shell code.
+    todos:
+    - remove-bin-rws-shell-entrypoint
+    - remove-bin-alm-shell-entrypoint
+    - remove-bin-sds-shell-entrypoint
+    - remove-legacy-shell-hooks-under-bin-frw-d-hooks
+    - archive-legacy-shell-scripts-tree
+    depends_on: []
+    key_files:
+    - bin/
+    - bin/frw.d/
+    - commands/
+    - .claude/
+    - internal/cli/
+    - cmd/furrow/
+    - docs/integration/legacy-shell-cutoff-audit.md
+    conflict_risk: low
 post_collapse_backlog:
   note: Later phases are provisional until planning source-of-truth simplification lands. Do not add almanac/TODO UX before that cutoff.
   source_of_truth: todos.yaml remains canonical until an approved source-of-truth cutover row replaces it; no seed migration is approved by this Phase 5 collapse.
