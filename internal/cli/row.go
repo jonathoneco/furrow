@@ -196,7 +196,7 @@ func (a *App) runRowTransition(args []string) int {
 		return a.fail("furrow row transition", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("row %q must have step_status=completed before advancing", rowName)}, flags.json)
 	}
 
-	artifacts := currentStepArtifacts(root, rowName, state)
+	artifacts := checkpointArtifacts(root, rowName, state)
 	seed := rowSeedSurface(root, state)
 	blockers := rowBlockers(state, seed, artifacts, rowBlockersOpts{Root: root, RowName: rowName})
 	if len(blockers) > 0 {
@@ -321,20 +321,11 @@ func (a *App) runRowComplete(args []string) int {
 		return a.fail("furrow row complete", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("row %q is archived", rowName)}, flags.json)
 	}
 
-	artifacts := currentStepArtifacts(root, rowName, state)
-	for _, artifact := range artifacts {
-		if required, _ := artifact["required"].(bool); !required {
-			continue
-		}
-		if exists, _ := artifact["exists"].(bool); !exists {
-			return a.fail("furrow row complete", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("required current-step artifact %v is missing", artifact["label"]), details: map[string]any{"artifact": artifact}}, flags.json)
-		}
-		if incomplete, _ := artifact["incomplete"].(bool); incomplete {
-			return a.fail("furrow row complete", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("current-step artifact %v is still an incomplete scaffold", artifact["label"]), details: map[string]any{"artifact": artifact}}, flags.json)
-		}
-		if blockingArtifactValidation(artifact) {
-			return a.fail("furrow row complete", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("current-step artifact %v failed validation", artifact["label"]), details: map[string]any{"artifact": artifact}}, flags.json)
-		}
+	artifacts := checkpointArtifacts(root, rowName, state)
+	seed := rowSeedSurface(root, state)
+	blockers := rowBlockers(state, seed, artifacts, rowBlockersOpts{Root: root, RowName: rowName})
+	if len(blockers) > 0 {
+		return a.fail("furrow row complete", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("row %q is blocked from completion", rowName), details: map[string]any{"blockers": blockers, "artifact_validation": summarizeArtifactValidation(artifacts)}}, flags.json)
 	}
 
 	beforeCounts := summarizeDeliverableCounts(state)
@@ -430,7 +421,7 @@ func (a *App) runRowArchive(args []string) int {
 		return a.fail("furrow row archive", &cliError{exit: 2, code: "blocked", message: fmt.Sprintf("row %q must have step_status=completed before archiving", rowName)}, flags.json)
 	}
 
-	artifacts := currentStepArtifacts(root, rowName, state)
+	artifacts := checkpointArtifacts(root, rowName, state)
 	seed := rowSeedSurface(root, state)
 	archiveOpts := rowBlockersOpts{
 		Root:                 root,
@@ -608,7 +599,9 @@ func buildRowStatusData(root, rowName string, state map[string]any, resolution, 
 	steps, _ := stepsSequenceFromState(state)
 	nextTransitions := nextValidTransitions(state, steps)
 	seed := rowSeedSurface(root, state)
-	artifacts := currentStepArtifacts(root, rowName, state)
+	currentArtifacts := currentStepArtifacts(root, rowName, state)
+	continuationInputs := continuationArtifacts(root, rowName, state)
+	artifacts := checkpointArtifacts(root, rowName, state)
 	blockers := rowBlockers(state, seed, artifacts, rowBlockersOpts{Root: root, RowName: rowName})
 	checkpoint := rowCheckpointSurface(root, rowName, state, blockers, seed, artifacts)
 	rowWarnings := append([]map[string]any{}, warnings...)
@@ -652,9 +645,15 @@ func buildRowStatusData(root, rowName string, state map[string]any, resolution, 
 			},
 			"current_step": map[string]any{
 				"name":      getStringDefault(state, "step", "unknown"),
-				"artifacts": artifacts,
+				"artifacts": currentArtifacts,
 				"note":      "artifact existence is never completion",
 			},
+			"continuation": map[string]any{
+				"required_inputs": continuationInputs,
+				"blockers":        blockersForArtifactRole(blockers, "continuation_input"),
+				"note":            "prior-step artifacts are checkpoint inputs; missing or invalid inputs block completion, transition, and archive",
+			},
+			"artifact_contract":      artifactContractSurface(currentArtifacts, continuationInputs),
 			"next_valid_transitions": nextTransitions,
 		},
 		"seed":       seed,

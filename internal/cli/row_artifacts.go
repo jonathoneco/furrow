@@ -17,20 +17,30 @@ const scaffoldMarker = "FURROW-SCAFFOLD-INCOMPLETE"
 var scaffoldTemplates embed.FS
 
 type rowArtifactSpec struct {
-	ID                string
-	Label             string
-	Path              string
-	Required          bool
-	ScaffoldSupported bool
+	ID                    string
+	Label                 string
+	Path                  string
+	Role                  string
+	Required              bool
+	ScaffoldSupported     bool
+	CheckBeforeCompletion bool
+	CheckBeforeArchive    bool
 }
 
 func artifactSpec(rowDir, id, label string, required, scaffoldSupported bool) rowArtifactSpec {
+	return artifactSpecWithRole(rowDir, id, label, "current_step_output", required, scaffoldSupported)
+}
+
+func artifactSpecWithRole(rowDir, id, label, role string, required, scaffoldSupported bool) rowArtifactSpec {
 	return rowArtifactSpec{
-		ID:                id,
-		Label:             label,
-		Path:              filepath.Join(rowDir, label),
-		Required:          required,
-		ScaffoldSupported: scaffoldSupported,
+		ID:                    id,
+		Label:                 label,
+		Path:                  filepath.Join(rowDir, label),
+		Role:                  role,
+		Required:              required,
+		ScaffoldSupported:     scaffoldSupported,
+		CheckBeforeCompletion: role != "optional_context",
+		CheckBeforeArchive:    role != "optional_context",
 	}
 }
 
@@ -42,10 +52,15 @@ func materializeRowArtifacts(state map[string]any, specs []rowArtifactSpec) []ma
 			"id":                 spec.ID,
 			"label":              spec.Label,
 			"path":               spec.Path,
+			"role":               spec.Role,
 			"required":           spec.Required,
 			"exists":             exists,
 			"scaffold_supported": spec.ScaffoldSupported,
-			"incomplete":         exists && fileContains(spec.Path, scaffoldMarker),
+			"checks": map[string]any{
+				"before_completion": spec.CheckBeforeCompletion,
+				"before_archive":    spec.CheckBeforeArchive,
+			},
+			"incomplete": exists && fileContains(spec.Path, scaffoldMarker),
 		}
 		entry["validation"] = validateArtifact(state, entry)
 		result = append(result, entry)

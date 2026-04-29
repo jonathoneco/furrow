@@ -486,6 +486,7 @@ func TestRowTransitionJSON(t *testing.T) {
 			"gates":          []any{},
 			"unknown_field":  "keep-me",
 		})
+		writePlanContinuationInputs(t, root, "transition-row")
 		writeImplementationPlan(t, root, "transition-row", "# Implementation Plan\n\n## Objective\n- Keep the backend authoritative.\n\n## Planned work\n1. Harden validation.\n2. Emit checkpoint evidence.\n")
 
 		code, payload, stderr := runJSONCommand(t, root, []string{"row", "transition", "transition-row", "--step", "spec", "--json"})
@@ -570,7 +571,7 @@ func TestRowCompleteJSON(t *testing.T) {
 			},
 			"unknown_field": "keep-me",
 		})
-
+		writePlanContinuationInputs(t, root, "complete-row")
 		writeImplementationPlan(t, root, "complete-row", "# Implementation Plan\n\n## Objective\n- Ship the change\n\n## Planned work\n1. Complete the deliverables\n")
 
 		code, payload, stderr := runJSONCommand(t, root, []string{"row", "complete", "complete-row", "--json"})
@@ -617,7 +618,7 @@ func TestRowCompleteJSON(t *testing.T) {
 				"one": map[string]any{"status": "completed", "wave": 1},
 			},
 		})
-
+		writePlanContinuationInputs(t, root, "already-complete")
 		writeImplementationPlan(t, root, "already-complete", "# Implementation Plan\n\n## Objective\n- Already complete\n\n## Planned work\n1. No changes needed\n")
 
 		code, payload, stderr := runJSONCommand(t, root, []string{"row", "complete", "already-complete", "--json"})
@@ -648,6 +649,7 @@ func TestRowCompleteJSON(t *testing.T) {
 			"updated_at":  "2026-04-24T15:00:00Z",
 			"archived_at": nil,
 		})
+		writePlanContinuationInputs(t, root, "step-only")
 		writeImplementationPlan(t, root, "step-only", "# Implementation Plan\n\n## Objective\n- Step-only bookkeeping\n\n## Planned work\n1. Mark the step complete\n")
 		statePath := filepath.Join(root, ".furrow", "rows", "step-only", "state.json")
 		state := readJSONFile(t, statePath)
@@ -684,6 +686,7 @@ func TestRowCompleteJSON(t *testing.T) {
 			"archived_at":  nil,
 			"deliverables": []any{"bad"},
 		})
+		writePlanContinuationInputs(t, root, "bad-deliverables")
 		writeImplementationPlan(t, root, "bad-deliverables", "# Implementation Plan\n\n## Objective\n- Validate bad deliverables handling\n\n## Planned work\n1. Trigger invalid state\n")
 		code, _, _ := runJSONCommand(t, root, []string{"row", "complete", "bad-deliverables", "--json"})
 		if code != 3 {
@@ -872,6 +875,7 @@ func TestRowInitFocusAndScaffoldJSON(t *testing.T) {
 			"gates":            []any{},
 			"gate_policy_init": "supervised",
 		})
+		writePlanContinuationInputs(t, root, "plan-validation-row")
 		writeImplementationPlan(t, root, "plan-validation-row", "# Implementation Plan\n\n## Objective\n- TODO\n\n## Planned work\n1. TODO\n")
 
 		code, payload, stderr := runJSONCommand(t, root, []string{"row", "status", "plan-validation-row", "--json"})
@@ -906,6 +910,7 @@ func TestRowInitFocusAndScaffoldJSON(t *testing.T) {
 			},
 			"source_todos": []any{"go-cli-contract"},
 		})
+		writeReviewContinuationInputs(t, root, "archive-row", "one")
 		writeReviewArtifact(t, root, "archive-row", "one", `{"deliverable":"one","phase_a":{"verdict":"pass"},"phase_b":{"verdict":"pass"},"overall":"pass","timestamp":"2026-04-24T18:01:00Z"}`)
 
 		code, payload, stderr := runJSONCommand(t, root, []string{"row", "archive", "archive-row", "--json"})
@@ -1081,6 +1086,7 @@ follow_ups:
 		root := setupFurrowRoot(t)
 		writeValidAlmanac(t, root)
 		writeRowState(t, root, "downgrade-with-summary", completionEvidenceReviewState("downgrade-with-summary"))
+		writeReviewContinuationInputs(t, root, "downgrade-with-summary", "one")
 		writeReviewArtifact(t, root, "downgrade-with-summary", "one", passingCompletionEvidenceReviewJSON())
 		writeCompletionEvidenceArtifacts(t, root, "downgrade-with-summary", "complete-with-downgraded-claim")
 		initGitRepo(t, root)
@@ -1096,6 +1102,7 @@ follow_ups:
 		root := setupFurrowRoot(t)
 		writeValidAlmanac(t, root)
 		writeRowState(t, root, "evidence-allowed", completionEvidenceReviewState("evidence-allowed"))
+		writeReviewContinuationInputs(t, root, "evidence-allowed", "one")
 		writeReviewArtifact(t, root, "evidence-allowed", "one", passingCompletionEvidenceReviewJSON())
 		writeCompletionEvidenceArtifacts(t, root, "evidence-allowed", "complete")
 		mustWrite(t, filepath.Join(root, ".furrow", "rows", "evidence-allowed", "follow-ups.yaml"), `
@@ -1191,6 +1198,7 @@ follow_ups:
 			},
 			"gates": []any{},
 		})
+		writeImplementContinuationInputs(t, root, "implement-validation")
 		mustWrite(t, filepath.Join(root, ".furrow", "rows", "implement-validation", "plan.json"), `{"waves":[],"assignments":{}}`)
 
 		code, payload, stderr := runJSONCommand(t, root, []string{"row", "status", "implement-validation", "--json"})
@@ -1202,6 +1210,47 @@ follow_ups:
 		}
 		if !jsonContains(payload, "artifact_validation_failed") {
 			t.Fatalf("expected carried plan artifact blocker, got %s", mustJSONPayload(t, payload))
+		}
+	})
+
+	t.Run("status and complete block missing continuation inputs", func(t *testing.T) {
+		root := setupFurrowRoot(t)
+		writeValidAlmanac(t, root)
+		writeRowState(t, root, "continuation-validation", map[string]any{
+			"name":        "continuation-validation",
+			"title":       "Continuation Validation",
+			"step":        "research",
+			"step_status": "in_progress",
+			"updated_at":  "2026-04-24T18:00:00Z",
+			"archived_at": nil,
+			"gates":       []any{},
+		})
+		mustWrite(t, filepath.Join(root, ".furrow", "rows", "continuation-validation", "research.md"), `# Research
+
+## Questions
+What prior artifacts are needed to resume?
+
+## Findings
+The definition is the required input to research.
+
+## Sources Consulted
+Local row artifacts.
+`)
+
+		code, payload, stderr := runJSONCommand(t, root, []string{"row", "status", "continuation-validation", "--json"})
+		if code != 0 {
+			t.Fatalf("expected exit 0, got %d stderr=%s payload=%s", code, stderr, mustJSONPayload(t, payload))
+		}
+		if !jsonContains(payload, "continuation_input") || !jsonContains(payload, "missing_required_artifact") {
+			t.Fatalf("expected missing continuation input blocker, got %s", mustJSONPayload(t, payload))
+		}
+
+		code, payload, _ = runJSONCommand(t, root, []string{"row", "complete", "continuation-validation", "--json"})
+		if code != 2 {
+			t.Fatalf("expected completion blocked with exit 2, got %d payload=%s", code, mustJSONPayload(t, payload))
+		}
+		if !jsonContains(payload, "continuation_input") {
+			t.Fatalf("expected completion blocker details to name continuation input, got %s", mustJSONPayload(t, payload))
 		}
 	})
 
@@ -1520,6 +1569,70 @@ func writeRowState(t *testing.T, root, name string, state map[string]any) {
 func writeImplementationPlan(t *testing.T, root, rowName, content string) {
 	t.Helper()
 	mustWrite(t, filepath.Join(root, ".furrow", "rows", rowName, "implementation-plan.md"), content)
+}
+
+func writePlanContinuationInputs(t *testing.T, root, rowName string) {
+	t.Helper()
+	writeDefinitionArtifact(t, root, rowName, "backend")
+	writeResearchArtifact(t, root, rowName)
+}
+
+func writeImplementContinuationInputs(t *testing.T, root, rowName string) {
+	t.Helper()
+	writeDefinitionArtifact(t, root, rowName, "backend")
+	writeSpecArtifact(t, root, rowName)
+}
+
+func writeReviewContinuationInputs(t *testing.T, root, rowName, deliverable string) {
+	t.Helper()
+	writeDefinitionArtifact(t, root, rowName, deliverable)
+	writeSpecArtifact(t, root, rowName)
+	writePlanArtifact(t, root, rowName)
+}
+
+func writeDefinitionArtifact(t *testing.T, root, rowName, deliverable string) {
+	t.Helper()
+	mustWrite(t, filepath.Join(root, ".furrow", "rows", rowName, "definition.yaml"), `objective: Keep row artifact continuation honest.
+deliverables:
+  - name: `+deliverable+`
+    acceptance_criteria:
+      - Backend validates required artifact inputs.
+`)
+}
+
+func writeResearchArtifact(t *testing.T, root, rowName string) {
+	t.Helper()
+	mustWrite(t, filepath.Join(root, ".furrow", "rows", rowName, "research.md"), `# Research
+
+## Questions
+Which artifacts are required inputs?
+
+## Findings
+Prior-step artifacts must be present for honest continuation.
+
+## Sources Consulted
+Local row artifact fixtures.
+`)
+}
+
+func writeSpecArtifact(t *testing.T, root, rowName string) {
+	t.Helper()
+	mustWrite(t, filepath.Join(root, ".furrow", "rows", rowName, "spec.md"), `# Spec
+
+## Scope
+Validate required row artifacts.
+
+## Acceptance Criteria
+Required artifact inputs are surfaced and enforced.
+
+## Verification
+Run the row command against the fixture.
+`)
+}
+
+func writePlanArtifact(t *testing.T, root, rowName string) {
+	t.Helper()
+	mustWrite(t, filepath.Join(root, ".furrow", "rows", rowName, "plan.json"), `{"waves":[{"name":"backend","deliverables":["backend"]}],"assignments":{"backend":["backend"]}}`)
 }
 
 func writeReviewArtifact(t *testing.T, root, rowName, deliverable, content string) {

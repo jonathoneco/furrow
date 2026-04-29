@@ -777,6 +777,141 @@ func currentStepArtifacts(root, rowName string, state map[string]any) []map[stri
 	return materializeRowArtifacts(state, artifacts)
 }
 
+func continuationArtifacts(root, rowName string, state map[string]any) []map[string]any {
+	rowDir := rowDirFor(root, rowName)
+	step := getStringDefault(state, "step", "")
+	specs := []rowArtifactSpec{}
+	add := func(id, label string, required bool) {
+		specs = append(specs, artifactSpecWithRole(rowDir, id, label, "continuation_input", required, false))
+	}
+
+	switch step {
+	case "research":
+		add("definition", "definition.yaml", true)
+		if rowTruthGatesRequired(state) {
+			add("ask-analysis", "ask-analysis.md", true)
+		}
+	case "plan":
+		add("definition", "definition.yaml", true)
+		if rowTruthGatesRequired(state) {
+			add("ask-analysis", "ask-analysis.md", true)
+		}
+		add("research", "research.md", true)
+	case "spec":
+		add("definition", "definition.yaml", true)
+		if rowTruthGatesRequired(state) {
+			add("ask-analysis", "ask-analysis.md", true)
+		}
+		add("research", "research.md", true)
+		add("implementation-plan", "implementation-plan.md", true)
+	case "decompose":
+		add("definition", "definition.yaml", true)
+		if rowTruthGatesRequired(state) {
+			add("ask-analysis", "ask-analysis.md", true)
+		}
+		add("research", "research.md", true)
+		add("implementation-plan", "implementation-plan.md", true)
+		add("spec", "spec.md", true)
+	case "implement":
+		add("definition", "definition.yaml", true)
+		if rowTruthGatesRequired(state) {
+			add("ask-analysis", "ask-analysis.md", true)
+		}
+		add("spec", "spec.md", true)
+		add("plan", "plan.json", true)
+	case "review":
+		add("definition", "definition.yaml", true)
+		if rowTruthGatesRequired(state) {
+			add("ask-analysis", "ask-analysis.md", true)
+		}
+		add("spec", "spec.md", true)
+		add("plan", "plan.json", true)
+	}
+	return materializeRowArtifacts(state, specs)
+}
+
+func checkpointArtifacts(root, rowName string, state map[string]any) []map[string]any {
+	current := currentStepArtifacts(root, rowName, state)
+	continuation := continuationArtifacts(root, rowName, state)
+	seen := make(map[string]bool, len(current)+len(continuation))
+	result := make([]map[string]any, 0, len(current)+len(continuation))
+	for _, artifact := range current {
+		key := getStringDefault(artifact, "path", "") + "\x00" + getStringDefault(artifact, "id", "")
+		seen[key] = true
+		result = append(result, artifact)
+	}
+	for _, artifact := range continuation {
+		key := getStringDefault(artifact, "path", "") + "\x00" + getStringDefault(artifact, "id", "")
+		if seen[key] {
+			continue
+		}
+		result = append(result, artifact)
+	}
+	return result
+}
+
+func artifactContractSurface(currentArtifacts, continuationInputs []map[string]any) map[string]any {
+	return map[string]any{
+		"required_current_step_outputs": artifactContractItems(currentArtifacts, true),
+		"optional_current_step_outputs": artifactContractItems(currentArtifacts, false),
+		"required_continuation_inputs":  artifactContractItems(continuationInputs, true),
+		"optional_continuation_inputs":  artifactContractItems(continuationInputs, false),
+		"retired":                       []map[string]any{},
+		"completion_checks":             artifactCompletionChecks(),
+		"archive_checks":                artifactArchiveChecks(),
+	}
+}
+
+func artifactCompletionChecks() []map[string]any {
+	return []map[string]any{
+		{"code": "artifact_exists", "label": "required artifact exists"},
+		{"code": "scaffold_resolved", "label": "artifact is not an incomplete scaffold"},
+		{"code": "validation_passes", "label": "backend validation has no blocking findings"},
+	}
+}
+
+func artifactArchiveChecks() []map[string]any {
+	checks := artifactCompletionChecks()
+	checks = append(checks,
+		map[string]any{"code": "review_step_completed", "label": "review step is completed"},
+		map[string]any{"code": "review_artifacts_valid", "label": "required review and truth-gate artifacts pass validation"},
+		map[string]any{"code": "continuation_inputs_valid", "label": "required continuation inputs still pass validation"},
+		map[string]any{"code": "review_gate_passed", "label": "passing ->review gate exists"},
+	)
+	return checks
+}
+
+func artifactContractItems(artifacts []map[string]any, required bool) []map[string]any {
+	items := make([]map[string]any, 0)
+	for _, artifact := range artifacts {
+		if isRequired, _ := artifact["required"].(bool); isRequired != required {
+			continue
+		}
+		items = append(items, map[string]any{
+			"id":     artifact["id"],
+			"label":  artifact["label"],
+			"path":   artifact["path"],
+			"role":   artifact["role"],
+			"checks": artifact["checks"],
+		})
+	}
+	return items
+}
+
+func blockersForArtifactRole(blockers []map[string]any, role string) []map[string]any {
+	matches := make([]map[string]any, 0)
+	for _, blocker := range blockers {
+		details, _ := blocker["details"].(map[string]any)
+		if details == nil {
+			continue
+		}
+		if detailsRole, _ := details["artifact_role"].(string); detailsRole == role {
+			matches = append(matches, blocker)
+		}
+	}
+	return matches
+}
+
 func scaffoldMissingCurrentStepArtifacts(root, rowName string, state map[string]any, artifacts []map[string]any) ([]map[string]any, error) {
 	created := make([]map[string]any, 0)
 	for _, artifact := range artifacts {
@@ -955,25 +1090,26 @@ func rowBlockers(state map[string]any, seed map[string]any, artifacts []map[stri
 		required, _ := artifact["required"].(bool)
 		artifactID := fmt.Sprintf("%v", artifact["id"])
 		artifactPath := fmt.Sprintf("%v", artifact["path"])
+		artifactRole := getStringDefault(artifact, "role", "")
 		if exists, _ := artifact["exists"].(bool); !exists {
 			if !required {
 				continue
 			}
 			blockers = append(blockers, blocker(tx, "missing_required_artifact",
 				map[string]string{"artifact_id": artifactID, "path": artifactPath},
-				map[string]any{"path": artifact["path"], "artifact_id": artifact["id"]}))
+				map[string]any{"path": artifact["path"], "artifact_id": artifact["id"], "artifact_role": artifactRole}))
 			continue
 		}
 		if incomplete, _ := artifact["incomplete"].(bool); incomplete {
 			blockers = append(blockers, blocker(tx, "artifact_scaffold_incomplete",
 				map[string]string{"artifact_id": artifactID, "path": artifactPath},
-				map[string]any{"path": artifact["path"], "artifact_id": artifact["id"]}))
+				map[string]any{"path": artifact["path"], "artifact_id": artifact["id"], "artifact_role": artifactRole}))
 			continue
 		}
 		if blockingArtifactValidation(artifact) {
 			blockers = append(blockers, blocker(tx, "artifact_validation_failed",
 				map[string]string{"artifact_id": artifactID, "path": artifactPath},
-				map[string]any{"path": artifact["path"], "artifact_id": artifact["id"], "finding_codes": validationFindingCodes(artifact)}))
+				map[string]any{"path": artifact["path"], "artifact_id": artifact["id"], "artifact_role": artifactRole, "finding_codes": validationFindingCodes(artifact)}))
 		}
 	}
 	if getStringDefault(state, "step", "") == "review" && getStringDefault(state, "step_status", "") == "completed" {

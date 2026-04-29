@@ -363,6 +363,11 @@ Current returned data includes:
 - latest gate summary plus transition history
 - canonical artifact paths
 - current-step artifact expectations plus per-artifact validation results
+- required continuation inputs from prior steps, with missing/invalid inputs
+  surfaced as blockers
+- a minimal artifact contract split into required current-step outputs,
+  optional outputs, required continuation inputs, retired artifacts, and
+  completion/archive checks
 - seed state surface
 - blocker list with a backend-owned taxonomy shape
 - checkpoint / next-boundary surface, including action and evidence summary
@@ -404,6 +409,8 @@ baseline before mutation:
 - current-step required artifact presence
 - incomplete scaffold-template detection
 - backend structural validation for the currently supported step artifacts
+- required continuation-input validation for prior-step artifacts needed to
+  resume honestly at the target checkpoint
 - linked-seed validity / sync when a seed is present
 - durable checkpoint evidence written under `gates/`
 
@@ -430,6 +437,14 @@ It still does **not** enforce:
 > `pi-step-ceremony-and-artifact-enforcement.md:374-388` as the operative
 > description.
 
+> **Update (2026-04-29, row `artifact-validation-and-continuation`)**:
+> the current backend now exposes and enforces a minimal artifact contract for
+> current-step outputs and continuation inputs through `furrow row status`,
+> `complete`, `transition`, and `archive`. The standalone
+> `schemas/step-artifact-requirements.yaml` file and prompt/skill binding work
+> remain backlog; runtime truth is the backend behavior described in this
+> section.
+
 Current exit behavior:
 
 - `0` success
@@ -446,8 +461,11 @@ semantics.
 
 - active rows only
 - explicit row argument required
-- blocks if the current step's scaffoldable required artifacts are still missing,
-  still marked as incomplete templates, or fail backend artifact validation
+- blocks if required current-step artifacts or required continuation-input
+  artifacts are missing, still marked as incomplete templates, or fail backend
+  artifact validation
+- blocks on the same pending-action and linked-seed blockers used by row status
+  and transition
 - marks `step_status=completed`
 - marks object-shaped deliverables as `status=completed`
 - preserves unknown fields
@@ -483,6 +501,7 @@ Current behavior is narrow but real:
   - no current blockers from the shared blocker taxonomy
   - an existing passing `->review` gate record
   - passing current-step review artifacts under `reviews/`
+  - passing required continuation inputs from prior steps
 - writes `archived_at` and `updated_at`
 - appends a narrow `review->archive` gate record to `gates[]`
 - writes a durable archive checkpoint evidence file under `gates/`

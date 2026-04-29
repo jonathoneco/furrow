@@ -54,9 +54,9 @@ func (a *App) runReviewStatus(args []string) int {
 	reviewArtifacts := reviewArtifactsForRow(root, rowName, state)
 	reviewSummary := reviewArtifactSummary(reviewArtifacts)
 	seed := rowSeedSurface(root, state)
-	currentArtifacts := currentStepArtifacts(root, rowName, state)
-	blockers := rowBlockers(state, seed, currentArtifacts, rowBlockersOpts{Root: root, RowName: rowName})
-	checkpoint := rowCheckpointSurface(root, rowName, state, blockers, seed, currentArtifacts)
+	checkpointArtifactSet := checkpointArtifacts(root, rowName, state)
+	blockers := rowBlockers(state, seed, checkpointArtifactSet, rowBlockersOpts{Root: root, RowName: rowName})
+	checkpoint := rowCheckpointSurface(root, rowName, state, blockers, seed, checkpointArtifactSet)
 
 	data := map[string]any{
 		"resolution": map[string]any{

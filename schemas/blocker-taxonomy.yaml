@@ -287,21 +287,21 @@ blockers:
   - code: missing_required_artifact
     category: artifact
     severity: block
-    message_template: "required current-step artifact {artifact_id} is missing at {path}"
-    remediation_hint: "Create or scaffold the required current-step artifact, then rerun /work or furrow row status."
+    message_template: "required row artifact {artifact_id} is missing at {path}"
+    remediation_hint: "Create, scaffold, or restore the required artifact, then rerun /work or furrow row status."
     confirmation_path: block
 
   - code: artifact_scaffold_incomplete
     category: artifact
     severity: block
-    message_template: "current-step artifact {artifact_id} at {path} is still an incomplete scaffold"
+    message_template: "row artifact {artifact_id} at {path} is still an incomplete scaffold"
     remediation_hint: "Replace the incomplete scaffold with real step content, then rerun furrow row complete or /work --complete."
     confirmation_path: block
 
   - code: artifact_validation_failed
     category: artifact
     severity: block
-    message_template: "current-step artifact {artifact_id} at {path} failed validation"
+    message_template: "row artifact {artifact_id} at {path} failed validation"
     remediation_hint: "Address the reported validation findings in the artifact, then rerun furrow row status or /work."
     confirmation_path: block
 

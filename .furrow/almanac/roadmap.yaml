@@ -3030,6 +3030,22 @@ phases:
     - .furrow/almanac/roadmap.yaml
     conflict_risk: medium
     completed_at: '2026-04-29T01:35:00-04:00'
+  - index: 12
+    branch: work/artifact-validation-and-continuation
+    description: Strengthen backend-owned row artifact truth by exposing the minimal current artifact contract, validating required continuation inputs alongside current-step outputs, and keeping completion/transition/archive readiness blocked by missing or invalid required artifacts.
+    todos: []
+    depends_on:
+    - work/compat-wrapper-collapse-and-active-shell-thinning
+    key_files:
+    - internal/cli/row.go
+    - internal/cli/row_workflow.go
+    - internal/cli/row_artifacts.go
+    - internal/cli/review.go
+    - schemas/blocker-taxonomy.yaml
+    - docs/architecture/go-cli-contract.md
+    - .furrow/almanac/roadmap.yaml
+    conflict_risk: low
+    completed_at: '2026-04-29T22:14:08Z'
 post_collapse_backlog:
   note: Parking lot only, not an execution queue. Select executable rows from roadmap phases or from todos.yaml-backed row creation after an explicit operator decision.
   ownership_contract:
@@ -3040,8 +3056,8 @@ post_collapse_backlog:
   deferred_rows:
   - branch: work/artifact-validation-and-continuation
     disposition: preserved-backlog
-    queue_status: actionable_candidate
-    reason: Truth protection remains relevant, but not before deletion/collapse rows finish.
+    queue_status: closed
+    reason: Closed as Phase 6 follow-on row 12; broader artifact-writing and handoff prompt work remains in todos.yaml.
   - branch: work/seeds-foundation
     disposition: preserved-backlog
     queue_status: blocked
