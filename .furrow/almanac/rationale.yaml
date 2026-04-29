@@ -102,7 +102,7 @@ components:
     exists_because: "Claude Code has no Furrow-exclusive state mutation with schema validation"
     delete_when: "Claude Code provides built-in task state management with validated writes"
   - path: bin/frw.d/scripts/validate-definition.sh
-    exists_because: "Claude Code has no native YAML schema validation for work definitions"
+    exists_because: "Legacy frw callers need a compatibility entrypoint that routes to Go-owned definition validation"
     delete_when: "Claude Code validates definition.yaml natively"
   - path: bin/frw.d/scripts/validate-naming.sh
     exists_because: "Claude Code has no built-in naming convention enforcement for work artifacts"
@@ -272,7 +272,7 @@ components:
     exists_because: "Claude Code has no native ideation gate evaluation with dimension rubrics"
     delete_when: "Claude Code provides built-in ideation quality assessment"
   - path: bin/frw.d/hooks/validate-definition.sh
-    exists_because: "Claude Code has no native definition.yaml schema validation hook"
+    exists_because: "Claude Code has no native definition.yaml schema validation hook; this shim adapts hook JSON to Go-owned validation"
     delete_when: "Claude Code validates work definitions natively at write time"
   - path: bin/frw.d/hooks/stop-ideation.sh
     exists_because: "Claude Code has no native section-by-section interaction enforcement"
@@ -406,7 +406,7 @@ components:
     exists_because: "Claude Code has no native almanac management with TODO triage, roadmap generation, and knowledge lifecycle"
     delete_when: "Claude Code provides built-in knowledge management and planning UI"
   - path: bin/rws
-    exists_because: "Claude Code has no native row lifecycle management with atomic state mutation and gate validation"
+    exists_because: "Temporary compatibility CLI for shell-owned row behavior; read/focus and repair aliases route to Go where live parity exists"
     delete_when: "Claude Code provides built-in row lifecycle management with state safety"
   - path: bin/sds
     exists_because: "Claude Code has no native seed tracking with JSONL registry and concurrent-safe file locking"

@@ -33,6 +33,33 @@ Cutoff posture:
 Recommended next row:
 `work/command-markdown-thin-adapter-collapse`.
 
+## Removal/Routing Update: 2026-04-29
+
+Row: `work/legacy-shell-cutoff-and-removal`
+
+This follow-up made only loaded-path cuts with live Go parity:
+
+- `frw validate-definition` remains as a compatibility entrypoint, but its
+  fallback now runs the Go validator from `FURROW_ROOT/cmd/furrow` instead of
+  assuming the caller's project contains `./cmd/furrow`.
+- `frw hook validate-definition` no longer owns yq-based validation rules. It
+  only adapts the Claude hook JSON envelope and calls `furrow validate
+  definition --path <definition.yaml>`, preserving the legacy hook surface while
+  routing validation semantics to Go.
+- `rws status`, `rws list`, `rws focus`, and `rws repair-deliverables` now exec
+  `furrow row status`, `furrow row list`, `furrow row focus`, and
+  `furrow row repair-deliverables` respectively. These are compatibility aliases
+  over loaded Go row paths.
+- `skills/shared/layer-protocol.md` now names `furrow row transition` as the
+  operator-owned transition path and limits `rws`/`alm`/`sds` to temporary
+  holdouts where Go parity does not exist.
+
+No shell entrypoint was deleted in this row. The active runtime/documentation
+surface still depends on shell-owned install/init/upgrade, doctor, hooks,
+summary mutation, user actions, merge/reintegration, gate execution,
+cross-model review, almanac extraction/triage/observation/rationale, and seed
+behavior.
+
 ## Classification Table
 
 | Surface | Classification | Evidence | Cutoff implication |
@@ -66,14 +93,14 @@ Recommended next row:
 | `bin/frw update-state/update-deliverable` | `shell-semantic` | Shell mutates row state directly; no generic Go patch/update-deliverable command exists. | Blocked until mutation paths are removed from active prompts or ported. |
 | `bin/frw check-artifacts/run-gate/evaluate-gate/select-gate/select-dimensions` | `shell-semantic` | Go has transition blockers and review validation, but `furrow gate` is reserved and full gate orchestration is not implemented. | Keep until gate orchestration is ported or command markdown stops using these paths. |
 | `bin/frw generate-plan` | `shell-semantic` | Builds `plan.json` from `definition.yaml`; no equivalent Go command exists. | Keep until decompose planning generation is backend-owned or retired. |
-| `bin/frw validate-definition/validate-naming` | mixed: `compat-wrapper` and `shell-semantic` | Definition validation has Go parity; naming validation remains shell-only. | Port naming or delete it; route definition validation to Go. |
+| `bin/frw validate-definition/validate-naming` | mixed: `compat-wrapper` and `shell-semantic` | Definition validation routes to `furrow validate definition`; naming validation remains shell-only. | Keep definition as a compatibility wrapper; port naming or delete it later. |
 | `bin/frw measure-context` | `shell-semantic` | Shell-only context budget accounting; Go context bundle assembly does not enforce this budget. | Keep until context budget validation is Go-backed or retired. |
 | `bin/frw run-ci-checks/run-integration-tests` | `shell-semantic` | Project/test orchestration is shell-only. | Keep or replace with explicit repo test commands. |
 | `bin/frw cross-model-review` | `shell-semantic` | Go review run/cross-model are reserved; active driver prompts still call shell. | Must remain until review execution is ported or removed. |
 | `bin/frw merge-*`, `merge-sort-union`, `merge-to-main`, `rescue`, `launch-phase` | `shell-semantic` | Go `furrow merge` is reserved; command markdown still uses merge and launch shell flows. | Keep until merge/phase launch behavior is ported or retired. |
 | `bin/frw migrate-*`, `normalize-seeds`, `normalize-todos` | `shell-semantic` | Data migration and normalization are shell-only. | Keep as maintenance tools until replacement or one-time retirement. |
 | `bin/frw.d/lib/**` | mixed support code | Shared shell libraries support the remaining shell-semantic and hook paths. | Delete only after dependent shell paths are gone. |
-| `bin/rws` row lifecycle CLI | mixed: `compat-wrapper` plus `shell-semantic` | `status/list/transition/archive/init/focus` overlap Go; summary, user actions, reintegration, sort invariant, diff, worktree summary, and load-step remain shell-only. | Convert overlapping commands to wrappers first; preserve shell-only commands until parity or retirement. |
+| `bin/rws` row lifecycle CLI | mixed: `compat-wrapper` plus `shell-semantic` | `status`, `list`, `focus`, and `repair-deliverables` route to Go; transition/archive/init/complete still retain shell-only compatibility semantics or incompatible flags; summary, user actions, reintegration, sort invariant, diff, worktree summary, and load-step remain shell-only. | Preserve shell-only commands until parity or retirement. |
 | `rws load-step` | `shell-semantic` | Active docs now prefer `furrow context for-step`, but this shell command still owns legacy skill loading. | Candidate for deletion after command markdown collapse verifies no active route uses it. |
 | `rws regenerate-summary/validate-summary/update-summary` | `shell-semantic` | Go `row summary` is reserved; active checkpoint/archive docs still call these wrappers. | Must remain until Go summary command exists or summary mutation is retired. |
 | `rws add/complete/list-user-action` | `shell-semantic` | Step sequence rule explicitly says pending user actions use `rws complete-user-action` until Go command exists. | Must remain until Go user-action commands exist. |
@@ -104,11 +131,15 @@ Recommended next row:
 Safe later deletions or wrapper conversions once the named blockers are closed:
 
 - Convert `alm validate` to `furrow almanac validate`.
-- Convert `rws status`, `rws list`, `rws transition`, `rws complete-step`,
-  `rws archive`, `rws focus`, and the row-state portions of `rws init` to
-  wrappers over `furrow row ...`.
-- Convert `frw validate-definition` and `bin/frw.d/hooks/validate-definition.sh`
-  to call `furrow validate definition`.
+- Convert `rws transition`, `rws complete-step`, `rws archive`, and the row-state
+  portions of `rws init` to wrappers over `furrow row ...` only after their
+  shell-only flags, failure/conditional behavior, summary side effects, and
+  bootstrap side effects are either ported or retired. `rws status`, `rws list`,
+  `rws focus`, and `rws repair-deliverables` are already compatibility aliases
+  over Go.
+- Delete `bin/frw.d/hooks/validate-definition.sh` only if
+  `.claude/settings.json` no longer registers the legacy
+  `frw hook validate-definition` surface.
 - Retire `rws load-step` after active command markdown and driver prompts route
   only through `furrow context for-step` and rendered handoffs.
 - Retire active references to `rws gate-check` where `furrow row transition`

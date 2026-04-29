@@ -35,8 +35,9 @@ The contract target is:
 
 ## Command groups
 
-The future canonical binary should be `furrow`, with legacy wrappers (`frw`,
-`rws`, `alm`, `sds`) preserved during migration.
+The canonical binary is `furrow` for implemented backend behavior. Legacy
+wrappers (`frw`, `rws`, `alm`, `sds`) are preserved only as compatibility
+aliases or temporary shell-semantic holdouts where no live Go path exists.
 
 ### 1. `furrow row`
 
@@ -48,10 +49,10 @@ Representative subcommands:
 - `furrow row status [<name>]`
 - `furrow row transition <name> --step <step>`
 - `furrow row complete <name>`
-- `furrow row checkpoint <name>`
+- `furrow row checkpoint <name>` (reserved; not implemented)
 - `furrow row archive <name>`
-- `furrow row summary <name> --regenerate`
-- `furrow row validate <name>`
+- `furrow row summary <name> --regenerate` (reserved; not implemented)
+- `furrow row validate <name>` (reserved; not implemented)
 - `furrow row list [--active|--archived|--all]`
 
 JSON contract requirements:
@@ -579,17 +580,22 @@ Remaining work in this slice:
 
 ### Slice 3 — Claude compatibility delegation
 
-After the first two slices are stable, begin delegating:
+After the first two slices are stable, delegate only where live Go parity
+exists:
 
-- `frw` wrapper calls into `furrow`
-- `rws` wrapper calls into `furrow row ...`
-- `alm` wrapper calls into `furrow almanac ...`
-- `sds` wrapper calls into `furrow seeds ...`
+- `frw validate-definition` calls into `furrow validate definition`
+- `rws status`, `rws list`, `rws focus`, and `rws repair-deliverables` call into
+  `furrow row ...`
+- `alm validate` remains shell-owned until its path-specific validation behavior
+  is either ported or retired
+- `sds` remains shell-owned because `furrow seeds` is reserved
 
 Why third:
 
 - Pi can move early
 - Claude remains usable for teammates without forcing Claude-first sequencing
+- shell-semantic behavior stays in shell until parity is proven by loaded
+  runtime paths
 
 ### Slice 4 — deeper workflow semantics
 

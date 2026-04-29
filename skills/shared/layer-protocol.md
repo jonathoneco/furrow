@@ -30,7 +30,9 @@ operator  ──handoff──▶  phase driver  ──handoff──▶  engine(s
 ## Operator
 
 **Scope**: whole-row lifecycle. **Session**: long-running (persists across steps).
-**State**: the only layer that calls `rws`/`alm`/`sds` and reads/writes row state.
+**State**: the only layer that calls `furrow row ...` for backend-owned row state.
+It may call temporary compatibility holdouts (`rws`/`alm`/`sds`) only for
+behaviors not yet implemented in Go.
 **User dialog**: the only layer that addresses the user. Presentation follows
 `skills/shared/presentation-protocol.md` (D6).
 
@@ -43,7 +45,8 @@ Responsibilities:
 - Persist the driver handoff artifact via `furrow handoff render --target driver:{step} --write`.
 - Receive the phase result (EOS-report) from the driver.
 - Present phase results to user per `skills/shared/presentation-protocol.md`.
-- Request step transition via `rws transition` after user approval.
+- Request step transition via `furrow row transition <row> --step <next>` after
+  user approval.
 
 Session-resume: **runtime concern**. Claude operator reads `~/.claude/teams/{row}/config.json`
 and re-spawns stale drivers via `Agent`. Pi operator: `@tintinweb/pi-subagents` handles

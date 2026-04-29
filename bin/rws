@@ -46,6 +46,21 @@ FURROW_YAML=".claude/furrow.yaml"
 
 die() { printf 'rws: %s\n' "$*" >&2; exit "$EXIT_USAGE"; }
 
+rws_exec_furrow() {
+  if command -v furrow >/dev/null 2>&1; then
+    exec furrow "$@"
+  fi
+  cd "${PROJECT_ROOT:-$FURROW_ROOT}" || exit "$EXIT_SUB_FAILED"
+  exec go run "${FURROW_ROOT}/cmd/furrow" "$@"
+}
+
+rws_list_compat() {
+  if [ $# -eq 0 ]; then
+    rws_exec_furrow row list --active
+  fi
+  rws_exec_furrow row list "$@"
+}
+
 now_iso() { date -u '+%Y-%m-%dT%H:%M:%SZ'; }
 
 is_valid_step() {
@@ -2940,8 +2955,8 @@ cmd="${1:-help}"
 case "$cmd" in
   init)               rws_init "$@" ;;
   transition)         rws_transition "$@" ;;
-  status)             rws_status "$@" ;;
-  list)               rws_list "$@" ;;
+  status)             rws_exec_furrow row status "$@" ;;
+  list)               rws_list_compat "$@" ;;
   complete-deliverable) rws_complete_deliverable "$@" ;;
   complete-step)      rws_complete_step "$@" ;;
   add-user-action)    rws_add_user_action "$@" ;;
@@ -2953,13 +2968,9 @@ case "$cmd" in
   rewind)             rws_rewind "$@" ;;
   diff)               rws_diff "$@" ;;
   repair-deliverables)
-    FURROW_BIN="${FURROW_BIN:-${FURROW_ROOT}/bin/furrow}"
-    if [ ! -x "$FURROW_BIN" ]; then
-      die "furrow binary not found at $FURROW_BIN; run 'go build ./cmd/furrow'"
-    fi
-    exec "$FURROW_BIN" row repair-deliverables "$@"
+    rws_exec_furrow row repair-deliverables "$@"
     ;;
-  focus)              rws_focus "$@" ;;
+  focus)              rws_exec_furrow row focus "$@" ;;
   regenerate-summary) rws_regenerate_summary "$@" ;;
   validate-summary)   rws_validate_summary "$@" ;;
   update-summary)     rws_update_summary "$@" ;;

@@ -21,5 +21,8 @@ frw_validate_definition() {
   fi
 
   cd "${PROJECT_ROOT:-$FURROW_ROOT}" || return 1
-  exec go run ./cmd/furrow validate definition --path "$1"
+  if command -v furrow >/dev/null 2>&1; then
+    exec furrow validate definition --path "$1"
+  fi
+  exec go run "${FURROW_ROOT}/cmd/furrow" validate definition --path "$1"
 }
