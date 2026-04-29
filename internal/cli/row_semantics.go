@@ -658,26 +658,67 @@ func reviewArtifactSummary(artifacts []map[string]any) map[string]any {
 	}
 }
 
-func sourceTodoSurface(root string, state map[string]any) map[string]any {
+func sourceTodoIDsFromState(state map[string]any) []string {
+	if raw, ok := state["source_todos"].([]any); ok {
+		ids := make([]string, 0, len(raw))
+		seen := make(map[string]struct{}, len(raw))
+		for _, item := range raw {
+			id, ok := item.(string)
+			if !ok {
+				continue
+			}
+			id = strings.TrimSpace(id)
+			if id == "" {
+				continue
+			}
+			if _, exists := seen[id]; exists {
+				continue
+			}
+			seen[id] = struct{}{}
+			ids = append(ids, id)
+		}
+		if len(ids) > 0 {
+			return ids
+		}
+	}
 	todoID := strings.TrimSpace(getStringDefault(state, "source_todo", ""))
 	if todoID == "" {
-		return map[string]any{"id": nil, "present": false}
+		return nil
+	}
+	return []string{todoID}
+}
+
+func sourceTodosSurface(root string, state map[string]any) map[string]any {
+	todoIDs := sourceTodoIDsFromState(state)
+	if len(todoIDs) == 0 {
+		return map[string]any{"ids": []any{}, "present": false, "items": []any{}}
 	}
 	todos, err := readTodoList(filepath.Join(root, ".furrow", "almanac", "todos.yaml"))
 	if err != nil {
-		return map[string]any{"id": todoID, "present": false, "error": err.Error()}
+		return map[string]any{"ids": todoIDs, "present": false, "items": []any{}, "error": err.Error()}
 	}
-	todo, ok := findTodoByID(todos, todoID)
-	if !ok {
-		return map[string]any{"id": todoID, "present": false}
+	items := make([]any, 0, len(todoIDs))
+	allPresent := true
+	for _, todoID := range todoIDs {
+		todo, ok := findTodoByID(todos, todoID)
+		if !ok {
+			allPresent = false
+			items = append(items, map[string]any{"id": todoID, "present": false})
+			continue
+		}
+		items = append(items, map[string]any{
+			"id":         todoID,
+			"present":    true,
+			"title":      nilIfEmpty(getStringDefault(todo, "title", "")),
+			"status":     nilIfEmpty(getStringDefault(todo, "status", "")),
+			"seed_id":    nilIfEmpty(getStringDefault(todo, "seed_id", "")),
+			"updated_at": nilIfEmpty(getStringDefault(todo, "updated_at", "")),
+		})
 	}
 	return map[string]any{
-		"id":         todoID,
-		"present":    true,
-		"title":      nilIfEmpty(getStringDefault(todo, "title", "")),
-		"status":     nilIfEmpty(getStringDefault(todo, "status", "")),
-		"seed_id":    nilIfEmpty(getStringDefault(todo, "seed_id", "")),
-		"updated_at": nilIfEmpty(getStringDefault(todo, "updated_at", "")),
+		"ids":     todoIDs,
+		"present": allPresent,
+		"items":   items,
 	}
 }
 
@@ -700,10 +741,10 @@ func archiveCeremonySurface(root, rowName string, state map[string]any, artifact
 	review := reviewArtifactSummary(artifacts)
 	followUps, _ := review["follow_ups"].(map[string]any)
 	return map[string]any{
-		"review":      review,
-		"follow_ups":  followUps,
-		"pr_prep":     archivePRPrepSurface(root, rowName, state, artifacts),
-		"source_todo": sourceTodoSurface(root, state),
+		"review":       review,
+		"follow_ups":   followUps,
+		"pr_prep":      archivePRPrepSurface(root, rowName, state, artifacts),
+		"source_todos": sourceTodosSurface(root, state),
 		"learnings": map[string]any{
 			"path":    learningsPath,
 			"present": fileExists(learningsPath),

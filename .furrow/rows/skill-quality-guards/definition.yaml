@@ -50,4 +50,5 @@ constraints:
   - "Red flag is pre-write warning; eval dimension is gate enforcement — clear roles, not redundant enforcement"
 
 gate_policy: supervised
-source_todo: guard-against-horizontal-slices
+source_todos:
+  - guard-against-horizontal-slices

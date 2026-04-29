@@ -75,4 +75,5 @@ constraints:
   - "Parallel implementation: specialist-model-hints and step-model-defaults are independent"
 
 gate_policy: supervised
-source_todo: sonnet-model-routing
+source_todos:
+  - sonnet-model-routing

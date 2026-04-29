@@ -56,4 +56,5 @@ constraints:
 
 gate_policy: supervised
 
-source_todo: dual-review-and-specialist-delegation
+source_todos:
+  - dual-review-and-specialist-delegation

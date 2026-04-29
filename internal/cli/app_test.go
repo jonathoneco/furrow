@@ -732,6 +732,13 @@ func TestRowInitFocusAndScaffoldJSON(t *testing.T) {
 		if state["seed_id"] == nil || state["seed_id"] == "" {
 			t.Fatalf("expected persisted seed_id, got %#v", state["seed_id"])
 		}
+		if _, ok := state["source_todo"]; ok {
+			t.Fatalf("did not expect legacy source_todo write, got %#v", state["source_todo"])
+		}
+		sourceTodos, ok := state["source_todos"].([]any)
+		if !ok || len(sourceTodos) != 1 || sourceTodos[0] != "go-cli-contract" {
+			t.Fatalf("expected canonical source_todos write, got %#v", state["source_todos"])
+		}
 		todosBytes, err := os.ReadFile(filepath.Join(root, ".furrow", "almanac", "todos.yaml"))
 		if err != nil {
 			t.Fatal(err)
@@ -897,7 +904,7 @@ func TestRowInitFocusAndScaffoldJSON(t *testing.T) {
 			"gates": []any{
 				map[string]any{"boundary": "implement->review", "outcome": "pass", "decided_by": "manual", "timestamp": "2026-04-24T17:59:00Z"},
 			},
-			"source_todo": "go-cli-contract",
+			"source_todos": []any{"go-cli-contract"},
 		})
 		writeReviewArtifact(t, root, "archive-row", "one", `{"deliverable":"one","phase_a":{"verdict":"pass"},"phase_b":{"verdict":"pass"},"overall":"pass","timestamp":"2026-04-24T18:01:00Z"}`)
 
@@ -917,6 +924,10 @@ func TestRowInitFocusAndScaffoldJSON(t *testing.T) {
 		review := archiveCeremony["review"].(map[string]any)
 		if required, _ := review["required"].(float64); required != 1 {
 			t.Fatalf("expected one review artifact, got %#v", review)
+		}
+		sourceTodos := archiveCeremony["source_todos"].(map[string]any)
+		if present, _ := sourceTodos["present"].(bool); !present {
+			t.Fatalf("expected source_todos evidence to be present, got %#v", sourceTodos)
 		}
 		state := readJSONFile(t, filepath.Join(root, ".furrow", "rows", "archive-row", "state.json"))
 		if archivedAt, _ := state["archived_at"].(string); archivedAt == "" {
@@ -1155,8 +1166,12 @@ follow_ups:
 			t.Fatalf("expected exit 0, got %d stderr=%s payload=%s", code, stderr, mustJSONPayload(t, payload))
 		}
 		state := readJSONFile(t, filepath.Join(root, ".furrow", "rows", "review-archive-boundary-hardening", "state.json"))
-		if state["source_todo"] != "work-loop-boundary-hardening" {
-			t.Fatalf("expected persisted source_todo, got %#v", state["source_todo"])
+		if _, ok := state["source_todo"]; ok {
+			t.Fatalf("did not expect legacy source_todo write, got %#v", state["source_todo"])
+		}
+		sourceTodos, ok := state["source_todos"].([]any)
+		if !ok || len(sourceTodos) != 1 || sourceTodos[0] != "work-loop-boundary-hardening" {
+			t.Fatalf("expected persisted source_todos, got %#v", state["source_todos"])
 		}
 	})
 

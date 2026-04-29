@@ -70,7 +70,9 @@
   "name": "review-archive-boundary-hardening",
   "pending_user_actions": [],
   "seed_id": "furrow-3254",
-  "source_todo": "work-loop-boundary-hardening",
+  "source_todos": [
+    "work-loop-boundary-hardening"
+  ],
   "step": "review",
   "step_status": "completed",
   "steps_sequence": [

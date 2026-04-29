@@ -40,7 +40,9 @@
   "name": "backend-mediated-row-bookkeeping",
   "pending_user_actions": [],
   "seed_id": "",
-  "source_todo": "backend-mediated-row-bookkeeping",
+  "source_todos": [
+    "backend-mediated-row-bookkeeping"
+  ],
   "step": "review",
   "step_status": "completed",
   "steps_sequence": [

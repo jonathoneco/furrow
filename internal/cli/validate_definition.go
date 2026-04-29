@@ -105,7 +105,6 @@ var (
 		"constraints":      {},
 		"gate_policy":      {},
 		"mode":             {},
-		"source_todo":      {},
 		"source_todos":     {},
 		"supersedes":       {},
 	}

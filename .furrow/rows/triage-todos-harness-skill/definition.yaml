@@ -82,4 +82,5 @@ constraints:
   - "Inline AI assessment, not subagent — assess each TODO in a single pass"
 
 gate_policy: supervised
-source_todo: triage-todos-harness-skill
+source_todos:
+  - triage-todos-harness-skill

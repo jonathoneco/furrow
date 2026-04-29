@@ -18,19 +18,19 @@ type validationFinding struct {
 }
 
 type almanacFileReport struct {
-	File           string `json:"file"`
-	Status         string `json:"status"`
-	FindingCount   int    `json:"finding_count"`
-	ErrorCount     int    `json:"error_count"`
-	WarningCount   int    `json:"warning_count"`
-	DocumentSummary any   `json:"document_summary,omitempty"`
+	File            string `json:"file"`
+	Status          string `json:"status"`
+	FindingCount    int    `json:"finding_count"`
+	ErrorCount      int    `json:"error_count"`
+	WarningCount    int    `json:"warning_count"`
+	DocumentSummary any    `json:"document_summary,omitempty"`
 }
 
 type almanacValidationResult struct {
-	Paths    map[string]string    `json:"paths"`
-	Files    []almanacFileReport  `json:"files"`
-	Summary  map[string]any       `json:"summary"`
-	Findings []validationFinding  `json:"findings"`
+	Paths    map[string]string   `json:"paths"`
+	Files    []almanacFileReport `json:"files"`
+	Summary  map[string]any      `json:"summary"`
+	Findings []validationFinding `json:"findings"`
 }
 
 func (a *App) runAlmanacValidate(args []string) int {
@@ -455,13 +455,12 @@ func validateRoadmap(path string, todoIDs, observationIDs map[string]struct{}) (
 			}
 			_, _ = intFromAny(phase["number"])
 			rows, rowsOK := asSlice(phase["rows"])
-			workUnits, workUnitsOK := asSlice(phase["work_units"])
 			if rowsOK {
 				rowsCount += validateRoadmapRows(path, rows, todoIDs, &findings, fmt.Sprintf("$.phases[%d].rows", i))
-			} else if workUnitsOK {
-				rowsCount += validateRoadmapRows(path, workUnits, todoIDs, &findings, fmt.Sprintf("$.phases[%d].work_units", i))
+			} else if legacyRows, legacyOK := asSlice(phase["work_units"]); legacyOK {
+				rowsCount += validateRoadmapRows(path, legacyRows, todoIDs, &findings, fmt.Sprintf("$.phases[%d].work_units", i))
 			} else {
-				findings = append(findings, validationFinding{File: path, Severity: "error", Code: "missing_rows", Path: fmt.Sprintf("$.phases[%d]", i), Message: "phase must contain rows or work_units"})
+				findings = append(findings, validationFinding{File: path, Severity: "error", Code: "missing_rows", Path: fmt.Sprintf("$.phases[%d]", i), Message: "phase must contain rows"})
 			}
 		}
 	} else {

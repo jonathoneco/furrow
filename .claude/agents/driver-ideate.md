@@ -50,7 +50,10 @@ Run the 6-part ceremony in order:
 4. **Section-by-section approval** — build `definition.yaml` incrementally. Produce
    each section individually: objective, each deliverable, context pointers,
    constraints, gate policy. Emit section markers before each.
-   If `state.json` has a non-null `source_todo`, include it in `definition.yaml`.
+   If `state.json` has a non-null `source_todos` list, include `source_todos`
+   in `definition.yaml`. For historical rows only, a non-null `source_todo` in
+   `state.json` is a compatibility-read fallback and must be written to
+   `definition.yaml` as canonical `source_todos`.
    If `state.json` has a non-null `gate_policy_init`, use it as the default for
    `gate_policy` in `definition.yaml`.
 5. **Dual outside voice** — dispatch engine reviewers in parallel against the completed

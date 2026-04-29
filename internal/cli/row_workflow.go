@@ -268,10 +268,12 @@ func initRow(root, rowName string, opts rowInitOptions) (map[string]any, error) 
 		"created_at":           now,
 		"updated_at":           now,
 		"archived_at":          nil,
-		"source_todo":          nilIfEmpty(opts.SourceTodo),
 		"gate_policy_init":     gatePolicy,
 		"truth_gates_version":  1,
 		"pending_user_actions": []any{},
+	}
+	if opts.SourceTodo != "" {
+		state["source_todos"] = []any{opts.SourceTodo}
 	}
 	if err := writeJSONMapAtomic(filepath.Join(rowDir, "state.json"), state); err != nil {
 		return nil, &cliError{exit: 4, code: "write_failed", message: fmt.Sprintf("failed to write %s", filepath.Join(rowDir, "state.json")), details: map[string]any{"path": filepath.Join(rowDir, "state.json"), "error": err.Error()}}

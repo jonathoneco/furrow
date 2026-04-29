@@ -203,6 +203,33 @@ func TestValidateDefinitionUnknownTopLevelKey(t *testing.T) {
 	}
 }
 
+func TestValidateDefinitionRejectsLegacySourceTodo(t *testing.T) {
+	resetTaxonomyCacheForTest()
+	t.Cleanup(resetTaxonomyCacheForTest)
+	tx, _ := LoadTaxonomy()
+
+	body := validDefinitionFixture + "source_todo: go-cli-contract\n"
+	path := writeDefinitionFixture(t, t.TempDir(), body)
+	envs := validateDefinition(path, tx)
+	env := assertHasCode(t, envs, "definition_unknown_keys")
+	if !strings.Contains(env.Message, "source_todo") {
+		t.Fatalf("message should name the legacy key: %q", env.Message)
+	}
+}
+
+func TestValidateDefinitionAcceptsCanonicalSourceTodos(t *testing.T) {
+	resetTaxonomyCacheForTest()
+	t.Cleanup(resetTaxonomyCacheForTest)
+	tx, _ := LoadTaxonomy()
+
+	body := validDefinitionFixture + "source_todos:\n  - go-cli-contract\n  - work-loop-boundary-hardening\n"
+	path := writeDefinitionFixture(t, t.TempDir(), body)
+	envs := validateDefinition(path, tx)
+	if len(envs) != 0 {
+		t.Fatalf("expected canonical source_todos to validate, got %+v", envs)
+	}
+}
+
 func TestValidateDefinitionMalformedYAML(t *testing.T) {
 	resetTaxonomyCacheForTest()
 	t.Cleanup(resetTaxonomyCacheForTest)

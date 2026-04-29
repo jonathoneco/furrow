@@ -519,7 +519,8 @@ Current behavior is intentionally narrow but real:
 - creates the row directory plus `state.json` and `reviews/`
 - resolves defaults from `.claude/furrow.yaml` when available
 - creates or links a seed and aligns it to the current ideation step
-- can link/backfill a `source_todo` seed reference when needed
+- can link/backfill canonical `source_todos` seed references when needed, while
+  tolerating historical `source_todo` state during migration reads
 - reads the live canonical almanac planning file through the same tolerant YAML path used by almanac validation, so supported row init stays aligned with repo truth
 - does **not** precreate downstream step artifacts
 

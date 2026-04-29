@@ -39,4 +39,5 @@ constraints:
 
 gate_policy: supervised
 
-source_todo: script-access-restrictions
+source_todos:
+  - script-access-restrictions

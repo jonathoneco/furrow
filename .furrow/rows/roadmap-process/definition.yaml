@@ -93,4 +93,5 @@ constraints:
   - "Roadmaps are sprint artifacts, not permanent documents"
 
 gate_policy: supervised
-source_todo: roadmap-process-from-todos
+source_todos:
+  - roadmap-process-from-todos

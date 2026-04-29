@@ -127,4 +127,5 @@ constraints:
   - "Enforcement in implement.md must be a hard stop, not advisory guidance"
 
 gate_policy: supervised
-source_todo: specialist-encoded-reasoning
+source_todos:
+  - specialist-encoded-reasoning

@@ -142,7 +142,9 @@
   "mode": "code",
   "name": "pi-step-ceremony-and-artifact-enforcement",
   "seed_id": "furrow-7427",
-  "source_todo": "pi-step-ceremony-and-artifact-enforcement",
+  "source_todos": [
+    "pi-step-ceremony-and-artifact-enforcement"
+  ],
   "step": "review",
   "step_status": "completed",
   "steps_sequence": [

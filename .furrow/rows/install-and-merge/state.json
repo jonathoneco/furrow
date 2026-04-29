@@ -144,6 +144,5 @@
   "created_at": "2026-04-22T17:24:42Z",
   "updated_at": "2026-04-23T14:31:36Z",
   "archived_at": "2026-04-23T14:31:36Z",
-  "source_todo": null,
   "gate_policy_init": "supervised"
 }

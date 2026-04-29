@@ -40,7 +40,9 @@
   "name": "pi-adapter-promotion",
   "pending_user_actions": [],
   "seed_id": "",
-  "source_todo": "pi-adapter-package",
+  "source_todos": [
+    "pi-adapter-package"
+  ],
   "step": "review",
   "step_status": "completed",
   "steps_sequence": [

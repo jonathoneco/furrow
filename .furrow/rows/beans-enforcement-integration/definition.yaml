@@ -263,4 +263,5 @@ constraints:
 
 gate_policy: supervised
 
-source_todo: beans-enforcement-integration
+source_todos:
+  - beans-enforcement-integration

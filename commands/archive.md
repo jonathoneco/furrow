@@ -37,14 +37,17 @@ If not found: error with message indicating what is blocking archive.
    - User confirms. Writes to `.furrow/almanac/todos.yaml` and validates.
    - If no candidates found, skip silently.
 
-7. **TODO pruning**: Check if `definition.yaml` has a `source_todo` field.
-   - If set, read `.furrow/almanac/todos.yaml` and find the entry matching that ID.
-   - Present: "This row was started from TODO '{id}': {title}. Mark as resolved?"
+7. **TODO pruning**: Check if `definition.yaml` has a canonical `source_todos` field.
+   For historical definitions only, treat singular `source_todo` as a read-only
+   fallback and normalize it to the same candidate list.
+   - If set, read `.furrow/almanac/todos.yaml` and find entries matching those IDs.
+   - For each match, present: "This row was started from TODO '{id}': {title}. Mark as resolved?"
    - **yes**: Remove the entry from `.furrow/almanac/todos.yaml`.
    - **no**: Keep as-is.
    - **partial**: Add a note to the entry's context indicating partial completion,
      bump `updated_at`.
-   - If `source_todo` is not set or `.furrow/almanac/todos.yaml` has no matching entry, skip.
+   - If no `source_todos` are set and no historical fallback is present, or
+     `.furrow/almanac/todos.yaml` has no matching entries, skip.
    - Validate `.furrow/almanac/todos.yaml` after any changes.
 
 8. **Observations surface**: Run the legacy `alm observe on-archive "{name}"`
