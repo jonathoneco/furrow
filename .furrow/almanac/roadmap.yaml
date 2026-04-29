@@ -2968,6 +2968,18 @@ phases:
     - .furrow/almanac/roadmap.yaml
     conflict_risk: low
     completed_at: '2026-04-28T23:43:10-04:00'
+  - index: 8
+    branch: work/context-protocol-bloat-collapse
+    description: Collapse always-on protocol context into compact operator and phase contracts with lazy references, preserving real-ask, evidence, context bundle, layer, handoff, checkpoint, and archive protections.
+    todos: []
+    depends_on:
+    - work/post-audit-planning-collapse
+    key_files:
+    - skills/
+    - .claude/
+    - .furrow/almanac/roadmap.yaml
+    conflict_risk: low
+    completed_at: '2026-04-29T00:16:15-04:00'
 post_collapse_backlog:
   note: Later phases are provisional until planning source-of-truth simplification lands. Do not add almanac/TODO UX before that cutoff.
   source_of_truth: todos.yaml remains canonical until an approved source-of-truth cutover row replaces it; no seed migration is approved by this Phase 5 collapse.

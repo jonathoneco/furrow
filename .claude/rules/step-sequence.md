@@ -9,8 +9,6 @@ ideate → research → plan → spec → decompose → implement → review
 Pre-step evaluation may determine a step adds no new information (prechecked gate),
 advancing automatically — but the step is still recorded in state.json.
 
-## Enforcement
-
 - `furrow row transition <row> --step <next-step>` validates step ordering; out-of-order transitions fail
 - `furrow row transition <row> --step <next-step>` blocks when uncompleted user actions exist
 - `state.json.step` tracks current position; only Furrow CLI commands may modify it

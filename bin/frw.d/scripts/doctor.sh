@@ -159,7 +159,7 @@ frw_doctor() {
   section "Cross-layer deduplication"
   _dupes=0
   # Extract instruction-like lines (>= 20 chars) from each layer
-  _ambient_lines=$(grep -rh '^- \|^[0-9]\. ' "$ROOT/.claude/" 2>/dev/null | sed 's/^[[:space:]]*//' | awk 'length >= 20' | sort -u || true)
+  _ambient_lines=$(grep -h '^- \|^[0-9]\. ' "$ROOT/.claude/CLAUDE.md" "$ROOT"/.claude/rules/*.md 2>/dev/null | sed 's/^[[:space:]]*//' | awk 'length >= 20' | sort -u || true)
   _work_lines=$(grep -h '^- \|^[0-9]\. ' "$ROOT/skills/work-context.md" 2>/dev/null | sed 's/^[[:space:]]*//' | awk 'length >= 20' | sort -u || true)
   _step_lines=$(cat "$ROOT"/skills/ideate.md "$ROOT"/skills/research.md "$ROOT"/skills/plan.md "$ROOT"/skills/spec.md "$ROOT"/skills/decompose.md "$ROOT"/skills/implement.md "$ROOT"/skills/review.md 2>/dev/null | grep '^- \|^[0-9]\. ' | sed 's/^[[:space:]]*//' | awk 'length >= 20' | sort -u || true)
 

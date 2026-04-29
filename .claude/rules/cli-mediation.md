@@ -2,8 +2,6 @@
 
 All harness state mutations go through CLI commands, never direct file edits.
 
-## Required CLI Usage
-
 | Operation | Command |
 |-----------|---------|
 | Read task state | `furrow row status [name]` |
@@ -21,13 +19,9 @@ All harness state mutations go through CLI commands, never direct file edits.
 - Using `jq`/`sed`/`awk` to mutate state files via Bash
 - Using `echo >>` or `cat >` to append to summary.md
 
-## Consequence
-
 Direct state.json edits are blocked by the state-guard hook (exit 2).
 Direct summary.md edits bypass validation and risk section corruption.
 Exceeding the correction limit blocks further writes until human escalation.
-
-## Why
 
 State mutations must be atomic and schema-validated. Direct edits bypass
 validation, risk corruption, and break the harness audit trail.
