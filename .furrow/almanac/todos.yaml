@@ -3891,14 +3891,14 @@
 - id: roadmap-row-cluster-machine-readable-representatio
   title: Roadmap row-cluster machine-readable representation
   context: 'alm triage currently produces one row per todo (83 rows in Phase 1 after triage-of-83-todos). The /furrow:triage slash command spec calls for row consolidation: bundle related todos into shared branches by subsystem / sequential dep / coherent theme. Today consolidation only lives in roadmap.md (16 row clusters across 8 phases) — there''s no machine-readable representation alm next can consume. Result: alm next surfaces the unconsolidated rows; consumers get the firehose, not the curated plan.'
-  work_needed: 'Extend alm triage (or add alm consolidate / alm cluster) to apply consolidation rules from /furrow:triage step 6a: same-subsystem grouping, sequential-dep collapse, coherent-theme bundling. Output should be a small set of row clusters per phase (typically 3-5), not one-per-todo. Optional: capture cluster metadata in todos.yaml as a parent-todo umbrella with absorbs[] linkage so the source-of-truth survives across regenerations. Ties into roadmap-generation-from-seeds (Phase 5) but is independent enough to ship sooner.'
+  work_needed: 'DONE in work/pi-row-audit-cleanup: alm triage row-cluster preservation landed and protected the conformed roadmap.yaml; Phase 3 records the row completed at 2026-04-25T04:44:40Z.'
   source_type: manual
-  status: active
+  status: done
   created_at: "2026-04-24T22:17:14-04:00"
   urgency: medium
   impact: high
   effort: large
-  updated_at: "2026-04-24T22:17:14-04:00"
+  updated_at: "2026-04-29T00:00:00Z"
   references:
     - bin/alm
     - templates/roadmap.md.tmpl

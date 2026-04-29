@@ -7,14 +7,23 @@ demoted, or folded by `work/post-audit-planning-collapse`.
 
 ## Rules Applied
 
-- `roadmap.yaml` now keeps Phase 5 as the only next executable phase after the
-  completed Phase 1-4 sequence.
+- `roadmap.yaml` owns active phase/row execution state and completed row truth.
 - `todos.yaml` remains canonical backlog input until an approved
   source-of-truth cutover row replaces it.
-- Later roadmap work is provisional until planning source-of-truth
-  simplification lands.
+- `post_collapse_backlog` is a parking lot for deferred row candidates, folded
+  rows, and blocked/provisional rows. It is not an execution queue.
 - No roadmap/TODO UX, Pi UX, seed cutover, or code implementation is introduced
   by this row.
+- No seed migration is approved by this row.
+
+## Current Planning Ownership Contract
+
+| Surface | Owns | Does not own |
+| --- | --- | --- |
+| `.furrow/almanac/roadmap.yaml` | Active phase/row execution state, row dependencies, key file surfaces, and completed row truth. | Canonical backlog intake or a new planning product UI. |
+| `.furrow/almanac/todos.yaml` | Canonical backlog input until an explicitly approved source-of-truth cutover. | Active row execution state once a row is scheduled and tracked in the roadmap. |
+| `post_collapse_backlog` | Deferred row candidates, folded rows, and blockers/provisional status for old roadmap groupings. | The next-row queue or approval to start blocked product work. |
+| Seeds | Nothing new in this row. | TODO retirement, roadmap generation, Pi planning surfaces, or source-of-truth cutover. |
 
 ## Roadmap Row Ledger
 
@@ -22,18 +31,18 @@ demoted, or folded by `work/post-audit-planning-collapse`.
 | --- | --- | --- |
 | `work/state-and-correction-guards` | `superseded` | The bundled row no longer matches the post-audit architecture. Layer rejection protection is split into `work/layer-guard-rejection-hardening`; Pi UX/schema/state expansion is backlog. |
 | `work/artifact-validation-and-continuation` | `preserved-backlog` | Deferred behind collapse rows; still discoverable through `todos.yaml`. |
-| `work/seeds-foundation` | `preserved-backlog` | Seed/TODO cutover work is deferred; `todos.yaml` stays canonical. |
-| `work/seeds-graph-cutover-and-pi-surfaces` | `preserved-backlog` | Cutover and Pi planning surfaces are deferred until source-of-truth simplification is approved. |
+| `work/seeds-foundation` | `blocked-backlog` | Seed/TODO cutover work is deferred; `todos.yaml` stays canonical until an approved cutover row. |
+| `work/seeds-graph-cutover-and-pi-surfaces` | `blocked-backlog` | Cutover and Pi planning surfaces are deferred until an approved cutover row. |
 | `work/review-and-evaluator-orchestration` | `preserved-backlog` | Review execution remains optional by risk and is not part of immediate collapse. |
 | `work/specialist-skills-and-engine-briefs` | `preserved-backlog` | Specialist/runtime output work waits until command and planning surfaces are smaller. |
-| `work/row-variants-and-planning-ux` | `preserved-backlog` | Explicitly provisional and blocked by `work/post-audit-planning-collapse`; no new roadmap/TODO UX before source-of-truth simplification. |
-| `work/cli-introspection-and-history` | `folded-into` | The immediate advertised-stub cleanup folds into `work/hide-vaporware-command-surface`; broader introspection/history remains backlog. |
+| `work/row-variants-and-planning-ux` | `blocked-backlog` | Explicitly blocked until an approved planning UX/source-of-truth row; no new roadmap/TODO UX in this row. |
+| `work/cli-introspection-and-history` | `folded-closed` | The immediate advertised-stub cleanup closed in `work/hide-vaporware-command-surface`; broader introspection/history must come from `todos.yaml` as a new explicit row. |
 | `work/meta-and-archive-flow-improvements` | `preserved-backlog` | Archive/meta flow remains useful but is not in the collapse row. |
 | `work/worktree-and-merge-pipeline` | `preserved-backlog` | Worktree/merge pipeline remains discoverable through `todos.yaml`. |
 | `work/install-and-symlink-hygiene` | `preserved-backlog` | Install hygiene remains discoverable through `todos.yaml`. |
-| `work/dual-runtime-parity-validation` | `preserved-backlog` | Parity work must be re-evaluated after command/planning collapse; live loaded-path evidence remains required. |
+| `work/dual-runtime-parity-validation` | `provisional-backlog` | Parity work must be re-evaluated against live loaded-path evidence before execution. |
 | `work/docs-and-research` | `preserved-backlog` | Docs/research must land or kill concrete implementation decisions before close. |
-| `work/pi-native-leverage-and-tui` | `preserved-backlog` | Pi-native UX is deferred until backend truth and planning simplification are stable. |
+| `work/pi-native-leverage-and-tui` | `blocked-backlog` | Pi-native UX is deferred until backend truth is stable and a row explicitly approves Pi UX. |
 | `work/legacy-shell-cutoff-and-removal` | `preserved-backlog` | Shell cutoff remains relevant but depends on parity and command replacement evidence. |
 
 ## TODO Ledger
