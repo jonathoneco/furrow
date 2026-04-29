@@ -144,14 +144,6 @@ func artifactSpecificFindings(state map[string]any, artifact map[string]any, con
 		})
 	case "plan":
 		return validatePlanJSONArtifact(content)
-	case "team-plan":
-		return validateMarkdownSections(content, map[string]string{
-			"Scope Analysis":   "team scope analysis",
-			"Team Composition": "team composition",
-			"Task Assignment":  "task assignment",
-			"Coordination":     "coordination plan",
-			"Skills":           "skills plan",
-		})
 	case "ask-analysis":
 		return validateAskAnalysisArtifact(content)
 	case "test-plan":

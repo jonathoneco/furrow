@@ -7,8 +7,8 @@ import (
 )
 
 // PlanStrategy implements the Strategy pattern (D5 contract) for the plan step.
-// Plan synthesises research findings into a structured work plan (plan.json)
-// and team-plan.md, grounded in the ideate→research decision.
+// Plan synthesises research findings into architecture decisions and an
+// execution strategy, grounded in the ideate→research decision.
 //
 // Context rules for plan:
 //   - Loads skills tagged for the plan step.

@@ -2956,6 +2956,18 @@ phases:
     - .furrow/almanac/roadmap.yaml
     conflict_risk: low
     completed_at: '2026-04-28T23:14:40-04:00'
+  - index: 7
+    branch: work/team-plan-active-concept-retirement
+    description: Retire team-plan.md as an active process concept by removing backend scaffolding, current-step requirements, active validation, and current docs that treated it as required workflow truth.
+    todos: []
+    depends_on:
+    - work/post-audit-planning-collapse
+    key_files:
+    - internal/cli/
+    - docs/architecture/
+    - .furrow/almanac/roadmap.yaml
+    conflict_risk: low
+    completed_at: '2026-04-28T23:43:10-04:00'
 post_collapse_backlog:
   note: Later phases are provisional until planning source-of-truth simplification lands. Do not add almanac/TODO UX before that cutoff.
   source_of_truth: todos.yaml remains canonical until an approved source-of-truth cutover row replaces it; no seed migration is approved by this Phase 5 collapse.

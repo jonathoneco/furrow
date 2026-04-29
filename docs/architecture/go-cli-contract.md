@@ -543,7 +543,7 @@ Current behavior:
   - `research` -> `research.md`
   - `plan` -> `implementation-plan.md`
   - `spec` -> `spec.md`
-  - `decompose` -> `plan.json`, `team-plan.md`
+  - `decompose` -> `plan.json`
 - returns refreshed artifact validation data for the current step
 - marks templates with an explicit incomplete-scaffold sentinel so artifact
   existence alone never satisfies completion or transition checks
@@ -560,7 +560,7 @@ This slice is now **more fully landed, but still intentionally partial** in the 
 - `row init` source-link handling aligned with the live canonical almanac document shape
 - stronger checkpoint / gate evidence surfaces in `furrow row status`
 - shared blocker taxonomy suitable for both Pi and future Claude-compatible flows
-- coordinated `implement` rows now validate carried decompose artifacts (`plan.json`, `team-plan.md`) at the boundary to review
+- coordinated `implement` rows now validate the carried decompose plan artifact (`plan.json`) at the boundary to review
 - `review` rows now validate durable review artifacts under `reviews/` rather than relying only on a prior `->review` gate record
 - review artifacts are now normalized semantically enough for backend-owned `furrow review status --json` and `furrow review validate --json` surfaces, including Phase A / Phase B verdict summaries, synthesized-override detection, severity summaries, and follow-up/disposition signals
 - archive-readiness evidence now includes latest gate evidence plus review-summary / follow-up / source-link / learnings surfaces inside the same operating loop

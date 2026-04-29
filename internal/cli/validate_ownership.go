@@ -69,7 +69,7 @@ type OwnershipVerdict struct {
 
 // canonicalArtifactRowSubpaths are the row-infrastructure files that always
 // yield not_applicable per spec — kept narrow to match specs/validate-ownership-go.md
-// AC #4 exactly. Other row artifacts (research.md, plan.json, team-plan.md,
+// AC #4 exactly. Other row artifacts (research.md, plan.json,
 // parity-verification.md, specs/*, reviews/*, gates/*, etc.) are NOT carved out;
 // they must be explicitly listed in deliverables[].file_ownership when a
 // deliverable touches them.

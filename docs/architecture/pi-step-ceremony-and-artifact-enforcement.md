@@ -377,8 +377,8 @@ document called for, plus a deeper boundary-hardening pass:
   only missing files or incomplete scaffold sentinels
 - the plan step now has a scaffoldable/validatable `implementation-plan.md`
   artifact in the same backend contract surface
-- coordinated `implement` rows now validate carried decompose artifacts such as
-  `plan.json` and `team-plan.md` before allowing the boundary to review
+- coordinated `implement` rows now validate the carried decompose plan artifact
+  (`plan.json`) before allowing the boundary to review
 - `review` rows now treat durable review artifacts under `reviews/` as
   first-class current-step artifacts and require recognizable passing review
   evidence before archive can proceed

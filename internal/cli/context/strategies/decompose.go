@@ -8,7 +8,7 @@ import (
 
 // DecomposeStrategy implements the Strategy pattern (D5 contract) for the
 // decompose step. Decompose translates approved specs into a wave-structured
-// plan.json and team-plan.md, verifying file_ownership conflict-freedom.
+// plan.json, verifying file_ownership conflict-freedom.
 //
 // Context rules for decompose:
 //   - Loads skills tagged for the decompose step.
@@ -82,7 +82,6 @@ func (s *DecomposeStrategy) Apply(b ctx.Builder, src ctx.ContextSource) error {
 		GateEvidence:    evidence,
 		Learnings:       learnings,
 	})
-
 
 	return nil
 }

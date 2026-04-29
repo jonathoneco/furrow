@@ -1175,7 +1175,7 @@ follow_ups:
 		}
 	})
 
-	t.Run("implement status validates carried decompose artifacts", func(t *testing.T) {
+	t.Run("implement status validates carried plan artifact", func(t *testing.T) {
 		root := setupFurrowRoot(t)
 		writeValidAlmanac(t, root)
 		writeRowState(t, root, "implement-validation", map[string]any{
@@ -1197,8 +1197,11 @@ follow_ups:
 		if code != 0 {
 			t.Fatalf("expected exit 0, got %d stderr=%s payload=%s", code, stderr, mustJSONPayload(t, payload))
 		}
-		if !jsonContains(payload, "missing_required_artifact") || !jsonContains(payload, "artifact_validation_failed") {
-			t.Fatalf("expected carried decompose artifact blockers, got %s", mustJSONPayload(t, payload))
+		if jsonContains(payload, "missing_required_artifact") {
+			t.Fatalf("did not expect retired team-plan missing blocker, got %s", mustJSONPayload(t, payload))
+		}
+		if !jsonContains(payload, "artifact_validation_failed") {
+			t.Fatalf("expected carried plan artifact blocker, got %s", mustJSONPayload(t, payload))
 		}
 	})
 

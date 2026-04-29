@@ -384,7 +384,8 @@
     The harness has a fully built parallel agent orchestration system:
     wave planning (generate-plan.sh with topological sort), specialist templates
     (14+ types with reasoning patterns), context isolation rules, file ownership
-    conflict detection (check-wave-conflicts.sh), team-plan.md structure, and
+    conflict detection (check-wave-conflicts.sh), historical team-plan.md structure
+    now retired from the active process model, and
     dual-path specialist loading (Skill tool for solo, Agent prompt for multi-agent).
 
     Despite all this infrastructure, the implement step consistently falls back to
@@ -836,7 +837,7 @@
       - Hybrid: active in .furrow/rows/, archived moved to .furrow/rows/.archive/ or removed entirely
     - Define which artifacts survive archival vs get pruned:
       - Keep: definition.yaml, state.json, summary.md, final deliverables
-      - Prune candidates: research/, specs/, reviews/, plan.json, team-plan.md
+      - Prune candidates: research/, specs/, reviews/, plan.json, and historical team-plan.md files if present
     - Consider a retention policy (e.g., prune after N days, keep last N archived units)
     - Archive is now `rws archive` and detect-context was absorbed into bin/rws
     - Update rws archive to implement the chosen strategy
@@ -3082,7 +3083,7 @@
     Current artifacts inform direction implicitly, but they are not yet used as
     explicit structured inputs to handoff prompts, stage transitions, or
     orchestrator/delegation flows. This is a missed opportunity. Furrow already
-    produces useful state and artifact files (summary.md, plan.json, team-plan.md,
+    produces useful state and artifact files (summary.md, plan.json,
     review artifacts, gate evidence, learnings) that could be converted into
     explicit context packets for:
 
@@ -3121,7 +3122,7 @@
   work_needed: |
     - Identify the canonical artifact set that should feed handoff/delegation/gate prompts
     - Define structured handoff-context builders from row artifacts
-    - Define orchestrator-to-specialist context packets derived from team-plan/plan/state/summary
+    - Define orchestrator-to-specialist context packets derived from plan/state/summary
     - Define gate-transition prompt inputs derived from step artifacts and prior evidence
     - Encode row-as-work-unit, ceremony-first, and continue-until-real-stop-condition defaults in generated execution/handoff prompts so operators do not need to restate those conventions manually every session
     - Include row/focus/current-step/checkpoint context plus explicit stop-reason reporting in generated broker/check-in prompts

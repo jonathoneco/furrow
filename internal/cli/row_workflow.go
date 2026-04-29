@@ -757,15 +757,13 @@ func currentStepArtifacts(root, rowName string, state map[string]any) []map[stri
 	case "decompose":
 		artifacts = append(artifacts,
 			artifactSpec(rowDir, "plan", "plan.json", true, true),
-			artifactSpec(rowDir, "team-plan", "team-plan.md", true, true),
 		)
 	case "implement":
 		deliverableNames := rowDeliverableNames(root, rowName, state)
-		requireCoordinationArtifacts := len(deliverableNames) > 1 || fileExists(filepath.Join(rowDir, "plan.json")) || fileExists(filepath.Join(rowDir, "team-plan.md"))
+		requireCoordinationArtifacts := len(deliverableNames) > 1 || fileExists(filepath.Join(rowDir, "plan.json"))
 		if requireCoordinationArtifacts {
 			artifacts = append(artifacts,
 				artifactSpec(rowDir, "plan", "plan.json", true, false),
-				artifactSpec(rowDir, "team-plan", "team-plan.md", true, false),
 			)
 		}
 	case "review":
