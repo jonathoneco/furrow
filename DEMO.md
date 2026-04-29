@@ -139,16 +139,18 @@ produces an execution plan.
 
 ### rationale.yaml — why things exist
 
-Every component tracked with `exists_because` and `delete_when`:
+Every component is tracked with its reason for existing and the condition that
+makes it removable:
 
 ```yaml
 - path: skills/ideate.md
-  exists_because: "Claude Code has no native ideation ceremony for work definition"
-  delete_when: "Claude Code provides built-in work definition with structured ideation"
+  reason: "Claude Code has no native ideation ceremony for work definition"
+  removal_condition: "Claude Code provides built-in work definition with structured ideation"
 ```
 
-This prevents zombie code. When the `delete_when` condition is met, the
-component is removable.
+The canonical field names live only in `.furrow/almanac/rationale.yaml`; this
+prevents zombie code by keeping the removal condition next to the component
+inventory.
 
 ### learnings.jsonl — per-row insights
 

@@ -2980,6 +2980,17 @@ phases:
     - .furrow/almanac/roadmap.yaml
     conflict_risk: low
     completed_at: '2026-04-29T00:16:15-04:00'
+  - index: 9
+    branch: work/doctor-rationale-hygiene
+    description: Make frw doctor green by removing stale rationale ownership claims, correcting the moved observations schema path, and keeping demo rationale prose out of manifest-only field syntax.
+    todos: []
+    depends_on: []
+    key_files:
+    - DEMO.md
+    - .furrow/almanac/rationale.yaml
+    - .furrow/almanac/roadmap.yaml
+    conflict_risk: low
+    completed_at: '2026-04-29T00:45:57-04:00'
 post_collapse_backlog:
   note: Later phases are provisional until planning source-of-truth simplification lands. Do not add almanac/TODO UX before that cutoff.
   source_of_truth: todos.yaml remains canonical until an approved source-of-truth cutover row replaces it; no seed migration is approved by this Phase 5 collapse.

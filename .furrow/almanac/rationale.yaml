@@ -66,9 +66,6 @@ components:
   - path: bin/frw.d/hooks/state-guard.sh
     exists_because: "Claude Code does not natively enforce state.json write protection"
     delete_when: "Claude Code provides built-in row state protection"
-  - path: bin/frw.d/hooks/gate-check.sh
-    exists_because: "Claude Code does not natively enforce gate requirements at step boundaries"
-    delete_when: "Claude Code provides built-in gate enforcement"
   - path: bin/frw.d/hooks/ownership-warn.sh
     exists_because: "Claude Code does not natively enforce file ownership boundaries"
     delete_when: "Claude Code provides built-in file ownership enforcement for specialists"
@@ -343,9 +340,6 @@ components:
   - path: commands/redirect.md
     exists_because: "Claude Code has no native dead-end recording with step-level reset"
     delete_when: "Claude Code provides built-in approach pivot tracking"
-  - path: commands/furrow.md
-    exists_because: "Claude Code has no native Furrow health check, update, or self-modification"
-    delete_when: "Claude Code provides built-in workflow infrastructure management"
   - path: commands/next.md
     exists_because: "Claude Code has no native roadmap-to-session handoff prompt generation"
     delete_when: "Claude Code provides built-in row dispatch from roadmap phases"
@@ -472,7 +466,7 @@ components:
   - path: specialists/technical-writer.md
     exists_because: "Claude Code does not natively provide domain-specific agent priming for technical documentation"
     delete_when: "Claude Code supports built-in specialist roles with domain expertise injection"
-  - path: observations.schema.yaml
+  - path: adapters/shared/schemas/observations.schema.yaml
     exists_because: 'Enforces structural contract for .furrow/almanac/observations.yaml — required fields per kind (watch/decision-review), required fields per trigger type (row_archived/rows_since/manual), additionalProperties: false. Every consumer (alm validate, alm observe writes, alm triage reads) relies on these guarantees.'
     delete_when: Observations subsystem is removed or replaced by an alternative persistence layer. Do not delete while .furrow/almanac/observations.yaml exists or while alm observe/validate reference it.
 
