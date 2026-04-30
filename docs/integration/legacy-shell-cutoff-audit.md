@@ -61,7 +61,7 @@ This follow-up made only loaded-path cuts with live Go parity:
 
 No shell entrypoint was deleted in this row. The active runtime/documentation
 surface still depends on shell-owned install/init/upgrade, doctor, hooks,
-summary mutation, user actions, merge/reintegration, gate execution,
+legacy/manual summary commands, user actions, merge/reintegration, gate execution,
 cross-model review, almanac extraction/triage/observation/rationale, and seed
 behavior.
 
@@ -88,7 +88,7 @@ behavior.
 | `furrow layer decide` and `furrow presentation scan` | `go-canonical` | Implemented in `internal/cli/layer` and `internal/cli/hook` paths. | Backend owns layer/presentation decisions. |
 | `furrow doctor` | `go-canonical` | Implemented in `internal/cli/doctor.go` for backend readiness, not full shell parity. | Use for backend health; do not claim it replaces every `frw doctor` check yet. |
 | `furrow gate`, `furrow seeds`, `furrow merge`, `furrow init` | `reserved-or-vaporware` | `internal/cli/app.go` returns reserved-group help or `not_implemented`. | Keep hidden/reserved in UX; do not route workflows to them as live behavior. |
-| `furrow row checkpoint/summary/validate` | `reserved-or-vaporware` | `internal/cli/app.go` routes these leaves to `not_implemented`. | Keep shell summary/checkpoint wrappers until Go parity exists. |
+| `furrow row checkpoint/summary/validate` | `reserved-or-vaporware` | `internal/cli/app.go` routes these leaves to `not_implemented`; Go-backed stop/work-check summary validation remains active elsewhere. | Do not route archive/checkpoint truth through `summary.md`; it is context, not backend-owned archive/checkpoint state. |
 | `furrow review run/cross-model` | `reserved-or-vaporware` | `internal/cli/review.go` returns `not_implemented`. | Cross-model review remains shell/provider-specific until ported or retired. |
 | `bin/frw` dispatcher | `compat-wrapper` | Routes to `bin/frw.d/**` shell scripts and rejects `rws|alm|sds` as separate CLIs. | Keep as compatibility dispatcher until subcommands are either Go wrappers or deleted. |
 | `bin/frw root/help` | `compat-wrapper` | Local dispatcher convenience only. | Safe to preserve until installer/compat story changes. |
@@ -107,7 +107,7 @@ behavior.
 | `bin/frw.d/lib/**` | mixed support code | Shared shell libraries support the remaining shell-semantic and hook paths. | Delete only after dependent shell paths are gone. |
 | `bin/rws` row lifecycle CLI | mixed: `compat-wrapper` plus `shell-semantic` | `status`, `list`, `focus`, and `repair-deliverables` now delegate to live `furrow row ...` commands. `transition`, `complete-step`, `archive`, `init`, summary, user actions, reintegration, sort invariant, diff, and worktree summary retain shell-specific semantics or side effects. | Keep only classified holdouts until parity exists or the behavior is intentionally retired. |
 | `rws load-step` | deleted compatibility path | Active inventory across `bin`, `.claude`, `commands`, `skills`, and the contract/audit docs found no runtime or prompt callers; `furrow context for-step` is the live context-loading path. | Deleted from `bin/rws`; do not restore unless a concrete legacy install needs a compatibility grace path. |
-| `rws regenerate-summary/validate-summary/update-summary` | `shell-semantic` | Go `row summary` is reserved; active checkpoint/archive docs still call these wrappers. | Must remain until Go summary command exists or summary mutation is retired. |
+| `rws regenerate-summary/validate-summary/update-summary` | `shell-semantic` | These remain legacy/manual holdouts for maintaining contextual `summary.md`; Go-backed stop/work-check summary validation remains active. | Keep as manual compatibility surfaces; checkpoint/archive no longer require summary regeneration. |
 | `rws add/complete/list-user-action` | `shell-semantic` | Step sequence rule explicitly says pending user actions use `rws complete-user-action` until Go command exists. | Must remain until Go user-action commands exist. |
 | `rws generate-reintegration/get-reintegration-json/validate-sort-invariant` | `shell-semantic` | Merge command markdown and shell merge pipeline consume these. | Must remain until merge pipeline is ported or retired. |
 | `bin/alm validate` | `compat-wrapper` | No-argument and `--json` invocations route to `furrow almanac validate`; path-specific `alm validate <todos|observations>.yaml` remains shell-internal for `alm add`/`alm triage` rollback checks because the Go command validates the full live almanac only. | Keep the path-specific validator until Go exposes an equivalent targeted validation contract or shell writers are retired. |
@@ -115,8 +115,8 @@ behavior.
 | `bin/sds` seed CLI | `shell-semantic` | Go `furrow seeds` is reserved; row init and shell checks still create/read/update seeds. | Must remain until seed graph parity exists or seed paths are retired. |
 | `commands/work.md` and `commands/work.md.tmpl` | `go-canonical` adapter surface | Routes context, handoff, render, complete, and transition through Go. | Keep thin; remove remaining embedded workflow semantics in the next row. |
 | `commands/status.md`, `reground.md`, `redirect.md`, `review.md` | `go-canonical` adapter surface | Use Go row/review/status surfaces. | Keep as thin prompt adapters. |
-| `commands/checkpoint.md` | mixed: `go-canonical` plus `shell-semantic` | Uses Go complete/transition but shell `rws regenerate-summary`. | Collapse after Go summary parity or explicit summary-retirement decision. |
-| `commands/archive.md` | mixed: `go-canonical` plus `shell-semantic` | Uses Go archive but shell `alm extract`, `alm observe`, and `rws regenerate-summary`. | Keep until archive ceremony/TODO/observation/summary paths are resolved. |
+| `commands/checkpoint.md` | `go-canonical` adapter surface | Uses Go complete/transition and no longer requires summary regeneration. | Keep thin around backend lifecycle state; `summary.md` is context only. |
+| `commands/archive.md` | mixed: `go-canonical` plus `shell-semantic` | Uses Go archive but still depends on shell archive ceremony, TODO extraction, observations, learnings, and component promotion paths. | Keep until archive ceremony/TODO/observation/learnings/component promotion paths are resolved. |
 | `commands/triage.md` and `work-todos.md` | `shell-semantic` adapter surface | Explicitly say no Go-backed triage/TODO extraction command exists and call `alm`. | Leave labeled; do not grow before source-of-truth simplification. |
 | `commands/init.md` | `shell-semantic` adapter surface | Calls legacy `frw init` and `sds init`; Go init and seeds are reserved. | Keep until bootstrap/seed parity exists. |
 | `commands/next.md` | `shell-semantic` adapter surface | Uses roadmap selection plus `frw launch-phase`. | Keep until phase launch is ported or retired. |
@@ -172,17 +172,19 @@ Safe later deletions or wrapper conversions once the named blockers are closed:
 - `bin/frw.d/scripts/merge-*.sh`, `merge-sort-union.sh`, `merge-to-main.sh`,
   `rescue.sh`, and `launch-phase.sh` cannot be removed while merge and phase
   launch flows remain shell-only.
-- `bin/rws` cannot be removed because summary mutation, user actions,
+- `bin/rws` cannot be removed because legacy/manual summary commands, user actions,
   reintegration JSON, sort invariant checks, worktree summaries, and some
-  legacy row operations have no Go equivalent.
+  legacy row operations have no Go equivalent. It is no longer retained on the
+  basis that checkpoint/archive require summary mutation.
 - `bin/alm` cannot be removed because TODO extraction, triage, roadmap next,
   observations, learnings, rationale, docs, specialists, and history commands
   have no Go equivalent.
 - `bin/sds` cannot be removed because `furrow seeds` is reserved and seed
   create/update/list/show/close/ready/dep behavior is shell-only.
-- `commands/checkpoint.md` and `commands/archive.md` cannot be made fully
-  Go-only until summary regeneration and archive/TODO/observation ceremony are
-  either ported or explicitly retired.
+- `commands/archive.md` cannot be made fully Go-only until archive
+  ceremony/TODO/observation/learnings/component promotion paths are either
+  ported or explicitly retired. `commands/checkpoint.md` no longer requires
+  summary regeneration.
 - `.claude/settings.json` cannot drop shell hooks until each hook's enforcement
   value is either ported to Go or intentionally removed.
 
@@ -207,10 +209,10 @@ Targeted search covered `bin`, `.claude`, `commands`, `skills`,
 | `frw launch-phase` | `shell-semantic` | Phase launch behavior is shell-only; no `furrow launch` exists and `furrow merge` is reserved. |
 | `frw merge-*`, `frw merge-to-main`, `frw rescue`, `rws get-reintegration-json`, `rws validate-sort-invariant` | `shell-semantic` | Merge pipeline behavior is intentionally untouched. |
 | `rws transition`, `rws gate-check` | `shell-semantic` | Legacy gate pipeline still records fail/conditional outcomes, policy checks, and evaluator nonce paths not represented by the narrow Go transition wrapper. |
-| `rws complete-step`, `rws archive` | `shell-semantic` | Shell versions still differ on summary regeneration, deliverable/seed/focus side effects, or archive ceremony behavior. Active commands should use Go where canonical. |
+| `rws complete-step`, `rws archive` | `shell-semantic` | Shell versions still differ on deliverable/seed/focus side effects or archive ceremony behavior; checkpoint/archive no longer require summary regeneration. Active commands should use Go where canonical. |
 | `rws init`, `rws diff` | `shell-semantic` | Worktree/seed compatibility behavior remains a temporary holdout. |
 | `rws add-user-action`, `rws complete-user-action`, `rws list-user-actions` | `shell-semantic` | User action mutation/listing has no Go command yet. |
-| `rws regenerate-summary`, `rws validate-summary`, `rws update-summary`, and worktree-summary variants | `shell-semantic` | Go `furrow row summary` is reserved. |
+| `rws regenerate-summary`, `rws validate-summary`, `rws update-summary`, and worktree-summary variants | `shell-semantic` | Legacy/manual contextual summary surfaces remain; `summary.md` is not backend-owned archive/checkpoint truth, and Go-backed stop/work-check summary validation remains active. |
 | `alm extract`, `alm triage`, `alm observe`, `alm learn`, `alm rationale`, `alm docs`, `alm specialists`, `alm history` | `shell-semantic` | Explicit hard-stop surfaces for this bundle; no Go parity claimed. |
 | `furrow gate`, `furrow merge`, `furrow seeds`, `furrow init`, `furrow row summary/checkpoint/validate`, `furrow review run/cross-model` | `reserved/vaporware` | Reserved or not implemented; active docs must not present them as live behavior. |
 | Archived docs, historical rows, and shell comments describing old paths | `historical` | Not edited unless they are active instructions or truth surfaces. |
