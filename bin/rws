@@ -29,8 +29,10 @@ EXIT_USAGE=1
 EXIT_NOT_FOUND=2
 EXIT_VALIDATION=3
 EXIT_SUB_FAILED=4
+# shellcheck disable=SC2034 # Reserved for compatibility with older callers.
 EXIT_WRONG_STATUS=5
 EXIT_POLICY=6
+# shellcheck disable=SC2034 # Reserved for compatibility with older callers.
 EXIT_SEED_MISMATCH=7
 
 # --- Constants ---
@@ -177,13 +179,13 @@ find_focused_row() {
   _best_name=""
   _best_ts=""
 
-  for _state_file in ${ROWS_DIR}/*/state.json; do
+  for _state_file in "${ROWS_DIR}"/*/state.json; do
     [ -f "$_state_file" ] || continue
     _archived="$(jq -r '.archived_at // "null"' "$_state_file" 2>/dev/null)" || continue
     if [ "$_archived" = "null" ]; then
       _name="$(jq -r '.name // ""' "$_state_file" 2>/dev/null)" || continue
       _updated="$(jq -r '.updated_at // ""' "$_state_file" 2>/dev/null)" || _updated=""
-      if [ -z "$_best_name" ] || { [ -n "$_updated" ] && [ -n "$_best_ts" ] && [ "$_updated" \> "$_best_ts" ]; }; then
+      if [ -z "$_best_name" ] || { [ -n "$_updated" ] && [ -n "$_best_ts" ] && [ "$(printf '%s\n%s\n' "$_best_ts" "$_updated" | sort | tail -n 1)" = "$_updated" ] && [ "$_updated" != "$_best_ts" ]; }; then
         _best_name="$_name"
         _best_ts="$_updated"
       fi
@@ -199,7 +201,7 @@ find_focused_row() {
 
 find_active_rows() {
   _count=0
-  for _state_file in ${ROWS_DIR}/*/state.json; do
+  for _state_file in "${ROWS_DIR}"/*/state.json; do
     [ -f "$_state_file" ] || continue
     _archived="$(jq -r '.archived_at // "null"' "$_state_file" 2>/dev/null)" || continue
     if [ "$_archived" = "null" ]; then
@@ -645,6 +647,7 @@ validate_step_artifacts() {
 
       _va_del_tmp="$(mktemp)"
       printf '%s\n' "$_va_del_names" > "$_va_del_tmp"
+      # shellcheck disable=SC2094 # The temp file is removed before returning on validation failures.
       while IFS= read -r _va_del_name; do
         _va_review_file="${_va_work_dir}/reviews/${_va_del_name}.json"
         if [ ! -f "$_va_review_file" ]; then
@@ -1541,6 +1544,7 @@ rws_init() {
       _init_todos_file=".furrow/almanac/todos.yaml"
       _init_todo_seed=""
       if [ -f "$_init_todos_file" ] && command -v yq > /dev/null 2>&1; then
+        # shellcheck disable=SC2016 # yq expression uses --arg variables.
         _init_todo_seed="$(yq -r \
           --arg id "$_init_source_todo" \
           '[.todos[] | select(.id == $id) | .seed_id // ""] | .[0] // ""' \
@@ -1573,6 +1577,7 @@ rws_init() {
           # Backfill seed_id into todos.yaml
           if [ -f "$_init_todos_file" ] && command -v yq > /dev/null 2>&1; then
             _init_backfill_ts="$(now_iso)"
+            # shellcheck disable=SC2016 # yq expression uses --arg variables.
             yq -i \
               --arg id "$_init_source_todo" \
               --arg seed "$_init_new_seed" \
@@ -1768,18 +1773,14 @@ rws_transition() {
     exit "$EXIT_SUB_FAILED"
   }
 
-  # 7. Regenerate summary
-  regenerate_summary "$_tr_name" || {
-    echo "Warning: summary regeneration failed" >&2
-  }
-
-  # 8. Advance step
+  # 7. Advance step. Summary regeneration is no longer required for transition
+  # truth; summary.md remains a context artifact validated at boundaries.
   advance_step "$_tr_name" || {
     echo "Failed to advance step" >&2
     exit "$EXIT_SUB_FAILED"
   }
 
-  # 9. Sync seed status after successful advance
+  # 8. Sync seed status after successful advance
   sync_seed_status "$_tr_name" "$_tr_next"
 
   echo "Transition complete: $_tr_boundary ($_tr_outcome)"
@@ -1858,11 +1859,6 @@ rws_complete_deliverable() {
   # Update state
   _cd_jq=".deliverables[\"${_cd_deliv}\"] = {\"status\":\"completed\",\"wave\":${_cd_wave},\"corrections\":0}"
   update_state "$_cd_name" "$_cd_jq"
-
-  # Regenerate summary to reflect deliverable completion
-  regenerate_summary "$_cd_name" || {
-    echo "Warning: summary regeneration failed" >&2
-  }
 
   echo "Deliverable completed: $_cd_deliv (wave $_cd_wave)"
 }
@@ -1975,9 +1971,6 @@ rws_archive() {
       rm -f "$FOCUSED_FILE"
     fi
   fi
-
-  # Regenerate summary one final time
-  regenerate_summary "$_ar_name" || true
 
   echo "Archived: $_ar_name"
 }

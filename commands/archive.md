@@ -64,8 +64,9 @@ If not found: error with message indicating what is blocking archive.
 9. Run `furrow row archive "{name}"` to set `state.json.archived_at` through the
    Go archive-readiness gate. Do not use `rws archive` for gated rows; it does
    not own completion-evidence truth checks.
-10. Regenerate final `summary.md` through the temporary compatibility holdout
-    `rws regenerate-summary "{name}"` until a Go-backed summary command exists.
+10. Do not require final summary regeneration. Archive truth is owned by the Go
+    archive-readiness gate, durable state, gates, reviews, learnings, and
+    almanac updates. Preserve existing `summary.md` notes as context only.
 11. Git commit with message: `chore: archive {name}`.
 
 ## Output

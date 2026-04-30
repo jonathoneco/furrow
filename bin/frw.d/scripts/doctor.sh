@@ -399,8 +399,8 @@ frw_doctor() {
     _sd 6 "two-phase review methodology defined" \
       "grep -q 'Phase A' '$ROOT/references/review-methodology.md' && grep -q 'Phase B' '$ROOT/references/review-methodology.md'"
 
-    _sd 7 "summary regeneration via rws" \
-      "test -x '$ROOT/bin/rws'"
+    _sd 7 "summary validation is Go-backed; regeneration is not required" \
+      "test -f '$ROOT/internal/cli/validate_summary.go' && grep -q 'handleStopSummaryValidation' '$ROOT/internal/cli/validate_summary.go'"
 
     _sd 8 "gate records are append-only" \
       "grep -q 'gates' '$ROOT/bin/rws'"

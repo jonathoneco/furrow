@@ -159,7 +159,7 @@ blockers:
     category: summary
     severity: block
     message_template: "summary.md is missing required section '{section}' (path: {path})"
-    remediation_hint: "Use `rws update-summary <section>` to add the missing section. summary.md must contain Task, Current State, Artifact Paths, Settled Decisions, Key Findings, Open Questions, and Recommendations."
+    remediation_hint: "Edit `summary.md` to add the missing section. summary.md must contain Task, Current State, Artifact Paths, Settled Decisions, Key Findings, Open Questions, and Recommendations."
     confirmation_path: block
     applicable_steps: ["research", "plan", "spec", "decompose", "implement", "review"]
 
@@ -167,7 +167,7 @@ blockers:
     category: summary
     severity: block
     message_template: "summary.md section '{section}' has {actual_count} non-empty content lines (need at least {required_count}) at {path}"
-    remediation_hint: "Use `rws update-summary <section>` to populate the section with substantive content; placeholders are not sufficient."
+    remediation_hint: "Edit `summary.md` to populate the section with substantive content; placeholders are not sufficient."
     confirmation_path: block
     applicable_steps: ["research", "plan", "spec", "decompose", "implement", "review"]
 
@@ -182,14 +182,14 @@ blockers:
     category: summary
     severity: warn
     message_template: "summary.md missing required sections for {row}: {missing}"
-    remediation_hint: "Use `rws update-summary` to populate the missing sections. This is a session-boundary warning, not a hard block."
+    remediation_hint: "Edit `summary.md` to populate the missing sections. This is a session-boundary warning, not a hard block."
     confirmation_path: silent
 
   - code: summary_section_empty_warn
     category: summary
     severity: warn
     message_template: "summary.md section '{section}' has fewer than {required_count} lines of content for {row}"
-    remediation_hint: "Use `rws update-summary {section}` to add substantive content. This is a session-boundary warning, not a hard block."
+    remediation_hint: "Edit `summary.md` to add substantive content. This is a session-boundary warning, not a hard block."
     confirmation_path: silent
 
   # --- Go-side enforcement codes (baseline from

@@ -3,6 +3,6 @@
   "category": "summary",
   "severity": "block",
   "message": "summary.md section 'Key Findings' has 0 non-empty content lines (need at least 1) at __FIXTURE_DIR__/summary.md",
-  "remediation_hint": "Use `rws update-summary <section>` to populate the section with substantive content; placeholders are not sufficient.",
+  "remediation_hint": "Edit `summary.md` to populate the section with substantive content; placeholders are not sufficient.",
   "confirmation_path": "block"
 }

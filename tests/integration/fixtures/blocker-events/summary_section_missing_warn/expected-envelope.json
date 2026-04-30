@@ -3,6 +3,6 @@
   "category": "summary",
   "severity": "warn",
   "message": "summary.md missing required sections for r1: Current State Artifact Paths Settled Decisions Key Findings Open Questions",
-  "remediation_hint": "Use `rws update-summary` to populate the missing sections. This is a session-boundary warning, not a hard block.",
+  "remediation_hint": "Edit `summary.md` to populate the missing sections. This is a session-boundary warning, not a hard block.",
   "confirmation_path": "silent"
 }

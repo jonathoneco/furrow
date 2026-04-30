@@ -22,8 +22,10 @@ The `validate-summary.sh` hook enforces this at step boundaries.
 
 - **>=1** non-empty line per required section.
 - Bullets: `- ` prefix, substantive content (not "TBD", "None", "N/A", "TODO").
-- Update via CLI: `rws update-summary [name] <section> [--replace]` with content on stdin.
-- Do NOT edit summary.md directly — use the CLI.
+- Update `summary.md` directly and deliberately; it is a context artifact, not
+  backend-owned truth.
+- Keep the standard headings intact so Go-backed validation and context readers
+  can parse the file.
 
 ## When to Update
 
