@@ -4,11 +4,42 @@ Status: Abandoned
 Authority: Canonical
 Time horizon: Enduring
 
-> **Project abandoned.** With the stronger models available today, the ceremony
-> Furrow imposed forced context separation to a degree that degraded output
-> quality — stages lost the ambient context of the surrounding work. I'm still
-> interested in follow-up work around workflow sequencing, but I don't expect
-> to revisit Furrow itself.
+> **Project abandoned.** Some retrospective notes on why:
+>
+> - **Ceremony forced context separation that hurt quality.** Per-step skill
+>   injection, isolated specialist sub-agents, and "context bundles" cut stages
+>   off from the ambient context of the surrounding work. Stronger models
+>   punished this immediately — they reason better with more context, not less,
+>   and the harness's reconstitution attempts (summary protocols, between-wave
+>   curation, reintegration artifacts) were lossy patches over self-inflicted
+>   fragmentation.
+> - **Planning and decomposition became too mechanical.** Instead of helping
+>   the model plan, the harness built a system *around* planning: prescriptive
+>   `plan.json` schemas, gate dimensions scoring "coverage / feasibility /
+>   specificity," mandatory summary sections, file-ownership globs, wave
+>   assignments, specialist hints. Gates ended up evaluating artifact *form*
+>   ("did you write plan.json correctly?") rather than plan quality. The
+>   decompose step in particular produced no new thinking — it was a
+>   transformer of specs into structured artifacts.
+> - **Layered orchestration (operator → driver → engine) was scaffolding, not
+>   problem-solving.** Seven driver definitions, handoff schemas, layer-guard
+>   hooks, and a non-productive orchestrator skill added choreography that
+>   newer models can do directly. Specialist assignment had to be downgraded
+>   to a "hint" because rigid role-binding didn't match how models actually
+>   work.
+> - **The harness fought the model in small ways too.** Context budgets
+>   declared but unenforced, dual-runtime adapters fracturing the codebase, a
+>   "research mode" flag papering over the fact that knowledge work and code
+>   work want different shapes, a rationale almanac tracking which scaffolding
+>   could be deleted later — all signs the structure was carrying its own
+>   weight.
+>
+> The general direction I still believe in: **workflow sequencing** — ordering
+> and gating *what* gets worked on, with durable artifacts that survive
+> sessions — is real value. What didn't survive contact with stronger models
+> was the assumption that the harness should also fragment the *thinking*.
+> Future work, if any, will likely live there: lightweight sequencing without
+> the context separation.
 
 A workflow harness for AI coding agents. Furrow structures work into tracked
 units called *rows* that move through a fixed sequence of steps — from ideation
