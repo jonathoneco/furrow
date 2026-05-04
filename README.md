@@ -1,8 +1,14 @@
 # Furrow
 
-Status: Active
+Status: Abandoned
 Authority: Canonical
 Time horizon: Enduring
+
+> **Project abandoned.** With the stronger models available today, the ceremony
+> Furrow imposed forced context separation to a degree that degraded output
+> quality — stages lost the ambient context of the surrounding work. I'm still
+> interested in follow-up work around workflow sequencing, but I don't expect
+> to revisit Furrow itself.
 
 A workflow harness for AI coding agents. Furrow structures work into tracked
 units called *rows* that move through a fixed sequence of steps — from ideation
